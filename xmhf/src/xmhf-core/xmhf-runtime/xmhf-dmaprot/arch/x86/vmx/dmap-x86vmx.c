@@ -72,16 +72,16 @@ static u32 l_vtd_pts_vaddr=0;
 
 //------------------------------------------------------------------------------
 //setup VT-d DMA protection page tables
-static void _vtd_setuppagetables(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
-	u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
-	u32 vtd_pts_paddr, u32 vtd_pts_vaddr){
+static void _vtd_setuppagetables(uintptr_t vtd_pdpt_paddr, uintptr_t vtd_pdpt_vaddr,
+	uintptr_t vtd_pdts_paddr, uintptr_t vtd_pdts_vaddr,
+	uintptr_t vtd_pts_paddr, uintptr_t vtd_pts_vaddr){
   
-	u32 pdptphysaddr, pdtphysaddr, ptphysaddr;
+	uintptr_t pdptphysaddr, pdtphysaddr, ptphysaddr;
   u32 i,j,k;
   pdpt_t pdpt;
   pdt_t pdt;
   pt_t pt;
-  u32 physaddr=0;
+  uintptr_t physaddr=0;
   
   pdptphysaddr=vtd_pdpt_paddr;
   pdtphysaddr=vtd_pdts_paddr;
@@ -135,8 +135,8 @@ static void _vtd_setuppagetables(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 //each CE points to a PDPT type paging structure. 
 //in our implementation, every CE will point to a single PDPT type paging
 //structure for the whole system
-static void _vtd_setupRETCET(u32 vtd_pdpt_paddr, u32 vtd_ret_paddr, u32 vtd_ret_vaddr,	u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
-  u32 retphysaddr, cetphysaddr;
+static void _vtd_setupRETCET(uintptr_t vtd_pdpt_paddr, uintptr_t vtd_ret_paddr, uintptr_t vtd_ret_vaddr, uintptr_t vtd_cet_paddr, uintptr_t vtd_cet_vaddr){
+  uintptr_t retphysaddr, cetphysaddr;
   u32 i, j;
   u64 *value;
   
@@ -186,7 +186,7 @@ static void _vtd_setupRETCET(u32 vtd_pdpt_paddr, u32 vtd_ret_paddr, u32 vtd_ret_
 //we ensure that every entry in the RET is 0 which means that the DRHD will
 //not allow any DMA requests for PCI bus 0-255 (Sec 3.3.2, IVTD Spec. v1.2)
 //we zero out the CET just for sanity 
-static void _vtd_setupRETCET_bootstrap(u32 vtd_ret_paddr, u32 vtd_ret_vaddr, u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
+static void _vtd_setupRETCET_bootstrap(uintptr_t vtd_ret_paddr, uintptr_t vtd_ret_vaddr, uintptr_t vtd_cet_paddr, uintptr_t vtd_cet_vaddr){
   
 	//sanity check that RET and CET are page-aligned
 	HALT_ON_ERRORCOND( !(vtd_ret_paddr & 0x00000FFFUL) && !(vtd_cet_paddr & 0x00000FFFUL) );
@@ -705,11 +705,11 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
-	u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
+	uintptr_t rsdtentries[ACPI_MAX_RSDT_ENTRIES];
 	u32 status;
 	VTD_DMAR dmar;
 	u32 i, dmarfound;
-	u32 dmaraddrphys, remappingstructuresaddrphys;
+	uintptr_t dmaraddrphys, remappingstructuresaddrphys;
 	
 #ifndef __XMHF_VERIFICATION__	
 	//zero out rsdp and rsdt structures
@@ -730,7 +730,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
 	HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
 	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
-			sizeof(u32)*num_rsdtentries);			
+			sizeof(rsdtentries[0])*num_rsdtentries);			
   printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
 

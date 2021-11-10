@@ -243,9 +243,9 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 //that lies within the initially DMA-protected SL region to protect 
 //the runtime physical memory.
 //The runtime then re-initializes DEV once it gets control 
-static u32 svm_eap_early_initialize(u32 protected_buffer_paddr, 
-			u32 protected_buffer_vaddr, u32 memregion_paddr_start, 
-				u32 memregion_size){
+static u32 svm_eap_early_initialize(uintptr_t protected_buffer_paddr, 
+			uintptr_t protected_buffer_vaddr, uintptr_t memregion_paddr_start, 
+				uintptr_t memregion_size){
 	u32 dev_bitmap_paddr = 0;
 		
 
@@ -305,7 +305,7 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 	  //now make sure the protected buffer (4K in our case) is set to all 1's
 		//effectively preventing DMA reads and writes from memregion_paligned_paddr_start
 		//to memregion_paligned_paddr_start + 128M
-		memset((void *)((u32)protected_buffer_vaddr+(u32)offset), 0xFF, PAGE_SIZE_4K);
+		memset((void *)(protected_buffer_vaddr+(u32)offset), 0xFF, PAGE_SIZE_4K);
 	}
 	
 	return dev_bitmap_paddr;

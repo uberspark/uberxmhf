@@ -598,10 +598,16 @@ static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
 	return status;
 }
 
-static inline void __vmx_vmread(u32 encoding, u32 *value){
+static inline void __vmx_vmread(unsigned long encoding, unsigned long *value){
+#ifdef __X86_64__
+	__asm__ __volatile__("vmread %%rax, %%rbx\n\t"
+	  : "=b"(*value)
+	  : "a"(encoding));
+#else /* !__X86_64__ */
 	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
 	  : "=b"(*value)
 	  : "a"(encoding));
+#endif /* __X86_64__ */
 }
 
 static inline u32 __vmx_vmclear(u64 vmcs){
