@@ -268,7 +268,7 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     utpm_master_state_t *utpm,
     TPM_PCR_SELECTION *tpmsel,
     uint8_t **tpm_pcr_composite,
-    uint32_t *space_needed_for_composite
+    uintptr_t *space_needed_for_composite
     )
 {
     uint32_t rv = 0;
@@ -307,18 +307,18 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
         sizeof(uint32_t) +                                    /* TPM_PCR_COMPOSITE.valueSize */
         num_pcrs_to_include * TPM_HASH_SIZE;                  /* TPM_PCR_COMPOSITE.pcrValue[] */
 
-    dprintf(LOG_TRACE, "  sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect = %d\n",
+    dprintf(LOG_TRACE, "  sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect = %ld\n",
             sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
-    dprintf(LOG_TRACE, "  sizeof(uint32_t)                                    = %d\n",
+    dprintf(LOG_TRACE, "  sizeof(uint32_t)                                    = %ld\n",
             sizeof(uint32_t));
-    dprintf(LOG_TRACE, "  num_pcrs_to_include * TPM_HASH_SIZE                 = %d\n",
+    dprintf(LOG_TRACE, "  num_pcrs_to_include * TPM_HASH_SIZE                 = %ld\n",
             num_pcrs_to_include * TPM_HASH_SIZE);
     dprintf(LOG_TRACE, "  ---------------------------------------------------------\n");
-    dprintf(LOG_TRACE, "  *space_needed_for_composite                         = %d\n",
+    dprintf(LOG_TRACE, "  *space_needed_for_composite                         = %ld\n",
             *space_needed_for_composite);
     
     if(NULL == (*tpm_pcr_composite = malloc(*space_needed_for_composite))) {
-        dprintf(LOG_ERROR, "[TV:UTPM] malloc(%d) failed!\n", *space_needed_for_composite);
+        dprintf(LOG_ERROR, "[TV:UTPM] malloc(%ld) failed!\n", *space_needed_for_composite);
         return 1;
     }
 
@@ -341,7 +341,7 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     }
 
     /* TODO: Assert */
-    if((uint32_t)p-(uint32_t)(*tpm_pcr_composite) != *space_needed_for_composite) {
+    if((uintptr_t)p-(uintptr_t)(*tpm_pcr_composite) != *space_needed_for_composite) {
         dprintf(LOG_ERROR, "[TV:UTPM] ERROR! (uint32_t)p-(uint32_t)*tpm_pcr_composite "
                 "!= space_needed_for_composite\n");
         rv = 1; /* FIXME: Indicate internal error */
@@ -366,7 +366,7 @@ static TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
     TPM_PCR_SELECTION *pcrSelection,
     TPM_COMPOSITE_HASH *digest)
 {
-    uint32_t space_needed_for_composite = 0;
+    uintptr_t space_needed_for_composite = 0;
     uint8_t *tpm_pcr_composite = NULL;
     uint32_t rv = 0;
     
@@ -500,7 +500,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     p += inlen;
 
 	/* 4. add padding */
-	outlen_beforepad = (uint32_t)p - (uint32_t)plaintext;
+	outlen_beforepad = (uintptr_t)p - (uintptr_t)plaintext;
 	if ((outlen_beforepad & 0xF) != 0) {
 		*outlen = (outlen_beforepad + TPM_AES_KEY_LEN_BYTES) & (~0xF);
 	} else {
@@ -634,7 +634,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         uint8_t *p = output;
         TPM_PCR_INFO unsealedPcrInfo;
         uint32_t bytes_consumed_by_pcrInfo;
-        uint32_t space_needed_for_composite = 0;
+        uintptr_t space_needed_for_composite = 0;
         uint8_t *currentPcrComposite = NULL;
         TPM_COMPOSITE_HASH digestRightNow;
         
@@ -833,11 +833,11 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
  * buffer is too small. */
 TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
                       uint8_t* output, uint32_t* outlen, /* hypercall outputs */
-                      uint8_t* pcrComp, uint32_t* pcrCompLen,
+                      uint8_t* pcrComp, uintptr_t* pcrCompLen,
                       utpm_master_state_t *utpm) /* TrustVisor inputs */
 {
     TPM_RESULT rv = 0; /* success */
-    uint32_t space_needed_for_composite = 0;
+    uintptr_t space_needed_for_composite = 0;
     uint8_t *tpm_pcr_composite = NULL;
     TPM_QUOTE_INFO quote_info;    
 
@@ -863,7 +863,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     /* Copy PCR Composite and len to the appropriate output buffer,
      * checking for enough space */
     if(space_needed_for_composite > *pcrCompLen) {
-        dprintf(LOG_ERROR, "ERROR: space_needed_for_composite (%d) > *pcrCompLen (%d)\n",
+        dprintf(LOG_ERROR, "ERROR: space_needed_for_composite (%ld) > *pcrCompLen (%ld)\n",
                 space_needed_for_composite, *pcrCompLen);
         *pcrCompLen = space_needed_for_composite;
         rv = 1; /* FIXME: Indicate insufficient pcrComp buffer size */
