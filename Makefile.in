@@ -14,7 +14,6 @@ export UNITYDIR := @UNITYDIR@
 
 # Options that aspire to be automatically controlled, but are currently
 # basically required and everything breaks without them. FIXME!
-export TARGET_HWPLATFORM := x86
 export NESTED_PAGING := y
 
 #where you want loader and runtime binaries to go
@@ -82,6 +81,7 @@ export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
 export DRT := @DRT@
 export DMAP := @DMAP@
+export TARGET_HWPLATFORM := @TARGET_HWPLATFORM@
 export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
 export XMHF_TARGET_ARCH := @TARGET_ARCH@
 
@@ -163,6 +163,15 @@ VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
 
 CFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 VFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
+
+ifeq ($(TARGET_HWPLATFORM), x64-pc)
+	CFLAGS += -D__X64__
+	VFLAGS += -D__X64__
+else
+	CFLAGS += -D__X86__
+	VFLAGS += -D__X86__
+	CFLAGS += -m32
+endif
 
 ifeq ($(XMHF_TARGET_ARCH), x86-svm)
 	VFLAGS += -D__XMHF_TARGET_ARCH_X86_SVM__
