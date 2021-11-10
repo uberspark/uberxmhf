@@ -72,73 +72,85 @@
 		
 		//push GPR values on stack to construct a 
 		//struct regs *r
-		/*pushl	%edi	
-		pushl	%esi	
-		pushl	%ebp	
-		pushl	%esp		
-		pushl	%ebx	
-		pushl	%edx	
-		pushl	%ecx	
+		/*pushl	%edi
+		pushl	%esi
+		pushl	%ebp
+		pushl	%esp
+		pushl	%ebx
+		pushl	%edx
+		pushl	%ecx
 		pushl	%eax*/
-		pushal	
-    
+#ifdef __X86_64__
+		// TODO
+#else /* !__X86_64__ */
+		pushal
+#endif /* __X86_64__ */
+
 		movw	$(__DS), %ax
 		movw	%ax, %ds			//load DS
 		movl 	%esp, %eax			//EAX = struct regs *
-		
+
+#ifdef __X86_64__
+		// TODO: call xmhf_xcphandler_hub
+#else /* !__X86_64__ */
 		pushl 	%eax				//struct regs *r
 		pushl	$0x&vector&			//vector
 		call	xmhf_xcphandler_hub	//call C-land hub
 		addl  	$0x08, %esp			//remove params from stack
-		
+#endif /* __X86_64__ */		
+
 		//restore GPRs
-		/*popl	%eax	
-		popl	%ecx	
-		popl	%edx	
-		popl	%ebx	
-		popl	%esp	
-		popl	%ebp	
-		popl	%esi	
+		/*popl	%eax
+		popl	%ecx
+		popl	%edx
+		popl	%ebx
+		popl	%esp
+		popl	%ebp
+		popl	%esi
 		popl	%edi*/
-		popal	 
+#ifdef __X86_64__
+		// TODO
+#else /* !__X86_64__ */
+		popal
+#endif /* __X86_64__ */
     
 		//return from exception
 		iretl
 	
 .endm
 
-XtRtmEmitIdtStub 0	
-XtRtmEmitIdtStub 1	
-XtRtmEmitIdtStub 2	
-XtRtmEmitIdtStub 3	
-XtRtmEmitIdtStub 4	
-XtRtmEmitIdtStub 5	
-XtRtmEmitIdtStub 6	
-XtRtmEmitIdtStub 7	
-XtRtmEmitIdtStub 8	
-XtRtmEmitIdtStub 9	
-XtRtmEmitIdtStub a	
-XtRtmEmitIdtStub b	
-XtRtmEmitIdtStub c	
-XtRtmEmitIdtStub d	
-XtRtmEmitIdtStub e	
-XtRtmEmitIdtStub f	
-XtRtmEmitIdtStub 10	
-XtRtmEmitIdtStub 11	
-XtRtmEmitIdtStub 12	
-XtRtmEmitIdtStub 13	
-XtRtmEmitIdtStub 14	
-XtRtmEmitIdtStub 15	
-XtRtmEmitIdtStub 16	
-XtRtmEmitIdtStub 17	
-XtRtmEmitIdtStub 18	
-XtRtmEmitIdtStub 19	
-XtRtmEmitIdtStub 1a	
-XtRtmEmitIdtStub 1b	
-XtRtmEmitIdtStub 1c	
-XtRtmEmitIdtStub 1d	
-XtRtmEmitIdtStub 1e	
-XtRtmEmitIdtStub 1f	
+XtRtmEmitIdtStub 0
+XtRtmEmitIdtStub 1
+XtRtmEmitIdtStub 2
+XtRtmEmitIdtStub 3
+XtRtmEmitIdtStub 4
+XtRtmEmitIdtStub 5
+XtRtmEmitIdtStub 6
+XtRtmEmitIdtStub 7
+XtRtmEmitIdtStub 8
+XtRtmEmitIdtStub 9
+XtRtmEmitIdtStub a
+XtRtmEmitIdtStub b
+XtRtmEmitIdtStub c
+XtRtmEmitIdtStub d
+XtRtmEmitIdtStub e
+XtRtmEmitIdtStub f
+XtRtmEmitIdtStub 10
+XtRtmEmitIdtStub 11
+XtRtmEmitIdtStub 12
+XtRtmEmitIdtStub 13
+XtRtmEmitIdtStub 14
+XtRtmEmitIdtStub 15
+XtRtmEmitIdtStub 16
+XtRtmEmitIdtStub 17
+XtRtmEmitIdtStub 18
+XtRtmEmitIdtStub 19
+XtRtmEmitIdtStub 1a
+XtRtmEmitIdtStub 1b
+XtRtmEmitIdtStub 1c
+XtRtmEmitIdtStub 1d
+XtRtmEmitIdtStub 1e
+XtRtmEmitIdtStub 1f
 
 
 .section .data
