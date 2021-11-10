@@ -43,8 +43,13 @@
 #define _SYS_TYPES_H_
 
 /* Machine type dependent parameters. */
+#ifdef __X86_64__
+#include <sys/ia64_endian.h>
+#include <sys/ia64_types.h>
+#else /* !__X86_64__ */
 #include <sys/i386_endian.h>
 #include <sys/i386_types.h>
+#endif /* __X86_64__ */
 
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;
