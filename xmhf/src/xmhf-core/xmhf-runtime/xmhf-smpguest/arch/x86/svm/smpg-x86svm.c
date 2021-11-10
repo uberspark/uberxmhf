@@ -140,7 +140,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
   }
 
   printf("\nfound AP to pass SIPI to; id=0x%02x, vcpu=0x%08x",
-      dest_vcpu->id, (u32)dest_vcpu);  
+      dest_vcpu->id, (uintptr_t)dest_vcpu);  
   
   
   //send the sipireceived flag to trigger the AP to start the HVM
@@ -291,13 +291,13 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
   
   
   if(g_svm_lapic_op == LAPIC_OP_WRITE){			//LAPIC write
-    u32 src_registeraddress, dst_registeraddress;
-    u32 value_tobe_written;
+    uintptr_t src_registeraddress, dst_registeraddress;
+    uintptr_t value_tobe_written;
     
     HALT_ON_ERRORCOND( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
    
-    src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
-    dst_registeraddress = (u32)g_svm_lapic_base + g_svm_lapic_reg;
+    src_registeraddress = (uintptr_t)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
+    dst_registeraddress = (uintptr_t)g_svm_lapic_base + g_svm_lapic_reg;
 
 
 #ifdef	__XMHF_VERIFICATION__
@@ -311,7 +311,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
 	#endif
 	
 #else
-    value_tobe_written= *((u32 *)src_registeraddress);
+    value_tobe_written= *((uintptr_t *)src_registeraddress);
 #endif 
 
     if(g_svm_lapic_reg == LAPIC_ICR_LOW){
@@ -325,7 +325,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
-        u32 icr_value_high = *((u32 *)((u32)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
+        u32 icr_value_high = *((u32 *)((uintptr_t)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
           (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
         #ifdef __XMHF_VERIFICATION__
@@ -338,21 +338,21 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
       }else{
         //neither an INIT or SIPI, just propagate this IPI to physical LAPIC
         #ifndef __XMHF_VERIFICATION__        
-			*((u32 *)dst_registeraddress) = value_tobe_written;
+			*((uintptr_t *)dst_registeraddress) = value_tobe_written;
 		#endif	//TODO: hardware modeling
       }
     }else{
       #ifndef __XMHF_VERIFICATION__
-		*((u32 *)dst_registeraddress) = value_tobe_written;
+		*((uintptr_t *)dst_registeraddress) = value_tobe_written;
 	  #endif	//TODO: hardware modeling
     }
                 
   }else if( g_svm_lapic_op == LAPIC_OP_READ){		//LAPIC read
-    u32 src_registeraddress;
+    uintptr_t src_registeraddress;
     u32 value_read __attribute__((unused));
     HALT_ON_ERRORCOND( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
 
-    src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
+    src_registeraddress = (uintptr_t)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
    
 	//TODO: hardware modeling
     #ifndef __XMHF_VERIFICATION__
@@ -570,7 +570,7 @@ u8 * xmhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
     pdt_t kpd; 
     pt_t kpt; 
     u32 pdpt_entry, pd_entry, pt_entry;
-    u32 tmp;
+    uintptr_t tmp;
 
     // get fields from virtual addr 
     pdpt_index = pae_get_pdpt_index(vaddr);
@@ -580,18 +580,18 @@ u8 * xmhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
 
     //grab pdpt entry
     tmp = pae_get_addr_from_32bit_cr3(kcr3);
-    kpdpt = (pdpt_t)((u32)tmp); 
+    kpdpt = (pdpt_t)((uintptr_t)tmp); 
     pdpt_entry = kpdpt[pdpt_index];
   
     //grab pd entry
     tmp = pae_get_addr_from_pdpe(pdpt_entry);
-    kpd = (pdt_t)((u32)tmp); 
+    kpd = (pdt_t)((uintptr_t)tmp); 
     pd_entry = kpd[pd_index];
 
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
-      tmp = (u32)pae_get_addr_from_pde(pd_entry);
-      kpt = (pt_t)((u32)tmp);  
+      tmp = (uintptr_t)pae_get_addr_from_pde(pd_entry);
+      kpt = (pt_t)((uintptr_t)tmp);  
       pt_entry  = kpt[pt_index];
       
       // find physical page base addr from page table entry 
@@ -603,7 +603,7 @@ u8 * xmhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
       paddr += (u64)offset;
     }
   
-    return (u8 *)(u32)paddr;
+    return (u8 *)(uintptr_t)paddr;
     
   }else{
     //non-PAE 2 level paging used by guest
@@ -613,7 +613,7 @@ u8 * xmhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
     npdt_t kpd; 
     npt_t kpt; 
     u32 pd_entry, pt_entry;
-    u32 tmp;
+    uintptr_t tmp;
 
     // get fields from virtual addr 
     pd_index = npae_get_pdt_index(vaddr);
@@ -622,13 +622,13 @@ u8 * xmhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
   
     // grab pd entry
     tmp = npae_get_addr_from_32bit_cr3(kcr3);
-    kpd = (npdt_t)((u32)tmp); 
+    kpd = (npdt_t)((uintptr_t)tmp); 
     pd_entry = kpd[pd_index];
   
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
-      tmp = (u32)npae_get_addr_from_pde(pd_entry);
-      kpt = (npt_t)((u32)tmp);  
+      tmp = (uintptr_t)npae_get_addr_from_pde(pd_entry);
+      kpt = (npt_t)((uintptr_t)tmp);  
       pt_entry  = kpt[pt_index];
       
       // find physical page base addr from page table entry 
@@ -640,7 +640,7 @@ u8 * xmhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
       paddr += (u64)offset;
     }
   
-    return (u8 *)(u32)paddr;
+    return (u8 *)(uintptr_t)paddr;
   }
 
 
