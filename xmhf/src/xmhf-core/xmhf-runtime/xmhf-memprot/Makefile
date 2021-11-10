@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES =  
+AS_SOURCES =
 C_SOURCES = memp-interface.c
 C_SOURCES += ./arch/x86/memp-x86.c
 
@@ -20,21 +20,17 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets
 .PHONY: all
-all: $(OBJECTS) 
+all: $(OBJECTS)
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
+%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
 %.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-.PHONY: clean 
-clean: 
+.PHONY: clean
+clean:
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/x86/*.o
-	$(RM) -rf ./arch/x86/vmx/*.o
-	$(RM) -rf ./arch/x86/svm/*.o
- 
-	
-  
+	$(RM) -rf ./arch/*/*.o
+	$(RM) -rf ./arch/*/vmx/*.o
+	$(RM) -rf ./arch/*/svm/*.o
 
-  

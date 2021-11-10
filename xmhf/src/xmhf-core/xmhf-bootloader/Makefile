@@ -10,10 +10,10 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 OBJECTS_PRECOMPILED = ../xmhf-runtime/xmhf-debug/lib.a
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/tpm-interface.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/tpm-x86.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/svm/tpm-x86svm.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/tpm-interface.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/tpm-x86.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/svm/tpm-x86svm.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o
 
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
@@ -53,22 +53,22 @@ endif
 
 # targets
 .PHONY: all
-all: init-$(TARGET_HWPLATFORM).bin
+all: init-x86.bin
 
 # FIXME: ADDL_LIBS is overly general; init/ doesn't need all of them
-init-$(TARGET_HWPLATFORM).bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) init.lds.S
+init-x86.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) init.lds.S
 	$(LD) -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(CP) init.exe init_syms.exe
 	$(STRIP) -s init.exe
-	$(OBJCOPY) --output-format=binary init.exe init-$(TARGET_HWPLATFORM).bin
+	$(OBJCOPY) --output-format=binary init.exe init-x86.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile  ../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
 %.o: %.c $(I_SOURCES) Makefile ../Makefile	../../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-.PHONY: clean 
-clean: 
+.PHONY: clean
+clean:
 	$(RM) -rf *.o
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin

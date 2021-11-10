@@ -2,11 +2,11 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = ./arch/x86/sl-x86-entry.S  
+AS_SOURCES = ./arch/x86/sl-x86-entry.S
 AS_SOURCES += ./arch/x86/sl-x86-sup.S
 
-C_SOURCES = sl.c 
-C_SOURCES += ./arch/x86/sl-x86.c 
+C_SOURCES = sl.c
+C_SOURCES += ./arch/x86/sl-x86.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
@@ -16,15 +16,15 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 #tie components used by SL
 OBJECTS_PRECOMPILED = ../xmhf-runtime/xmhf-debug/lib.a
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/tpm-interface.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/tpm-x86.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/svm/tpm-x86svm.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/tpm-interface.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/tpm-x86.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/svm/tpm-x86svm.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o
 
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/dmap-interface.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/dmap-x86.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/dmap-interface.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/dmap-x86.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/svm/dmap-x86svm.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/bplt-interface.o
@@ -71,10 +71,10 @@ sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds.S
 %.o: %.c $(I_SOURCES) Makefile ../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-.PHONY: clean 
-clean: 
+.PHONY: clean
+clean:
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/x86/*.o
+	$(RM) -rf ./arch/*/*.o
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz

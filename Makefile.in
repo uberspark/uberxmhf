@@ -42,7 +42,7 @@ LIBBAREMETAL_ARCHIVE = libbaremetal.a
 LIBBAREMETAL_SUBLIBS = $(wildcard $(LIBBAREMETAL_SRC)/lib*)
 LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
 
-# libbaremetal build directory 
+# libbaremetal build directory
 LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
 
 export ADDL_LIBS :=
@@ -138,16 +138,16 @@ export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISIO
 #-----basic flags for compiling and assembling
 CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
 CFLAGS += -fno-stack-protector
-CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
-CFLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal 
+CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
+CFLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal
 CFLAGS += -Werror
 CFLAGS += -Wsign-compare
 CFLAGS += -Wno-bad-function-cast -Wall
 CFLAGS += -Waggregate-return
 CFLAGS += -Winline
-CFLAGS += -m32 -march=k8 
-CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
-CFLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
+CFLAGS += -march=k8
+CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3
+CFLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes
 CFLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
 CFLAGS += -nostdinc -pipe
 CFLAGS += -Wno-address-of-packed-member
@@ -164,9 +164,10 @@ VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
 CFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 VFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 
-ifeq ($(TARGET_HWPLATFORM), x64)
-	CFLAGS += -D__X64__
-	VFLAGS += -D__X64__
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+	CFLAGS += -D__X86_64__
+	VFLAGS += -D__X86_64__
+	CFLAGS += -m64
 endif
 ifeq ($(TARGET_HWPLATFORM), x86)
 	CFLAGS += -D__X86__
@@ -223,8 +224,8 @@ ifeq ($(TEST_CPU_QUIESCE), y)
 endif
 	# late initialization support (experimental)
 ifeq ($(INIT_LATE), y)
-	CFLAGS += -D__INIT_LATE__ 
-	VFLAGS += -D__INIT_LATE__ 
+	CFLAGS += -D__INIT_LATE__
+	VFLAGS += -D__INIT_LATE__
 	CFLAGS += -DPERF_CRIT
 	VFLAGS += -DPERF_CRIT
 endif
@@ -237,7 +238,7 @@ export ASFLAGS
 export VFLAGS
 
 .PHONY: all
-all: $(APP_ARCHIVE) subdirs 
+all: $(APP_ARCHIVE) subdirs
 
 .PHONY: $(APP_ARCHIVE)
 $(APP_ARCHIVE):
@@ -252,7 +253,7 @@ $(APP_ARCHIVE):
 	@echo ---------------------------------------------------------------
 
 .PHONY: subdirs
-subdirs: $(LIBBAREMETAL_SRC) 
+subdirs: $(LIBBAREMETAL_SRC)
 	@echo ---------------------------------------------------------------
 	@echo Building libtommath...
 	@echo ---------------------------------------------------------------
@@ -309,7 +310,7 @@ test:
 	cd $(APP_ROOT) && $(MAKE) -w test
 
 #.PHONY: clean distclean init-late-clean
-.PHONY: clean distclean 
+.PHONY: clean distclean
 clean:
 	@echo ---------------------------------------------------------------
 	@echo Cleaning primary hyperapp...
@@ -364,7 +365,7 @@ verify:
 verifyinit:
 	cd xmhf/src/xmhf-core && make -w verifyinit
 	
-verifyall: 
+verifyall:
 	cd xmhf/src/xmhf-core && make -w verifyall
 
 .PHONY: htmldoc

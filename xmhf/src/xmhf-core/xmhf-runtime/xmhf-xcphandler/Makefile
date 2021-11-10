@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = ./arch/x86/xcph-stubs.S 
+AS_SOURCES = ./arch/x86/xcph-stubs.S
 C_SOURCES = xcph-interface.c
 
 C_SOURCES += ./arch/x86/xcph-x86.c
@@ -15,19 +15,15 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets
 .PHONY: all
-all: $(OBJECTS) 
+all: $(OBJECTS)
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
+%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
 %.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-.PHONY: clean 
-clean: 
+.PHONY: clean
+clean:
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/x86/*.o
- 
-  
-  
+	$(RM) -rf ./arch/*/*.o
 
-  

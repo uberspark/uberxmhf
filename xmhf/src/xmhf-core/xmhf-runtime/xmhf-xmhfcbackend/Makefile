@@ -22,8 +22,4 @@ all: $(OBJECTS)
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
- 
-  
-  
 
-  

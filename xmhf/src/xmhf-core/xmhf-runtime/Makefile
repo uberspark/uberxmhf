@@ -8,9 +8,9 @@
 
 # OBJECTS_PRECOMPILED += ./xmhf-tpm/tpm-interface.o 
 OBJECTS_PRECOMPILED = ./xmhf-tpm/tpm-interface.o 
-OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/tpm-x86.o 
-OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/svm/tpm-x86svm.o 
-OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
+OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/tpm-x86.o
+OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/svm/tpm-x86svm.o
+OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o
 
 
 OBJECTS_PRECOMPILED += ./xmhf-memprot/memp-interface.o

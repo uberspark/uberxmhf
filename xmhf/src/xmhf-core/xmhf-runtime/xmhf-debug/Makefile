@@ -36,4 +36,4 @@ lib.a: $(OBJECTS)
 clean: 
 	$(RM) -rf lib.a
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/x86/*.o
+	$(RM) -rf ./arch/*/*.o
