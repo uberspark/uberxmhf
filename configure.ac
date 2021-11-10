@@ -35,7 +35,7 @@ TARGET_HWPLATFORM=$[]with_target_hwplatform
 
 # find path to -lgcc
 AC_SUBST([CCLIB])
-AS_IF([test "x${target_hwplatform}" != "xx86_64"],
+AS_IF([test "x${with_target_hwplatform}" != "xx86_64"],
       [CCLIB=`$CC -m32 --print-file-name=`],
       [CCLIB=`$CC -m64 --print-file-name=`])
 
