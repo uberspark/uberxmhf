@@ -52,7 +52,7 @@
 
 //----------------------------------------------------------------------
 // local (static) support function forward declarations
-static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base);
+static void _svm_nptinitialize(uintptr_t npt_pdpt_base, uintptr_t npt_pdts_base, uintptr_t npt_pts_base);
 
 //======================================================================
 // global interfaces (functions) exported by this component
@@ -64,7 +64,7 @@ void xmhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
 	
 #ifndef __XMHF_VERIFICATION__
-	_svm_nptinitialize((u32)vcpu->npt_vaddr_ptr, vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
+	_svm_nptinitialize(vcpu->npt_vaddr_ptr, vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
 #endif
 	vmcb->n_cr3 = hva2spa((void*)vcpu->npt_vaddr_ptr);
 	vmcb->np_enable |= 1ULL;
@@ -74,11 +74,12 @@ void xmhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
 //----------------------------------------------------------------------
 // local (static) support functions follow
 //---npt initialize-------------------------------------------------------------
-static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
+static void _svm_nptinitialize(uintptr_t npt_pdpt_base, uintptr_t npt_pdts_base, uintptr_t npt_pts_base){
 	pdpt_t pdpt;
 	pdt_t pdt;
 	pt_t pt;
-	u32 paddr=0, i, j, k, y, z;
+	u32 paddr=0, i, j, k;
+	uintptr_t y, z;
 	u64 flags;
 
 	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x", __FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
@@ -86,16 +87,16 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 	pdpt=(pdpt_t)npt_pdpt_base;
 
 	for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
-		y = (u32)hva2spa((void*)(npt_pdts_base + (i << PAGE_SHIFT_4K)));
+		y = hva2spa((void*)(npt_pdts_base + (i << PAGE_SHIFT_4K)));
 		flags = (u64)(_PAGE_PRESENT);
 		pdpt[i] = pae_make_pdpe((u64)y, flags);
-		pdt=(pdt_t)((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
+		pdt=(pdt_t)(npt_pdts_base + (i << PAGE_SHIFT_4K));
 			
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			z=(u32)hva2spa((void*)(npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K))));
+			z=hva2spa((void*)(npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K))));
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 			pdt[j] = pae_make_pde((u64)z, flags);
-			pt=(pt_t)((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
+			pt=(pt_t)(npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
 				//the XMHF memory region includes the secure loader +

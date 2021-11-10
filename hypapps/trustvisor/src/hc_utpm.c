@@ -416,7 +416,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 	TPM_PCR_SELECTION tpmsel;
 	u32 siglen, ret=1;
 	uint8_t *pcrComp = NULL;
-	uint32_t pcrCompLen = 0;
+	uintptr_t pcrCompLen = 0;
 
 	eu_trace("********** uTPM Quote **********");
 	eu_trace("nonce addr: %x, tpmsel addr: %x, sig_addr %x, sig_len_addr: %x!",
@@ -442,8 +442,8 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 		eu_err_e("ERROR: Guest-provided siglen value of %d seems ridiculous", siglen));
 
 	/* Get size of guest's pcrComp buffer */
-	EU_CHKN( copy_from_current_guest(vcpu, &pcrCompLen, pcrCompLen_addr, sizeof(uint32_t)));
-	eu_trace("Guest provided pcrComp buffer of %d bytes", pcrCompLen);
+	EU_CHKN( copy_from_current_guest(vcpu, &pcrCompLen, pcrCompLen_addr, sizeof(uintptr_t)));
+	eu_trace("Guest provided pcrComp buffer of %ld bytes", pcrCompLen);
     
 	/**
 	 * Allocate space to do internal processing

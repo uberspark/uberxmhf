@@ -147,14 +147,14 @@ struct _memorytype {
 
 //---platform
 //total number of FIXED and VARIABLE MTRRs on current x86 platforms
-#define NUM_MTRR_MSRS		31
+#define NUM_MTRR_MSRS   31
 
 #ifndef __ASSEMBLY__
 //---platform
 //structure which holds values of guest MTRRs (64-bit)
 struct _guestmtrrmsrs {
-	u32 lodword;
-	u32 hidword;
+  u32 lodword;
+  u32 hidword;
 } __attribute__((packed));
 #endif //__ASSEMBLY__
 
@@ -165,7 +165,7 @@ struct _guestmtrrmsrs {
 #define INDEX_IA32_VMX_PROCBASED_CTLS_MSR   0x2
 #define INDEX_IA32_VMX_EXIT_CTLS_MSR        0x3
 #define INDEX_IA32_VMX_ENTRY_CTLS_MSR       0x4
-#define INDEX_IA32_VMX_MISC_MSR       	    0x5
+#define INDEX_IA32_VMX_MISC_MSR             0x5
 #define INDEX_IA32_VMX_CR0_FIXED0_MSR       0x6
 #define INDEX_IA32_VMX_CR0_FIXED1_MSR       0x7
 #define INDEX_IA32_VMX_CR4_FIXED0_MSR       0x8
@@ -174,12 +174,12 @@ struct _guestmtrrmsrs {
 #define INDEX_IA32_VMX_PROCBASED_CTLS2_MSR  0xB
 
 //---platform
-#define IA32_VMX_MSRCOUNT   								12
+#define IA32_VMX_MSRCOUNT                   12
 
 #ifndef __ASSEMBLY__
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
-  //common fields	
+  //common fields
   u32 esp;                //used to establish stack for the CPU
   u32 sipi_page_vaddr;    //SIPI page of the CPU used for SIPI handling
   u32 id;                 //LAPIC id of the core
@@ -187,45 +187,45 @@ typedef struct _vcpu {
   u32 sipivector;         //SIPI vector 
   u32 sipireceived;       //SIPI received indicator, 1 if yes
   //u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
-	u32 cpu_vendor;					//Intel or AMD
-	u32 isbsp;							//1 if this core is BSP else 0
-  u32 quiesced;				//1 if this core is currently quiesced
-	
+  u32 cpu_vendor;         //Intel or AMD
+  u32 isbsp;              //1 if this core is BSP else 0
+  u32 quiesced;           //1 if this core is currently quiesced
+
   //SVM specific fields
-  u32 hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
+  uintptr_t hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
   //u32 vmcb_vaddr_ptr;     //VMCB of the CPU
   struct _svm_vmcbfields *vmcb_vaddr_ptr;
   //u32 npt_vaddr_ptr;      //NPT base of the CPU
-  u32 npt_vaddr_ptr;      //NPT base of the CPU
-  u32 npt_vaddr_pdts;      
+  uintptr_t npt_vaddr_ptr;      //NPT base of the CPU
+  uintptr_t npt_vaddr_pdts;      
   u32 npt_asid;           //NPT ASID for this core
-  u32 npt_vaddr_pts;      //NPT page-tables for protection manipulation
-  u32 svm_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
+  uintptr_t npt_vaddr_pts;      //NPT page-tables for protection manipulation
+  uintptr_t svm_vaddr_iobitmap; //virtual address of the I/O Bitmap area
 
   //VMX specific fields
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
-  u32 vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
-  u32 vmx_vmcs_vaddr;           //virtual address of the VMCS region
+  uintptr_t vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
+  uintptr_t vmx_vmcs_vaddr;           //virtual address of the VMCS region
   
-  u32 vmx_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
-  u32 vmx_vaddr_msr_area_host;		//virtual address of the host MSR area
-  u32 vmx_vaddr_msr_area_guest;		//virtual address of the guest MSR area
-  u32 vmx_vaddr_msrbitmaps;				//virtual address of the MSR bitmap area
+  uintptr_t vmx_vaddr_iobitmap;       //virtual address of the I/O Bitmap area
+  uintptr_t vmx_vaddr_msr_area_host;  //virtual address of the host MSR area
+  uintptr_t vmx_vaddr_msr_area_guest; //virtual address of the guest MSR area
+  uintptr_t vmx_vaddr_msrbitmaps;     //virtual address of the MSR bitmap area
   
-  u32 vmx_vaddr_ept_pml4_table;	//virtual address of EPT PML4 table
-  u32 vmx_vaddr_ept_pdp_table;	//virtual address of EPT PDP table
-  u32 vmx_vaddr_ept_pd_tables;	//virtual address of base of EPT PD tables
-  u32 vmx_vaddr_ept_p_tables;		//virtual address of base of EPT P tables
+  uintptr_t vmx_vaddr_ept_pml4_table; //virtual address of EPT PML4 table
+  uintptr_t vmx_vaddr_ept_pdp_table;  //virtual address of EPT PDP table
+  uintptr_t vmx_vaddr_ept_pd_tables;  //virtual address of base of EPT PD tables
+  uintptr_t vmx_vaddr_ept_p_tables;   //virtual address of base of EPT P tables
   struct _memorytype vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
   //guest MTRR shadow MSRs
-	struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
+  struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
 
   //guest state fields
-  u32 vmx_guest_currentstate;		//current operating mode of guest
-  u32 vmx_guest_nextstate;		  //next operating mode of guest
-	u32 vmx_guest_unrestricted;		//this is 1 if the CPU VMX implementation supports unrestricted guest execution
+  u32 vmx_guest_currentstate;   //current operating mode of guest
+  u32 vmx_guest_nextstate;      //next operating mode of guest
+  u32 vmx_guest_unrestricted;   //this is 1 if the CPU VMX implementation supports unrestricted guest execution
   struct _vmx_vmcsfields vmcs;   //the VMCS fields
 
 } __attribute__((packed)) VCPU;
@@ -290,8 +290,8 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 
 //x86 GDT descriptor type
 typedef struct {
-		u16 size;
-		u32 base;
+  u16 size;
+  u32 base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
 
 
@@ -333,7 +333,7 @@ void xmhf_baseplatform_arch_x86_pci_initialize(void);
 //function and index
 void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 	u32 value);
-	
+
 //does a PCI type-1 read of PCI config space for a given bus, device, 
 //function and index
 void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
@@ -499,10 +499,10 @@ extern u8 g_vmx_vmxon_buffers[] __attribute__(( section(".palign_data") ));
 
 //VMX VMCS buffers
 extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".palign_data") ));
-		
+
 //VMX IO bitmap buffers
 extern u8 g_vmx_iobitmap_buffer[] __attribute__(( section(".palign_data") ));
-		
+
 //VMX guest and host MSR save area buffers
 extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".palign_data") ));
 extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".palign_data") ));
