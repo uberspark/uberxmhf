@@ -87,7 +87,11 @@ __svm_start_hvm:
   movl 0x8(%esp), %eax  //eax = vmcb phys. addr of current CPU
 
 	//XX: save vcpu vaddr
+#ifdef __X86_64__
+	pushq %rbx
+#else /* !__X86_64__ */
 	pushl %ebx
+#endif /* __X86_64__ */
 
   //real-mode setup just like the BIOS
   movl $0x0, %ebx

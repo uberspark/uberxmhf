@@ -72,9 +72,14 @@ static void _vmx_initVT(VCPU *vcpu){
 	//so load it for this core
 	//__vmx_loadTR();
 	{
-	  u32 gdtstart = (u32)&x_gdt_start;
+	  uintptr_t gdtstart = (uintptr_t)&x_gdt_start;
 	  u16 trselector = 	__TRSEL;
 	  #ifndef __XMHF_VERIFICATION__
+	  #ifdef __X86_64__
+	  // TODO: not implemented
+	  (void) gdtstart;
+	  (void) trselector;
+	  #else /* !__X86_64__ */
 	  asm volatile("movl %0, %%edi\r\n"
 		"xorl %%eax, %%eax\r\n"
 		"movw %1, %%ax\r\n"
@@ -87,6 +92,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
+	  #endif /* __X86_64__ */
 	  #endif
 	}
 	
@@ -174,9 +180,15 @@ static void _vmx_initVT(VCPU *vcpu){
 
   //step-4: enable VMX by setting CR4
 	#ifndef __XMHF_VERIFICATION__
+	#ifdef __X86_64__
+	asm(	" mov  %%cr4, %%rax	\n"\
+		" bts  $13, %%rax	\n"\
+		" mov  %%rax, %%cr4	" ::: "rax" );
+	#else /* !__X86_64__ */
 	asm(	" mov  %%cr4, %%eax	\n"\
 		" bts  $13, %%eax	\n"\
 		" mov  %%eax, %%cr4	" ::: "eax" );
+	#endif /* __X86_64__ */
 	#endif
   printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
 
@@ -190,6 +202,20 @@ static void _vmx_initVT(VCPU *vcpu){
 	    #endif
 	    
 	    #ifndef __XMHF_VERIFICATION__
+	    #ifdef __X86_64__
+	    asm( "vmxon %1 \n"
+				 "jbe vmfail \n"
+				 "movq $0x1, %%rax \n" 
+				 "movq %%rax, %0 \n"
+				 "jmp vmsuccess \n"
+				 "vmfail: \n"
+				 "movq $0x0, %%rax \n"
+				 "movq %%rax, %0 \n"
+				 "vmsuccess: \n" 
+	       : "=m" (retval)
+	       : "m"(vmxonregion_paddr) 
+	       : "rax");
+	    #else /* !__X86_64__ */
 	   	asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
 				 "movl $0x1, %%eax \n" 
@@ -202,7 +228,8 @@ static void _vmx_initVT(VCPU *vcpu){
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr) 
 	       : "eax");
-		#endif
+			#endif /* __X86_64__ */
+			#endif
 		
 	    if(!retval){
 	      printf("\nCPU(0x%02x): Fatal, unable to enter VMX root operation", vcpu->id);
@@ -264,10 +291,10 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_GS_selector = read_segreg_gs();
 	vcpu->vmcs.host_SS_selector = read_segreg_ss();
 	vcpu->vmcs.host_TR_selector = read_tr_sel();
-	vcpu->vmcs.host_GDTR_base = (u64)(u32)x_gdt_start;
-	vcpu->vmcs.host_IDTR_base = (u64)(u32)xmhf_xcphandler_get_idt_start();
-	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
-	vcpu->vmcs.host_RIP = (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry;
+	vcpu->vmcs.host_GDTR_base = (u64)(uintptr_t)x_gdt_start;
+	vcpu->vmcs.host_IDTR_base = (u64)(uintptr_t)xmhf_xcphandler_get_idt_start();
+	vcpu->vmcs.host_TR_base = (u64)(uintptr_t)g_runtime_TSS;
+	vcpu->vmcs.host_RIP = (u64)(uintptr_t)xmhf_parteventhub_arch_x86vmx_entry;
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry)
@@ -275,9 +302,13 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif //__XMHF_VERIFICATION__
 
 	//store vcpu at TOS
-	vcpu->esp = vcpu->esp - sizeof(u32);
+	vcpu->esp = vcpu->esp - sizeof(uintptr_t);
 #ifndef __XMHF_VERIFICATION__
-	*(u32 *)vcpu->esp = (u32)vcpu;
+#ifdef __X86_64__
+	// TODO: not implemented
+#else /* !__X86_64__ */
+	*(uintptr_t *)vcpu->esp = (uintptr_t)vcpu;
+#endif /* __X86_64__ */
 #endif
 	vcpu->vmcs.host_RSP = (u64)vcpu->esp;
 			
@@ -493,9 +524,9 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 			    printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", vcpu->id);
 				break;
 			case 1:{//error code available, so dump it
-				u32 code=5;
+				unsigned long code=5;
 				__vmx_vmread(0x4400, &code);
-			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, code);
+			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%lx. HALT!", vcpu->id, code);
 			    xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
 				break;
 			}

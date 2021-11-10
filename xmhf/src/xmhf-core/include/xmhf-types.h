@@ -70,28 +70,28 @@ typedef struct _integrity_measurement_values {
 //"runtime" parameter block structure; arch_rpb (in startup component) 
 //is the default definition
 typedef struct {
-	u32 magic;
-	u32 XtVmmEntryPoint;
-	u32 XtVmmPdptBase;
-	u32 XtVmmPdtsBase;
-	u32 XtGuestOSBootModuleBase;
-	u32 XtGuestOSBootModuleSize;
-	u32 runtime_appmodule_base;
-	u32 runtime_appmodule_size;
-	u32 XtVmmStackBase;
-	u32 XtVmmStackSize;
-	u32 XtVmmGdt;
-	u32 XtVmmIdt;
-	u32 XtVmmIdtFunctionPointers;
-	u32 XtVmmIdtEntries;
-	u32 XtVmmRuntimePhysBase;
-	u32 XtVmmRuntimeVirtBase;
-	u32 XtVmmRuntimeSize;
-	u32 XtVmmE820Buffer;
+	uintptr_t magic;
+	uintptr_t XtVmmEntryPoint;
+	uintptr_t XtVmmPdptBase;
+	uintptr_t XtVmmPdtsBase;
+	uintptr_t XtGuestOSBootModuleBase;
+	uintptr_t XtGuestOSBootModuleSize;
+	uintptr_t runtime_appmodule_base;
+	uintptr_t runtime_appmodule_size;
+	uintptr_t XtVmmStackBase;
+	uintptr_t XtVmmStackSize;
+	uintptr_t XtVmmGdt;
+	uintptr_t XtVmmIdt;
+	uintptr_t XtVmmIdtFunctionPointers;
+	uintptr_t XtVmmIdtEntries;
+	uintptr_t XtVmmRuntimePhysBase;
+	uintptr_t XtVmmRuntimeVirtBase;
+	uintptr_t XtVmmRuntimeSize;
+	uintptr_t XtVmmE820Buffer;
 	u32 XtVmmE820NumEntries;
-	u32 XtVmmMPCpuinfoBuffer;
+	uintptr_t XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
-	u32 XtVmmTSSBase;
+	uintptr_t XtVmmTSSBase;
     uart_config_t RtmUartConfig;	        /* runtime options parsed in init and passed forward */
     char cmdline[1024]; 				/* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)

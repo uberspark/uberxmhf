@@ -59,50 +59,50 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
   VCPU *vcpu;
   
   printf("\n%s: g_cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)g_cpustacks, (u32)g_cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
+    __FUNCTION__, (uintptr_t)g_cpustacks, (uintptr_t)g_cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
         RUNTIME_STACK_SIZE);
   printf("\n%s: g_vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)g_vcpubuffers, (u32)g_vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
+    __FUNCTION__, (uintptr_t)g_vcpubuffers, (uintptr_t)g_vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
         SIZE_STRUCT_VCPU);
   printf("\n%s: g_svm_hsave_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)g_svm_hsave_buffers, (u32)g_svm_hsave_buffers + (8192 * MAX_VCPU_ENTRIES),
+    __FUNCTION__, (uintptr_t)g_svm_hsave_buffers, (uintptr_t)g_svm_hsave_buffers + (8192 * MAX_VCPU_ENTRIES),
         8192);
   printf("\n%s: g_svm_vmcb_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)g_svm_vmcb_buffers, (u32)g_svm_vmcb_buffers + (8192 * MAX_VCPU_ENTRIES),
+    __FUNCTION__, (uintptr_t)g_svm_vmcb_buffers, (uintptr_t)g_svm_vmcb_buffers + (8192 * MAX_VCPU_ENTRIES),
         8192);
   printf("\n%s: g_svm_npt_pdpt_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)g_svm_npt_pdpt_buffers, (u32)g_svm_npt_pdpt_buffers + (4096 * MAX_VCPU_ENTRIES),
+    __FUNCTION__, (uintptr_t)g_svm_npt_pdpt_buffers, (uintptr_t)g_svm_npt_pdpt_buffers + (4096 * MAX_VCPU_ENTRIES),
         4096);
   printf("\n%s: g_svm_npt_pdts_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)g_svm_npt_pdts_buffers, (u32)g_svm_npt_pdts_buffers + (16384 * MAX_VCPU_ENTRIES),
+    __FUNCTION__, (uintptr_t)g_svm_npt_pdts_buffers, (uintptr_t)g_svm_npt_pdts_buffers + (16384 * MAX_VCPU_ENTRIES),
         16384);
   printf("\n%s: g_svm_npt_pts_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)g_svm_npt_pts_buffers, (u32)g_svm_npt_pts_buffers + ((2048*4096) * MAX_VCPU_ENTRIES),
+    __FUNCTION__, (uintptr_t)g_svm_npt_pts_buffers, (uintptr_t)g_svm_npt_pts_buffers + ((2048*4096) * MAX_VCPU_ENTRIES),
         (2048*4096));
           
   for(i=0; i < g_midtable_numentries; i++){
-    vcpu = (VCPU *)((u32)g_vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
+    vcpu = (VCPU *)((uintptr_t)g_vcpubuffers + (uintptr_t)(i * SIZE_STRUCT_VCPU));
     #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu, 0, sizeof(VCPU));
     #endif
     
     vcpu->cpu_vendor = cpu_vendor;
     
-    vcpu->esp = ((u32)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
-    vcpu->hsave_vaddr_ptr = ((u32)g_svm_hsave_buffers + (i * 8192));
-    vcpu->vmcb_vaddr_ptr = (struct _svm_vmcbfields *)((u32)g_svm_vmcb_buffers + (i * 8192));
+    vcpu->esp = ((uintptr_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
+    vcpu->hsave_vaddr_ptr = ((uintptr_t)g_svm_hsave_buffers + (i * 8192));
+    vcpu->vmcb_vaddr_ptr = (struct _svm_vmcbfields *)((uintptr_t)g_svm_vmcb_buffers + (i * 8192));
 
 	//allocate SVM IO bitmap region and clear it
-	vcpu->svm_vaddr_iobitmap = (u32)g_svm_iobitmap_buffer; 
+	vcpu->svm_vaddr_iobitmap = (uintptr_t)g_svm_iobitmap_buffer; 
 	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->svm_vaddr_iobitmap, 0, (3*PAGE_SIZE_4K));
 	#endif
 
     {
       u32 npt_pdpt_base, npt_pdts_base, npt_pts_base;
-      npt_pdpt_base = ((u32)g_svm_npt_pdpt_buffers + (i * 4096)); 
-      npt_pdts_base = ((u32)g_svm_npt_pdts_buffers + (i * 16384));
-      npt_pts_base = ((u32)g_svm_npt_pts_buffers + (i * (2048*4096)));
+      npt_pdpt_base = ((uintptr_t)g_svm_npt_pdpt_buffers + (i * 4096)); 
+      npt_pdts_base = ((uintptr_t)g_svm_npt_pdts_buffers + (i * 16384));
+      npt_pts_base = ((uintptr_t)g_svm_npt_pts_buffers + (i * (2048*4096)));
       vcpu->npt_vaddr_ptr = npt_pdpt_base;
       vcpu->npt_vaddr_pdts = npt_pdts_base;
       vcpu->npt_vaddr_pts = npt_pts_base;
@@ -115,7 +115,7 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
     vcpu->sipivector = 0;
     vcpu->sipireceived = 0;
 
-    g_midtable[i].vcpu_vaddr_ptr = (u32)vcpu;
+    g_midtable[i].vcpu_vaddr_ptr = (uintptr_t)vcpu;
     printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, g_midtable[i].vcpu_vaddr_ptr,
       vcpu->esp);
     printf("\n  hsave_vaddr_ptr=0x%08x, vmcb_vaddr_ptr=0x%08x", vcpu->hsave_vaddr_ptr,
@@ -132,7 +132,7 @@ void xmhf_baseplatform_arch_x86svm_wakeupAPs(void){
     _ap_cr3_value = read_cr3();
     _ap_cr4_value = read_cr4();
     #ifndef __XMHF_VERIFICATION__
-    memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
+    memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (uintptr_t)_ap_bootstrap_end - (uintptr_t)_ap_bootstrap_start + 1);
     #endif
   }
 	
