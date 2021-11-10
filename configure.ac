@@ -33,7 +33,7 @@ AC_SUBST([TARGET_HWPLATFORM])
 AC_ARG_WITH([target_hwplatform],
         AS_HELP_STRING([--with-target-hwplatform=@<:@HWPLATFORM@:>@],
                 [select target hardware platform (x86, x64)]),
-                , [with_target_platform=x86])
+                , [with_target_hwplatform=x86])
 TARGET_HWPLATFORM=$[]with_target_hwplatform
 
 # target platform
