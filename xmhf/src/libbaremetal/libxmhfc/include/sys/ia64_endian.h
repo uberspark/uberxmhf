@@ -38,7 +38,7 @@
 #ifndef _MACHINE_ENDIAN_H_
 #define _MACHINE_ENDIAN_H_
 
-#include <sys/x86_64_types.h>
+#include <sys/ia64_types.h>
 
 /*
  * Define the order of 32-bit words in 64-bit words.
