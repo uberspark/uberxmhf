@@ -116,7 +116,7 @@ void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size){
 	u32 i;
 	u8 val;
 	for(i=0; i < size; i++){
-		val = xmhf_baseplatform_arch_flat_readu8((u32)src + i);
+		val = xmhf_baseplatform_arch_flat_readu8((uintptr_t)src + i);
 		dest[i] = val;
 	}
 }

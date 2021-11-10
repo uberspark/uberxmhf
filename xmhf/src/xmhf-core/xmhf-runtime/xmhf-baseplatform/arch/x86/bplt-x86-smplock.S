@@ -52,24 +52,32 @@
 
   .global spin_lock
   spin_lock:
+#ifdef __X86_64__
+      // TODO: not implemented
+      hlt
+#else /* !__X86_64__ */
     pushl %esi
     movl 0x8(%esp), %esi
     spin:	bt	$0, (%esi)		//mutex is available?
       	jnc	spin			      //wait till it is
 
       	lock				        //lock the bus (exclusive access)	
-	      btr	$0, (%esi)		    //and try to grab the mutex	
-	      jnc	spin			      //spin until successful --> spinlock :p
+        btr	$0, (%esi)		    //and try to grab the mutex	
+        jnc	spin			      //spin until successful --> spinlock :p
     popl %esi
     ret
-    
+#endif /* __X86_64__ */
+
   .global spin_unlock
   spin_unlock:
+#ifdef __X86_64__
+      // TODO: not implemented
+      hlt
+#else /* !__X86_64__ */
       pushl %esi
       movl 0x8(%esp), %esi
       bts	$0, (%esi)		       //release the spinlock
       popl %esi
       ret
+#endif /* __X86_64__ */
 
-
-      		

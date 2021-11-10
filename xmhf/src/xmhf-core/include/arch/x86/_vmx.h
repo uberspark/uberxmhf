@@ -583,8 +583,20 @@ static inline void __vmx_vmxon(u64 vmxonRegion){
 	  : "m"(vmxonRegion));
 }
 
-static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
-  u32 status;
+static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
+  unsigned long status;
+#ifdef __X86_64__
+  __asm__("vmwrite %%rbx, %%rax \r\n"
+          "jbe 1f \r\n"
+          "movq $1, %%rdx \r\n"
+          "jmp 2f \r\n"
+          "1: movq $0, %%rdx \r\n"
+          "2: movq %%rdx, %0"
+	  : "=m"(status)
+	  : "a"(encoding), "b"(value)
+    : "%rdx"
+    );
+#else /* !__X86_64__ */
   __asm__("vmwrite %%ebx, %%eax \r\n"
           "jbe 1f \r\n"
           "movl $1, %%edx \r\n"
@@ -595,6 +607,7 @@ static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
 	  : "a"(encoding), "b"(value)
     : "%edx"
     );
+#endif /* __X86_64__ */
 	return status;
 }
 
