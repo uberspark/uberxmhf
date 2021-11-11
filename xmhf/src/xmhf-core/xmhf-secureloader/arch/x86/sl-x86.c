@@ -155,7 +155,7 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 */
 
 
-
+#ifdef __DRT__
 void xmhf_sl_arch_sanitize_post_launch(void){
 	#ifndef __XMHF_VERIFICATION__
         
@@ -182,9 +182,9 @@ void xmhf_sl_arch_sanitize_post_launch(void){
 	
 	#endif
 }
+#endif /* __DRT__ */
 
-
-
+#ifdef __DMAP__
 void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 {
 
@@ -232,7 +232,7 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 		}
 
 }
-
+#endif /* __DMAP__ */
 
 
 void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
