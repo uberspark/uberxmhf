@@ -554,6 +554,7 @@ static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
     return false;    
 }
 
+#ifdef __DRT__
 //---svm_verify_platform-------------------------------------------------------
 //do some basic checks on SVM platform to ensure DRTM should work as expected
 static bool svm_verify_platform(void) __attribute__((unused));
@@ -594,7 +595,6 @@ static bool svm_verify_platform(void)
 //---svm_platform_checks--------------------------------------------------------
 //attempt to detect if there is a platform issue that will prevent
 //successful invocation of skinit
-static bool svm_prepare_cpu(void) __attribute__((unused));
 static bool svm_prepare_cpu(void)
 {
     uint64_t mcg_cap, mcg_stat;
@@ -649,6 +649,7 @@ static bool svm_prepare_cpu(void)
 
     return true;
 }
+#endif /* __DRT__ */
 
 //---do_drtm--------------------------------------------------------------------
 //this establishes a dynamic root of trust
