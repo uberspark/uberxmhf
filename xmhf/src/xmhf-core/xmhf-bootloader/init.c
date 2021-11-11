@@ -343,6 +343,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
   
 }
 
+#ifdef __DRT__
 /* Run tests to determine if platform supports TXT.  Note that this
  * enables SMX on the platform, but is safe to run more than once. */
 /* Based primarily on tboot-20101005's txt/verify.c */
@@ -486,7 +487,6 @@ void txt_status_regs(void) {
     }    
 }
 
-#ifdef __DRT__
 /* Transfer control to the SL using GETSEC[SENTER] */
 /*///XXX TODO not fully functional yet. Expected flow:
 txt_prepare_cpu();
