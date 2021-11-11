@@ -3,7 +3,10 @@
 
 # source files
 AS_SOURCES = header.S initsup.S
-C_SOURCES = init.c smp.c txt_heap.c txt_hash.c txt_acmod.c txt.c cmdline.c
+C_SOURCES = init.c smp.c txt_heap.c txt_hash.c txt_acmod.c cmdline.c
+ifeq ($(DRT), y)
+C_SOURCES += txt.c
+endif
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))

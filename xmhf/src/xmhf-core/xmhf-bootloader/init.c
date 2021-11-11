@@ -486,6 +486,7 @@ void txt_status_regs(void) {
     }    
 }
 
+#ifdef __DRT__
 /* Transfer control to the SL using GETSEC[SENTER] */
 /*///XXX TODO not fully functional yet. Expected flow:
 txt_prepare_cpu();
@@ -517,6 +518,7 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
 
     return false; /* unreachable if launch is successful, thus should return failure */
 }
+#endif /* __DRT__ */
 
 /**
  * Check each module to see if it is an SINIT module.  If it is, set
