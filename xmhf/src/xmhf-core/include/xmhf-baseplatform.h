@@ -177,7 +177,7 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
+	static inline gpa_t hva2gpa(void* hva) { return spa2gpa(hva2spa(hva)); }
 
 #else //__XMHF_VERIFICATION__
 
@@ -186,7 +186,7 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }	
+	static inline gpa_t hva2gpa(void* hva) { return spa2gpa(hva2spa(hva)); }
 
 #endif //__XMHF_VERIFICATION__
 
