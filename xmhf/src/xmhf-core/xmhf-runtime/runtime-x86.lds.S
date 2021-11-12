@@ -45,7 +45,6 @@
  */
 
 OUTPUT_ARCH(i386)
-OUTPUT_ARCH(i386:x86-64)
 
 ENTRY(xmhf_runtime_entry)
 
