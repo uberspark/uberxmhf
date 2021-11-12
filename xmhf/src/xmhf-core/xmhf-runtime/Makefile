@@ -80,7 +80,7 @@ OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
 OBJECTS_PRECOMPILED += ./xmhf-startup/runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-startup/rntm-data.o
-OBJECTS_PRECOMPILED += ./xmhf-startup/arch/x86/rntm-x86-data.o
+OBJECTS_PRECOMPILED += ./xmhf-startup/arch/$(TARGET_HWPLATFORM)/rntm-$(TARGET_HWPLATFORM)-data.o
 
 OBJECTS_PRECOMPILED += ./xmhf-debug/lib.a
 

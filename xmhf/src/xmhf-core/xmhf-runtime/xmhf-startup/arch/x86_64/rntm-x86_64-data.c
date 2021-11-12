@@ -52,24 +52,9 @@
 
 #include <xmhf.h> 
 
-//runtime GDT
-u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
-	0x0000000000000000ULL,
-	0x00cf9a000000ffffULL,	
-	0x00cf92000000ffffULL,	
-	0x0000000000000000ULL	
-};
+//runtime GDT descriptor: not needed in x86_64
 
-//runtime GDT descriptor
-arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
-	.size=sizeof(x_gdt_start)-1,
-	.base=(u32)&x_gdt_start,
-};
-
-
-//runtime PAE page tables
-u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+//runtime PAE page tables: not needed in x86_64
 		
 //runtime stack
 u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
@@ -78,15 +63,15 @@ u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
 RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
 	.XtVmmEntryPoint= (hva_t)xmhf_runtime_entry,
-	.XtVmmPdptBase= (hva_t)x_3level_pdpt,
-	.XtVmmPdtsBase= (hva_t)x_3level_pdt,
+	.XtVmmPdptBase= 0, /* Not used */
+	.XtVmmPdtsBase= 0, /* Not used */
 	.XtGuestOSBootModuleBase= 0,
 	.XtGuestOSBootModuleSize= 0, 
 	.runtime_appmodule_base= 0,
 	.runtime_appmodule_size= 0,
 	.XtVmmStackBase= (hva_t)x_init_stack,
 	.XtVmmStackSize= 8192,
-	.XtVmmGdt= (hva_t)&x_gdt,
+	.XtVmmGdt= 0,	/* Not used */
 	.XtVmmIdt= (hva_t)xmhf_xcphandler_idt,
 	.XtVmmIdtFunctionPointers= (hva_t)xmhf_xcphandler_exceptionstubs,
 	.XtVmmIdtEntries= 32,
