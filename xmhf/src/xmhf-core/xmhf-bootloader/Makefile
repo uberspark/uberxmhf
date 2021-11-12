@@ -1,6 +1,9 @@
 # makefile for "init"
 # author: amit vasudevan (amitvasudevan@acm.org)
 
+CFLAGS = $(BCFLAGS)
+ASFLAGS = $(BASFLAGS)
+
 # source files
 AS_SOURCES = header.S initsup.S
 C_SOURCES = init.c smp.c txt_acmod.c cmdline.c

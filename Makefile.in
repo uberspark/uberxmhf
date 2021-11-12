@@ -164,17 +164,6 @@ VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
 CFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 VFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 
-ifeq ($(TARGET_HWPLATFORM), x86_64)
-	CFLAGS += -D__X86_64__
-	VFLAGS += -D__X86_64__
-	CFLAGS += -m64
-endif
-ifeq ($(TARGET_HWPLATFORM), x86)
-	CFLAGS += -D__X86__
-	VFLAGS += -D__X86__
-	CFLAGS += -m32
-endif
-
 ifeq ($(XMHF_TARGET_ARCH), x86-svm)
 	VFLAGS += -D__XMHF_TARGET_ARCH_X86_SVM__
 endif
@@ -230,11 +219,32 @@ ifeq ($(INIT_LATE), y)
 	VFLAGS += -DPERF_CRIT
 endif
 
+# Bootloader flags
+BCFLAGS := $(CFLAGS)
+
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+	CFLAGS += -D__X86_64__ -D__XMHF_X86_64__
+	BCFLAGS += -D__X86__ -D__XMHF_X86_64__
+	VFLAGS += -D__X86_64__ -D__XMHF_X86_64__
+	CFLAGS += -m64
+	BCFLAGS += -m32
+endif
+ifeq ($(TARGET_HWPLATFORM), x86)
+	CFLAGS += -D__X86__ -D__XMHF_X86__
+	BCFLAGS += -D__X86__ -D__XMHF_X86__
+	VFLAGS += -D__X86__ -D__XMHF_X86__
+	CFLAGS += -m32
+	BCFLAGS += -m32
+endif
+
 #-----export CFLAGS and ASFLAGS
 ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
+BASFLAGS = $(BCFLAGS) -D__ASSEMBLY__
 
 export CFLAGS
+export BCFLAGS
 export ASFLAGS
+export BASFLAGS
 export VFLAGS
 
 .PHONY: all

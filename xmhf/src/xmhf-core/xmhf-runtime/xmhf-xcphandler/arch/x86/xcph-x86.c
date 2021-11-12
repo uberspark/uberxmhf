@@ -56,11 +56,11 @@
 //XXX: TODO, move this into baseplatform as backend
 //note: this always returns a valid VCPU pointer
 static VCPU *_svm_getvcpu(void){
-#ifdef __X86_64__
+#ifdef __XMHF_X86_64__
   // TODO: not implemented
   HALT();
   return NULL;
-#else /* !__X86_64__ */
+#else /* !__XMHF_X86_64__ */
   int i;
   u32 eax, edx, *lapic_reg;
   u32 lapic_id;
@@ -82,18 +82,18 @@ static VCPU *_svm_getvcpu(void){
 
   printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
   HALT(); return NULL; // will never return presently 
-#endif /* __X86_64__ */
+#endif /* __XMHF_X86_64__ */
 }
 
 //---function to obtain the vcpu of the currently executing core----------------
 //XXX: move this into baseplatform as backend
 //note: this always returns a valid VCPU pointer
 static VCPU *_vmx_getvcpu(void){
-#ifdef __X86_64__
+#ifdef __XMHF_X86_64__
   // TODO: not implemented
   HALT();
   return NULL;
-#else /* !__X86_64__ */
+#else /* !__XMHF_X86_64__ */
   int i;
   u32 eax, edx, *lapic_reg;
   u32 lapic_id;
@@ -116,7 +116,7 @@ static VCPU *_vmx_getvcpu(void){
   printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
   HALT();
   return NULL; // currently unreachable 
-#endif /* __X86_64__ */
+#endif /* __XMHF_X86_64__ */
 }
 
 
@@ -152,14 +152,14 @@ u8 * xmhf_xcphandler_arch_get_idt_start(void){
 
 //EMHF exception handler hub
 void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
-#ifdef __X86_64__
+#ifdef __XMHF_X86_64__
 	(void) vector;
 	(void) r;
 	(void) _svm_getvcpu();
 	(void) _vmx_getvcpu();
 	// TODO: not implemented
 	HALT();
-#else /* !__X86_64__ */
+#else /* !__XMHF_X86_64__ */
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 	VCPU *vcpu;
 	
@@ -223,5 +223,5 @@ void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 				HALT();
 			}
 	}
-#endif /* __X86_64__ */
+#endif /* __XMHF_X86_64__ */
 }

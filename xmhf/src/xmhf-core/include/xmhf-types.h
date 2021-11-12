@@ -51,11 +51,19 @@
 
 #ifndef __ASSEMBLY__
 
-typedef uintptr_t   hva_t;  // hypervisor virtual address 
-typedef u64         spa_t;  // system physical address 
-typedef uintptr_t   gva_t;  // guest virtual address
-typedef u64         gpa_t;  // guest physical address. can be 64-bit with PAE 
-typedef uintptr_t   sla_t;  // secure loader address
+#ifdef __XMHF_X86_64__
+typedef u64 hva_t;  // hypervisor virtual address 
+typedef u64 spa_t;  // system physical address 
+typedef u64 gva_t;  // guest virtual address
+typedef u64 gpa_t;  // guest physical address
+typedef u64 sla_t;  // secure loader address
+#else /* !__XMHF_X86_64__ */
+typedef u32 hva_t;  // hypervisor virtual address 
+typedef u64 spa_t;  // system physical address 
+typedef u32 gva_t;  // guest virtual address
+typedef u64 gpa_t;  // guest physical address. can be 64-bit with PAE
+typedef u32 sla_t;  // secure loader address
+#endif /* __XMHF_X86_64__ */
 
 //"golden" digest values injected using CFLAGS during build process
 //NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
