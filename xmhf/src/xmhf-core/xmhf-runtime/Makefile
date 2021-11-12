@@ -119,8 +119,8 @@ runtimecomponents:
 .PHONY: all
 all: runtimecomponents runtime.bin
 
-runtime.bin: runtimecomponents $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
-	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+runtime.bin: runtimecomponents $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime-$(TARGET_HWPLATFORM).lds.S
+	$(LD) -T runtime-$(TARGET_HWPLATFORM).lds.S -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../../Makefile

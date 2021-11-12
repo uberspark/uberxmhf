@@ -44,50 +44,54 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * rntm-x86-data.c
- * EMHF runtime data definitions - x86 specific
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+OUTPUT_ARCH(i386)
+OUTPUT_ARCH(i386:x86-64)
 
-#include <xmhf.h>
+ENTRY(xmhf_runtime_entry)
 
-//runtime GDT descriptor: not needed in x86_64
-u64 x_gdt_start[4] __attribute__(( section(".data"), aligned(16) ));
-arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) ));
+MEMORY
+{
+  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 256M /* length is arbitrary */
+  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
+}
 
-//runtime PAE page tables: not needed in x86_64
-u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+SECTIONS
+{
+	. = 0x10200000;
 
-//runtime stack
-u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
+  .text : {
+  	*(.s_rpb)
+ 		*(.text)
+ 		. = ALIGN(4096);    
+  } =0x9090 
 
+  .data : {
+    *(.data)
+    *(.rodata)
+    *(.comment)
+    *(.eh_frame) /* exception-metadata. might be able to discard */
+    *(.bss)
+ 		. = ALIGN(4096);    
+  } =0x9090 
 
-RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
-	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	.XtVmmEntryPoint= (hva_t)xmhf_runtime_entry,
-	.XtVmmPdptBase= 0, /* Not used */
-	.XtVmmPdtsBase= 0, /* Not used */
-	.XtGuestOSBootModuleBase= 0,
-	.XtGuestOSBootModuleSize= 0,
-	.runtime_appmodule_base= 0,
-	.runtime_appmodule_size= 0,
-	.XtVmmStackBase= (hva_t)x_init_stack,
-	.XtVmmStackSize= 8192,
-	.XtVmmGdt= 0,	/* Not used */
-	.XtVmmIdt= (hva_t)xmhf_xcphandler_idt,
-	.XtVmmIdtFunctionPointers= (hva_t)xmhf_xcphandler_exceptionstubs,
-	.XtVmmIdtEntries= 32,
-	.XtVmmRuntimePhysBase= 0,
-	.XtVmmRuntimeVirtBase= 0,
-	.XtVmmRuntimeSize= 0,
-	.XtVmmE820Buffer= (hva_t)g_e820map,
-	.XtVmmE820NumEntries= 0,
-	.XtVmmMPCpuinfoBuffer= (hva_t)g_cpumap,
-	.XtVmmMPCpuinfoNumEntries= 0,
-	.XtVmmTSSBase= (hva_t)g_runtime_TSS,
-	.RtmUartConfig = {0, 0, 0, 0, 0, 0, 0},
-	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
-};
- 
+  .palign_data : {
+    *(.palign_data)
+ 		. = ALIGN(4096);    
+  } =0x9090 
+  
+	.stack : {
+		*(.stack)
+ 		. = ALIGN(4096);    
+	} =0x9090
+
+  /* this is to cause the link to fail if there is
+   * anything we didn't explicitly place.
+   * when this does cause link to fail, temporarily comment
+   * this part out to see what sections end up in the output
+   * which are not handled above, and handle them.
+   */
+  .unaccounted : {
+    *(*)
+  } >unaccounted
+
+}
