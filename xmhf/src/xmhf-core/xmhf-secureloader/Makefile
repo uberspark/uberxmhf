@@ -2,8 +2,8 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = ./arch/x86/sl-x86-entry.S
-AS_SOURCES += ./arch/x86/sl-x86-sup.S
+AS_SOURCES = ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM)-entry.S
+AS_SOURCES += ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM)-sup.S
 
 C_SOURCES = sl.c
 C_SOURCES += ./arch/x86/sl-x86.c
