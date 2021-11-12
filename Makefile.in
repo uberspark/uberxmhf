@@ -222,6 +222,11 @@ endif
 # Bootloader flags
 BCFLAGS := $(CFLAGS)
 
+# __X86__: code in this component will run in x86
+# __X86_64__: code in this component will run in x86_64
+# __XMHF_X86__: XMHF runtime will run in x86
+# __XMHF_X86_64__: XMHF runtime will run in x86_64
+
 ifeq ($(TARGET_HWPLATFORM), x86_64)
 	CFLAGS += -D__X86_64__ -D__XMHF_X86_64__
 	BCFLAGS += -D__X86__ -D__XMHF_X86_64__
