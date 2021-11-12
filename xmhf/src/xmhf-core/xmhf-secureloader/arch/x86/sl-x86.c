@@ -69,7 +69,8 @@
 u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
   pdpt_t xpdpt;
   pdt_t xpdt;
-  u32 hva=0, i;
+  hva_t hva=0;
+  u32 i;
   u64 default_flags;
 	
   printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
@@ -200,8 +201,8 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 			
 			
 			if(cpu_vendor == CPU_VENDOR_AMD){
-				protectedbuffer_paddr = sl_baseaddr + (u32)&g_sl_protected_dmabuffer;
-				protectedbuffer_vaddr = (u32)&g_sl_protected_dmabuffer;
+				protectedbuffer_paddr = sl_baseaddr + (sla_t)&g_sl_protected_dmabuffer;
+				protectedbuffer_vaddr = (sla_t)&g_sl_protected_dmabuffer;
 				protectedbuffer_size = (2 * PAGE_SIZE_4K);
 			}else{	//CPU_VENDOR_INTEL
 				#if 0
@@ -238,20 +239,20 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	u32 ptba;	//page table base address
 	TSSENTRY *t;
-	u32 tss_base;
-	u32 gdt_base;
+	uintptr_t tss_base;
+	uintptr_t gdt_base;
 	
 	#ifndef __XMHF_VERIFICATION__
 		//setup runtime TSS
-		tss_base=(u32)rpb->XtVmmTSSBase;
-		gdt_base= *(u32 *)(hva2sla((void *)(rpb->XtVmmGdt + 2)));
+		tss_base=(uintptr_t)rpb->XtVmmTSSBase;
+		gdt_base= *(uintptr_t *)(hva2sla((void *)(rpb->XtVmmGdt + 2)));
 	#else
 		tss_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
 		gdt_base=PAGE_SIZE_2M+PAGE_SIZE_4K+2048;
 	#endif
 	
 		//fix TSS descriptor, 18h
-		t= (TSSENTRY *)((u32)gdt_base + __TRSEL );
+		t= (TSSENTRY *)((uintptr_t)gdt_base + __TRSEL );
 		t->attributes1= 0x89;
 		t->limit16_19attributes2= 0x10;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
