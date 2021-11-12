@@ -69,50 +69,50 @@ typedef struct _integrity_measurement_values {
 //"runtime" parameter block structure; arch_rpb (in startup component) 
 //is the default definition
 typedef struct {
-	uintptr_t magic;
-	uintptr_t XtVmmEntryPoint;
-	uintptr_t XtVmmPdptBase;
-	uintptr_t XtVmmPdtsBase;
-	uintptr_t XtGuestOSBootModuleBase;
-	uintptr_t XtGuestOSBootModuleSize;
-	uintptr_t runtime_appmodule_base;
-	uintptr_t runtime_appmodule_size;
-	uintptr_t XtVmmStackBase;
-	uintptr_t XtVmmStackSize;
-	uintptr_t XtVmmGdt;
-	uintptr_t XtVmmIdt;
-	uintptr_t XtVmmIdtFunctionPointers;
-	uintptr_t XtVmmIdtEntries;
-	uintptr_t XtVmmRuntimePhysBase;
-	uintptr_t XtVmmRuntimeVirtBase;
-	uintptr_t XtVmmRuntimeSize;
-	uintptr_t XtVmmE820Buffer;
-	u32 XtVmmE820NumEntries;
-	uintptr_t XtVmmMPCpuinfoBuffer;
-	u32 XtVmmMPCpuinfoNumEntries;
-	uintptr_t XtVmmTSSBase;
-    uart_config_t RtmUartConfig;	        /* runtime options parsed in init and passed forward */
-    char cmdline[1024]; 				/* runtime options parsed in init and passed forward */
-	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
+    u32     magic;
+    hva_t   XtVmmEntryPoint;
+    hva_t   XtVmmPdptBase;
+    hva_t   XtVmmPdtsBase;
+    hva_t   XtGuestOSBootModuleBase;
+    hva_t   XtGuestOSBootModuleSize;
+    hva_t   runtime_appmodule_base;
+    hva_t   runtime_appmodule_size;
+    hva_t   XtVmmStackBase;
+    hva_t   XtVmmStackSize;
+    hva_t   XtVmmGdt;
+    hva_t   XtVmmIdt;
+    hva_t   XtVmmIdtFunctionPointers;
+    u32     XtVmmIdtEntries;
+    sla_t   XtVmmRuntimePhysBase;
+    hva_t   XtVmmRuntimeVirtBase;
+    hva_t   XtVmmRuntimeSize;
+    hva_t   XtVmmE820Buffer;
+    u32     XtVmmE820NumEntries;
+    hva_t   XtVmmMPCpuinfoBuffer;
+    u32     XtVmmMPCpuinfoNumEntries;
+    hva_t   XtVmmTSSBase;
+    uart_config_t RtmUartConfig;        /* runtime options parsed in init and passed forward */
+    char cmdline[1024];                 /* runtime options parsed in init and passed forward */
+    u32 isEarlyInit;                    //1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
 
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {
-	u32 magic;						//magic identifier
-	u32 errorHandler;				//error handler (currently unused)
-	u32 isEarlyInit;				//"early" or "late" init
-	u32 numE820Entries;				//number of E820 entries
-	u8  memmapbuffer[1280];			//max. 64 entries of 20 bytes each describing the system memory map
-	u32 numCPUEntries;				//number of cores
-	u8  cpuinfobuffer[128];			//max. 8 entries of 16 bytes each describing each physical core in the system
-	u32 runtime_size;				//size of the runtime image
-	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
-	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
-	u32 runtime_appmodule_base;		//XMHF hypapp optional module base
-	u32 runtime_appmodule_size;		//XMHF hypapp optional module size
-    u64 rdtsc_before_drtm;			// Performance measurements related to DRTM
-    u64 rdtsc_after_drtm;
+    u32     magic;                      // magic identifier
+    sla_t   errorHandler;               // error handler (currently unused)
+    u32     isEarlyInit;                // "early" or "late" init
+    u32     numE820Entries;             // number of E820 entries
+    u8      memmapbuffer[1280];         // max. 64 entries of 20 bytes each describing the system memory map
+    u32     numCPUEntries;              // number of cores
+    u8      cpuinfobuffer[128];         // max. 8 entries of 16 bytes each describing each physical core in the system
+    hva_t   runtime_size;               // size of the runtime image
+    hva_t   runtime_osbootmodule_base;  // guest OS bootmodule base
+    hva_t   runtime_osbootmodule_size;  // guest OS bootmodule size
+    hva_t   runtime_appmodule_base;     // XMHF hypapp optional module base
+    hva_t   runtime_appmodule_size;     // XMHF hypapp optional module size
+    u64     rdtsc_before_drtm;          // Performance measurements related to DRTM
+    u64     rdtsc_after_drtm;
 
     /* runtime options parsed in init and passed forward */
     uart_config_t uart_config;
