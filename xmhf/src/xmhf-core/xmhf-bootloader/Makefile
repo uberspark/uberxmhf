@@ -1,8 +1,9 @@
 # makefile for "init"
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-CFLAGS = $(BCFLAGS)
-ASFLAGS = $(BASFLAGS)
+CFLAGS := $(BCFLAGS)
+ASFLAGS := $(BASFLAGS)
+CCLIB := $(BCCLIB)
 
 # source files
 AS_SOURCES = header.S initsup.S

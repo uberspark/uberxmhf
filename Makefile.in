@@ -108,6 +108,7 @@ export MKDIR = @MKDIR@
 export CAT = @CAT@
 
 export CCLIB = @CCLIB@
+export BCCLIB = @BCCLIB@
 
 # FIXME- this should be configurable
 # export CFLAGS=-m32

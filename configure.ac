@@ -39,6 +39,12 @@ AS_IF([test "x${with_target_hwplatform}" != "xx86_64"],
       [CCLIB=`$CC -m32 --print-file-name=`],
       [CCLIB=`$CC -m64 --print-file-name=`])
 
+# find path to -lgcc in x86 (for bootloader)
+# TODO: this is a workaround. Should cross-compile everything in bootloader
+# (i.e. use i686-linux-gnu-gcc, i686-linux-gnu-ld, etc.)
+AC_CHECK_PROG([CC32], [i686-linux-gnu-gcc], [i686-linux-gnu-gcc], [gcc])
+AC_SUBST([BCCLIB], [`$CC32 -m32 --print-file-name=`])
+
 # target platform
 AC_SUBST([TARGET_PLATFORM])
 AC_ARG_WITH([target_platform],
