@@ -73,7 +73,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	
 	//linker relocates sl image starting from 0, so
     //parameter block must be at offset 0x10000    
-	HALT_ON_ERRORCOND( (u32)&slpb == 0x10000 ); 
+	HALT_ON_ERRORCOND( (sla_t)&slpb == 0x10000 ); 
 
 	//do we have the required MAGIC?
 	HALT_ON_ERRORCOND( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
@@ -95,15 +95,15 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		printf("\nSL(late-init): at 0x%08x, starting...", sl_baseaddr);
 		
 	//debug: dump SL parameter block
-	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
-	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
+	printf("\nSL: slpb at = 0x%08lx", (sla_t)&slpb);
+	printf("\n	errorHandler=0x%08lx", slpb.errorHandler);
 	printf("\n	isEarlyInit=0x%08x", slpb.isEarlyInit);
 	printf("\n	numE820Entries=%u", slpb.numE820Entries);
-	printf("\n	system memory map buffer at 0x%08x", (u32)&slpb.memmapbuffer);
+	printf("\n	system memory map buffer at 0x%08lx", (sla_t)&slpb.memmapbuffer);
 	printf("\n	numCPUEntries=%u", slpb.numCPUEntries);
-	printf("\n	cpuinfo buffer at 0x%08x", (u32)&slpb.cpuinfobuffer);
-	printf("\n	runtime size= %u bytes", slpb.runtime_size);
-	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
+	printf("\n	cpuinfo buffer at 0x%08lx", (sla_t)&slpb.cpuinfobuffer);
+	printf("\n	runtime size= %lu bytes", slpb.runtime_size);
+	printf("\n	OS bootmodule at 0x%08lx, size=%lu bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
     printf("\n\tcmdline = \"%s\"", slpb.cmdline);
 
