@@ -85,6 +85,23 @@ export TARGET_HWPLATFORM := @TARGET_HWPLATFORM@
 export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
 export XMHF_TARGET_ARCH := @TARGET_ARCH@
 
+# The following ifeq depends on TARGET_HWPLATFORM
+# TODO: move this to a better place
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+LIBBAREMETAL_BUILD32 = $(CURDIR)/_build_libbaremetal32
+LIBTOMCRYPT_BUILD32 = $(CURDIR)/_build_libtomcrypt32
+LIBTOMMATH_BUILD32 = $(CURDIR)/_build_libtommath32
+
+export ADDL_LIBS32 :=
+ADDL_LIBS32 += $(LIBBAREMETAL_BUILD32)/_objects/$(LIBBAREMETAL_ARCHIVE)
+ADDL_LIBS32 += $(LIBTOMCRYPT_BUILD32)/$(LIBTOMCRYPT_ARCHIVE)
+ADDL_LIBS32 += $(LIBTOMMATH_BUILD32)/$(LIBTOMMATH_ARCHIVE)
+# link libbaremetal *again* to resolve more dependencies
+ADDL_LIBS32 += $(LIBBAREMETAL_BUILD32)/_objects/$(LIBBAREMETAL_ARCHIVE)
+else
+export ADDL_LIBS32 := $(ADDL_LIBS)
+endif
+
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
 export exec_prefix=@exec_prefix@
@@ -294,6 +311,32 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo ---------------------------------------------------------------
 	@echo libbaremetal.a build SUCCESS
 	@echo ---------------------------------------------------------------
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+	@echo ---------------------------------------------------------------
+	@echo Building libtommath 32-bits...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBTOMMATH_BUILD32)
+	cd $(LIBTOMMATH_BUILD32) && $(MAKE) -f $(LIBTOMMATH_SRC)/makefile CFLAGS="$(filter-out -Werror,$(BCFLAGS))" -w libtommath.a
+	@echo ---------------------------------------------------------------
+	@echo libtommath.a 32-bits build SUCCESS
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Building libtomcrypt 32-bits...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBTOMCRYPT_BUILD32)
+	cd $(LIBTOMCRYPT_BUILD32) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(BCFLAGS)) -DLTC_SOURCE" -w libtomcrypt.a
+	@echo ---------------------------------------------------------------
+	@echo libtomcrypt.a 32-bits build SUCCESS
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Building libbaremetal 32-bits...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBBAREMETAL_BUILD32)
+	cd $(LIBBAREMETAL_BUILD32) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile CFLAGS="$(BCFLAGS)" -w all
+	@echo ---------------------------------------------------------------
+	@echo libbaremetal.a 32-bits build SUCCESS
+	@echo ---------------------------------------------------------------
+endif
 	@echo ---------------------------------------------------------------
 	@echo Building XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
