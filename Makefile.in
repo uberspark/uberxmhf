@@ -127,6 +127,10 @@ export CAT = @CAT@
 export CCLIB = @CCLIB@
 export BCCLIB = @BCCLIB@
 
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+export CC32 = @CC32@
+endif
+
 # FIXME- this should be configurable
 # export CFLAGS=-m32
 

@@ -36,6 +36,21 @@ C_SOURCES += ./arch/x86/svm/bplt-x86svm-smp.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
+# TODO: Workaround to compile x86 for bootloader
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+AS_SOURCES32 =  ./arch/x86/bplt-x86-smplock.S
+C_SOURCES32 =  ./arch/x86/bplt-x86-pci.c
+C_SOURCES32 += ./arch/x86/bplt-x86-acpi.c
+C_SOURCES32 += ./arch/x86/bplt-x86-addressing.c
+C_SOURCES32 += ./arch/x86/bplt-x86-cpu.c
+C_SOURCES32 += ./arch/x86/vmx/bplt-x86vmx-mtrrs.c
+
+AS_OBJECTS32 = $(patsubst %.S, %.x86.o, $(AS_SOURCES32))
+C_OBJECTS32 = $(patsubst %.c, %.x86.o, $(C_SOURCES32))
+OBJECTS += $(AS_OBJECTS32)
+OBJECTS += $(C_OBJECTS32)
+endif
+
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets
@@ -46,6 +61,14 @@ all: $(OBJECTS)
 	$(CC) -c $(ASFLAGS) -o $@ $<
 %.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
+
+# TODO: Workaround to compile x86 for bootloader
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+$(AS_OBJECTS32): %.x86.o: %.S $(I_SOURCES) Makefile ../Makefile ../../Makefile
+	$(CC32) -c $(BCFLAGS) -o $@ $<
+$(C_OBJECTS32): %.x86.o: %.c $(I_SOURCES) Makefile ../Makefile ../../Makefile
+	$(CC32) -c $(BCFLAGS) -o $@ $<
+endif
 
 .PHONY: clean
 clean:
