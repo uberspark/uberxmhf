@@ -43,6 +43,8 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 # Workaround of using x86 object files
 ifeq ($(TARGET_HWPLATFORM), x86_64)
 OBJECTS_PRECOMPILED := $(patsubst %.o, %.x86.o, $(OBJECTS_PRECOMPILED))
+OBJECTS_PRECOMPILED := $(patsubst %.a, %.x86.a, $(OBJECTS_PRECOMPILED))
+OBJECTS_PRECOMPILED_LIBBACKENDS := $(patsubst %.o, %.x86.o, $(OBJECTS_PRECOMPILED_LIBBACKENDS))
 endif
 
 

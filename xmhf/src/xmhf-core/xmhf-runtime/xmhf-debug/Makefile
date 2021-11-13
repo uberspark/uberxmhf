@@ -15,6 +15,12 @@ ifeq ($(DEBUG_VGA), y)
 C_SOURCES += ./arch/x86/dbg-x86-vgamem.c
 endif
 
+# TODO: Workaround to compile x86 for bootloader
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+C_OBJECTS32 = $(patsubst %.c, %.x86.o, $(C_SOURCES))
+OBJECTS32 = $(C_OBJECTS32)
+endif
+
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
@@ -31,6 +37,16 @@ lib.a: $(OBJECTS)
 	$(CC) -c $(ASFLAGS) -o $@ $<
 %.o: %.c $(I_SOURCES) Makefile ../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
+
+# TODO: Workaround to compile x86 for bootloader
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+all: lib.x86.a
+
+lib.x86.a: $(OBJECTS32)
+	$(AR) rvs $@ $^
+$(C_OBJECTS32): %.x86.o: %.c $(I_SOURCES) Makefile ../Makefile ../../Makefile
+	$(CC32) -c $(BCFLAGS) -o $@ $<
+endif
 
 .PHONY: clean 
 clean: 
