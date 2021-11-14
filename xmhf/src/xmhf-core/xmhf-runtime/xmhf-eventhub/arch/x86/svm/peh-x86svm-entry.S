@@ -88,12 +88,12 @@ xmhf_parteventhub_arch_x86svm_entry:
 	//pushl	%eax
 	
 	//step-1: save all CPU GPRs
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
   // TODO
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
 	//SAVEALL_GPRS
 	pushal
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 
 	//step-2: get hold of pointer to saved GPRs on stack
 	movl %esp, %eax
@@ -106,22 +106,22 @@ xmhf_parteventhub_arch_x86svm_entry:
 	
    	//step-4: invoke "C" handler
    	//1st argument is VCPU * followed by pointer to saved GPRs
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
   // TODO
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
     pushl %eax
     pushl %esi
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 	call xmhf_parteventhub_arch_x86svm_intercept_handler
     addl $0x08, %esp
 
 	//step-5: restore all CPU GPRs
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
   // TODO
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
 	//RESTOREALL_GPRS
 	popal
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 
 	//restore VMCB address
 	//popl	%eax

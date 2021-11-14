@@ -75,11 +75,11 @@ static void _vmx_initVT(VCPU *vcpu){
 	  uintptr_t gdtstart = (uintptr_t)&x_gdt_start;
 	  u16 trselector = 	__TRSEL;
 	  #ifndef __XMHF_VERIFICATION__
-	  #ifdef __XMHF_X86_64__
+	  #ifdef __X86_64__
 	  // TODO: not implemented
 	  (void) gdtstart;
 	  (void) trselector;
-	  #else /* !__XMHF_X86_64__ */
+	  #else /* !__X86_64__ */
 	  asm volatile("movl %0, %%edi\r\n"
 		"xorl %%eax, %%eax\r\n"
 		"movw %1, %%ax\r\n"
@@ -92,7 +92,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
-	  #endif /* __XMHF_X86_64__ */
+	  #endif /* __X86_64__ */
 	  #endif
 	}
 	
@@ -180,15 +180,15 @@ static void _vmx_initVT(VCPU *vcpu){
 
   //step-4: enable VMX by setting CR4
 	#ifndef __XMHF_VERIFICATION__
-	#ifdef __XMHF_X86_64__
+	#ifdef __X86_64__
 	asm(	" mov  %%cr4, %%rax	\n"\
 		" bts  $13, %%rax	\n"\
 		" mov  %%rax, %%cr4	" ::: "rax" );
-	#else /* !__XMHF_X86_64__ */
+	#else /* !__X86_64__ */
 	asm(	" mov  %%cr4, %%eax	\n"\
 		" bts  $13, %%eax	\n"\
 		" mov  %%eax, %%cr4	" ::: "eax" );
-	#endif /* __XMHF_X86_64__ */
+	#endif /* __X86_64__ */
 	#endif
   printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
 
@@ -202,7 +202,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	    #endif
 	    
 	    #ifndef __XMHF_VERIFICATION__
-	    #ifdef __XMHF_X86_64__
+	    #ifdef __X86_64__
 	    asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
 				 "movq $0x1, %%rax \n" 
@@ -215,7 +215,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr) 
 	       : "rax");
-	    #else /* !__XMHF_X86_64__ */
+	    #else /* !__X86_64__ */
 	   	asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
 				 "movl $0x1, %%eax \n" 
@@ -228,7 +228,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr) 
 	       : "eax");
-			#endif /* __XMHF_X86_64__ */
+			#endif /* __X86_64__ */
 			#endif
 		
 	    if(!retval){

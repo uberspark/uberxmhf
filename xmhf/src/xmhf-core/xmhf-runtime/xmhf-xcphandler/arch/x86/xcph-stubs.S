@@ -80,24 +80,24 @@
 		pushl	%edx
 		pushl	%ecx
 		pushl	%eax*/
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
 		// TODO
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
 		pushal
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 
 		movw	$(__DS), %ax
 		movw	%ax, %ds			//load DS
 		movl 	%esp, %eax			//EAX = struct regs *
 
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
 		// TODO: call xmhf_xcphandler_hub
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
 		pushl 	%eax				//struct regs *r
 		pushl	$0x&vector&			//vector
 		call	xmhf_xcphandler_hub	//call C-land hub
 		addl  	$0x08, %esp			//remove params from stack
-#endif /* __XMHF_X86_64__ */		
+#endif /* __X86_64__ */		
 
 		//restore GPRs
 		/*popl	%eax
@@ -108,11 +108,11 @@
 		popl	%ebp
 		popl	%esi
 		popl	%edi*/
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
 		// TODO
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
 		popal
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
     
 		//return from exception
 		iretl

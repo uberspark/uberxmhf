@@ -61,11 +61,11 @@
 .global xmhf_parteventhub_arch_x86vmx_entry
 xmhf_parteventhub_arch_x86vmx_entry:
 	//step-1: save all CPU GPRs
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
     // TODO
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
 	pushal
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 
 	//step-2: grab VCPU *
 	movl 32(%esp), %esi
@@ -75,21 +75,21 @@ xmhf_parteventhub_arch_x86vmx_entry:
 
 	//step-5: invoke "C" event handler
    	//1st argument is VCPU * followed by pointer to saved GPRs
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
 	// TODO
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
 	pushl %eax
 	pushl %esi
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 	call xmhf_parteventhub_arch_x86vmx_intercept_handler
     addl $0x08, %esp
 
     //step-6; restore all CPU GPRs
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
     // TODO
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
     popal
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 
     //resume partition
     vmresume
