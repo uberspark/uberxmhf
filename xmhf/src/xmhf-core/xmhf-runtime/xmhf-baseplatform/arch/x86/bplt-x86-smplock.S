@@ -52,10 +52,10 @@
 
   .global spin_lock
   spin_lock:
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
       // TODO: not implemented
       hlt
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
     pushl %esi
     movl 0x8(%esp), %esi
     spin:	bt	$0, (%esi)		//mutex is available?
@@ -66,18 +66,18 @@
         jnc	spin			      //spin until successful --> spinlock :p
     popl %esi
     ret
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 
   .global spin_unlock
   spin_unlock:
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
       // TODO: not implemented
       hlt
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
       pushl %esi
       movl 0x8(%esp), %esi
       bts	$0, (%esi)		       //release the spinlock
       popl %esi
       ret
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 
