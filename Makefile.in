@@ -399,6 +399,17 @@ clean:
 	@echo ---------------------------------------------------------------
 	@echo libtommath and libtomcrypt clean SUCCESS...
 	@echo ---------------------------------------------------------------
+ifeq ($(TARGET_HWPLATFORM), x86_64)
+	@echo ---------------------------------------------------------------
+	@echo Cleaning 32-bits external libraries...
+	@echo ---------------------------------------------------------------
+	rm -rf $(LIBTOMMATH_BUILD32)
+	rm -rf $(LIBTOMCRYPT_BUILD32)
+	rm -rf $(LIBBAREMETAL_BUILD32)
+	@echo ---------------------------------------------------------------
+	@echo 32-bits external libraries clean SUCCESS...
+	@echo ---------------------------------------------------------------
+endif
 	@echo ---------------------------------------------------------------
 	@echo Cleaning XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------

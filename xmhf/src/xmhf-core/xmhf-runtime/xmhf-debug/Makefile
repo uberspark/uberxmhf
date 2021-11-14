@@ -50,6 +50,6 @@ endif
 
 .PHONY: clean 
 clean: 
-	$(RM) -rf lib.a
+	$(RM) -rf lib.a lib.x86.a
 	$(RM) -rf *.o
 	$(RM) -rf ./arch/*/*.o
