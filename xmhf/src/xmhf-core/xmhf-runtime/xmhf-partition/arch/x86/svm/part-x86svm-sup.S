@@ -58,19 +58,19 @@
 #define SAVEALL_GPRS \
         pushl	%edi	; \
         pushl	%esi	; \
-				pushl	%ebp	; \
-				pushl	%esp    ; \
+        pushl	%ebp	; \
+        pushl	%esp	; \
         pushl	%ebx	; \
         pushl	%edx	; \
         pushl	%ecx	; \
-        pushl	%eax	; 
-	
+        pushl	%eax	;
+
 #define RESTOREALL_GPRS \
-				popl	%eax	; \
+        popl	%eax	; \
         popl	%ecx	; \
         popl	%edx	; \
         popl	%ebx	; \
-				popl	%esp	; \
+        popl	%esp	; \
         popl	%ebp	; \
         popl	%esi	; \
         popl	%edi	; 
@@ -87,11 +87,11 @@ __svm_start_hvm:
   movl 0x8(%esp), %eax  //eax = vmcb phys. addr of current CPU
 
 	//XX: save vcpu vaddr
-#ifdef __XMHF_X86_64__
+#ifdef __X86_64__
 	pushq %rbx
-#else /* !__XMHF_X86_64__ */
+#else /* !__X86_64__ */
 	pushl %ebx
-#endif /* __XMHF_X86_64__ */
+#endif /* __X86_64__ */
 
   //real-mode setup just like the BIOS
   movl $0x0, %ebx
