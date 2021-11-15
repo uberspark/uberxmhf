@@ -98,11 +98,11 @@ void xmhf_runtime_entry(void){
 #if defined (__DMAP__)
 		{
 				u64 protectedbuffer_paddr;
-				uintptr_t protectedbuffer_vaddr;
+				hva_t protectedbuffer_vaddr;
 				u32 protectedbuffer_size;
 				
 				protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
-				protectedbuffer_vaddr = (uintptr_t)&g_rntm_dmaprot_buffer;
+				protectedbuffer_vaddr = (hva_t)&g_rntm_dmaprot_buffer;
 				protectedbuffer_size = xmhf_dmaprot_getbuffersize(ADDR_4GB);
 				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
 				

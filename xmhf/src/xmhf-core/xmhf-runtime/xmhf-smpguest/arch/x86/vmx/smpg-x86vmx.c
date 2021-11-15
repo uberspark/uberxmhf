@@ -275,13 +275,13 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
 
   if(g_vmx_lapic_op == LAPIC_OP_WRITE){			//LAPIC write
-    uintptr_t src_registeraddress, dst_registeraddress;
+    hva_t src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
     
     HALT_ON_ERRORCOND( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
    
-    src_registeraddress = (uintptr_t)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
-    dst_registeraddress = (uintptr_t)g_vmx_lapic_base + g_vmx_lapic_reg;
+    src_registeraddress = (hva_t)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
+    dst_registeraddress = (hva_t)g_vmx_lapic_base + g_vmx_lapic_reg;
     
 	#ifdef __XMHF_VERIFICATION__
 		//TODO: hardware modeling
@@ -308,7 +308,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
-        u32 icr_value_high = *((u32 *)((uintptr_t)&g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
+        u32 icr_value_high = *((u32 *)((hva_t)&g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);        
 		
@@ -332,11 +332,11 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
     }
                 
   }else if( g_vmx_lapic_op == LAPIC_OP_READ){		//LAPIC read
-    uintptr_t src_registeraddress;
+    hva_t src_registeraddress;
     u32 value_read __attribute__((unused));
     HALT_ON_ERRORCOND( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
 
-    src_registeraddress = (uintptr_t)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
+    src_registeraddress = (hva_t)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
    
     //TODO: hardware modeling
     #ifndef __XMHF_VERIFICATION__

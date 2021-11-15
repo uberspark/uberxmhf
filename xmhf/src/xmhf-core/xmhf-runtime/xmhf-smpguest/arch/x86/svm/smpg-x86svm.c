@@ -140,7 +140,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
   }
 
   printf("\nfound AP to pass SIPI to; id=0x%02x, vcpu=0x%08x",
-      dest_vcpu->id, (uintptr_t)dest_vcpu);  
+      dest_vcpu->id, (hva_t)dest_vcpu);  
   
   
   //send the sipireceived flag to trigger the AP to start the HVM
@@ -291,13 +291,13 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
   
   
   if(g_svm_lapic_op == LAPIC_OP_WRITE){			//LAPIC write
-    uintptr_t src_registeraddress, dst_registeraddress;
+    hva_t src_registeraddress, dst_registeraddress;
     uintptr_t value_tobe_written;
     
     HALT_ON_ERRORCOND( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
    
-    src_registeraddress = (uintptr_t)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
-    dst_registeraddress = (uintptr_t)g_svm_lapic_base + g_svm_lapic_reg;
+    src_registeraddress = (hva_t)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
+    dst_registeraddress = (hva_t)g_svm_lapic_base + g_svm_lapic_reg;
 
 
 #ifdef	__XMHF_VERIFICATION__
@@ -325,7 +325,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
-        u32 icr_value_high = *((u32 *)((uintptr_t)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
+        u32 icr_value_high = *((u32 *)((hva_t)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
           (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
         #ifdef __XMHF_VERIFICATION__
@@ -348,11 +348,11 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
     }
                 
   }else if( g_svm_lapic_op == LAPIC_OP_READ){		//LAPIC read
-    uintptr_t src_registeraddress;
+    hva_t src_registeraddress;
     u32 value_read __attribute__((unused));
     HALT_ON_ERRORCOND( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
 
-    src_registeraddress = (uintptr_t)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
+    src_registeraddress = (hva_t)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
    
 	//TODO: hardware modeling
     #ifndef __XMHF_VERIFICATION__

@@ -154,7 +154,7 @@ static void _svm_initVMCB(VCPU *vcpu){
   
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
-  printf("\nCPU(0x%02x): VMCB at 0x%08x", vcpu->id, (uintptr_t)vmcb);
+  printf("\nCPU(0x%02x): VMCB at 0x%08x", vcpu->id, (hva_t)vmcb);
   #ifndef __XMHF_VERIFICATION__
   memset(vmcb, 0, sizeof(struct _svm_vmcbfields));
   #endif

@@ -52,7 +52,7 @@
 
 //----------------------------------------------------------------------
 // local (static) support function forward declarations
-static void _svm_nptinitialize(uintptr_t npt_pdpt_base, uintptr_t npt_pdts_base, uintptr_t npt_pts_base);
+static void _svm_nptinitialize(hva_t npt_pdpt_base, hva_t npt_pdts_base, hva_t npt_pts_base);
 
 //======================================================================
 // global interfaces (functions) exported by this component
@@ -74,12 +74,12 @@ void xmhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
 //----------------------------------------------------------------------
 // local (static) support functions follow
 //---npt initialize-------------------------------------------------------------
-static void _svm_nptinitialize(uintptr_t npt_pdpt_base, uintptr_t npt_pdts_base, uintptr_t npt_pts_base){
+static void _svm_nptinitialize(hva_t npt_pdpt_base, hva_t npt_pdts_base, hva_t npt_pts_base){
 	pdpt_t pdpt;
 	pdt_t pdt;
 	pt_t pt;
 	u32 paddr=0, i, j, k;
-	uintptr_t y, z;
+	spa_t y, z;
 	u64 flags;
 
 	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x", __FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
@@ -89,13 +89,13 @@ static void _svm_nptinitialize(uintptr_t npt_pdpt_base, uintptr_t npt_pdts_base,
 	for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
 		y = hva2spa((void*)(npt_pdts_base + (i << PAGE_SHIFT_4K)));
 		flags = (u64)(_PAGE_PRESENT);
-		pdpt[i] = pae_make_pdpe((u64)y, flags);
+		pdpt[i] = pae_make_pdpe(y, flags);
 		pdt=(pdt_t)(npt_pdts_base + (i << PAGE_SHIFT_4K));
 			
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			z=hva2spa((void*)(npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K))));
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
-			pdt[j] = pae_make_pde((u64)z, flags);
+			pdt[j] = pae_make_pde(z, flags);
 			pt=(pt_t)(npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){

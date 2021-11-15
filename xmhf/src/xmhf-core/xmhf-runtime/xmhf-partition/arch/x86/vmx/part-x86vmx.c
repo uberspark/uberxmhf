@@ -72,7 +72,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	//so load it for this core
 	//__vmx_loadTR();
 	{
-	  uintptr_t gdtstart = (uintptr_t)&x_gdt_start;
+	  hva_t gdtstart = (hva_t)&x_gdt_start;
 	  u16 trselector = 	__TRSEL;
 	  #ifndef __XMHF_VERIFICATION__
 	  #ifdef __X86_64__
@@ -291,10 +291,10 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_GS_selector = read_segreg_gs();
 	vcpu->vmcs.host_SS_selector = read_segreg_ss();
 	vcpu->vmcs.host_TR_selector = read_tr_sel();
-	vcpu->vmcs.host_GDTR_base = (u64)(uintptr_t)x_gdt_start;
-	vcpu->vmcs.host_IDTR_base = (u64)(uintptr_t)xmhf_xcphandler_get_idt_start();
-	vcpu->vmcs.host_TR_base = (u64)(uintptr_t)g_runtime_TSS;
-	vcpu->vmcs.host_RIP = (u64)(uintptr_t)xmhf_parteventhub_arch_x86vmx_entry;
+	vcpu->vmcs.host_GDTR_base = (u64)(hva_t)x_gdt_start;
+	vcpu->vmcs.host_IDTR_base = (u64)(hva_t)xmhf_xcphandler_get_idt_start();
+	vcpu->vmcs.host_TR_base = (u64)(hva_t)g_runtime_TSS;
+	vcpu->vmcs.host_RIP = (u64)(hva_t)xmhf_parteventhub_arch_x86vmx_entry;
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry)
@@ -302,12 +302,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif //__XMHF_VERIFICATION__
 
 	//store vcpu at TOS
-	vcpu->esp = vcpu->esp - sizeof(uintptr_t);
+	vcpu->esp = vcpu->esp - sizeof(hva_t);
 #ifndef __XMHF_VERIFICATION__
 #ifdef __XMHF_X86_64__
 	// TODO: not implemented
 #else /* !__XMHF_X86_64__ */
-	*(uintptr_t *)vcpu->esp = (uintptr_t)vcpu;
+	*(hva_t *)vcpu->esp = (hva_t)vcpu;
 #endif /* __XMHF_X86_64__ */
 #endif
 	vcpu->vmcs.host_RSP = (u64)vcpu->esp;
