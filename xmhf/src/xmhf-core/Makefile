@@ -25,8 +25,10 @@ bootloader: secureloader runtime
 		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
-secureloader/sl.bin: secureloader
-runtime/runtime.bin: runtime
+xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin: bootloader
+
+xmhf-secureloader/sl.bin: secureloader
+xmhf-runtime/runtime.bin: runtime
 hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
 	# concatenate sl image and runtime image 
 	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/runtime.bin > ./hypervisor.tmp.img

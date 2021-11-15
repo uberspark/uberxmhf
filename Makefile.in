@@ -290,7 +290,7 @@ $(APP_ARCHIVE):
 	@echo ---------------------------------------------------------------
 
 .PHONY: subdirs
-subdirs: $(LIBBAREMETAL_SRC)
+subdirs: $(LIBBAREMETAL_SRC) $(APP_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo Building libtommath...
 	@echo ---------------------------------------------------------------
