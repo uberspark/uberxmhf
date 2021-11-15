@@ -59,7 +59,7 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 	
   for(i=0; i < g_midtable_numentries; i++){
 	//allocate VCPU structure
-	vcpu = (VCPU *)((uintptr_t)g_vcpubuffers + (uintptr_t)(i * SIZE_STRUCT_VCPU));
+	vcpu = (VCPU *)((hva_t)g_vcpubuffers + (hva_t)(i * SIZE_STRUCT_VCPU));
 
     #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu, 0, sizeof(VCPU));
@@ -68,38 +68,38 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
     vcpu->cpu_vendor = cpu_vendor;
     
 	//allocate runtime stack
-    vcpu->esp = ((uintptr_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
+    vcpu->esp = ((hva_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
 
     //allocate VMXON memory region
-    vcpu->vmx_vmxonregion_vaddr = ((uintptr_t)g_vmx_vmxon_buffers + (i * PAGE_SIZE_4K)) ;
+    vcpu->vmx_vmxonregion_vaddr = ((hva_t)g_vmx_vmxon_buffers + (i * PAGE_SIZE_4K)) ;
     #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu->vmx_vmxonregion_vaddr, 0, PAGE_SIZE_4K);
     #endif
     
 	//allocate VMCS memory region
-	vcpu->vmx_vmcs_vaddr = ((uintptr_t)g_vmx_vmcs_buffers + (i * PAGE_SIZE_4K)) ;
+	vcpu->vmx_vmcs_vaddr = ((hva_t)g_vmx_vmcs_buffers + (i * PAGE_SIZE_4K)) ;
     #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu->vmx_vmcs_vaddr, 0, PAGE_SIZE_4K);
 	#endif
 	
 	//allocate VMX IO bitmap region
-	vcpu->vmx_vaddr_iobitmap = (uintptr_t)g_vmx_iobitmap_buffer; 
+	vcpu->vmx_vaddr_iobitmap = (hva_t)g_vmx_iobitmap_buffer; 
 	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->vmx_vaddr_iobitmap, 0, (2*PAGE_SIZE_4K));
 	#endif
 	
 	//allocate VMX guest and host MSR save areas
-	vcpu->vmx_vaddr_msr_area_host = ((uintptr_t)g_vmx_msr_area_host_buffers + (i * (2*PAGE_SIZE_4K))) ; 
+	vcpu->vmx_vaddr_msr_area_host = ((hva_t)g_vmx_msr_area_host_buffers + (i * (2*PAGE_SIZE_4K))) ; 
 	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->vmx_vaddr_msr_area_host, 0, (2*PAGE_SIZE_4K));
 	#endif
-	vcpu->vmx_vaddr_msr_area_guest = ((uintptr_t)g_vmx_msr_area_guest_buffers + (i * (2*PAGE_SIZE_4K))) ; 
+	vcpu->vmx_vaddr_msr_area_guest = ((hva_t)g_vmx_msr_area_guest_buffers + (i * (2*PAGE_SIZE_4K))) ; 
 	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->vmx_vaddr_msr_area_guest, 0, (2*PAGE_SIZE_4K));
 	#endif
 	
 	//allocate VMX MSR bitmap region
-	vcpu->vmx_vaddr_msrbitmaps = ((uintptr_t)g_vmx_msrbitmap_buffers + (i * PAGE_SIZE_4K)) ; 
+	vcpu->vmx_vaddr_msrbitmaps = ((hva_t)g_vmx_msrbitmap_buffers + (i * PAGE_SIZE_4K)) ; 
 	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->vmx_vaddr_msrbitmaps, 0, PAGE_SIZE_4K);
 	#endif
@@ -107,10 +107,10 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 	//allocate EPT paging structures
 	#ifdef __NESTED_PAGING__		
 	{
-			vcpu->vmx_vaddr_ept_pml4_table = ((uintptr_t)g_vmx_ept_pml4_table_buffers + (i * PAGE_SIZE_4K));
-			vcpu->vmx_vaddr_ept_pdp_table = ((uintptr_t)g_vmx_ept_pdp_table_buffers + (i * PAGE_SIZE_4K));  
-			vcpu->vmx_vaddr_ept_pd_tables = ((uintptr_t)g_vmx_ept_pd_table_buffers + (i * (PAGE_SIZE_4K*4))); 		
-			vcpu->vmx_vaddr_ept_p_tables = ((uintptr_t)g_vmx_ept_p_table_buffers + (i * (PAGE_SIZE_4K*2048))); 
+			vcpu->vmx_vaddr_ept_pml4_table = ((hva_t)g_vmx_ept_pml4_table_buffers + (i * PAGE_SIZE_4K));
+			vcpu->vmx_vaddr_ept_pdp_table = ((hva_t)g_vmx_ept_pdp_table_buffers + (i * PAGE_SIZE_4K));  
+			vcpu->vmx_vaddr_ept_pd_tables = ((hva_t)g_vmx_ept_pd_table_buffers + (i * (PAGE_SIZE_4K*4))); 		
+			vcpu->vmx_vaddr_ept_p_tables = ((hva_t)g_vmx_ept_p_table_buffers + (i * (PAGE_SIZE_4K*2048))); 
 	}
 	#endif
 
@@ -121,7 +121,7 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
     vcpu->sipireceived = 0;
 
 	//map LAPIC to VCPU in midtable
-    g_midtable[i].vcpu_vaddr_ptr = (uintptr_t)vcpu;	
+    g_midtable[i].vcpu_vaddr_ptr = (hva_t)vcpu;	
   }
 }
 

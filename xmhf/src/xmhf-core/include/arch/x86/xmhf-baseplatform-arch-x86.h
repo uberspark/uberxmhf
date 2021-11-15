@@ -192,32 +192,32 @@ typedef struct _vcpu {
   u32 quiesced;           //1 if this core is currently quiesced
 
   //SVM specific fields
-  uintptr_t hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
+  hva_t hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
   //u32 vmcb_vaddr_ptr;     //VMCB of the CPU
   struct _svm_vmcbfields *vmcb_vaddr_ptr;
   //u32 npt_vaddr_ptr;      //NPT base of the CPU
-  uintptr_t npt_vaddr_ptr;      //NPT base of the CPU
-  uintptr_t npt_vaddr_pdts;      
+  hva_t npt_vaddr_ptr;      //NPT base of the CPU
+  hva_t npt_vaddr_pdts;      
   u32 npt_asid;           //NPT ASID for this core
-  uintptr_t npt_vaddr_pts;      //NPT page-tables for protection manipulation
-  uintptr_t svm_vaddr_iobitmap; //virtual address of the I/O Bitmap area
+  hva_t npt_vaddr_pts;      //NPT page-tables for protection manipulation
+  hva_t svm_vaddr_iobitmap; //virtual address of the I/O Bitmap area
 
   //VMX specific fields
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
-  uintptr_t vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
-  uintptr_t vmx_vmcs_vaddr;           //virtual address of the VMCS region
+  hva_t vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
+  hva_t vmx_vmcs_vaddr;           //virtual address of the VMCS region
   
-  uintptr_t vmx_vaddr_iobitmap;       //virtual address of the I/O Bitmap area
-  uintptr_t vmx_vaddr_msr_area_host;  //virtual address of the host MSR area
-  uintptr_t vmx_vaddr_msr_area_guest; //virtual address of the guest MSR area
-  uintptr_t vmx_vaddr_msrbitmaps;     //virtual address of the MSR bitmap area
+  hva_t vmx_vaddr_iobitmap;       //virtual address of the I/O Bitmap area
+  hva_t vmx_vaddr_msr_area_host;  //virtual address of the host MSR area
+  hva_t vmx_vaddr_msr_area_guest; //virtual address of the guest MSR area
+  hva_t vmx_vaddr_msrbitmaps;     //virtual address of the MSR bitmap area
   
-  uintptr_t vmx_vaddr_ept_pml4_table; //virtual address of EPT PML4 table
-  uintptr_t vmx_vaddr_ept_pdp_table;  //virtual address of EPT PDP table
-  uintptr_t vmx_vaddr_ept_pd_tables;  //virtual address of base of EPT PD tables
-  uintptr_t vmx_vaddr_ept_p_tables;   //virtual address of base of EPT P tables
+  hva_t vmx_vaddr_ept_pml4_table; //virtual address of EPT PML4 table
+  hva_t vmx_vaddr_ept_pdp_table;  //virtual address of EPT PDP table
+  hva_t vmx_vaddr_ept_pd_tables;  //virtual address of base of EPT PD tables
+  hva_t vmx_vaddr_ept_p_tables;   //virtual address of base of EPT P tables
   struct _memorytype vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
   //guest MTRR shadow MSRs
   struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];

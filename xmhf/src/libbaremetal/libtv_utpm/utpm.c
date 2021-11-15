@@ -268,7 +268,7 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     utpm_master_state_t *utpm,
     TPM_PCR_SELECTION *tpmsel,
     uint8_t **tpm_pcr_composite,
-    uintptr_t *space_needed_for_composite
+    gva_t *space_needed_for_composite
     )
 {
     uint32_t rv = 0;
@@ -341,7 +341,7 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     }
 
     /* TODO: Assert */
-    if((uintptr_t)p-(uintptr_t)(*tpm_pcr_composite) != *space_needed_for_composite) {
+    if((gva_t)p-(gva_t)(*tpm_pcr_composite) != *space_needed_for_composite) {
         dprintf(LOG_ERROR, "[TV:UTPM] ERROR! (uint32_t)p-(uint32_t)*tpm_pcr_composite "
                 "!= space_needed_for_composite\n");
         rv = 1; /* FIXME: Indicate internal error */
@@ -366,7 +366,7 @@ static TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
     TPM_PCR_SELECTION *pcrSelection,
     TPM_COMPOSITE_HASH *digest)
 {
-    uintptr_t space_needed_for_composite = 0;
+    gva_t space_needed_for_composite = 0;
     uint8_t *tpm_pcr_composite = NULL;
     uint32_t rv = 0;
     
@@ -500,7 +500,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     p += inlen;
 
 	/* 4. add padding */
-	outlen_beforepad = (uintptr_t)p - (uintptr_t)plaintext;
+	outlen_beforepad = (gva_t)p - (gva_t)plaintext;
 	if ((outlen_beforepad & 0xF) != 0) {
 		*outlen = (outlen_beforepad + TPM_AES_KEY_LEN_BYTES) & (~0xF);
 	} else {
@@ -634,7 +634,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         uint8_t *p = output;
         TPM_PCR_INFO unsealedPcrInfo;
         uint32_t bytes_consumed_by_pcrInfo;
-        uintptr_t space_needed_for_composite = 0;
+        gva_t space_needed_for_composite = 0;
         uint8_t *currentPcrComposite = NULL;
         TPM_COMPOSITE_HASH digestRightNow;
         
@@ -833,11 +833,11 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
  * buffer is too small. */
 TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
                       uint8_t* output, uint32_t* outlen, /* hypercall outputs */
-                      uint8_t* pcrComp, uintptr_t* pcrCompLen,
+                      uint8_t* pcrComp, gva_t* pcrCompLen,
                       utpm_master_state_t *utpm) /* TrustVisor inputs */
 {
     TPM_RESULT rv = 0; /* success */
-    uintptr_t space_needed_for_composite = 0;
+    gva_t space_needed_for_composite = 0;
     uint8_t *tpm_pcr_composite = NULL;
     TPM_QUOTE_INFO quote_info;    
 

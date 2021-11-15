@@ -57,7 +57,7 @@
 void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
     unsigned int i;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      unsigned long *field = (unsigned long *)((uintptr_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
+      unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
       unsigned long fieldvalue = *field;
       //printf("\nvmwrite: enc=0x%08x, value=0x%08x", vmcsrwfields_encodings[i].encoding, fieldvalue);
       if(!__vmx_vmwrite(g_vmx_vmcsrwfields_encodings[i].encoding, fieldvalue)){
@@ -72,11 +72,11 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
 void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
   unsigned int i;
   for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      unsigned long *field = (unsigned long *)((uintptr_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
+      unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
       __vmx_vmread(g_vmx_vmcsrwfields_encodings[i].encoding, field);
   }  
   for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
-      unsigned long *field = (unsigned long *)((uintptr_t)&vcpu->vmcs + (uintptr_t)g_vmx_vmcsrofields_encodings[i].fieldoffset);
+      unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (hva_t)g_vmx_vmcsrofields_encodings[i].fieldoffset);
       __vmx_vmread(g_vmx_vmcsrofields_encodings[i].encoding, field);
   }
 }

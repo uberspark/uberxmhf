@@ -64,7 +64,7 @@
 //as it is made use of in low-level assembly language stubs
 typedef struct _midtab {
   u32 cpu_lapic_id;         //CPU LAPIC id (unique)
-  uintptr_t vcpu_vaddr_ptr; //virt. addr. pointer to vcpu struct for this CPU
+  hva_t vcpu_vaddr_ptr; //virt. addr. pointer to vcpu struct for this CPU
   // TODO: table no longer aligned in 64-bit
 } __attribute__((packed)) MIDTAB;
 
@@ -153,25 +153,25 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 	//note: secure loader runs in a DS relative addressing mode and
 	//rest of hypervisor runtime is at secure loader base address + 2MB
 	static inline void * hva2sla(void *hva){
-		return (void*)((uintptr_t)hva - rpb->XtVmmRuntimePhysBase + PAGE_SIZE_2M);	
+		return (void*)((hva_t)hva - rpb->XtVmmRuntimePhysBase + PAGE_SIZE_2M);	
 	}
 	
 	//secure loader address to system physical address
 	//note: secure loader runs in a DS relative addressing mode 
 	//(relative to secure loader base address)
 	static inline spa_t sla2spa(void *sla){
-		return (spa_t) ((uintptr_t)sla + (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M));
+		return (spa_t) ((sla_t)sla + (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M));
 	}
 	
 	// XMHF runtime virtual-address to system-physical-address and vice-versa
 	// Note: since we are unity mapped, runtime VA = system PA
 	static inline spa_t hva2spa(void *hva){
-		uintptr_t hva_ui = (uintptr_t)hva;
+		hva_t hva_ui = (hva_t)hva;
 		return hva_ui;
 	}
 	  
 	static inline void * spa2hva(spa_t spa){
-		return (void *)(uintptr_t)spa;
+		return (void *)(hva_t)spa;
 	}
 	
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
@@ -182,7 +182,7 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 #else //__XMHF_VERIFICATION__
 
 	#define hva2spa(x) (u32)(x)
-	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa); }
+	static inline void * spa2hva(spa_t spa) { (void *)(hva_t)(spa); }
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }

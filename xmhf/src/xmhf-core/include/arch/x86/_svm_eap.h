@@ -77,7 +77,7 @@ struct _svm_eap {
 	u32 dev_hdr_reg;			//DEV header register (32-bit)
  	u32 dev_fnidx_reg;		//DEV function/index register (32-bit)
 	u32 dev_data_reg;			//DEV data register (32-bit)
-	uintptr_t dev_bitmap_vaddr;	//DEV bitmap virtual address
+	hva_t dev_bitmap_vaddr;	//DEV bitmap virtual address
 };
 
 
