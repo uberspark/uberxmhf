@@ -118,8 +118,8 @@ our C main*/
     /* clear memory */
     leal sl_long_pt_begin(%ebp), %eax
     leal sl_long_pt_end(%ebp), %ebx
-2:  test %eax, %ebx
-    jae 3f
+2:  cmpl %eax, %ebx
+    jbe 3f
     movl $0, (%eax)
     addl $4, %eax
     jmp 2b
@@ -141,15 +141,32 @@ our C main*/
 4:  movl %eax, %ebx
     shl $21, %ebx
     orl $0x83, %ebx
-    movl %eax, sl_pdt(%ebp, %eax, 8)   /* store PDT[EAX] */
+    movl %ebx, sl_pdt(%ebp, %eax, 8)   /* store PDT[EAX] */
     incl %eax
     cmpl %eax, %ecx
-    jb 4b
+    ja 4b
+
+    /* set CR3 (location of PML4T) */
+    leal sl_pml4t(%ebp), %eax
+    movl %eax, %cr3
 
     /* set CR4 (enable PAE) */
     movl %cr4, %eax
     orl $CR4_PAE, %eax
     movl %eax, %cr4
+
+    /* Set EFER MSR LME */
+    movl $MSR_EFER, %ecx
+    rdmsr
+    orl $(1 << EFER_LME), %eax
+    wrmsr
+
+    /* Enable paging */
+    movl %cr0, %eax
+    orl $CR0_PG, %eax
+    movl %eax, %cr0
+
+    /* Should enter compatibility mode now */
 
     movl $1, %eax;
     movl $2, %eax;
