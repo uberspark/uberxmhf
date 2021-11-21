@@ -108,6 +108,8 @@ SECTIONS
   .sl_untrusted_params : {
     *(.sl_untrusted_params)
     *(.comment)
+    . = ALIGN(4096);
+    *(.sl_long_pt)
     . = ALIGN(0x200000);
   } >high
 

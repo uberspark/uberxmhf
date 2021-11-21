@@ -98,18 +98,6 @@ our C main*/
 
 
 .section .text
-    .code32
-    /*  */
-
-tmp:
-2:
-    movl $tmp, %eax
-    call 1f
-1:  popl %ebx // put EIP into EAX
-    andl $0xffff0000, %ebx // 64K-align
-    jmp 2b
-
-    .code64
     /* Make room for MLE header at beginning*/
     .global _mle_hdr
     _mle_hdr:
@@ -117,6 +105,61 @@ tmp:
 
     .global _sl_start
     _sl_start:
+
+    .code32
+
+    /* get physical location of secure loader - link location in EBP */
+    call 1f
+1:  popl %ebp // put EIP into EAX
+    subl $1b, %ebp
+
+    /* set up page table */
+
+    /* clear memory */
+    leal sl_long_pt_begin(%ebp), %eax
+    leal sl_long_pt_end(%ebp), %ebx
+2:  test %eax, %ebx
+    jae 3f
+    movl $0, (%eax)
+    addl $4, %eax
+    jmp 2b
+3:
+
+    /* set PML4T (1 entry, 512 GiB per entry) */
+    leal sl_pdpt(%ebp), %eax
+    orl $0x3, %eax              /* set P and R/W bits */
+    movl %eax, sl_pml4t(%ebp)   /* store PML4T[0] */
+
+    /* set PDPT (1 entry, 1 GiB per entry) */
+    leal sl_pdt(%ebp), %eax
+    orl $0x3, %eax              /* set P and R/W bits */
+    movl %eax, sl_pdpt(%ebp)    /* store PDPT[0] */
+
+    /* set PDT (512 entries, 2 MiB per entry) */
+    movl $0, %eax
+    movl $512, %ecx
+4:  movl %eax, %ebx
+    shl $21, %ebx
+    orl $0x83, %ebx
+    movl %eax, sl_pdt(%ebp, %eax, 8)   /* store PDT[EAX] */
+    incl %eax
+    cmpl %eax, %ecx
+    jb 4b
+
+    /* set CR4 (enable PAE) */
+    movl %cr4, %eax
+    orl $CR4_PAE, %eax
+    movl %eax, %cr4
+
+    movl $1, %eax;
+    movl $2, %eax;
+    movl $3, %eax;
+    movl $4, %eax;
+    movl $5, %eax;
+
+    hlt
+
+    .code64
 
 #ifndef PERF_CRIT
     /*get cycle count using rdtsc; useful to evaluate how long DRTM
@@ -356,3 +399,14 @@ sl_startnew:
  actually "allocates" the stack up until 0x10000*/
 .section .sl_stack
     .fill 2048, 1, 0
+
+/* page table for long mode */
+.section .sl_long_pt
+    sl_long_pt_begin:
+    sl_pml4t:
+    .fill 4096, 1, 0
+    sl_pdpt:
+    .fill 4096, 1, 0
+    sl_pdt:
+    .fill 4096, 1, 0
+    sl_long_pt_end:
