@@ -91,13 +91,25 @@ our C main*/
     
     .global g_sl_protected_dmabuffer
     g_sl_protected_dmabuffer:
-	.fill 4096, 1, 0 /* second page*/
+    .fill 4096, 1, 0 /* second page*/
     .fill 4096, 1, 0 /* third page*/
     .global _mle_page_table_end
     _mle_page_table_end:
 
 
 .section .text
+    .code32
+    /*  */
+
+tmp:
+2:
+    movl $tmp, %eax
+    call 1f
+1:  popl %ebx // put EIP into EAX
+    andl $0xffff0000, %ebx // 64K-align
+    jmp 2b
+
+    .code64
     /* Make room for MLE header at beginning*/
     .global _mle_hdr
     _mle_hdr:
@@ -194,7 +206,7 @@ sl_cpu_common:
        1. Read memory using %cs segment-override prefix.
        2. Write memory using %ss and %ds on AMD and Intel, respectively.
           Processor vendor in register EDX from above CPU-specific code.
-	*/
+    */
 
     /* Setup GDT so that CS:base=sl base, limit=64K, type=code
      DS,SS,ES: base=sl base, limit=64K, type=data
@@ -245,12 +257,12 @@ sl_cpu_common:
     movl $(sl_gdt), %ebx
     cmpl $(CPU_VENDOR_AMD), %edx
     jne 1f
-    addl %ebp, %ss:2(%ebp, %ebx) 	/* AMD*/
+    addl %ebp, %ss:2(%ebp, %ebx)    /* AMD*/
     jmp 2f
     1: addl %ebp, %ds:2(%ebp, %ebx) /* Intel*/
     2:
 
-	/*load GDT*/
+    /*load GDT*/
     lgdt %cs:(%ebp,%ebx)
 
     movl $(sl_gdt), %ebx
@@ -260,9 +272,9 @@ sl_cpu_common:
 
     // We start here with our new GDT CS selector
 sl_startnew:
-	/* cpu vendor is in edx, move it into esi in case PERF_CRIT
-	 is not definied, the following block will clobber edx*/
-	movl	%edx, %esi
+    /* cpu vendor is in edx, move it into esi in case PERF_CRIT
+     is not definied, the following block will clobber edx*/
+    movl    %edx, %esi
 
 #ifndef PERF_CRIT
     /* we are switching stacks so we need to save our performance
@@ -307,9 +319,9 @@ sl_startnew:
     pushq $0x0000000000000000
 #endif
               
-    pushq %rbp			/*SL base address*/
-    pushq %rsi			/*cpu vendor*/
-    call xmhf_sl_main	/*call SL main routine*/
+    pushq %rbp          /*SL base address*/
+    pushq %rsi          /*cpu vendor*/
+    call xmhf_sl_main   /*call SL main routine*/
 
     /* We should never get here*/
     spinforever:

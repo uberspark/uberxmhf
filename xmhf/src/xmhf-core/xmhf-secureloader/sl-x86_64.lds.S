@@ -92,10 +92,10 @@ SECTIONS
     . = ALIGN(16);    
   } >low
 
-	/* protected DMA protection buffer for DMA protection boot-strapping */
-	/*.protdmabuffer : {
-		*(.protdmabuffer)
-	} >low*/
+  /* protected DMA protection buffer for DMA protection boot-strapping */
+  /*.protdmabuffer : {
+    *(.protdmabuffer)
+  } >low*/
 
   .sl_stack : {
     *(.sl_stack)

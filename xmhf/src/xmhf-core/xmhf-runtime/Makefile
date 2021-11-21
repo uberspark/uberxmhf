@@ -123,7 +123,7 @@ all: runtimecomponents runtime.bin
 $(OBJECTS_PRECOMPILED): %: runtimecomponents
 $(OBJECTS_PRECOMPILED_LIBBACKENDS): %: runtimecomponents
 
-runtime.bin: runtimecomponents $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime-$(TARGET_HWPLATFORM).lds.S
+runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM).lds.S
 	$(LD) -T runtime-$(TARGET_HWPLATFORM).lds.S -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
