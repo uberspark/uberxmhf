@@ -113,7 +113,7 @@ our C main*/
 1:  popl %ebp // put EIP into EAX
     subl $1b, %ebp
 
-    /* Load 64-bit GDT */
+    /* load 64-bit GDT */
     addl %ebp, sl_gdt_ptr(%ebp)
     lgdt sl_gdt(%ebp)
 
@@ -159,29 +159,29 @@ our C main*/
     leal sl_pml4t(%ebp), %eax
     movl %eax, %cr3
 
-    /* Set EFER MSR LME */
+    /* set EFER MSR LME */
     movl $(MSR_EFER), %ecx
     rdmsr
     btsl $(EFER_LME), %eax
     wrmsr
 
-    /* Set LDT and TSS */
+    /* set LDT and TSS (from Linux code) */
     xorl %eax, %eax
     lldt %ax
     movl $0x20, %eax    /* 4th entry in GDT (TSS) */
     ltr %ax
 
-    /* Setup jump to 64-bit mode */
+    /* setup jump to 64-bit mode */
     pushl $0x10         /* 2nd entry in GDT (64-bit CODE) */
     leal _sl_start_64(%ebp), %eax
     pushl %eax
 
-    /* Enable paging */
+    /* enable paging */
     movl %cr0, %eax
     orl $(CR0_PG), %eax
     movl %eax, %cr0
 
-    /* Jump to 64-bit mode */
+    /* jump to 64-bit mode */
     lret
 
     .code64
