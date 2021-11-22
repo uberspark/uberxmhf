@@ -48,7 +48,7 @@
   authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 /*----------------------------------------------------------------------
  CODE
@@ -88,7 +88,7 @@ our C main*/
      DRTM using GETSEC[SENTER].  See 2.2.4.1 in Intel MLE
      Developer's Guide (Dec. 2009 revision).*/
     .align 4096      // remainder of first page
-    
+
     .global g_sl_protected_dmabuffer
     g_sl_protected_dmabuffer:
     .fill 4096, 1, 0 /* second page*/
@@ -112,6 +112,15 @@ our C main*/
     call 1f
 1:  popl %ebp // put EIP into EAX
     subl $1b, %ebp
+
+    /* Load 64-bit GDT */
+    addl %ebp, sl_gdt_ptr(%ebp)
+    lgdt sl_gdt(%ebp)
+
+    /* set CR4 (enable PAE) */
+    movl %cr4, %eax
+    orl $(CR4_PAE), %eax
+    movl %eax, %cr4
 
     /* set up page table */
 
@@ -150,33 +159,34 @@ our C main*/
     leal sl_pml4t(%ebp), %eax
     movl %eax, %cr3
 
-    /* set CR4 (enable PAE) */
-    movl %cr4, %eax
-    orl $CR4_PAE, %eax
-    movl %eax, %cr4
-
     /* Set EFER MSR LME */
-    movl $MSR_EFER, %ecx
+    movl $(MSR_EFER), %ecx
     rdmsr
-    orl $(1 << EFER_LME), %eax
+    btsl $(EFER_LME), %eax
     wrmsr
+
+    /* Set LDT and TSS */
+    xorl %eax, %eax
+    lldt %ax
+    movl $0x20, %eax    /* 4th entry in GDT (TSS) */
+    ltr %ax
+
+    /* Setup jump to 64-bit mode */
+    pushl $0x10         /* 2nd entry in GDT (64-bit CODE) */
+    leal _sl_start_64(%ebp), %eax
+    pushl %eax
 
     /* Enable paging */
     movl %cr0, %eax
-    orl $CR0_PG, %eax
+    orl $(CR0_PG), %eax
     movl %eax, %cr0
 
-    /* Should enter compatibility mode now */
-
-    movl $1, %eax;
-    movl $2, %eax;
-    movl $3, %eax;
-    movl $4, %eax;
-    movl $5, %eax;
-
-    hlt
+    /* Jump to 64-bit mode */
+    lret
 
     .code64
+
+    _sl_start_64:
 
 #ifndef PERF_CRIT
     /*get cycle count using rdtsc; useful to evaluate how long DRTM
@@ -338,11 +348,11 @@ sl_startnew:
 
 #ifndef PERF_CRIT
     /* we are switching stacks so we need to save our performance
-     measurements in registers and then push them onto the new stack*/              
+     measurements in registers and then push them onto the new stack*/
     popq %rax
-    popq %rdx              
+    popq %rdx
 #endif
-              
+
     /* Load new segment selectors for DS, SS and ES*/
     movw $0x10, %bx // XXX TODO Get rid of magic number
     movw %bx, %ds
@@ -358,7 +368,7 @@ sl_startnew:
     movl $0x10000, %esp /* XXX TODO Get rid of magic number*/
 
 /*#ifdef __INIT_LATE__
-    //setup 115200,8n1 on ttyS0 
+    //setup 115200,8n1 on ttyS0
     call raw_serial_init
     mov $0x3fd, %edx // control register for com1
 1:  in (%dx), %al    // read status into AL
@@ -373,12 +383,12 @@ sl_startnew:
 #ifndef PERF_CRIT
     // push measurements onto the new stack
     pushq %rdx
-    pushq %rax              
+    pushq %rax
 #else
     pushq $0x0000000000000000
     pushq $0x0000000000000000
 #endif
-              
+
     pushq %rbp          /*SL base address*/
     pushq %rsi          /*cpu vendor*/
     call xmhf_sl_main   /*call SL main routine*/
@@ -396,15 +406,17 @@ sl_startnew:
 
     //the secure loader GDT
     sl_gdt:
-    .word    sl_gdt_end - sl_gdt_start + 1     // XXX WAS PREVIOUSLY -1 !!!
+    .word    sl_gdt_end - sl_gdt_start         // XXX WAS PREVIOUSLY +-1 !!!
+    sl_gdt_ptr:
     .long    sl_gdt_start                      // This will be fixed up to sl load-base
-    .align    16
+    .align   16
     sl_gdt_start:
     .quad    0x0000000000000000                //0x00: NULL selector
-    .quad    0x00cf9a000000ffff                //0x08: 4G CODE selector with sl load-base
-    .quad    0x00cf92000000ffff                //0x10: 4G DATA selector with sl load-base
-    .quad   0x00cf92000000ffff                 //0x18: 4G DATA selector with zero base
-    .quad    0x0000000000000000                //0x20: NULL selector
+    .quad    0x00cf9a000000ffff                //0x08: 32-bit CODE selector
+    .quad    0x00af9a000000ffff                //0x10: 64-bit CODE selector
+    .quad    0x00cf92000000ffff                //0x18: 32-bit DATA selector
+    .quad    0x0080890000000000                //0x20: TSS (from Linux)
+    .quad    0x0000000000000000                //0x28: NULL selector
     sl_gdt_end:
 
 
