@@ -51,17 +51,18 @@ ENTRY(xmhf_runtime_entry)
 MEMORY
 {
   all (rwxai) : ORIGIN = 0x10200000, LENGTH = 256M /* length is arbitrary */
+  debug (rwxai) : ORIGIN = 0, LENGTH = 1024M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
 SECTIONS
 {
-	. = 0x10200000;
+  . = 0x10200000;
 
   .text : {
-  	*(.s_rpb)
- 		*(.text)
- 		. = ALIGN(4096);    
+    *(.s_rpb)
+    *(.text)
+    . = ALIGN(4096);    
   } =0x9090 
 
   .data : {
@@ -70,18 +71,26 @@ SECTIONS
     *(.comment)
     *(.eh_frame) /* exception-metadata. might be able to discard */
     *(.bss)
- 		. = ALIGN(4096);    
+    . = ALIGN(4096);    
   } =0x9090 
 
   .palign_data : {
     *(.palign_data)
- 		. = ALIGN(4096);    
+    . = ALIGN(4096);    
   } =0x9090 
   
-	.stack : {
-		*(.stack)
- 		. = ALIGN(4096);    
-	} =0x9090
+  .stack : {
+    *(.stack)
+    . = ALIGN(4096);    
+  } =0x9090
+
+  /* debug sections */
+  .debug_abbrev : { *(.debug_abbrev) } >debug
+  .debug_aranges : { *(.debug_aranges) } >debug
+  .debug_info : { *(.debug_info) } >debug
+  .debug_line : { *(.debug_line) } >debug
+  .debug_ranges : { *(.debug_ranges) } >debug
+  .debug_str : { *(.debug_str) } >debug
 
   /* this is to cause the link to fail if there is
    * anything we didn't explicitly place.

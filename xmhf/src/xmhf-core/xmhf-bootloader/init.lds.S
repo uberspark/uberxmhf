@@ -57,15 +57,15 @@ MEMORY
 
 SECTIONS
 {
-	. = 0x1E00000;
-	.multiboot_header : {
-		*(.multiboot_header)
- 		. = ALIGN(4096);    
-	} = 0x9090
+  . = 0x1E00000;
+  .multiboot_header : {
+    *(.multiboot_header)
+    . = ALIGN(4096);    
+  } = 0x9090
 
   .text : {
-  	*(.text)
- 		. = ALIGN(4096);    
+    *(.text)
+    . = ALIGN(4096);    
   } =0x9090 
 
   .data : {
@@ -73,17 +73,25 @@ SECTIONS
     *(.rodata)
     *(.eh_frame)
     *(.bss)
- 		. = ALIGN(4096);    
+    . = ALIGN(4096);    
   } =0x9090 
   
-	.stack : {
-		*(.stack)
- 		. = ALIGN(4096);    
-	} =0x9090
+  .stack : {
+    *(.stack)
+    . = ALIGN(4096);    
+  } =0x9090
 
-        /DISCARD/ : {
-                *(.comment)
-        }
+  /DISCARD/ : {
+    *(.comment)
+  }
+
+  /* debug sections */
+  .debug_abbrev : { *(.debug_abbrev) } >debug
+  .debug_aranges : { *(.debug_aranges) } >debug
+  .debug_info : { *(.debug_info) } >debug
+  .debug_line : { *(.debug_line) } >debug
+  .debug_ranges : { *(.debug_ranges) } >debug
+  .debug_str : { *(.debug_str) } >debug
 
   /* this is to cause the link to fail if there is
    * anything we didn't explicitly place.

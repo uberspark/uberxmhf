@@ -76,6 +76,7 @@ ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
 # For an explanation of these options, see configure.ac or run:
 # ./configure --help
 export MP_VERSION := @MP_VERSION@
+export DEBUG_SYMBOLS := @DEBUG_SYMBOLS@
 export DEBUG_SERIAL := @DEBUG_SERIAL@
 export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
@@ -178,6 +179,9 @@ CFLAGS += -fno-pie -fno-pic
 CFLAGS += $(ADDL_INCLUDES)
 VFLAGS = $(ADDL_INCLUDES)
 
+ifeq ($(DEBUG_SYMBOLS), y)
+	CFLAGS += -g
+endif
 
 #-----generate compiler/assembler defines from configuration options selected
 CFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"

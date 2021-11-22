@@ -120,6 +120,14 @@ SECTIONS
     *(.eh_frame)
   } >low
 
+  /* debug sections */
+  .debug_abbrev : { *(.debug_abbrev) } >debug
+  .debug_aranges : { *(.debug_aranges) } >debug
+  .debug_info : { *(.debug_info) } >debug
+  .debug_line : { *(.debug_line) } >debug
+  .debug_ranges : { *(.debug_ranges) } >debug
+  .debug_str : { *(.debug_str) } >debug
+
   /* this is to cause the link to fail if there is
    * anything we didn't explicitly place.
    * when this does cause link to fail, temporarily comment

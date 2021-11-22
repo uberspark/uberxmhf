@@ -61,6 +61,15 @@ AC_ARG_WITH([target_arch],
                 , [with_target_arch=x86-vmx])
 TARGET_ARCH=$[]with_target_arch
 
+# debug symbols (-g in gcc)
+AC_SUBST([DEBUG_SYMBOLS])
+AC_ARG_ENABLE([debug_symbols],
+        AS_HELP_STRING([--enable-debug-symbols@<:@=yes|no@:>@],
+                [enable debug symbols]),
+                , [enable_debug_symbols=no])
+AS_IF([test "x${enable_debug_symbols}" != "xno"],
+      [DEBUG_SYMBOLS=y],
+      [DEBUG_SYMBOLS=n])
 
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
