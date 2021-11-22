@@ -3,7 +3,7 @@
 
 # source files
 AS_SOURCES =  ./arch/x86/bplt-x86-smptrampoline.S
-AS_SOURCES +=  ./arch/x86/bplt-x86-smplock.S
+AS_SOURCES +=  ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smplock.S
 
 C_SOURCES = bplt-interface.c
 C_SOURCES += bplt-interface-smp.c
