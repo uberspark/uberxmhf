@@ -108,10 +108,18 @@ our C main*/
 
     .code32
 
-    /* get physical location of secure loader - link location in EBP */
+    /* get (physical location of secure loader - link location) in EBP */
     call 1f
 1:  popl %ebp // put EIP into EAX
     subl $1b, %ebp
+
+    /* XXX require EBP to be 2M-aligned, or page table will mis-align */
+    movl $0x1fffff, %eax
+    testl %ebp, %eax
+    je 5f
+6:  hlt
+    jmp 6b
+5:
 
     /* load 64-bit GDT */
     addl %ebp, sl_gdt_ptr(%ebp)
@@ -122,7 +130,7 @@ our C main*/
     orl $(CR4_PAE), %eax
     movl %eax, %cr4
 
-    /* set up page table */
+    /* set up identity-map page table */
 
     /* clear memory */
     leal sl_long_pt_begin(%ebp), %eax
@@ -148,9 +156,9 @@ our C main*/
     movl $0, %eax
     movl $512, %ecx
 4:  movl %eax, %ebx
-    shl $21, %ebx
+    shll $21, %ebx
     orl $0x83, %ebx
-    movl %ebx, sl_pdt(%ebp, %eax, 8)   /* store PDT[EAX] */
+    movl %ebx, sl_pdt(%ebp, %eax, 8)    /* store PDT[EAX] */
     incl %eax
     cmpl %eax, %ecx
     ja 4b
@@ -188,6 +196,64 @@ our C main*/
 
     _sl_start_64:
 
+    /*
+     * Modify the page table so that VA + RBP = PA.
+     * There is PA = RBP + link time address, so VA = link time address.
+     * In x86 mode this was implemented using GDT. Now we use page table.
+     * Assumption 1: SL is less than a page (2 MiB)
+     * Assu
+     */
+
+    /* calculate RBP (was EBP) again */
+
+    leaq (%rip), %rbp
+1:  subq $1b, %rbp
+
+    /* we need RBP to be 2M-aligned */
+    movq $0x1fffff, %rax
+    testq %rbp, %rax
+    je 3f
+2:  hlt
+    jmp 2b
+3:
+
+    /* check RBP == 0 */
+    testq %rbp, %rbp
+    jz _sl_skip_page_table_change   /* unlikely to jump */
+
+    /* change PDT[0] */
+    movq %rbp, %rbx
+    orq $0x83, %rbx
+    movq %rbx, sl_pdt(%ebp)         /* store PDT[0] */
+
+    /* jump to virtual page 0 */
+    movq $4f, %rax                  /* RAX now has link time address */
+    jmpq *%rax
+4:
+
+    /* set PDT[1:] (511 entries, 2 MiB per entry) */
+    movq $1, %rax
+    movq $512, %rcx
+5:  movq %rax, %rbx
+    shlq $21, %rbx
+    addq %rbp, %rbx
+    orq $0x83, %rbx
+    movq %rbx, sl_pdt(%rbp, %rax, 8)    /* store PDT[EAX] */
+    incq %rax
+    cmpq %rax, %rcx
+    ja 5b
+
+    _sl_skip_page_table_change:
+
+    /* Now we only need RBP */
+    xorq %rax, %rax
+    xorq %rbx, %rbx
+    xorq %rcx, %rcx
+    xorq %rdx, %rdx
+
+    /* Setup ESP to top of 64K (it will already be there on AMD)*/
+    movl $0x10000, %esp /* XXX TODO Get rid of magic number*/
+
 #ifndef PERF_CRIT
     /*get cycle count using rdtsc; useful to evaluate how long DRTM
     takes*/
@@ -197,53 +263,33 @@ our C main*/
     pushq %rax
 #endif
 
-    /*save EAX, for AMD and the stub SENTER DRTM this contains the
-    64K aligned physical memory address where the sl was loaded
-        movl %eax, %ebp
-     AMD leaves base addr in EAX, but Intel does not.  Since both CS and SS
-     are valid, read and align EIP to discover base addr
-
-     Figure out our own base address and place into EAX.
-     On AMD, this value is already in EAX.  However, on Intel
-     it is not guaranteed to be available (*might* be in ECX;
-     TODO is to check whether ECX value is reliable on Intel).
-     Cross-processor solution is call/pop/align.*/
-    call 1f
-1:  popq %rax // put EIP into EAX
-    andq $0xffffffffffff0000, %rax // 64K-align
-    movq %rax, %rbp
-
-    /*Other assumptions: common to both Intel and AMD:
-     EFLAGS_IF=0 (GIF=0 on AMD) so we are running with no interruptions
-     CR0.PG=0, i.e., paging is off*/
-
     /* Determine processor type to perform some low-level initialization
      after DRTM. On AMD CPUs, we need to clear R_INIT, DIS_A20M and
      CR_DPD (to enable HDT access) in VM_CR_MSR.*/
 sl_cpu_vendor:
-        xor    %eax, %eax
-        cpuid
-        cmpl $(INTEL_STRING_DWORD1), %ebx
-        jne sl_cpu_vendor_notintel
-        cmpl $(INTEL_STRING_DWORD2), %edx
-        jne sl_cpu_vendor_notintel
-        cmpl $(INTEL_STRING_DWORD3), %ecx
-        jne sl_cpu_vendor_notintel
-        movl $(CPU_VENDOR_INTEL), %esi
-        jmp sl_cpu_intel
-    sl_cpu_vendor_notintel:
-        cmpl $(AMD_STRING_DWORD1), %ebx
-        jne sl_cpu_vendor_unknown
-        cmpl $(AMD_STRING_DWORD2), %edx
-        jne sl_cpu_vendor_unknown
-        cmpl $(AMD_STRING_DWORD3), %ecx
-        jne sl_cpu_vendor_unknown
-        movl $(CPU_VENDOR_AMD), %esi
-        jmp sl_cpu_amd
-    sl_cpu_vendor_unknown:
-        //this should never happen, but we have a fallback in case
-        ud2
-        hlt
+    xor    %eax, %eax
+    cpuid
+    cmpl $(INTEL_STRING_DWORD1), %ebx
+    jne sl_cpu_vendor_notintel
+    cmpl $(INTEL_STRING_DWORD2), %edx
+    jne sl_cpu_vendor_notintel
+    cmpl $(INTEL_STRING_DWORD3), %ecx
+    jne sl_cpu_vendor_notintel
+    movl $(CPU_VENDOR_INTEL), %esi
+    jmp sl_cpu_intel
+sl_cpu_vendor_notintel:
+    cmpl $(AMD_STRING_DWORD1), %ebx
+    jne sl_cpu_vendor_unknown
+    cmpl $(AMD_STRING_DWORD2), %edx
+    jne sl_cpu_vendor_unknown
+    cmpl $(AMD_STRING_DWORD3), %ecx
+    jne sl_cpu_vendor_unknown
+    movl $(CPU_VENDOR_AMD), %esi
+    jmp sl_cpu_amd
+sl_cpu_vendor_unknown:
+    //this should never happen, but we have a fallback in case
+    ud2
+    hlt
 
     /* If AMD CPU enable a few things that SKINIT disables.
      Enable HDT debugging, also clear R_INIT and DIS_A20M.
@@ -256,141 +302,33 @@ sl_cpu_amd:
     andl $(~(1<<VM_CR_DIS_A20M)), %eax
     wrmsr
 
-    movl $(CPU_VENDOR_AMD), %edx
+    movq $(CPU_VENDOR_AMD), %rdx
     jmp sl_cpu_common
 
 sl_cpu_intel:
-    movl $(CPU_VENDOR_INTEL), %edx
+    movq $(CPU_VENDOR_INTEL), %rdx
     jmp sl_cpu_common
 
     /* Common code from now on*/
 sl_cpu_common:
-    /* From here on we use EBP as our base and variable accesses will be as offsets
-     from _sl_header for position independence.*/
 
-    /* Cross-processor challenge:
-       1. On AMD CS,SS are valid and DS is not.
-       2. On Intel CS,DS are valid and SS is not.
-       3. On both, CS is read-only.
-     Solution:
-       1. Read memory using %cs segment-override prefix.
-       2. Write memory using %ss and %ds on AMD and Intel, respectively.
-          Processor vendor in register EDX from above CPU-specific code.
-    */
+    /* In x86 GDT is modified, but not here */
 
-    /* Setup GDT so that CS:base=sl base, limit=64K, type=code
-     DS,SS,ES: base=sl base, limit=64K, type=data
-     FS and GS: base=0, limit=4G, type=data (FLAT)*/
-
-    /*grab offset of sl_gdt_start*/
-    movl $(sl_gdt_start), %ebx
-    movl %ebp, %eax              /*eax = sl base address*/
-    movl %ebp, %ecx              /*ecx = sl base address*/
-    andl $0xFF000000, %eax       /*eax = bits 24-31 of sl base address*/
-    andl $0x00FF0000, %ecx       /*ecx = bits 16-23 of sl base address*/
-    shrl $16, %ecx               /*bits 0-7 of ecx = bits 16-23 of sl base address*/
-    orl %ecx, %eax               /*bits 0-7 of eax = bits 16-23 of sl base address*/
-                                 /*bits 24-31 of eax = bits 24-31 of sl base address*/
-                                 /*eax is now in accordance with the high 32-bits*/
-                                 /*of a segment descriptor*/
-
-    /* EAX now contains a mask that can be ORed against GDT entries.
-     It contains [byte 3] [0] [0] [byte 2] of a segment descriptor's base address.*/
-
-    /* Get high 32-bits of 64-bit GDT entry for selector 0x08 (code)
-     and update it with the base address of the sl.*/
-    movl %cs:12(%ebp, %ebx), %esi /* 12 = 8-byte null descriptor + skip 4 low bytes*/
-    andl  $0x00FFFF00, %esi       /* Mask off any existing base addr bits that are set*/
-    orl %eax, %esi                /* OR in base addr bits computed in EAX */
-    /* Put the updated entry back in the GDT (processor-specific)*/
-    cmpl $(CPU_VENDOR_AMD), %edx
-    jne 1f
-    movl %esi, %ss:12(%ebp, %ebx) /* AMD*/
-    jmp 2f
-    1: movl %esi, %ds:12(%ebp, %ebx) /* Intel*/
-    2:
-
-    /* Get high 32-bits of 64-bit GDT entry for selector 0x10 (data)
-     and update it with the base address of the sl.*/
-    movl %cs:20(%ebp, %ebx), %esi
-    andl $0x00FFFF00, %esi
-    orl %eax, %esi
-    /* Put the updated entry back in the GDT (processor-specific)*/
-    cmpl $(CPU_VENDOR_AMD), %edx
-    jne 1f
-    movl %esi, %ss:20(%ebp, %ebx) /* AMD*/
-    jmp 2f
-    1: movl %esi, %ds:20(%ebp, %ebx) /* Intel*/
-    2:
-
-    /* Fixup linear address of GDT pseudo-descriptor using sl load-base.*/
-    movl $(sl_gdt), %ebx
-    cmpl $(CPU_VENDOR_AMD), %edx
-    jne 1f
-    addl %ebp, %ss:2(%ebp, %ebx)    /* AMD*/
-    jmp 2f
-    1: addl %ebp, %ds:2(%ebp, %ebx) /* Intel*/
-    2:
-
-    /*load GDT*/
-    lgdt %cs:(%ebp,%ebx)
-
-    movl $(sl_gdt), %ebx
-
-    /*Far jump to reload %cs*/
-    // TODO: jmpq $0x08, $(sl_startnew)
-
-    // We start here with our new GDT CS selector
-sl_startnew:
-    /* cpu vendor is in edx, move it into esi in case PERF_CRIT
-     is not definied, the following block will clobber edx*/
-    movl    %edx, %esi
-
-#ifndef PERF_CRIT
-    /* we are switching stacks so we need to save our performance
-     measurements in registers and then push them onto the new stack*/
-    popq %rax
-    popq %rdx
-#endif
-
-    /* Load new segment selectors for DS, SS and ES*/
-    movw $0x10, %bx // XXX TODO Get rid of magic number
-    movw %bx, %ds
-    movw %bx, %es
-    movw %bx, %ss
-
-    /* Load 4G flat selectors for FS and GS (used for TPM and TXT reg access)*/
-    movw $0x18, %bx
-    movw %bx, %fs
-    movw %bx, %gs
-
-    /* Setup ESP to top of 64K (it will already be there on AMD)*/
-    movl $0x10000, %esp /* XXX TODO Get rid of magic number*/
-
-/*#ifdef __INIT_LATE__
-    //setup 115200,8n1 on ttyS0
-    call raw_serial_init
-    mov $0x3fd, %edx // control register for com1
-1:  in (%dx), %al    // read status into AL
-    test $0x20, %al  // check for ready
-    je 1b            // keep trying
-    mov $0x3f8, %edx // data register for com1
-    mov $0x40, %al   // output an @ character
-    out %al, (%dx)
-#endif*/
-
+    /* cpu vendor is in rdx, move it into rdi */
+    movq %rdx, %rdi
 
 #ifndef PERF_CRIT
     // push measurements onto the new stack
-    pushq %rdx
-    pushq %rax
+    popq %rdx           /* 4th argument: EDX of cpuid */
+    popq %rcx           /* 3rd argument: EAX of cpuid */
 #else
-    pushq $0x0000000000000000
-    pushq $0x0000000000000000
+    movq $0, %rdx       /* 4th argument */
+    movq $0, %rcx       /* 3rd argument */
 #endif
 
-    pushq %rbp          /*SL base address*/
-    pushq %rsi          /*cpu vendor*/
+    movq %rbp, %rsi     /* 2nd argument */
+    /* 1st argument: vendor, already in RDI */
+
     call xmhf_sl_main   /*call SL main routine*/
 
     /* We should never get here*/
@@ -428,6 +366,10 @@ sl_startnew:
  actually "allocates" the stack up until 0x10000*/
 .section .sl_stack
     .fill 2048, 1, 0
+
+/*----------------------------------------------------------------------
+ PAGE TABLE
+----------------------------------------------------------------------*/
 
 /* page table for long mode */
 .section .sl_long_pt
