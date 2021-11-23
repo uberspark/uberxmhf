@@ -132,7 +132,7 @@ our C main*/
 
     /* set up identity-map page table */
 
-    /* clear memory */
+    /* clear memory, because page table is in untrusted region */
     leal sl_long_pt_begin(%ebp), %eax
     leal sl_long_pt_end(%ebp), %ebx
 2:  cmpl %eax, %ebx
@@ -147,14 +147,23 @@ our C main*/
     orl $0x3, %eax              /* set P and R/W bits */
     movl %eax, sl_pml4t(%ebp)   /* store PML4T[0] */
 
-    /* set PDPT (1 entry, 1 GiB per entry) */
-    leal sl_pdt(%ebp), %eax
-    orl $0x3, %eax              /* set P and R/W bits */
-    movl %eax, sl_pdpt(%ebp)    /* store PDPT[0] */
+    /* set PDPT (4 entries, 1 GiB per entry) */
+    leal sl_pdt_0(%ebp), %eax
+    orl $0x3, %eax                  /* set P and R/W bits */
+    movl %eax, sl_pdpt+8*0(%ebp)    /* store PDPT[0] */
+    leal sl_pdt_1(%ebp), %eax
+    orl $0x3, %eax
+    movl %eax, sl_pdpt+8*1(%ebp)    /* store PDPT[1] */
+    leal sl_pdt_2(%ebp), %eax
+    orl $0x3, %eax
+    movl %eax, sl_pdpt+8*2(%ebp)    /* store PDPT[2] */
+    leal sl_pdt_3(%ebp), %eax
+    orl $0x3, %eax
+    movl %eax, sl_pdpt+8*3(%ebp)    /* store PDPT[3] */
 
-    /* set PDT (512 entries, 2 MiB per entry) */
+    /* set PDT (512*4 = 2048 entries, 2 MiB per entry) */
     movl $0, %eax
-    movl $512, %ecx
+    movl $2048, %ecx
 4:  movl %eax, %ebx
     shll $21, %ebx
     orl $0x83, %ebx
@@ -197,11 +206,12 @@ our C main*/
     _sl_start_64:
 
     /*
-     * Modify the page table so that VA + RBP = PA.
+     * Modify the page table so that (VA + RBP) % 4GiB = PA.
+     * When address is now too high, VA + RBP = PA.
      * There is PA = RBP + link time address, so VA = link time address.
      * In x86 mode this was implemented using GDT. Now we use page table.
-     * Assumption 1: SL is less than a page (2 MiB)
-     * Assu
+     * Assumption: SL is less than a page (2 MiB)
+     * We also need to access PA < RBP, so we implement (VA + RBP) % 4GiB = PA.
      */
 
     /* calculate RBP (was EBP) again */
@@ -231,12 +241,13 @@ our C main*/
     jmpq *%rax
 4:
 
-    /* set PDT[1:] (511 entries, 2 MiB per entry) */
+    /* set PDT[1:] (2047 entries, 2 MiB per entry) */
     movq $1, %rax
-    movq $512, %rcx
+    movq $2048, %rcx
 5:  movq %rax, %rbx
     shlq $21, %rbx
     addq %rbp, %rbx
+    movl %ebx, %ebx                     /* drop upper 32-bits */
     orq $0x83, %rbx
     movq %rbx, sl_pdt(%rbp, %rax, 8)    /* store PDT[EAX] */
     incq %rax
@@ -379,5 +390,12 @@ sl_cpu_common:
     sl_pdpt:
     .fill 4096, 1, 0
     sl_pdt:
+    sl_pdt_0:
+    .fill 4096, 1, 0
+    sl_pdt_1:
+    .fill 4096, 1, 0
+    sl_pdt_2:
+    .fill 4096, 1, 0
+    sl_pdt_3:
     .fill 4096, 1, 0
     sl_long_pt_end:
