@@ -96,14 +96,14 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		
 	//debug: dump SL parameter block
 	printf("\nSL: slpb at = 0x%08lx", (sla_t)&slpb);
-	printf("\n	errorHandler=0x%08lx", slpb.errorHandler);
+	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
 	printf("\n	isEarlyInit=0x%08x", slpb.isEarlyInit);
 	printf("\n	numE820Entries=%u", slpb.numE820Entries);
 	printf("\n	system memory map buffer at 0x%08lx", (sla_t)&slpb.memmapbuffer);
 	printf("\n	numCPUEntries=%u", slpb.numCPUEntries);
 	printf("\n	cpuinfo buffer at 0x%08lx", (sla_t)&slpb.cpuinfobuffer);
-	printf("\n	runtime size= %lu bytes", slpb.runtime_size);
-	printf("\n	OS bootmodule at 0x%08lx, size=%lu bytes", 
+	printf("\n	runtime size= %u bytes", slpb.runtime_size);
+	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
     printf("\n\tcmdline = \"%s\"", slpb.cmdline);
 
@@ -159,12 +159,12 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
 		//setup guest OS boot module info in LPB	
-		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
-		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
+		rpb->XtGuestOSBootModuleBase=(hva_t)(slpb.runtime_osbootmodule_base);
+		rpb->XtGuestOSBootModuleSize=(hva_t)(slpb.runtime_osbootmodule_size);
 
 		//pass optional app module if any
-		rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
-		rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
+		rpb->runtime_appmodule_base = (hva_t)(slpb.runtime_appmodule_base);
+		rpb->runtime_appmodule_size = (hva_t)(slpb.runtime_appmodule_size);
 
 	#if defined (__DEBUG_SERIAL__)
 		//pass along UART config for serial debug output

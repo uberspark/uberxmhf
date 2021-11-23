@@ -50,13 +50,21 @@
 //---spinlock/unlock------------------------------------------------------------
 .section .text
 
+/* the lock size is 32-bits (u32, same as x86) */
+
   .global spin_lock
   spin_lock:
-      // TODO: not implemented
-      hlt
+    btl $0, (%rdi)
+    jnc spin_lock
+
+    lock
+    btrl $0, (%rdi)
+    jnc spin_lock
+
+    ret
 
   .global spin_unlock
   spin_unlock:
-      // TODO: not implemented
-      hlt
+    btsl $0, (%rdi)
+    ret
 

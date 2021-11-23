@@ -110,17 +110,17 @@ typedef struct {
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {
     u32     magic;                      // magic identifier
-    sla_t   errorHandler;               // error handler (currently unused)
+    u32     errorHandler;               // error handler (currently unused)
     u32     isEarlyInit;                // "early" or "late" init
     u32     numE820Entries;             // number of E820 entries
     u8      memmapbuffer[1280];         // max. 64 entries of 20 bytes each describing the system memory map
     u32     numCPUEntries;              // number of cores
     u8      cpuinfobuffer[128];         // max. 8 entries of 16 bytes each describing each physical core in the system
-    hva_t   runtime_size;               // size of the runtime image
-    hva_t   runtime_osbootmodule_base;  // guest OS bootmodule base
-    hva_t   runtime_osbootmodule_size;  // guest OS bootmodule size
-    hva_t   runtime_appmodule_base;     // XMHF hypapp optional module base
-    hva_t   runtime_appmodule_size;     // XMHF hypapp optional module size
+    u32     runtime_size;               // size of the runtime image
+    u32     runtime_osbootmodule_base;  // guest OS bootmodule base
+    u32     runtime_osbootmodule_size;  // guest OS bootmodule size
+    u32     runtime_appmodule_base;     // XMHF hypapp optional module base
+    u32     runtime_appmodule_size;     // XMHF hypapp optional module size
     u64     rdtsc_before_drtm;          // Performance measurements related to DRTM
     u64     rdtsc_after_drtm;
 
