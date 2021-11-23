@@ -54,6 +54,12 @@
 
 #ifndef __ASSEMBLY__
 
+#ifdef __X86_64__
+
+#include <stdarg64.h>
+
+#else /* !__X86_64__ */
+
 typedef void *va_list;
 
 #define	va_start(list, name) (void) (list = (void *)((char *)&name + \
@@ -62,6 +68,7 @@ typedef void *va_list;
 
 #define	va_end(list) (void)0
 
+#endif /* __X86_64__ */
 
 #endif //#ifndef __ASSEMBLY__
 
