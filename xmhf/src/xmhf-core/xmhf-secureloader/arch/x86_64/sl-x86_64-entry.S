@@ -241,18 +241,7 @@ our C main*/
     jmpq *%rax
 4:
 
-    /* set PDT[1:] (2047 entries, 2 MiB per entry) */
-    movq $1, %rax
-    movq $2048, %rcx
-5:  movq %rax, %rbx
-    shlq $21, %rbx
-    addq %rbp, %rbx
-    movl %ebx, %ebx                     /* drop upper 32-bits */
-    orq $0x83, %rbx
-    movq %rbx, sl_pdt(%rbp, %rax, 8)    /* store PDT[EAX] */
-    incq %rax
-    cmpq %rax, %rcx
-    ja 5b
+    /* PDT[1:] will be set in C code */
 
     _sl_skip_page_table_change:
 
@@ -368,7 +357,6 @@ sl_cpu_common:
     .quad    0x0000000000000000                //0x28: NULL selector
     sl_gdt_end:
 
-
 /*----------------------------------------------------------------------
  STACK
 ----------------------------------------------------------------------*/
@@ -389,6 +377,7 @@ sl_cpu_common:
     .fill 4096, 1, 0
     sl_pdpt:
     .fill 4096, 1, 0
+    .global sl_pdt
     sl_pdt:
     sl_pdt_0:
     .fill 4096, 1, 0

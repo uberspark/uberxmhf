@@ -15,7 +15,7 @@ C_SOURCES += ./arch/x86/bplt-x86-pci.c
 C_SOURCES += ./arch/x86/bplt-x86-acpi.c
 C_SOURCES += ./arch/x86/bplt-x86-pit.c
 C_SOURCES += ./arch/x86/bplt-x86-smp.c
-C_SOURCES += ./arch/x86/bplt-x86-addressing.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-addressing.c
 C_SOURCES += ./arch/x86/bplt-x86-reboot.c
 C_SOURCES += ./arch/x86/bplt-x86-cpu.c
 

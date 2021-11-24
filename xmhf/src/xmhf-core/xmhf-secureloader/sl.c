@@ -51,7 +51,7 @@
 #include <xmhf.h> 
 
 RPB * rpb;
-u32 sl_baseaddr=0;	
+u32 sl_baseaddr=0;
 
 //this is the SL parameter block and is placed in a seperate UNTRUSTED
 //section. It is populated by the "init" (late or early) loader, which
@@ -69,8 +69,11 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
-	
-	
+
+#ifdef __X86_64__
+	xmhf_setup_sl_paging(baseaddr);
+#endif /* __X86_64__ */
+
 	//linker relocates sl image starting from 0, so
     //parameter block must be at offset 0x10000    
 	HALT_ON_ERRORCOND( (sla_t)&slpb == 0x10000 ); 

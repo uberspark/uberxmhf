@@ -6,7 +6,7 @@ AS_SOURCES = ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM)-entry.S
 AS_SOURCES += ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM)-sup.S
 
 C_SOURCES = sl.c
-C_SOURCES += ./arch/x86/sl-x86.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM).c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
@@ -32,7 +32,7 @@ OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smplock.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-addressing.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-addressing.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-cpu.o
 
 
