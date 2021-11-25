@@ -81,8 +81,8 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB * rpb);
 u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
 #ifdef __X86_64__
 void xmhf_setup_sl_paging(u32 baseaddr);
-void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
-	u32 entrypoint, u32 stacktop, u32 cr3);	// TODO: update u32
+void xmhf_sl_arch_x86_64_invoke_runtime_entrypoint(u64 gdtbase, u64 idtbase,
+	u64 entrypoint, u64 stacktop, u64 cr3, u64 sla_off);
 #else /* !__X86_64__ */
 void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop, u32 cr3)__attribute__((cdecl));

@@ -51,62 +51,67 @@
 #include <xmhf.h> 
 
 .section .text
-/*------------------------------------------------------------------------------*/	
-	.global xmhf_sl_arch_x86_invoke_runtime_entrypoint
-xmhf_sl_arch_x86_invoke_runtime_entrypoint:
 /*------------------------------------------------------------------------------*/
-	/*turn on paging*/
-	movl	$(0x00000030), %eax	//CR4_PAE | CR4_PSE
-	movq	%rax, %cr4
-	movl	0x14(%esp), %edi	//EDI = page table base address
-	movq	%rdi, %cr3			
-	movl	$(0x80000015), %eax	 // ET, EM, PE, PG
-	movq	%rax, %cr0			 //turn on paging
+    .global xmhf_sl_arch_x86_64_invoke_runtime_entrypoint
+xmhf_sl_arch_x86_64_invoke_runtime_entrypoint:
+/*------------------------------------------------------------------------------*/
+    /* test whether sla == spa */
+    cmpq    $0, %r9
+    je      skip_jump
 
-	/*grab gdtbase and idtbase parameters*/
-	movl 	0x4(%esp), %esi
-	movl 	0x8(%esp), %edi
+    /* save arguments */
+    push    %r9     /* sla2spa(0) */
+    push    %r8     /* cr3 */
+    push    %rcx    /* stacktop */
+    push    %rdx    /* entrypoint */
+    push    %rsi    /* idtbase */
+    push    %rdi    /* gdtbase */
 
-	/*load runtime gdt and idt*/
-	subl  $0x8, %esp
-	
-	movw  %fs:(%esi), %ax
-	movw  %ax, (%esp)
-	movl  %fs:0x2(%esi), %eax
-	movl  %eax, 0x2(%esp)
+    /* modify sl page table to be able to jump back */
+    movq    $0, %rdi
+    call    xmhf_setup_sl_paging
 
-	lgdt	(%esp)
+    /* restore arguments */
+    pop     %rdi
+    pop     %rsi
+    pop     %rdx
+    pop     %rcx
+    pop     %r8
+    pop     %r9
 
-	movw  %fs:(%edi), %ax
-	movw  %ax, (%esp)
-	movl  %fs:0x2(%edi), %eax
-	movl  %eax, 0x2(%esp)
-	
-	lidt	(%esp)
+    leaq    1f(%r9), %rax   /* physical address of $1f */
+    jmpq    *%rax
+1:
 
-	addl  $0x8, %esp
-	
-	/*grab entrypoint and topofstack parameters*/
-	movl 	0xC(%esp), %edi
-	movl  	0x10(%esp), %esi
+    skip_jump:
 
-	/*load runtime segment selectors*/
-	movw	$(__DS), %ax
-	movw	%ax, %ds	
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
-	
-	/*initialize runtime stack*/
-	movw  %ax, %ss
-	movl  %esi,%esp
+    /* switch to runtime paging */
+    movq %r8, %cr3
 
-	/*clear flags*/
-	pushq	$0
-	popf
-	
-	/*far jump to runtime entry point*/
-	pushq	$(__CS)
-	pushq	%rdi
-	lretq
-	
+    /* switch to runtime gdt */
+    lgdt (%rdi)
+    lidt (%rsi)
+
+    /*
+     * the structure of sl GDT and runtime gdt are mostly the same, so no need
+     * to change segment etc.
+     */
+
+    /* set segment registers (should be no-op) */
+    movw    $(__DS), %ax
+    movw    %ax, %ss
+    movw    %ax, %ds
+    movw    %ax, %es
+    movw    %ax, %fs
+    movw    %ax, %gs
+
+    /* initialize runtime stack */
+    movq    %rcx, %rsp
+
+    /* clear flags */
+    pushq   $0
+    popf
+
+    /* jump to runtime entry point */
+    jmpq    *%rdx
+

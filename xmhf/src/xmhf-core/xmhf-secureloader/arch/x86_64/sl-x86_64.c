@@ -113,7 +113,7 @@ u64 xmhf_sl_arch_x86_64_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t 
     default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW);
     for (i = 0; i < (PAGE_ALIGN_UP512G(ADDR_4GB) >> PAGE_SHIFT_512G); i++) {
         u64 pdpt_spa = sla2spa((void *)xpdpt) + (i << PAGE_SHIFT_4K);
-        xpml4[i] = p4l_make_pdpe(pdpt_spa, default_flags);
+        xpml4[i] = p4l_make_plm4e(pdpt_spa, default_flags);
     }
 
     /* PDPTE -> PDT */
@@ -141,56 +141,6 @@ u64 xmhf_sl_arch_x86_64_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t 
 
     return sla2spa((void *)xpml4);
 }
-
-#if 0
-//---runtime paging setup-------------------------------------------------------
-//physaddr and virtaddr are assumed to be 2M aligned
-//returns 32-bit base address of page table root (can be loaded into CR3)
-u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
-  pdpt_t xpdpt;
-  pdt_t xpdt;
-  hva_t hva=0;
-  u32 i;
-  u64 default_flags;
-
-  printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
-         __FUNCTION__, runtime_spa, runtime_sva, totalsize);
-
-  xpdpt= hva2sla((void *)rpb->XtVmmPdptBase);
-  xpdt = hva2sla((void *)rpb->XtVmmPdtsBase);
-
-  printf("\n	pa xpdpt=0x%p, xpdt=0x%p", xpdpt, xpdt);
-
-  default_flags = (u64)(_PAGE_PRESENT);
-
-  //init pdpt
-  for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
-    u64 pdt_spa = sla2spa((void *)xpdt) + (i << PAGE_SHIFT_4K);
-    xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
-  }
-
-  //init pdts with unity mappings
-  default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
-  for(i = 0, hva = 0;
-      i < (ADDR_4GB >> (PAE_PDT_SHIFT));
-      i ++, hva += PAGE_SIZE_2M) {
-    u64 spa = hva2spa((void*)hva);
-    u64 flags = default_flags;
-
-    if(spa == 0xfee00000 || spa == 0xfec00000) {
-      //Unity-map some MMIO regions with Page Cache disabled
-      //0xfed00000 contains Intel TXT config regs & TPM MMIO
-      //0xfee00000 contains LAPIC base
-      HALT_ON_ERRORCOND(hva==spa); // expecting these to be unity-mapped
-      flags |= (u64)(_PAGE_PCD);
-    }
-
-    xpdt[i] = pae_make_pde_big(spa, flags);
-  }
-
-  return sla2spa((void *)xpdpt);
-}
-#endif /* 0 */
 
 #endif //__XMHF_VERIFICATION__
 
@@ -356,8 +306,8 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 
 	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
-	xmhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt,
-				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
+	xmhf_sl_arch_x86_64_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt,
+				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba, sla2spa((void *)0));
 	#else
 	return;
 	#endif

@@ -182,14 +182,14 @@ our C main*/
     btsl $(EFER_LME), %eax
     wrmsr
 
-    /* set LDT and TSS (from Linux code) */
+    /* set LDT and TSS (from Linux code) (TODO: likely useless) */
     xorl %eax, %eax
     lldt %ax
-    movl $0x20, %eax    /* 4th entry in GDT (TSS) */
+    movl $(__TRSEL), %eax   /* 4th entry in GDT (TSS) */
     ltr %ax
 
     /* setup jump to 64-bit mode */
-    pushl $0x10         /* 2nd entry in GDT (64-bit CODE) */
+    pushl $(__CS)           /* 2nd entry in GDT (64-bit CODE) */
     leal _sl_start_64(%ebp), %eax
     pushl %eax
 

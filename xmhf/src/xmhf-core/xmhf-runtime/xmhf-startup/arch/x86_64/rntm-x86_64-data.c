@@ -69,10 +69,16 @@ arch_x86_64_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 };
 
 
-// TODO: runtime PAE page tables: not needed in x86_64
-u8 x_4level_pml4[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_4level_pdpt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_4level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+// runtime 4-level page tables
+#define NPDPT   (PAGE_ALIGN_UP512G(ADDR_4GB) >> PAGE_SHIFT_512G)
+#define NPDT    (PAGE_ALIGN_UP1G(ADDR_4GB) >> PAGE_SHIFT_1G)
+
+u8 x_4level_pml4[PAGE_SIZE_4K] __attribute__((section(".palign_data")));
+u8 x_4level_pdpt[NPDPT * PAGE_SIZE_4K] __attribute__((section(".palign_data")));
+u8 x_4level_pdt[NPDT * PAGE_SIZE_4K] __attribute__((section(".palign_data")));
+
+#undef NPDPT
+#undef NPDT
 
 //runtime stack
 u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
