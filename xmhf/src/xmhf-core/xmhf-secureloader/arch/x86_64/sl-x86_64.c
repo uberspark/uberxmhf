@@ -259,12 +259,12 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	u32 ptba;	//page table base address
 	TSSENTRY *t;
-	uintptr_t tss_base;
-	uintptr_t gdt_base;
+	hva_t tss_base;
+	hva_t gdt_base;
 	
 	#ifndef __XMHF_VERIFICATION__
 		//setup runtime TSS
-		tss_base=(uintptr_t)rpb->XtVmmTSSBase;
+		tss_base=(hva_t)rpb->XtVmmTSSBase;
 		gdt_base= *(uintptr_t *)(hva2sla((void *)(rpb->XtVmmGdt + 2)));
 	#else
 		tss_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
@@ -272,12 +272,13 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	#endif
 	
 		//fix TSS descriptor, 18h
-		t= (TSSENTRY *)((uintptr_t)gdt_base + __TRSEL );
+		t= (TSSENTRY *)((uintptr_t)(hva2sla((void *)gdt_base)) + __TRSEL );
 		t->attributes1= 0x89;
 		t->limit16_19attributes2= 0x10;
-		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
+		t->baseAddr0_15= (u16)(tss_base & 0x000000000000FFFF);
+		t->baseAddr16_23= (u8)((tss_base & 0x0000000000FF0000) >> 16);
+		t->baseAddr24_31= (u8)((tss_base & 0x00000000FF000000) >> 24);
+		t->baseAddr32_63= (u32)((tss_base & 0xFFFFFFFF00000000) >> 32);
 		t->limit0_15=0x67;
 	printf("\nSL: setup runtime TSS.");	
 
