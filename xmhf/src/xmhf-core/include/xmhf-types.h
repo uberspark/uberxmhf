@@ -81,9 +81,9 @@ typedef struct _integrity_measurement_values {
 typedef struct {
     u32     magic;
     hva_t   XtVmmEntryPoint;
-#ifdef __X86_64__
+#ifdef __XMHF_X86_64__
     hva_t   XtVmmPml4Base;
-#endif /* __X86_64__ */
+#endif /* __XMHF_X86_64__ */
     hva_t   XtVmmPdptBase;
     hva_t   XtVmmPdtsBase;
     hva_t   XtGuestOSBootModuleBase;

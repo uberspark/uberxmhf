@@ -68,16 +68,18 @@ extern u32 xmhf_baseplatform_arch_flat_va_offset;
 
 /* Setup paging for secureloader */
 void xmhf_setup_sl_paging(u32 baseaddr) {
+    u64 default_flags;
     xmhf_baseplatform_arch_flat_va_offset = baseaddr;
     /*
      * The first page (contains sl code and stack) is set up by assembly.
      * This function sets up paging for the rest virtual pages (up to 4 GiB).
      */
-    for (u64 i = 1; i < 2048; i++) {
-        u64 hva = (i << 21);
-        hva += (u64)baseaddr;
-        hva &= (1LU << 32) - 1LU;   /* wrap around for low physical addresses */
-        sl_pdt[i] = hva | 0x83;
+    default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
+    for (u64 i = 1; i < (PAGE_ALIGN_UP2M(ADDR_4GB) >> PAGE_SHIFT_2M); i++) {
+        u64 sla = (i << PAGE_SHIFT_2M);
+        u64 hva = sla + (u64)baseaddr;
+        hva &= ADDR_4GB - 1ULL; /* wrap around for low physical addresses */
+        sl_pdt[i] = p4l_make_pde_big(hva, default_flags);
     }
 }
 
