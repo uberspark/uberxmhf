@@ -70,8 +70,9 @@ arch_x86_64_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 
 
 // TODO: runtime PAE page tables: not needed in x86_64
-u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+u8 x_4level_pml4[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+u8 x_4level_pdpt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+u8 x_4level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 
 //runtime stack
 u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
@@ -80,8 +81,9 @@ u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
 RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
 	.XtVmmEntryPoint= (hva_t)xmhf_runtime_entry,
-	.XtVmmPdptBase= (hva_t)x_3level_pdpt,
-	.XtVmmPdtsBase= (hva_t)x_3level_pdt,
+	.XtVmmPml4Base= (hva_t)x_4level_pml4,
+	.XtVmmPdptBase= (hva_t)x_4level_pdpt,
+	.XtVmmPdtsBase= (hva_t)x_4level_pdt,
 	.XtGuestOSBootModuleBase= 0,
 	.XtGuestOSBootModuleSize= 0,
 	.runtime_appmodule_base= 0,
