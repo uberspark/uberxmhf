@@ -44,63 +44,92 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * rntm-x86-data.c
- * EMHF runtime data definitions - x86 specific
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+//io.h - legacy I/O read and write support
+// author: amit vasudevan (amitvasudevan@acm.org)
+#ifndef __IO_H_
+#define __IO_H_
 
-#include <xmhf.h>
+#ifndef __ASSEMBLY__
 
-//runtime GDT
-u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
-	0x0000000000000000ULL,
-	0x00cf9a000000ffffULL,
-	0x00af9a000000ffffULL,
-	0x00cf92000000ffffULL,
-	0x0080890000000000ULL,
-	0x0000000000000000ULL
-};
+#ifndef __XMHF_VERIFICATION__
 
-//runtime GDT descriptor
-arch_x86_64_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
-	.size=sizeof(x_gdt_start)-1,
-	.base=(u64)&x_gdt_start,
-};
+	static inline void outl(u32 val, u32 port){
+	  __asm__ __volatile__("out %0, %w1"
+			     : /* no outputs */
+			     :"a"(val), "Nd"((u16)port)); 
+	}
 
+	static inline void outw (u32 value, u32 port){
+	  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
+	}
 
-// TODO: runtime PAE page tables: not needed in x86_64
-u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+	static inline void outb (u32 value, u32 port){                        
+	  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
+	}
 
-//runtime stack
-u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
+	static inline u32 inl(u32 port){
+	  u32 val;
+	  
+	  __asm__ __volatile__("in %w1, %0"
+			       :"=a"(val)
+			       :"Nd"((u16)port));
+	  return val;
+	}
 
+	static inline unsigned short inw (u32 port){ 
+	  unsigned short _v;
 
-RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
-	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	.XtVmmEntryPoint= (hva_t)xmhf_runtime_entry,
-	.XtVmmPdptBase= (hva_t)x_3level_pdpt,
-	.XtVmmPdtsBase= (hva_t)x_3level_pdt,
-	.XtGuestOSBootModuleBase= 0,
-	.XtGuestOSBootModuleSize= 0,
-	.runtime_appmodule_base= 0,
-	.runtime_appmodule_size= 0,
-	.XtVmmStackBase= (hva_t)x_init_stack,
-	.XtVmmStackSize= 8192,
-	.XtVmmGdt= (hva_t)&x_gdt,
-	.XtVmmIdt= (hva_t)xmhf_xcphandler_idt,
-	.XtVmmIdtFunctionPointers= (hva_t)xmhf_xcphandler_exceptionstubs,
-	.XtVmmIdtEntries= 32,
-	.XtVmmRuntimePhysBase= 0,
-	.XtVmmRuntimeVirtBase= 0,
-	.XtVmmRuntimeSize= 0,
-	.XtVmmE820Buffer= (hva_t)g_e820map,
-	.XtVmmE820NumEntries= 0,
-	.XtVmmMPCpuinfoBuffer= (hva_t)g_cpumap,
-	.XtVmmMPCpuinfoNumEntries= 0,
-	.XtVmmTSSBase= (hva_t)g_runtime_TSS,
-	.RtmUartConfig = {0, 0, 0, 0, 0, 0, 0},
-	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
-};
- 
+	  __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" ((u16)port));
+	  return _v;
+	}
+
+	static inline unsigned char inb (u32 port){ 
+	  unsigned char _v;
+	  
+	  __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" ((u16)port));
+	  return _v;
+	}
+
+#else //__XMHF_VERIFICATION__
+
+	static inline void outl(u32 val, u32 port){
+	  (void)val;
+	  (void)port;
+	}
+
+	static inline void outw (u32 value, u32 port){
+	  (void)value;
+	  (void)port;
+	}
+
+	static inline void outb (u32 value, u32 port){                        
+	  (void)value;
+	  (void)port;
+	}
+
+	static inline u32 inl(u32 port){
+	  u32 val;
+	  val = nondet_u32();
+	  return val;
+	}
+
+	static inline unsigned short inw (u32 port){ 
+	  unsigned short _v;
+	  _v = nondet_u16();
+	  return _v;
+	}
+
+	static inline unsigned char inb (u32 port){ 
+	  unsigned char _v;
+
+	  _v = (u8)nondet_u16();
+	  return _v;
+	}
+
+#endif //__XMHF_VERIFICATION__
+
+void udelay(u32 usecs);
+
+#endif /* __ASSEMBLY__ */
+
+#endif /* __IO_H_ */

@@ -44,63 +44,56 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * rntm-x86-data.c
- * EMHF runtime data definitions - x86 specific
- * author: amit vasudevan (amitvasudevan@acm.org)
+//error.h - error handling 
+//author: amit vasudevan (amitvasudevan@acm.org)
+
+#ifndef __ERROR_H_
+#define __ERROR_H_
+
+
+#ifndef __ASSEMBLY__
+
+#define HALT()	__asm__ __volatile__ ("hlt\r\n");
+#define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { printf("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__); HALT(); } }
+//#define WARNING(_p) { if ( !(_p) ) { printf("\nWarning Assertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__);} }
+
+/* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
+#define COMPILE_TIME_ASSERT(pred)               \
+  switch(0){case 0:case pred:;}
+
+/* Overflow functions from tboot-20101005/tboot/include/misc.h */
+
+/*
+ *  These three "plus overflow" functions take a "x" value
+ *    and add the "y" value to it and if the two values are
+ *    greater than the size of the variable type, they will
+ *    overflow the type and end up with a smaller value and
+ *    return TRUE - that they did overflow.  i.e.
+ *    x + y <= variable type maximum.
  */
+static inline bool plus_overflow_u64(uint64_t x, uint64_t y)
+{
+    return ((((uint64_t)(~0)) - x) < y);
+}
 
-#include <xmhf.h>
+static inline bool plus_overflow_u32(uint32_t x, uint32_t y)
+{
+    return ((((uint32_t)(~0)) - x) < y);
+}
 
-//runtime GDT
-u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
-	0x0000000000000000ULL,
-	0x00cf9a000000ffffULL,
-	0x00af9a000000ffffULL,
-	0x00cf92000000ffffULL,
-	0x0080890000000000ULL,
-	0x0000000000000000ULL
-};
+/*
+ * This checks to see if two numbers multiplied together are larger
+ *   than the type that they are.  Returns TRUE if OVERFLOWING.
+ *   If the first parameter "x" is greater than zero and
+ *   if that is true, that the largest possible value 0xFFFFFFFF / "x"
+ *   is less than the second parameter "y".  If "y" is zero then
+ *   it will also fail because no unsigned number is less than zero.
+ */
+static inline bool multiply_overflow_u32(uint32_t x, uint32_t y)
+{
+    return (x > 0) ? ((((uint32_t)(~0))/x) < y) : false;
+}
 
-//runtime GDT descriptor
-arch_x86_64_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
-	.size=sizeof(x_gdt_start)-1,
-	.base=(u64)&x_gdt_start,
-};
+#endif /*__ASSEMBLY__*/
 
-
-// TODO: runtime PAE page tables: not needed in x86_64
-u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-
-//runtime stack
-u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
-
-
-RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
-	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	.XtVmmEntryPoint= (hva_t)xmhf_runtime_entry,
-	.XtVmmPdptBase= (hva_t)x_3level_pdpt,
-	.XtVmmPdtsBase= (hva_t)x_3level_pdt,
-	.XtGuestOSBootModuleBase= 0,
-	.XtGuestOSBootModuleSize= 0,
-	.runtime_appmodule_base= 0,
-	.runtime_appmodule_size= 0,
-	.XtVmmStackBase= (hva_t)x_init_stack,
-	.XtVmmStackSize= 8192,
-	.XtVmmGdt= (hva_t)&x_gdt,
-	.XtVmmIdt= (hva_t)xmhf_xcphandler_idt,
-	.XtVmmIdtFunctionPointers= (hva_t)xmhf_xcphandler_exceptionstubs,
-	.XtVmmIdtEntries= 32,
-	.XtVmmRuntimePhysBase= 0,
-	.XtVmmRuntimeVirtBase= 0,
-	.XtVmmRuntimeSize= 0,
-	.XtVmmE820Buffer= (hva_t)g_e820map,
-	.XtVmmE820NumEntries= 0,
-	.XtVmmMPCpuinfoBuffer= (hva_t)g_cpumap,
-	.XtVmmMPCpuinfoNumEntries= 0,
-	.XtVmmTSSBase= (hva_t)g_runtime_TSS,
-	.RtmUartConfig = {0, 0, 0, 0, 0, 0, 0},
-	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
-};
- 
+#endif /* _ERROR_H */

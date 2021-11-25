@@ -44,63 +44,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * rntm-x86-data.c
- * EMHF runtime data definitions - x86 specific
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+/* txt.h - Unified header file for Intel TXT requirements */
+//author: jonmccune@cmu.edu
 
-#include <xmhf.h>
+#ifndef __UNI_TXT_
+#define __UNI_TXT_
 
-//runtime GDT
-u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
-	0x0000000000000000ULL,
-	0x00cf9a000000ffffULL,
-	0x00af9a000000ffffULL,
-	0x00cf92000000ffffULL,
-	0x0080890000000000ULL,
-	0x0000000000000000ULL
-};
+#ifndef __ASSEMBLY__
 
-//runtime GDT descriptor
-arch_x86_64_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
-	.size=sizeof(x_gdt_start)-1,
-	.base=(u64)&x_gdt_start,
-};
+#include "_txt_config_regs.h"
+#include "_txt_hash.h"
 
+/* XXX TODO order is important for these; fix it */
+#include "_txt_mle.h"
+#include "_txt_smx.h"
+#include "_txt_acmod.h" /* XXX TODO This is really only necessary in init/ */
+#include "_txt_mtrrs.h"
+#include "_txt_heap.h"
 
-// TODO: runtime PAE page tables: not needed in x86_64
-u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+#endif //__ASSEMBLY__
 
-//runtime stack
-u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
-
-
-RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
-	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	.XtVmmEntryPoint= (hva_t)xmhf_runtime_entry,
-	.XtVmmPdptBase= (hva_t)x_3level_pdpt,
-	.XtVmmPdtsBase= (hva_t)x_3level_pdt,
-	.XtGuestOSBootModuleBase= 0,
-	.XtGuestOSBootModuleSize= 0,
-	.runtime_appmodule_base= 0,
-	.runtime_appmodule_size= 0,
-	.XtVmmStackBase= (hva_t)x_init_stack,
-	.XtVmmStackSize= 8192,
-	.XtVmmGdt= (hva_t)&x_gdt,
-	.XtVmmIdt= (hva_t)xmhf_xcphandler_idt,
-	.XtVmmIdtFunctionPointers= (hva_t)xmhf_xcphandler_exceptionstubs,
-	.XtVmmIdtEntries= 32,
-	.XtVmmRuntimePhysBase= 0,
-	.XtVmmRuntimeVirtBase= 0,
-	.XtVmmRuntimeSize= 0,
-	.XtVmmE820Buffer= (hva_t)g_e820map,
-	.XtVmmE820NumEntries= 0,
-	.XtVmmMPCpuinfoBuffer= (hva_t)g_cpumap,
-	.XtVmmMPCpuinfoNumEntries= 0,
-	.XtVmmTSSBase= (hva_t)g_runtime_TSS,
-	.RtmUartConfig = {0, 0, 0, 0, 0, 0, 0},
-	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
-};
- 
+#endif /* __UNI_TXT_ */
