@@ -78,7 +78,7 @@ void xmhf_xcphandler_initialize(void);
 u8 * xmhf_xcphandler_get_idt_start(void);
 
 //EMHF exception handler hub
-void xmhf_xcphandler_hub(u32 vector, struct regs *r);
+void xmhf_xcphandler_hub(uintptr_t vector, struct regs *r);
 
 
 //----------------------------------------------------------------------
@@ -91,7 +91,7 @@ void xmhf_xcphandler_arch_initialize(void);
 u8 * xmhf_xcphandler_arch_get_idt_start(void);
 
 //EMHF exception handler hub
-void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r);
+void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r);
 
 
 

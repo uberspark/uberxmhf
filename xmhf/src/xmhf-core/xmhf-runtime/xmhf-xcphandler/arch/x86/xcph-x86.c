@@ -139,7 +139,7 @@ u8 * xmhf_xcphandler_arch_get_idt_start(void){
 
 
 //EMHF exception handler hub
-void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
+void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 	VCPU *vcpu;
 	

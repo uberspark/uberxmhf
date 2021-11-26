@@ -146,18 +146,28 @@
 
 #ifndef __ASSEMBLY__
 
-//x86 GPR set definition (follows the order enforced by PUSHAD/POPAD
-//SDM Vol 2B. 4-427)
+//x86_64 GPR set definition
 struct regs
 {
-  u32 edi;
-  u32 esi;
-  u32 ebp;
-  u32 esp;
-  u32 ebx;
-  u32 edx;
-  u32 ecx;
-  u32 eax;
+    u64 rdi;
+    u64 rsi;
+    u64 rbp;
+    u64 rsp;
+    u64 rbx;
+    u64 rdx;
+    u64 rcx;
+    u64 rax;
+    u64 r8;
+    u64 r9;
+    u64 r10;
+    u64 r11;
+    u64 r12;
+    u64 r13;
+    u64 r14;
+    u64 r15;
+
+    // TODO: remove the following (for passing compilation)
+    // u32 edi, esi, ebp, esp, ebx, edx, ecx, eax;
 }__attribute__ ((packed));
 
 

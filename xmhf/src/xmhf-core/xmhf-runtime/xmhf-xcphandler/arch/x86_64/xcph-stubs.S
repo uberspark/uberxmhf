@@ -70,51 +70,50 @@
 
     XtRtmIdtStub&vector&:
 
-        //push GPR values on stack to construct a
-        //struct regs *r
-        /*pushl %edi
-        pushl   %esi
-        pushl   %ebp
-        pushl   %esp
-        pushl   %ebx
-        pushl   %edx
-        pushl   %ecx
-        pushl   %eax*/
-#ifdef __X86_64__
-        // TODO
-#else /* !__X86_64__ */
-        pushal
-#endif /* __X86_64__ */
+        // push GPR values on stack to construct struct regs *r
+        // TODO: test whether need to reverse this order
+        pushq   %r15
+        pushq   %r14
+        pushq   %r13
+        pushq   %r12
+        pushq   %r11
+        pushq   %r10
+        pushq   %r9
+        pushq   %r8
+        pushq   %rax
+        pushq   %rcx
+        pushq   %rdx
+        pushq   %rbx
+        pushq   %rsp
+        pushq   %rbp
+        pushq   %rsi
+        pushq   %rdi
 
-        movw    $(__DS), %ax
-        movw    %ax, %ds            //load DS
-        movl    %esp, %eax          //EAX = struct regs *
+        // In x86: movw    $(__DS), %ax
+        // In x86: movw    %ax, %ds            //load DS
 
-#ifdef __X86_64__
-        // TODO: call xmhf_xcphandler_hub
-#else /* !__X86_64__ */
-        pushl   %eax                //struct regs *r
-        pushl   $0x&vector&         //vector
-        call    xmhf_xcphandler_hub //call C-land hub
-        addl    $0x08, %esp         //remove params from stack
-#endif /* __X86_64__ */
+        movq    %rsp, %rsi          // RSI (second argument) = struct regs *
+        movq    $0x&vector&, %rdi   // RDI (first argument) = vector
+        call    xmhf_xcphandler_hub // call C-land hub
 
-        //restore GPRs
-        /*popl  %eax
-        popl    %ecx
-        popl    %edx
-        popl    %ebx
-        popl    %esp
-        popl    %ebp
-        popl    %esi
-        popl    %edi*/
-#ifdef __X86_64__
-        // TODO
-#else /* !__X86_64__ */
-        popal
-#endif /* __X86_64__ */
+        popq    %rdi
+        popq    %rsi
+        popq    %rbp
+        popq    %rsp
+        popq    %rbx
+        popq    %rdx
+        popq    %rcx
+        popq    %rax
+        popq    %r8
+        popq    %r9
+        popq    %r10
+        popq    %r11
+        popq    %r12
+        popq    %r13
+        popq    %r14
+        popq    %r15
 
-        //return from exception
+        // return from exception
         iretl
 
 .endm
@@ -157,47 +156,47 @@ XtRtmEmitIdtStub 1f
     //EMHF interrupt descriptor table
     .global xmhf_xcphandler_idt
     xmhf_xcphandler_idt:
-    .word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start - 1
-    .long xmhf_xcphandler_idt_start
+    .word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start
+    .quad xmhf_xcphandler_idt_start
     .align 16
     .global xmhf_xcphandler_idt_start
     xmhf_xcphandler_idt_start:
-    .fill   1024, 1, 0
+    .fill   EMHF_XCPHANDLER_MAXEXCEPTIONS, 16, 0
     xmhf_xcphandler_idt_end:
 
 
     .align 16
     .global xmhf_xcphandler_exceptionstubs
     xmhf_xcphandler_exceptionstubs:
-    .long XtRtmIdtStub0
-    .long XtRtmIdtStub1
-    .long XtRtmIdtStub2
-    .long XtRtmIdtStub3
-    .long XtRtmIdtStub4
-    .long XtRtmIdtStub5
-    .long XtRtmIdtStub6
-    .long XtRtmIdtStub7
-    .long XtRtmIdtStub8
-    .long XtRtmIdtStub9
-    .long XtRtmIdtStuba
-    .long XtRtmIdtStubb
-    .long XtRtmIdtStubc
-    .long XtRtmIdtStubd
-    .long XtRtmIdtStube
-    .long XtRtmIdtStubf
-    .long XtRtmIdtStub10
-    .long XtRtmIdtStub11
-    .long XtRtmIdtStub12
-    .long XtRtmIdtStub13
-    .long XtRtmIdtStub14
-    .long XtRtmIdtStub15
-    .long XtRtmIdtStub16
-    .long XtRtmIdtStub17
-    .long XtRtmIdtStub18
-    .long XtRtmIdtStub19
-    .long XtRtmIdtStub1a
-    .long XtRtmIdtStub1b
-    .long XtRtmIdtStub1c
-    .long XtRtmIdtStub1d
-    .long XtRtmIdtStub1e
-    .long XtRtmIdtStub1f
+    .quad XtRtmIdtStub0
+    .quad XtRtmIdtStub1
+    .quad XtRtmIdtStub2
+    .quad XtRtmIdtStub3
+    .quad XtRtmIdtStub4
+    .quad XtRtmIdtStub5
+    .quad XtRtmIdtStub6
+    .quad XtRtmIdtStub7
+    .quad XtRtmIdtStub8
+    .quad XtRtmIdtStub9
+    .quad XtRtmIdtStuba
+    .quad XtRtmIdtStubb
+    .quad XtRtmIdtStubc
+    .quad XtRtmIdtStubd
+    .quad XtRtmIdtStube
+    .quad XtRtmIdtStubf
+    .quad XtRtmIdtStub10
+    .quad XtRtmIdtStub11
+    .quad XtRtmIdtStub12
+    .quad XtRtmIdtStub13
+    .quad XtRtmIdtStub14
+    .quad XtRtmIdtStub15
+    .quad XtRtmIdtStub16
+    .quad XtRtmIdtStub17
+    .quad XtRtmIdtStub18
+    .quad XtRtmIdtStub19
+    .quad XtRtmIdtStub1a
+    .quad XtRtmIdtStub1b
+    .quad XtRtmIdtStub1c
+    .quad XtRtmIdtStub1d
+    .quad XtRtmIdtStub1e
+    .quad XtRtmIdtStub1f
