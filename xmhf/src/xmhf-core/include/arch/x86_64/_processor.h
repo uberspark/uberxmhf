@@ -149,14 +149,15 @@
 //x86_64 GPR set definition
 struct regs
 {
-    u64 rdi;
-    u64 rsi;
-    u64 rbp;
-    u64 rsp;
-    u64 rbx;
-    u64 rdx;
-    u64 rcx;
-    u64 rax;
+    // TODO: better to remove 32-bit registers, but need to change a lot of code
+    union { u64 rdi; u32 edi; } __attribute__ ((packed));
+    union { u64 rsi; u32 esi; } __attribute__ ((packed));
+    union { u64 rbp; u32 ebp; } __attribute__ ((packed));
+    union { u64 rsp; u32 esp; } __attribute__ ((packed));
+    union { u64 rbx; u32 ebx; } __attribute__ ((packed));
+    union { u64 rdx; u32 edx; } __attribute__ ((packed));
+    union { u64 rcx; u32 ecx; } __attribute__ ((packed));
+    union { u64 rax; u32 eax; } __attribute__ ((packed));
     u64 r8;
     u64 r9;
     u64 r10;
@@ -165,10 +166,7 @@ struct regs
     u64 r13;
     u64 r14;
     u64 r15;
-
-    // TODO: remove the following (for passing compilation)
-    // u32 edi, esi, ebp, esp, ebx, edx, ecx, eax;
-}__attribute__ ((packed));
+} __attribute__ ((packed));
 
 
 typedef struct {

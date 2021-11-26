@@ -71,7 +71,6 @@
     XtRtmIdtStub&vector&:
 
         // push GPR values on stack to construct struct regs *r
-        // TODO: test whether need to reverse this order
         pushq   %r15
         pushq   %r14
         pushq   %r13
