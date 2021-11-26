@@ -46,7 +46,7 @@
 
 /*
  * EMHF exception handler component interface
- * x86 arch. backend
+ * x86_64 arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -122,22 +122,23 @@ static VCPU *_vmx_getvcpu(void){
 
 //initialize EMHF core exception handlers
 void xmhf_xcphandler_arch_initialize(void){
-    u32 *pexceptionstubs;
-    u32 i;
+    u64 *pexceptionstubs;
+    u64 i;
 
     printf("\n%s: setting up runtime IDT...", __FUNCTION__);
 
-    //pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
-    pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
+    pexceptionstubs = (u64 *)&xmhf_xcphandler_exceptionstubs;
 
     for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
         idtentry_t *idtentry=(idtentry_t *)((hva_t)xmhf_xcphandler_arch_get_idt_start()+ (i*8));
-        idtentry->isrLow= (u16)pexceptionstubs[i];
-        idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
+        idtentry->isrLow16 = (u16)(pexceptionstubs[i]);
+        idtentry->isrHigh16 = (u16)(pexceptionstubs[i] >> 16);
+        idtentry->isrHigh32 = (u32)(pexceptionstubs[i] >> 32);
         idtentry->isrSelector = __CS;
-        idtentry->count=0x0;
-        idtentry->type=0x8E;    //32-bit interrupt gate
-                                //present=1, DPL=00b, system=0, type=1110b
+        idtentry->count = 0x0;  // for now, set IST to 0
+        idtentry->type = 0x8E;  // 64-bit interrupt gate
+                                // present=1, DPL=00b, system=0, type=1110b
+        idtentry->reserved_zero = 0x0;
     }
 
     printf("\n%s: IDT setup done.", __FUNCTION__);

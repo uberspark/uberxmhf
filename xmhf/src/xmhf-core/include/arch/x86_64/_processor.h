@@ -172,11 +172,13 @@ struct regs
 
 
 typedef struct {
-  u16 isrLow;
+  u16 isrLow16;
   u16 isrSelector;
   u8  count;
   u8  type;
-  u16 isrHigh;
+  u16 isrHigh16;
+  u32 isrHigh32;
+  u32 reserved_zero;
 } __attribute__ ((packed)) idtentry_t;
 
 typedef struct {
@@ -191,13 +193,8 @@ typedef struct {
 } __attribute__ ((packed)) TSSENTRY;
 
 
-#ifdef __X86_64__
 #define get_eflags(x) __asm__ __volatile__("pushfq ; popq %0 ":"=g" (x): /* no input */ :"memory")
 #define set_eflags(x) __asm__ __volatile__("pushq %0 ; popfq": /* no output */ :"g" (x):"memory", "cc")
-#else /* !__X86_64__ */
-#define get_eflags(x) __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
-#define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
-#endif /* __X86_64__ */
 
 #define cpuid(op, eax, ebx, ecx, edx)		\
 ({						\
