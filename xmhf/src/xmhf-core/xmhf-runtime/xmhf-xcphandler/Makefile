@@ -2,10 +2,10 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = ./arch/x86/xcph-stubs.S
+AS_SOURCES = ./arch/$(TARGET_HWPLATFORM)/xcph-stubs.S
 C_SOURCES = xcph-interface.c
 
-C_SOURCES += ./arch/x86/xcph-x86.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/xcph-$(TARGET_HWPLATFORM).c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))

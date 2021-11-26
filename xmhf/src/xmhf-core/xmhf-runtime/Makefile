@@ -39,8 +39,8 @@ OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-x86vmx-data.o
 
 OBJECTS_PRECOMPILED += ./xmhf-xcphandler/xcph-interface.o
-OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/x86/xcph-x86.o
-OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/x86/xcph-stubs.o
+OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/$(TARGET_HWPLATFORM)/xcph-$(TARGET_HWPLATFORM).o
+OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/$(TARGET_HWPLATFORM)/xcph-stubs.o
 
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface-smp.o
