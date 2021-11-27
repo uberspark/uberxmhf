@@ -113,7 +113,7 @@
         popq    %r15
 
         // return from exception
-        iretl
+        iret
 
 .endm
 
