@@ -14,7 +14,7 @@ C_SOURCES += ./arch/x86/bplt-x86-data.c
 C_SOURCES += ./arch/x86/bplt-x86-pci.c
 C_SOURCES += ./arch/x86/bplt-x86-acpi.c
 C_SOURCES += ./arch/x86/bplt-x86-pit.c
-C_SOURCES += ./arch/x86/bplt-x86-smp.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smp.c
 C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-addressing.c
 C_SOURCES += ./arch/x86/bplt-x86-reboot.c
 C_SOURCES += ./arch/x86/bplt-x86-cpu.c
@@ -23,14 +23,14 @@ C_SOURCES += ./arch/x86/bplt-x86-cpu.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-data.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-vmcs.c
-C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-smp.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx-smp.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-mtrrs.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-reboot.c
 
 
 C_SOURCES += ./arch/x86/svm/bplt-x86svm.c
 C_SOURCES += ./arch/x86/svm/bplt-x86svm-data.c
-C_SOURCES += ./arch/x86/svm/bplt-x86svm-smp.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/svm/bplt-$(TARGET_HWPLATFORM)svm-smp.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))

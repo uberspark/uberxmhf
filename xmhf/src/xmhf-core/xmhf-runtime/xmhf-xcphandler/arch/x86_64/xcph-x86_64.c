@@ -133,7 +133,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 vector == CPU_EXCEPTION_GP ||
                 vector == CPU_EXCEPTION_PF ||
                 vector == CPU_EXCEPTION_AC) {
-                r->esp += sizeof(uintptr_t);
+                r->rsp += sizeof(uintptr_t);
             }
 
             exception_rip = ((uintptr_t *)(r->rsp))[0];
@@ -163,12 +163,12 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
             //do a stack dump in the hopes of getting more info.
             {
-                //vcpu->esp is the TOS
+                //vcpu->rsp is the TOS
                 uintptr_t i;
-                //uintptr_t stack_start = (r->esp+(3*sizeof(uintptr_t)));
-                uintptr_t stack_start = r->esp;
+                //uintptr_t stack_start = (r->rsp+(3*sizeof(uintptr_t)));
+                uintptr_t stack_start = r->rsp;
                 printf("\n[%02x]-----stack dump-----", vcpu->id);
-                for(i=stack_start; i < vcpu->esp; i+=sizeof(uintptr_t)){
+                for(i=stack_start; i < vcpu->rsp; i+=sizeof(uintptr_t)){
                     printf("\n[%02x]  Stack(0x%16lx) -> 0x%16lx", vcpu->id, i, *(uintptr_t *)i);
                 }
                 printf("\n[%02x]-----end------------", vcpu->id);

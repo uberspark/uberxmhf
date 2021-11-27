@@ -45,11 +45,11 @@
  */
 
 // EMHF base platform component 
-// x86 arch. specific declarations
+// x86_64 arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_BASEPLATFORM_ARCH_X86_H__
-#define __EMHF_BASEPLATFORM_ARCH_X86_H__
+#ifndef __EMHF_BASEPLATFORM_ARCH_X86_64_H__
+#define __EMHF_BASEPLATFORM_ARCH_X86_64_H__
 
 #include "_configx86.h"		//EMHF arch. specific configurable definitions
 #include "_multiboot.h"  	//boot manager (multiboot)
@@ -77,17 +77,17 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
-  u32 eip;
-  u32 cs;
-  u32 eflags;
+  u64 eip;
+  u64 cs;
+  u64 eflags;
 } __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE;
 
 //---platform
 typedef struct {
-  u32 errorcode;
-  u32 eip;
-  u32 cs;
-  u32 eflags;
+  u64 errorcode;
+  u64 eip;
+  u64 cs;
+  u64 eflags;
 } __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
 
 typedef struct {
@@ -180,8 +180,8 @@ struct _guestmtrrmsrs {
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
   //common fields
-  u32 esp;                //used to establish stack for the CPU
-  u32 sipi_page_vaddr;    //SIPI page of the CPU used for SIPI handling
+  spa_t rsp;              //used to establish stack for the CPU
+  hva_t sipi_page_vaddr;  //SIPI page of the CPU used for SIPI handling
   u32 id;                 //LAPIC id of the core
   u32 idx;                //this vcpu's index in the g_vcpubuffers array
   u32 sipivector;         //SIPI vector 
@@ -569,4 +569,4 @@ void xmhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu);
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_BASEPLATFORM_ARCH_X86_H__
+#endif //__EMHF_BASEPLATFORM_ARCH_X86_64_H__

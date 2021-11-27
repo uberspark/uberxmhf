@@ -96,6 +96,7 @@ void xmhf_runtime_entry(void){
 	#endif
 
 #if defined (__DMAP__)
+		// TODO: DMAP code not ported to x86_64 yet
 		{
 				u64 protectedbuffer_paddr;
 				hva_t protectedbuffer_vaddr;

@@ -75,18 +75,9 @@ static void _vmx_initVT(VCPU *vcpu){
 	  hva_t gdtstart = (hva_t)&x_gdt_start;
 	  u16 trselector = 	__TRSEL;
 	  #ifndef __XMHF_VERIFICATION__
-	  asm volatile("movl %0, %%edi\r\n"
-		"xorl %%eax, %%eax\r\n"
-		"movw %1, %%ax\r\n"
-		"addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
-		"addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
-		"lock andl $0xFFFF00FF, (%%edi)\r\n"
-		"lock orl  $0x00008900, (%%edi)\r\n"
-		"ltr %%ax\r\n"				//load TR
-	     : 
-	     : "m"(gdtstart), "m"(trselector)
-	     : "edi", "eax"
-	  );
+	  // TODO: not implemented
+	  (void) gdtstart;
+	  (void) trselector;
 	  #endif
 	}
 	
@@ -174,9 +165,9 @@ static void _vmx_initVT(VCPU *vcpu){
 
   //step-4: enable VMX by setting CR4
 	#ifndef __XMHF_VERIFICATION__
-	asm(	" mov  %%cr4, %%eax	\n"\
-		" bts  $13, %%eax	\n"\
-		" mov  %%eax, %%cr4	" ::: "eax" );
+	asm(	" mov  %%cr4, %%rax	\n"\
+		" bts  $13, %%rax	\n"\
+		" mov  %%rax, %%cr4	" ::: "rax" );
 	#endif
   printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
 
@@ -190,18 +181,18 @@ static void _vmx_initVT(VCPU *vcpu){
 	    #endif
 	    
 	    #ifndef __XMHF_VERIFICATION__
-	   	asm( "vmxon %1 \n"
+	    asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
-				 "movl $0x1, %%eax \n" 
-				 "movl %%eax, %0 \n"
+				 "movq $0x1, %%rax \n" 
+				 "movq %%rax, %0 \n"
 				 "jmp vmsuccess \n"
 				 "vmfail: \n"
-				 "movl $0x0, %%eax \n"
-				 "movl %%eax, %0 \n"
+				 "movq $0x0, %%rax \n"
+				 "movq %%rax, %0 \n"
 				 "vmsuccess: \n" 
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr) 
-	       : "eax");
+	       : "rax");
 			#endif
 		
 	    if(!retval){
@@ -275,11 +266,15 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif //__XMHF_VERIFICATION__
 
 	//store vcpu at TOS
-	vcpu->esp = vcpu->esp - sizeof(hva_t);
+	vcpu->rsp = vcpu->rsp - sizeof(hva_t);
 #ifndef __XMHF_VERIFICATION__
-	*(hva_t *)vcpu->esp = (hva_t)vcpu;
+#ifdef __XMHF_X86_64__
+	// TODO: not implemented
+#else /* !__XMHF_X86_64__ */
+	*(hva_t *)vcpu->rsp = (hva_t)vcpu;
+#endif /* __XMHF_X86_64__ */
 #endif
-	vcpu->vmcs.host_RSP = (u64)vcpu->esp;
+	vcpu->vmcs.host_RSP = (u64)vcpu->rsp;
 			
 
 #ifndef __XMHF_VERIFICATION__			
