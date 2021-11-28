@@ -51,7 +51,7 @@
 #ifndef __EMHF_BASEPLATFORM_ARCH_X86_64_H__
 #define __EMHF_BASEPLATFORM_ARCH_X86_64_H__
 
-#include "_configx86.h"		//EMHF arch. specific configurable definitions
+#include "_configx86_64.h"	//EMHF arch. specific configurable definitions
 #include "_multiboot.h"  	//boot manager (multiboot)
 #include "_cmdline.h"		//GRUB command line handling functions
 #include "_error.h"      	//error handling and assertions
