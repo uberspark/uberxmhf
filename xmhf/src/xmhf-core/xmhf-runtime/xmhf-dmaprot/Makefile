@@ -4,11 +4,11 @@
 # source files
 AS_SOURCES =
 C_SOURCES = dmap-interface.c
-C_SOURCES += ./arch/x86/dmap-x86.c
-C_SOURCES += ./arch/x86/svm/dmap-x86svm.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/dmap-$(TARGET_HWPLATFORM).c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/svm/dmap-$(TARGET_HWPLATFORM)svm.c
 
-C_SOURCES += ./arch/x86/vmx/dmap-x86vmx.c
-C_SOURCES += ./arch/x86/vmx/dmap-x86vmx-data.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/dmap-$(TARGET_HWPLATFORM)vmx.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/dmap-$(TARGET_HWPLATFORM)vmx-data.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))

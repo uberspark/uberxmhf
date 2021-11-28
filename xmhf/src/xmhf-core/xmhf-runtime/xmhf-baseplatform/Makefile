@@ -2,34 +2,34 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES =  ./arch/x86/bplt-x86-smptrampoline.S
+AS_SOURCES =  ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smptrampoline.S
 AS_SOURCES +=  ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smplock.S
 
 C_SOURCES = bplt-interface.c
 C_SOURCES += bplt-interface-smp.c
 C_SOURCES += bplt-data.c
 
-C_SOURCES += ./arch/x86/bplt-x86.c
-C_SOURCES += ./arch/x86/bplt-x86-data.c
-C_SOURCES += ./arch/x86/bplt-x86-pci.c
-C_SOURCES += ./arch/x86/bplt-x86-acpi.c
-C_SOURCES += ./arch/x86/bplt-x86-pit.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM).c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-data.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-pci.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-acpi.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-pit.c
 C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smp.c
 C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-addressing.c
-C_SOURCES += ./arch/x86/bplt-x86-reboot.c
-C_SOURCES += ./arch/x86/bplt-x86-cpu.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-reboot.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-cpu.c
 
 
-C_SOURCES += ./arch/x86/vmx/bplt-x86vmx.c
-C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-data.c
-C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-vmcs.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx-data.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx-vmcs.c
 C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx-smp.c
-C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-mtrrs.c
-C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-reboot.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx-mtrrs.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx-reboot.c
 
 
-C_SOURCES += ./arch/x86/svm/bplt-x86svm.c
-C_SOURCES += ./arch/x86/svm/bplt-x86svm-data.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/svm/bplt-$(TARGET_HWPLATFORM)svm.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/svm/bplt-$(TARGET_HWPLATFORM)svm-data.c
 C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/svm/bplt-$(TARGET_HWPLATFORM)svm-smp.c
 
 

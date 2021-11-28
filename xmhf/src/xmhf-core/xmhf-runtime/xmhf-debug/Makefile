@@ -5,14 +5,14 @@
 AS_SOURCES = 
 
 C_SOURCES = dbg-interface.c 
-C_SOURCES += ./arch/x86/emhf_debug_arch.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/emhf_debug_arch.c
 
 ifeq ($(DEBUG_SERIAL), y)
-C_SOURCES += ./arch/x86/dbg-x86-uart.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/dbg-$(TARGET_HWPLATFORM)-uart.c
 endif
 
 ifeq ($(DEBUG_VGA), y)
-C_SOURCES += ./arch/x86/dbg-x86-vgamem.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/dbg-$(TARGET_HWPLATFORM)-vgamem.c
 endif
 
 # TODO: Workaround to compile x86 for bootloader

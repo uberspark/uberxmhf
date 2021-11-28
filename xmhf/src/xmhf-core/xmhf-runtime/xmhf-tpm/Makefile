@@ -5,9 +5,9 @@
 AS_SOURCES =
 C_SOURCES = tpm-interface.c
 
-C_SOURCES += ./arch/x86/tpm-x86.c
-C_SOURCES += ./arch/x86/svm/tpm-x86svm.c
-C_SOURCES += ./arch/x86/vmx/tpm-x86vmx.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/tpm-$(TARGET_HWPLATFORM).c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/svm/tpm-$(TARGET_HWPLATFORM)svm.c
+C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/tpm-$(TARGET_HWPLATFORM)vmx.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
