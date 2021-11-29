@@ -123,9 +123,6 @@ CODE
       movw %ax, %fs
       movw %ax, %gs
 
-1:  movl %eax, %eax   // XXX temporary
-    jmp 1b        // XXX temporary
-
       /* Set CR3 and CR4 (copy from BSP's value) */
       movl $(_ap_cr3_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
       movl (%esi), %ebx
