@@ -161,7 +161,7 @@ CODE
     nop
     nop
 
-  .code64
+.code32
 
   /*---AP common low-level entry point with paging enabled----------------------*/
   .global _ap_pmode_entry_with_paging
@@ -178,27 +178,26 @@ CODE
     movl (%eax), %eax
     shr $24, %eax
 
-    movq g_midtable_numentries, %rdx
+    movl g_midtable_numentries, %edx
     /*movl g_runtime, %edx*/
 
     /*get vcpu virtual address of this CPU/core*/
     /*movl $(__midtable), %ebx*/
-    movq $(g_midtable), %rbx
-    xorq %rcx, %rcx
+    movl $(g_midtable), %ebx
+    xorl %ecx, %ecx
 getvcpuloop:
-    leaq 0x0(%rbx, %rcx, 8), %rsp
-    movl 0x0(%rbx, %rcx, 8), %ebp   // ebp contains the lapic id
+    movl 0x0(%ebx, %ecx, 8), %ebp  //ebp contains the lapic id
     cmpl %eax, %ebp
     jz gotvcpu
-    incq %rcx
-    cmpq %rdx, %rcx
+    incl %ecx
+    cmpl %edx, %ecx
     jb getvcpuloop
     /*we should never get here, if so just halt*/
     hlt
 gotvcpu:
-   movq 0x8(%rbx, %rcx, 8), %rsi    // esi contains vcpu pointer
-   movq 0x0(%rsi), %rsp             // load stack for this CPU
-   movq %rsi, %rdi                  // first argument for function call
+   movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
+   movl 0x0(%esi), %esp     //load stack for this CPU
+   pushl %esi
    call xmhf_baseplatform_arch_x86_smpinitialize_commonstart
    /*we should never get here, if so just halt*/
    hlt
