@@ -143,13 +143,54 @@ CODE
       movl $(__TRSEL), %eax   /* 4th entry in GDT (TSS) */
       ltr %ax
 
+      /*
+       * Setup stack in 32-bits in order to perform lret. For convenience use
+       * the same address as 64-bits stack.
+       * TODO: this is duplicate code; consider removing
+       */
+
+      /*get hold of local APIC id*/
+      mov $(MSR_APIC_BASE), %ecx
+      rdmsr
+      andl $0xFFFFF000, %eax
+      addl $0x20, %eax
+      movl (%eax), %eax
+      shr $24, %eax
+
+      movl g_midtable_numentries, %edx
+      /*movl g_runtime, %edx*/
+
+      /*get vcpu virtual address of this CPU/core*/
+      /*movl $(__midtable), %ebx*/
+      movl $(g_midtable), %ebx
+      xorl %ecx, %ecx
+getvcpuloop32:
+      leal 0x0(%ebx, %ecx, 8), %esp
+      movl 0x0(%esp, %ecx, 8), %ebp  // ebp contains the lapic id
+      cmpl %eax, %ebp
+      jz gotvcpu32
+      incl %ecx
+      cmpl %edx, %ecx
+      jb getvcpuloop32
+      /*we should never get here, if so just halt*/
+      hlt
+gotvcpu32:
+      movl 0x8(%esp, %ecx, 8), %esi // esi contains vcpu pointer
+      movl 0x0(%esi), %esp          // load stack for this CPU
+
+      /* setup jump to 64-bit mode */
+      pushl $(__CS)                 /* 2nd entry in GDT (64-bit CODE) */
+      leal _ap_pmode_entry_with_paging, %eax
+      pushl %eax
+
+      /* set CR0 */
       movl %cr0, %eax
-      orl $0x80000000, %eax
+      orl $(CR0_PG), %eax
+      andl $(~(CR0_NW | CR0_CD)), %eax
       movl %eax, %cr0
 
-      movl $_ap_pmode_entry_with_paging, %eax
-      jmpl *%eax
-      hlt
+      /* jump to 64-bit mode */
+      lret
 
   .global _ap_bootstrap_end
   _ap_bootstrap_end:
@@ -184,7 +225,7 @@ CODE
     xorq %rcx, %rcx
 getvcpuloop:
     leaq 0x0(%rbx, %rcx, 8), %rsp
-    movl 0x0(%rbx, %rcx, 8), %ebp   // ebp contains the lapic id
+    movl 0x0(%rsp, %rcx, 8), %ebp   // ebp contains the lapic id
     cmpl %eax, %ebp
     jz gotvcpu
     incq %rcx
@@ -193,7 +234,7 @@ getvcpuloop:
     /*we should never get here, if so just halt*/
     hlt
 gotvcpu:
-   movq 0x8(%rbx, %rcx, 8), %rsi    // esi contains vcpu pointer
+   movq 0x8(%rsp, %rcx, 8), %rsi    // esi contains vcpu pointer
    movq 0x0(%rsi), %rsp             // load stack for this CPU
    movq %rsi, %rdi                  // first argument for function call
    call xmhf_baseplatform_arch_x86_smpinitialize_commonstart
