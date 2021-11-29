@@ -57,7 +57,7 @@
 //---microsecond delay----------------------------------------------------------
 void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   u8 val;
-  u32 latchregval;  
+  u32 latchregval;
 
   //enable 8254 ch-2 counter
   val = inb(0x61);
@@ -69,7 +69,7 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   outb(0xB0, 0x43);
   
   //compute appropriate latch register value depending on usecs
-  latchregval = (1193182 * usecs) / 1000000;
+  latchregval = ((u64)1193182 * usecs) / 1000000;
 
   //write latch register to ch-2
   val = (u8)latchregval;
