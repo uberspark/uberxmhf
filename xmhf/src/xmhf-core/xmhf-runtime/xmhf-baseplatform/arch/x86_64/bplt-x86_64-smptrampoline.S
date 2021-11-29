@@ -94,6 +94,8 @@ CODE
     _mle_join_end:
     .align 16
   ap_bootstrap_bypassdata:
+    movl %eax, %eax				// XXX temporary
+    jmp ap_bootstrap_bypassdata	// XXX temporary
       movw $0x1000, %ax
     	movw %ax, %ds
     	movw %ax, %es
