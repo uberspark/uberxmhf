@@ -48,14 +48,14 @@
  * EMHF base platform component; x86 backend
  * SMP initialization low-level trampoline
  */
- 
+
 #include <xmhf.h>
 
-	.extern g_midtable
-	.extern g_midtable_numentries
-	.extern x_gdt
-	.extern xmhf_baseplatform_arch_x86_smpinitialize_commonstart
-	.extern xmhf_xcphandler_idt	
+  .extern g_midtable
+  .extern g_midtable_numentries
+  .extern x_gdt
+  .extern xmhf_baseplatform_arch_x86_smpinitialize_commonstart
+  .extern xmhf_xcphandler_idt
 
 /*------------------------------------------------------------------------------
 CODE
@@ -63,25 +63,29 @@ CODE
 
 .section .text
 
-	/*--AP boot-strap code-------------------------------------------------------*/
-	.code16
+  /*--AP boot-strap code-------------------------------------------------------*/
+  .code16
   .global _ap_bootstrap_start
   _ap_bootstrap_start:
     jmp ap_bootstrap_bypassdata
     _ap_gdtdesc:
       .word _ap_gdt_end - _ap_gdt_start - 1
-      .long _ap_gdt_start - _ap_bootstrap_start + 0x10000  
+      .long _ap_gdt_start - _ap_bootstrap_start + 0x10000
     .global _ap_cr3_value
     _ap_cr3_value:
       .long 0
     .global _ap_cr4_value
-    _ap_cr4_value: 
+    _ap_cr4_value:
       .long 0
     .align 16
     _ap_gdt_start:
-      .quad 0x0000000000000000
-      .quad 0x00cf9a000000ffff	
-      .quad 0x00cf92000000ffff
+      .quad 0x0000000000000000  // 0x00: NULL selector
+      .quad 0x00cf9a000000ffff  // 0x08: 32-bit CODE selector
+      .quad 0x00af9a000000ffff  // 0x10: 64-bit CODE selector
+      .quad 0x00cf92000000ffff  // 0x18: 32-bit DATA selector
+      /* TODO: TSS likely unused here */
+      .quad 0x0080890000000000  // 0x20: TSS low (from Linux)
+      .quad 0x0000000000000000  // 0x28: TSS high (from Linux)
     _ap_gdt_end:
       .word 0
     .align 16
@@ -94,49 +98,62 @@ CODE
     _mle_join_end:
     .align 16
   ap_bootstrap_bypassdata:
-    movl %eax, %eax				// XXX temporary
-    jmp ap_bootstrap_bypassdata	// XXX temporary
       movw $0x1000, %ax
-    	movw %ax, %ds
-    	movw %ax, %es
-    	movw $0xFFFF, %sp
-    	movw $0x4000, %ax
-    	movw %ax, %ss
-    	
-    	movw $0x0002, %si
+      movw %ax, %ds
+      movw %ax, %es
+      movw $0xFFFF, %sp
+      movw $0x4000, %ax
+      movw %ax, %ss
+
+      movw $0x0002, %si
 
       lgdt (%si)
 
       movl %cr0, %eax
-      orl $0x1, %eax
+      orl $(CR0_PE), %eax
       movl %eax, %cr0
 
       jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4))
     .code32
     _ap_clear_pipe:
-      movw $0x10, %ax
+      movw $0x18, %ax
       movw %ax, %ds
       movw %ax, %es
       movw %ax, %ss
       movw %ax, %fs
       movw %ax, %gs
 
-             
+1:  movl %eax, %eax   // XXX temporary
+    jmp 1b        // XXX temporary
+
+      /* Set CR3 and CR4 (copy from BSP's value) */
       movl $(_ap_cr3_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
       movl (%esi), %ebx
       movl %ebx, %cr3
       movl $(_ap_cr4_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
       movl (%esi), %ebx
       movl %ebx, %cr4
-      
+
+      /* Set EFER MSR LME */
+      movl $(MSR_EFER), %ecx
+      rdmsr
+      btsl $(EFER_LME), %eax
+      wrmsr
+
+      /* set LDT and TSS (from Linux code) (TODO: likely useless) */
+      xorl %eax, %eax
+      lldt %ax
+      movl $(__TRSEL), %eax   /* 4th entry in GDT (TSS) */
+      ltr %ax
+
       movl %cr0, %eax
-      orl $0x80000000, %eax	
+      orl $0x80000000, %eax
       movl %eax, %cr0
 
       movl $_ap_pmode_entry_with_paging, %eax
       jmpl *%eax
       hlt
-      
+
   .global _ap_bootstrap_end
   _ap_bootstrap_end:
     nop
@@ -144,15 +161,15 @@ CODE
     nop
     nop
 
-	/*---AP common low-level entry point with paging enabled----------------------*/
+  .code64
+
+  /*---AP common low-level entry point with paging enabled----------------------*/
   .global _ap_pmode_entry_with_paging
   _ap_pmode_entry_with_paging:
     /*load our gdt and idt*/
     lgdt x_gdt
     lidt xmhf_xcphandler_idt
-    
 
-    
     /*get hold of local APIC id*/
     mov $(MSR_APIC_BASE), %ecx
     rdmsr
@@ -161,31 +178,28 @@ CODE
     movl (%eax), %eax
     shr $24, %eax
 
-    movl g_midtable_numentries, %edx
+    movq g_midtable_numentries, %rdx
     /*movl g_runtime, %edx*/
-    
-    
+
     /*get vcpu virtual address of this CPU/core*/
     /*movl $(__midtable), %ebx*/
-    movl $(g_midtable), %ebx
-    xorl %ecx, %ecx
+    movq $(g_midtable), %rbx
+    xorq %rcx, %rcx
 getvcpuloop:
-    movl 0x0(%ebx, %ecx, 8), %ebp  //ebp contains the lapic id
+    leaq 0x0(%rbx, %rcx, 8), %rsp
+    movl 0x0(%rbx, %rcx, 8), %ebp   // ebp contains the lapic id
     cmpl %eax, %ebp
     jz gotvcpu
-    incl %ecx
-    cmpl %edx, %ecx
+    incq %rcx
+    cmpq %rdx, %rcx
     jb getvcpuloop
     /*we should never get here, if so just halt*/
     hlt
 gotvcpu:
-   movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
-   movl 0x0(%esi), %esp     //load stack for this CPU
-   pushl %esi
+   movq 0x8(%rbx, %rcx, 8), %rsi    // esi contains vcpu pointer
+   movq 0x0(%rsi), %rsp             // load stack for this CPU
+   movq %rsi, %rdi                  // first argument for function call
    call xmhf_baseplatform_arch_x86_smpinitialize_commonstart
    /*we should never get here, if so just halt*/
-   hlt  
+   hlt
 
-
-
-      		
