@@ -64,7 +64,7 @@ uart_config_t g_uart_config = {115200,
 							   DEBUG_PORT};
 
 //low-level UART character output
-static void dbg_x86_uart_putc_bare(char ch){
+static void dbg_x86_64_uart_putc_bare(char ch){
   //wait for xmit hold register to be empty
   while ( ! (inb(g_uart_config.port+0x5) & 0x20) );
   
@@ -78,9 +78,9 @@ static void dbg_x86_uart_putc_bare(char ch){
 // write character to serial port, translating '\n' to '\r\n' 
 void dbg_x86_64_uart_putc(char ch){
   if (ch == '\n') {
-    dbg_x86_uart_putc_bare('\r');
+    dbg_x86_64_uart_putc_bare('\r');
   }
-  dbg_x86_uart_putc_bare(ch);
+  dbg_x86_64_uart_putc_bare(ch);
 }
 
 
