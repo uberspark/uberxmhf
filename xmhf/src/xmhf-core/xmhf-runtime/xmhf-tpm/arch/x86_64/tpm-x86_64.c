@@ -338,10 +338,10 @@ int xmhf_tpm_arch_open_locality(int locality){
 	u32 cpu_vendor = get_cpu_vendor_or_die();
 
     if(cpu_vendor == CPU_VENDOR_INTEL) {
-        return xmhf_tpm_arch_x86vmx_open_locality(locality);
+        return xmhf_tpm_arch_x86_64vmx_open_locality(locality);
        
     } else { /* AMD */        
-		return xmhf_tpm_arch_x86svm_open_locality(locality);
+		return xmhf_tpm_arch_x86_64svm_open_locality(locality);
     }
 }
 

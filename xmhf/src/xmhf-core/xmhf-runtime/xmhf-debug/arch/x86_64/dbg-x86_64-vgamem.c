@@ -64,7 +64,7 @@ static void vgamem_newln(void){
     }
 }
 
-void dbg_x86_vgamem_putc(int c)
+void dbg_x86_64_vgamem_putc(int c)
 {
     if ( c == '\n' )
         vgamem_newln();
@@ -76,16 +76,16 @@ void dbg_x86_vgamem_putc(int c)
     }
 }
 
-void dbg_x86_vgamem_putstr(const char *str)
+void dbg_x86_64_vgamem_putstr(const char *str)
 {
     int c;
 
     while ( (c = *str++) != '\0' )
-        dbg_x86_vgamem_putc(c);
+        dbg_x86_64_vgamem_putc(c);
 }
 
 
-void dbg_x86_vgamem_init(char *params){
+void dbg_x86_64_vgamem_init(char *params){
   (void)params;	//we don't use params for the VGA backend currently
   memset((char *)vidmem, 0, COLS * ROWS * 2);
   vid_x = vid_y = 0;

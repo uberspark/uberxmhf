@@ -76,7 +76,7 @@ static void dbg_x86_uart_putc_bare(char ch){
 
 
 // write character to serial port, translating '\n' to '\r\n' 
-void dbg_x86_uart_putc(char ch){
+void dbg_x86_64_uart_putc(char ch){
   if (ch == '\n') {
     dbg_x86_uart_putc_bare('\r');
   }
@@ -85,14 +85,14 @@ void dbg_x86_uart_putc(char ch){
 
 
 // write string to serial port 
-void dbg_x86_uart_putstr(const char *s){
+void dbg_x86_64_uart_putstr(const char *s){
 	while (*s)
-		dbg_x86_uart_putc(*s++);
+		dbg_x86_64_uart_putc(*s++);
 }
 
 
 //initialize UART comms.
-void dbg_x86_uart_init(char *params){
+void dbg_x86_64_uart_init(char *params){
 
   //override default UART parameters with the one passed via the
   //command line

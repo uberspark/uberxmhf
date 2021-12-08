@@ -69,14 +69,14 @@ void xmhf_debug_arch_putc(char c);
 extern uart_config_t g_uart_config;
 
 //#ifdef __DEBUG_SERIAL__
-void dbg_x86_uart_init(char *params);
-void dbg_x86_uart_putc(char ch);
-void dbg_x86_uart_putstr(const char *str);
+void dbg_x86_64_uart_init(char *params);
+void dbg_x86_64_uart_putc(char ch);
+void dbg_x86_64_uart_putstr(const char *str);
 
 //#ifdef __DEBUG_VGA__
-void dbg_x86_vgamem_init(char *params);
-void dbg_x86_vgamem_putc(int c);
-void dbg_x86_vgamem_putstr(const char *str);
+void dbg_x86_64_vgamem_init(char *params);
+void dbg_x86_64_vgamem_putc(int c);
+void dbg_x86_64_vgamem_putstr(const char *str);
 
 
 #endif // __ASSEMBLY__

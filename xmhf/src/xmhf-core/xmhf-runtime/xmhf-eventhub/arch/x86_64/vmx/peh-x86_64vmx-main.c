@@ -99,7 +99,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		#ifdef __XMHF_VERIFICATION__
 			bdamemoryphysical = (u8 *)nondet_u32();
 		#else
-			bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (hva_t)bdamemory);
+			bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86_64vmx_walk_pagetables(vcpu, (hva_t)bdamemory);
 		#endif
 		if((sla_t)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
 			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08lx to %08lx",
@@ -182,7 +182,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					#ifdef __XMHF_VERIFICATION__
 						u8 *gueststackregionphysical = (u8 *)nondet_u32();
 					#else
-						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (hva_t)gueststackregion);
+						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86_64vmx_walk_pagetables(vcpu, (hva_t)gueststackregion);
 					#endif
 					if((sla_t)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
 						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
@@ -347,12 +347,12 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
-		xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		xmhf_smpguest_arch_x86_64_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	}else{ //no, pass it to hypapp 
-		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+		xmhf_smpguest_arch_x86_64vmx_quiesce(vcpu);
 		xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
 				(errorcode & 7));
-		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+		xmhf_smpguest_arch_x86_64vmx_endquiesce(vcpu);
 	}		
 }
 
@@ -371,10 +371,10 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
-	xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+	xmhf_smpguest_arch_x86_64vmx_quiesce(vcpu);
 	app_ret_status=xmhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
           access_size);
-    xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+    xmhf_smpguest_arch_x86_64vmx_endquiesce(vcpu);
 
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
    	if(access_type == IO_TYPE_OUT){
@@ -507,12 +507,12 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
 				_vmx_int15_handleintercept(vcpu, r);	
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
-				xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+				xmhf_smpguest_arch_x86_64vmx_quiesce(vcpu);
 				if( xmhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
-				xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+				xmhf_smpguest_arch_x86_64vmx_endquiesce(vcpu);
 				vcpu->vmcs.guest_RIP += 3;
 			}
 		}
@@ -552,13 +552,13 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
 				case 0x01:
-					xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+					xmhf_smpguest_arch_x86_64_eventhandler_dbexception(vcpu, r);
 					break;				
 				
 				case 0x02:	//NMI
 					#ifndef __XMHF_VERIFICATION__
 					//we currently discharge quiescing via manual inspection
-					xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
+					xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(vcpu, r);
 					#endif // __XMHF_VERIFICATION__
 					break;
 				

@@ -61,10 +61,10 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 	//if we are the BSP and platform has more than 1 CPU, setup SIPI interception to tackle SMP guests
 	if(vcpu->isbsp && (g_midtable_numentries > 1)){
 		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-			xmhf_smpguest_arch_x86svm_initialize(vcpu);
+			xmhf_smpguest_arch_x86_64svm_initialize(vcpu);
 			printf("\nCPU(0x%02x): setup x86svm SMP guest capabilities", vcpu->id);
 		}else{	//CPU_VENDOR_INTEL
-			xmhf_smpguest_arch_x86vmx_initialize(vcpu);
+			xmhf_smpguest_arch_x86_64vmx_initialize(vcpu);
 			printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
 		}
 	}else{ //we are an AP, so just wait for SIPI signal
@@ -78,7 +78,7 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 			//	 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
 			
 			//perform required setup after a guest awakens a new CPU
-			xmhf_smpguest_arch_x86_postCPUwakeup(vcpu);
+			xmhf_smpguest_arch_x86_64_postCPUwakeup(vcpu);
 	}
 #else
 	//UP version, we just let the BSP continue and stall the APs
@@ -95,45 +95,45 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 
 
 //handle LAPIC access #DB (single-step) exception event
-void xmhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
+void xmhf_smpguest_arch_x86_64_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		xmhf_smpguest_arch_x86svm_eventhandler_dbexception(vcpu, r);
+		xmhf_smpguest_arch_x86_64svm_eventhandler_dbexception(vcpu, r);
 	}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
+		xmhf_smpguest_arch_x86_64vmx_eventhandler_dbexception(vcpu, r);
 	}
 }
 
 //handle LAPIC access #NPF (nested page fault) event
-void xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
+void xmhf_smpguest_arch_x86_64_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		xmhf_smpguest_arch_x86_64svm_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		xmhf_smpguest_arch_x86_64vmx_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	}	
 	
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
-void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+void xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		xmhf_smpguest_arch_x86svm_eventhandler_nmiexception(vcpu, r);
+		xmhf_smpguest_arch_x86_64svm_eventhandler_nmiexception(vcpu, r);
 	}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
+		xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(vcpu, r);
 	}		
 }	
 
 //perform required setup after a guest awakens a new CPU
-void xmhf_smpguest_arch_x86_postCPUwakeup(VCPU *vcpu){
+void xmhf_smpguest_arch_x86_64_postCPUwakeup(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-		xmhf_smpguest_arch_x86svm_postCPUwakeup(vcpu);
+		xmhf_smpguest_arch_x86_64svm_postCPUwakeup(vcpu);
 	}else{ //CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_postCPUwakeup(vcpu);
+		xmhf_smpguest_arch_x86_64vmx_postCPUwakeup(vcpu);
 	}
 	
 }
@@ -144,9 +144,9 @@ u8 * xmhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-		return xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, vaddr);
+		return xmhf_smpguest_arch_x86_64svm_walk_pagetables(vcpu, vaddr);
 	}else{ //CPU_VENDOR_INTEL
-		return xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, vaddr);
+		return xmhf_smpguest_arch_x86_64vmx_walk_pagetables(vcpu, vaddr);
 	}
 }
 
@@ -154,9 +154,9 @@ u8 * xmhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr){
 void xmhf_smpguest_arch_quiesce(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		xmhf_smpguest_arch_x86svm_quiesce(vcpu);
+		xmhf_smpguest_arch_x86_64svm_quiesce(vcpu);
 	}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+		xmhf_smpguest_arch_x86_64vmx_quiesce(vcpu);
 	}	
 }
 
@@ -164,8 +164,8 @@ void xmhf_smpguest_arch_quiesce(VCPU *vcpu){
 void xmhf_smpguest_arch_endquiesce(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		xmhf_smpguest_arch_x86svm_endquiesce(vcpu);
+		xmhf_smpguest_arch_x86_64svm_endquiesce(vcpu);
 	}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+		xmhf_smpguest_arch_x86_64vmx_endquiesce(vcpu);
 	}		
 }

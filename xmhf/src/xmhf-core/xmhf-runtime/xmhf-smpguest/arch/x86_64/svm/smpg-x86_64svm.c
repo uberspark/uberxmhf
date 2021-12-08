@@ -164,7 +164,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 
 //======================================================================
 //GLOBALS
-void xmhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
+void xmhf_smpguest_arch_x86_64svm_initialize(VCPU *vcpu){
   u32 eax, edx;
   
   //read APIC base address from MSR
@@ -185,9 +185,9 @@ void xmhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
 #endif
 
 //----------------------------------------------------------------------
-//xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation
+//xmhf_smpguest_arch_x86_64svm_eventhandler_hwpgtblviolation
 //handle LAPIC accesses by the guest, used for SMP guest boot
-u32 xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
+u32 xmhf_smpguest_arch_x86_64svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
   //get LAPIC register being accessed
@@ -272,10 +272,10 @@ u32 xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
 
 //------------------------------------------------------------------------------
-//xmhf_smpguest_arch_x86svm_eventhandler_dbexception
+//xmhf_smpguest_arch_x86_64svm_eventhandler_dbexception
 //handle instruction that performed the LAPIC operation
 
-void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
+void xmhf_smpguest_arch_x86_64svm_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   u32 delink_lapic_interception=0;
 
@@ -423,7 +423,7 @@ static void _svm_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu, struct 
 
 
 //quiesce interface to switch all guest cores into hypervisor mode
-void xmhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
+void xmhf_smpguest_arch_x86_64svm_quiesce(VCPU *vcpu){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
         
 	//printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
@@ -448,7 +448,7 @@ void xmhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
 }
 
 //endquiesce interface to resume all guest cores after a quiesce
-void xmhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
+void xmhf_smpguest_arch_x86_64svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
@@ -477,7 +477,7 @@ void xmhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //this function executes atomically. i.e., other NMIs (if any) are
 //held pending by the platform until we return
-void xmhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+void xmhf_smpguest_arch_x86_64svm_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   u32 nmiinhvm;		//1 if NMI was triggered while in hypervisor, 0 if it was triggered in guest
   (void)r;
@@ -546,7 +546,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
 
 
 //perform required setup after a guest awakens a new CPU
-void xmhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu){
+void xmhf_smpguest_arch_x86_64svm_postCPUwakeup(VCPU *vcpu){
 	//setup guest CS and EIP as specified by the SIPI vector
 	struct _svm_vmcbfields *vmcb;
 
@@ -558,7 +558,7 @@ void xmhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu){
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
+u8 * xmhf_smpguest_arch_x86_64svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	
   if((u32)vmcb->cr4 & CR4_PAE ){

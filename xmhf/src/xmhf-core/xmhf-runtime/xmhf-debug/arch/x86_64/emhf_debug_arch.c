@@ -50,11 +50,11 @@ void xmhf_debug_arch_init(char *params)
 {
 	(void)params;
 #ifdef __DEBUG_SERIAL__
-  dbg_x86_uart_init(params);
+  dbg_x86_64_uart_init(params);
 #endif
 
 #ifdef __DEBUG_VGA__
-  dbg_x86_vgamem_init(NULL);
+  dbg_x86_64_vgamem_init(NULL);
 #endif
 }
 
@@ -62,11 +62,11 @@ void xmhf_debug_arch_putc(char c)
 {
 	(void)c;
 #ifdef __DEBUG_SERIAL__
-  dbg_x86_uart_putc(c);
+  dbg_x86_64_uart_putc(c);
 #endif
 
 #ifdef __DEBUG_VGA__
-  dbg_x86_vgamem_putc(c);
+  dbg_x86_64_vgamem_putc(c);
 #endif
 }
 
@@ -74,10 +74,10 @@ void xmhf_debug_arch_putstr(const char *str)
 {
 	(void)str;
 #ifdef __DEBUG_SERIAL__
-  dbg_x86_uart_putstr(str);
+  dbg_x86_64_uart_putstr(str);
 #endif
 
 #ifdef __DEBUG_VGA__
-  dbg_x86_vgamem_putstr(str);
+  dbg_x86_64_vgamem_putstr(str);
 #endif
 }

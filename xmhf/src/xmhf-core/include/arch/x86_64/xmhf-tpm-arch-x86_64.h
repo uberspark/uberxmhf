@@ -225,14 +225,14 @@ typedef struct __attribute__ ((packed)) {
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 //open TPM locality
-int xmhf_tpm_arch_x86vmx_open_locality(int locality);
+int xmhf_tpm_arch_x86_64vmx_open_locality(int locality);
 
 
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 //open TPM locality
-int xmhf_tpm_arch_x86svm_open_locality(int locality);
+int xmhf_tpm_arch_x86_64svm_open_locality(int locality);
 
 
 
