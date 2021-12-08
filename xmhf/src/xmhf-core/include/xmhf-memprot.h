@@ -140,12 +140,26 @@ u32 xmhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa);
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
+
+#ifdef __X86_64__
+
+void xmhf_memprot_arch_x86_64vmx_initialize(VCPU *vcpu);	//initialize memory protection for a core
+void xmhf_memprot_arch_x86_64vmx_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
+void xmhf_memprot_arch_x86_64vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
+u32 xmhf_memprot_arch_x86_64vmx_getprot(VCPU *vcpu, u64 gpa); //get protection for a given physical memory address
+u64 xmhf_memprot_arch_x86_64vmx_get_EPTP(VCPU *vcpu); // get or set EPTP (only valid on Intel)
+void xmhf_memprot_arch_x86_64vmx_set_EPTP(VCPU *vcpu, u64 eptp);
+
+#else /* !__X86_64__ */
+
 void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu);	//initialize memory protection for a core
 void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
 u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //get protection for a given physical memory address
 u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu); // get or set EPTP (only valid on Intel)
 void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
+
+#endif /* __X86_64__ */
 
 //VMX EPT PML4 table buffers
 extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".palign_data") ));		
@@ -164,6 +178,17 @@ extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ))
 //x86svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 
+#ifdef __X86_64__
+
+void xmhf_memprot_arch_x86_64svm_initialize(VCPU *vcpu);	//initialize memory protection for a core
+void xmhf_memprot_arch_x86_64svm_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
+void xmhf_memprot_arch_x86_64svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
+u32 xmhf_memprot_arch_x86_64svm_getprot(VCPU *vcpu, u64 gpa); //get protection for a given physical memory address
+u64 xmhf_memprot_arch_x86_64svm_get_h_cr3(VCPU *vcpu); // get or set host cr3 (only valid on AMD)
+void xmhf_memprot_arch_x86_64svm_set_h_cr3(VCPU *vcpu, u64 hcr3);
+
+#else /* !__X86_64__ */
+
 void xmhf_memprot_arch_x86svm_initialize(VCPU *vcpu);	//initialize memory protection for a core
 void xmhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
@@ -171,6 +196,7 @@ u32 xmhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa); //get protection for 
 u64 xmhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu); // get or set host cr3 (only valid on AMD)
 void xmhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 hcr3);
 
+#endif /* __X86_64__ */
 
 //SVM NPT PDPT buffers
 extern u8 g_svm_npt_pdpt_buffers[] __attribute__(( section(".palign_data") ));
