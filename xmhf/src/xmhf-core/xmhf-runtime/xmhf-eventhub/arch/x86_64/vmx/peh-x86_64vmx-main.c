@@ -480,13 +480,13 @@ static void _vmx_handle_intercept_xsetbv(VCPU *vcpu, struct regs *r){
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//read VMCS from physical CPU/core
 #ifndef __XMHF_VERIFICATION__
-	xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
+	xmhf_baseplatform_arch_x86_64vmx_getVMCS(vcpu);
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
 			(u32)vcpu->vmcs.info_vmexit_reason, (u64)vcpu->vmcs.info_exit_qualification);
-		xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+		xmhf_baseplatform_arch_x86_64vmx_dumpVMCS(vcpu);
 		HALT();
 	}
   
@@ -685,7 +685,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	//write updated VMCS back to CPU
 #ifndef __XMHF_VERIFICATION__
-	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+	xmhf_baseplatform_arch_x86_64vmx_putVMCS(vcpu);
 #endif // __XMHF_VERIFICATION__
 
 

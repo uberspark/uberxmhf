@@ -472,7 +472,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   printf("\nCPU(0x%02x): VMPTRLD success.", vcpu->id);
   
   //put VMCS to CPU
-  xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+  xmhf_baseplatform_arch_x86_64vmx_putVMCS(vcpu);
   printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
   HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer_full == 0xFFFFFFFFUL );
 
@@ -481,7 +481,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
     errorcode=__vmx_start_hvm();
     HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
     //get CPU VMCS into VCPU structure
-    xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
+    xmhf_baseplatform_arch_x86_64vmx_getVMCS(vcpu);
     
     switch(errorcode){
 			case 0:	//no error code, VMCS pointer is invalid
@@ -491,7 +491,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 				unsigned long code=5;
 				__vmx_vmread(0x4400, &code);
 			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%lx. HALT!", vcpu->id, code);
-			    xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+			    xmhf_baseplatform_arch_x86_64vmx_dumpVMCS(vcpu);
 				break;
 			}
 	}

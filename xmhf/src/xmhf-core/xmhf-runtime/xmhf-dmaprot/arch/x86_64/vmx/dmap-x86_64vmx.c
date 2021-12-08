@@ -642,7 +642,7 @@ void vmx_eap_zap(void){
 	memset(&rsdt, 0, sizeof(ACPI_RSDT));
 
 	//get ACPI RSDP
-	status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
+	status=xmhf_baseplatform_arch_x86_64_acpi_getRSDP(&rsdp);
 	HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
 	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
 
@@ -717,7 +717,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 	memset(&rsdt, 0, sizeof(ACPI_RSDT));
 
   //get ACPI RSDP
-  status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
+  status=xmhf_baseplatform_arch_x86_64_acpi_getRSDP(&rsdp);
   HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
   printf("\n%s: RSDP at %08x", __FUNCTION__, status);
   

@@ -73,7 +73,7 @@ static u32 _acpi_computetablechecksum(uintptr_t spaddr, uintptr_t size){
 //get the physical address of the root system description pointer (rsdp)
 //return 0 in case of error (ACPI RSDP not found) else the absolute physical
 //memory address of the RSDP
-u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp){
+u32 xmhf_baseplatform_arch_x86_64_acpi_getRSDP(ACPI_RSDP *rsdp){
   u16 ebdaseg;
   uintptr_t ebdaphys;
   uintptr_t i;
