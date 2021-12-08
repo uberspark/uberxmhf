@@ -1,0 +1,52 @@
+name: Build XMHF with TrustVisor
+
+on: ["push", "pull_request"]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: apt-get
+      run: |
+        apt-get update && \
+        apt-get install \
+                openssh-server tmux vim git aptitude \
+                pbuilder texinfo ruby build-essential autoconf libtool \
+                crossbuild-essential-i386 \
+                -y
+    - name: Build x86
+      run: |
+        ./autogen.sh
+        ./configure \
+          --with-approot=hypapps/trustvisor \
+          --disable-drt \
+          --enable-debug-symbols \
+          CC=i686-linux-gnu-gcc \
+          LD=i686-linux-gnu-ld
+        make
+    - name: Unbuild x86
+      run: |
+        git clean -xdf
+        git status
+    - name: Build x64
+      run: |
+        ./autogen.sh
+        ./configure \
+          --with-approot=hypapps/trustvisor \
+          --disable-drt \
+          --with-target-hwplatform=x86_64 \
+          --enable-debug-symbols
+        make
+    - name: Unbuild x64
+      run: |
+        git clean -xdf
+        git status
+    - name: tmp
+      run: |
+        echo jkl
+        false
+        echo uio
+
