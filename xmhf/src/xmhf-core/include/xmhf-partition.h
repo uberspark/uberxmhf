@@ -101,6 +101,51 @@ void xmhf_partition_arch_start(VCPU *vcpu);
 void xmhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
 
+#ifdef __X86_64__
+
+//----------------------------------------------------------------------
+//x86_64 ARCH. INTERFACES
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+//x86_64vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+//initialize partition monitor for a given CPU
+void xmhf_partition_arch_x86_64vmx_initializemonitor(VCPU *vcpu);
+
+//setup guest OS state for the partition
+void xmhf_partition_arch_x86_64vmx_setupguestOSstate(VCPU *vcpu);
+
+//start executing the partition and guest OS
+void xmhf_partition_arch_x86_64vmx_start(VCPU *vcpu);
+
+//low-level HVM start routine (part-x86_64vmx-sup.S)
+u32 __vmx_start_hvm(void);
+
+//set legacy I/O protection for the partition
+void xmhf_partition_arch_x86_64vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
+
+
+//----------------------------------------------------------------------
+//x86_64svm SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+//initialize partition monitor for a given CPU
+void xmhf_partition_arch_x86_64svm_initializemonitor(VCPU *vcpu);
+
+//setup guest OS state for the partition
+void xmhf_partition_arch_x86_64svm_setupguestOSstate(VCPU *vcpu);
+
+//start executing the partition and guest OS
+void xmhf_partition_arch_x86_64svm_start(VCPU *vcpu);
+
+//low-level HVM start routine (part-x86_64svm-sup.S)
+void __svm_start_hvm(VCPU *vcpu, u32 vmcb_paddr);
+
+//set legacy I/O protection for the partition
+void xmhf_partition_arch_x86_64svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
+
+#else /* !__X86_64__ */
+
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
@@ -142,10 +187,7 @@ void __svm_start_hvm(VCPU *vcpu, u32 vmcb_paddr);
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
-
-
-
-
+#endif /* __X86_64__ */
 
 
 #endif	//__ASSEMBLY__

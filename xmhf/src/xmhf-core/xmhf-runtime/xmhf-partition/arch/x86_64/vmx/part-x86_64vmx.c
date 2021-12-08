@@ -505,7 +505,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 
 
 //initialize partition monitor for a given CPU
-void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
+void xmhf_partition_arch_x86_64vmx_initializemonitor(VCPU *vcpu){
 
   //initialize VT
   _vmx_initVT(vcpu);
@@ -528,14 +528,14 @@ void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
+void xmhf_partition_arch_x86_64vmx_setupguestOSstate(VCPU *vcpu){
 		//initialize VMCS
 		_vmx_initVMCS(vcpu);
 	
 }
 
 //start executing the partition and guest OS
-void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
+void xmhf_partition_arch_x86_64vmx_start(VCPU *vcpu){
     
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
@@ -554,7 +554,7 @@ void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
 }
 
 //set legacy I/O protection for the partition
-void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
+void xmhf_partition_arch_x86_64vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
 	u8 *bit_vector = (u8 *)vcpu->vmx_vaddr_iobitmap;
 	u32 byte_offset, bit_offset;
 	u32 i;
