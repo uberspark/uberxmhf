@@ -137,11 +137,17 @@ CODE
       btsl $(EFER_LME), %eax
       wrmsr
 
-      /* set LDT and TSS (from Linux code) (TODO: likely useless) */
+      /* set LDT (TODO: likely useless) */
       xorl %eax, %eax
       lldt %ax
-      movl $(__TRSEL), %eax   /* 4th entry in GDT (TSS) */
-      ltr %ax
+
+      /*
+       * Do not set TSS, because multiple APs loading the same TSS will result
+       * in #GP(selector): If the source selector points to ... one for a task
+       * that is already busy.
+       */
+      /* movl $(__TRSEL), %eax */   /* 4th entry in GDT (TSS) */
+      /* ltr %ax */
 
       /*
        * Setup stack in 32-bits in order to perform lret. For convenience use
