@@ -17,7 +17,7 @@ endif
 
 # TODO: Workaround to compile x86 for bootloader
 ifeq ($(TARGET_HWPLATFORM), x86_64)
-C_OBJECTS32 = $(patsubst %.c, %.x86.o, $(C_SOURCES))
+C_OBJECTS32 = $(subst x86_64,x86,$(patsubst %.c, %.x86.o, $(C_SOURCES)))
 OBJECTS32 = $(C_OBJECTS32)
 endif
 
