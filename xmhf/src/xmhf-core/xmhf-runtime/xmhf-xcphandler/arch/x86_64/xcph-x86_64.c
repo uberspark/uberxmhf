@@ -146,14 +146,14 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             printf("\n[%02x] CS:EIP 0x%04x:0x%16lx with EFLAGS=0x%16lx", vcpu->id,
                 (u16)exception_cs, exception_rip, exception_eflags);
             printf("\n[%02x]: VCPU at 0x%16lx", vcpu->id, (uintptr_t)vcpu, vcpu->id);
-            printf("\n[%02x] RAX=0x%16lx RBX=0x%16lx RCX=0x%16lx RDX=0x%16lx",
-                    vcpu->id, r->rax, r->rbx, r->rcx, r->rdx);
-            printf("\n[%02x] RSI=0x%16lx RDI=0x%16lx RBP=0x%16lx RSP=0x%16lx",
-                    vcpu->id, r->rsi, r->rdi, r->rbp, r->rsp);
-            printf("\n[%02x] R8 =0x%16lx R9 =0x%16lx R10=0x%16lx R11=0x%16lx",
-                    vcpu->id, r->r8, r->r9, r->r10, r->r11);
-            printf("\n[%02x] R12=0x%16lx R13=0x%16lx R14=0x%16lx R15=0x%16lx",
-                    vcpu->id, r->r12, r->r13, r->r14, r->r15);
+            printf("\n[%02x] RAX=0x%16lx RBX=0x%16lx", vcpu->id, r->rax, r->rbx);
+            printf("\n[%02x] RCX=0x%16lx RDX=0x%16lx", vcpu->id, r->rcx, r->rdx);
+            printf("\n[%02x] RSI=0x%16lx RDI=0x%16lx", vcpu->id, r->rsi, r->rdi);
+            printf("\n[%02x] RBP=0x%16lx RSP=0x%16lx", vcpu->id, r->rbp, r->rsp);
+            printf("\n[%02x] R8 =0x%16lx R9 =0x%16lx", vcpu->id, r->r8 , r->r9 );
+            printf("\n[%02x] R10=0x%16lx R11=0x%16lx", vcpu->id, r->r10, r->r11);
+            printf("\n[%02x] R12=0x%16lx R13=0x%16lx", vcpu->id, r->r12, r->r13);
+            printf("\n[%02x] R14=0x%16lx R15=0x%16lx", vcpu->id, r->r14, r->r15);
             printf("\n[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
                 (u16)read_segreg_cs(), (u16)read_segreg_ds(),
                 (u16)read_segreg_es(), (u16)read_segreg_ss());
