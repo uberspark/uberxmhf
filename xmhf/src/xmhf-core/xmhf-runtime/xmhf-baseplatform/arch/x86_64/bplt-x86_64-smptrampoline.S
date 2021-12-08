@@ -54,7 +54,7 @@
   .extern g_midtable
   .extern g_midtable_numentries
   .extern x_gdt
-  .extern xmhf_baseplatform_arch_x86_smpinitialize_commonstart
+  .extern xmhf_baseplatform_arch_x86_64_smpinitialize_commonstart
   .extern xmhf_xcphandler_idt
 
 /*------------------------------------------------------------------------------
@@ -237,7 +237,7 @@ gotvcpu:
    movq 0x8(%rsp, %rcx, 8), %rsi    // esi contains vcpu pointer
    movq 0x0(%rsi), %rsp             // load stack for this CPU
    movq %rsi, %rdi                  // first argument for function call
-   call xmhf_baseplatform_arch_x86_smpinitialize_commonstart
+   call xmhf_baseplatform_arch_x86_64_smpinitialize_commonstart
    /*we should never get here, if so just halt*/
    hlt
 

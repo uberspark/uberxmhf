@@ -177,7 +177,7 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
-void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86_64_smpinitialize_commonstart(VCPU *vcpu){
 	  //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
   if(xmhf_baseplatform_arch_x86_isbsp()){
