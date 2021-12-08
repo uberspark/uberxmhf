@@ -186,16 +186,10 @@ void xmhf_baseplatform_arch_x86_64_smpinitialize_commonstart(VCPU *vcpu){
 	printf("\nBSP rallying APs...");
     printf("\nBSP(0x%02x): My RSP is 0x%016lx", vcpu->id, vcpu->rsp);
 
-    // TODO: temporary
-    printf("\nBSP(0x%02x): increasing g_cpus_active %u", vcpu->id, g_cpus_active);
-
     //increment a CPU to account for the BSP
     spin_lock(&g_lock_cpus_active);
     g_cpus_active++;
     spin_unlock(&g_lock_cpus_active);
-
-    // TODO: temporary
-    printf("\nBSP(0x%02x): increased g_cpus_active %u", vcpu->id, g_cpus_active);
 
     //wait for g_cpus_active to become g_midtable_numentries -1 to indicate
     //that all APs have been successfully started
@@ -213,15 +207,9 @@ void xmhf_baseplatform_arch_x86_64_smpinitialize_commonstart(VCPU *vcpu){
     //increment active CPUs
 	vcpu->isbsp=0;	//this core is a AP
 
-    // TODO: temporary
-    printf("\nAP(0x%02x): increasing g_cpus_active %u", vcpu->id, g_cpus_active);
-
     spin_lock(&g_lock_cpus_active);
     g_cpus_active++;
     spin_unlock(&g_lock_cpus_active);
-
-    // TODO: temporary
-    printf("\nAP(0x%02x): increased g_cpus_active %u", vcpu->id, g_cpus_active);
 
     while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
  
