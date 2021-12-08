@@ -404,7 +404,7 @@ static void svm_eap_dev_invalidate_cache(void){
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
-u32 xmhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86_64svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size){
 
@@ -435,7 +435,7 @@ u32 xmhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 //"normal" DMA protection initialization to setup required
 //structures for DMA protection
 //return 1 on success 0 on failure
-u32 xmhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86_64svm_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
 
 	u32 status;
@@ -449,7 +449,7 @@ u32 xmhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 
 //DMA protect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
-void xmhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size){
+void xmhf_dmaprot_arch_x86_64svm_protect(u32 start_paddr, u32 size){
 	u32 paligned_paddr_start, paligned_paddr_end, i;
 	
 	//compute page-aligned physical start and end addresses

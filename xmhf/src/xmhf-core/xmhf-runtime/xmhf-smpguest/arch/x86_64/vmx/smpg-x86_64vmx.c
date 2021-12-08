@@ -77,7 +77,7 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
   
   pts[lapic_page] = value;
 
-  xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
+  xmhf_memprot_arch_x86_64vmx_flushmappings(vcpu);
 #endif //__XMHF_VERIFICATION__
 }
 //----------------------------------------------------------------------

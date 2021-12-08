@@ -840,7 +840,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
-u32 xmhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 __attribute__((unused))memregionbase_paddr, u32 __attribute__((unused))memregion){
+u32 xmhf_dmaprot_arch_x86_64vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 __attribute__((unused))memregionbase_paddr, u32 __attribute__((unused))memregion){
 	u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr, vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
 
 	//(void)memregionbase_paddr;
@@ -864,7 +864,7 @@ u32 xmhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 prot
 //"normal" DMA protection initialization to setup required
 //structures for DMA protection
 //return 1 on success 0 on failure
-u32 xmhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86_64vmx_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
 	//Vt-d bootstrap has minimal DMA translation setup and protects entire
 	//system memory. Relax this by instantiating a complete DMA translation
@@ -895,7 +895,7 @@ u32 xmhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 
 //DMA protect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
-void xmhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size){
+void xmhf_dmaprot_arch_x86_64vmx_protect(u32 start_paddr, u32 size){
   pt_t pt;
   u32 vaddr, end_paddr;
   u32 pdptindex, pdtindex, ptindex;

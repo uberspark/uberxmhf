@@ -421,7 +421,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	vcpu->vmcs.guest_CR0 = cr0_value & ~(CR0_CD | CR0_NW);
 	
 	//flush mappings
-	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
+	xmhf_memprot_arch_x86_64vmx_flushmappings(vcpu);
 }
 
 //---CR4 access handler---------------------------------------------------------

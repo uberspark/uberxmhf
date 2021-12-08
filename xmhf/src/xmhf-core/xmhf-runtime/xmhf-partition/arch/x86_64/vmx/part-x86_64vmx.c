@@ -440,7 +440,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_CR4_shadow = CR4_VMXE; //let guest know we have VMX enabled
 
 	//flush guest TLB to start with
-	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
+	xmhf_memprot_arch_x86_64vmx_flushmappings(vcpu);
 }
 
 

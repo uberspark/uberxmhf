@@ -60,7 +60,7 @@ static void _vmx_setupEPT(VCPU *vcpu);
 // global interfaces (functions) exported by this component
 
 // initialize memory protection structures for a given core (vcpu)
-void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
+void xmhf_memprot_arch_x86_64vmx_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	_vmx_gathermemorytypes(vcpu);
@@ -378,13 +378,13 @@ static void _vmx_setupEPT(VCPU *vcpu){
 
 
 //flush hardware page table mappings (TLB) 
-void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
+void xmhf_memprot_arch_x86_64vmx_flushmappings(VCPU *vcpu){
   __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
           (u64)vcpu->vmcs.control_EPT_pointer_full);
 }
 
 //set protection for a given physical memory address
-void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+void xmhf_memprot_arch_x86_64vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u32 pfn;
   u64 *pt;
   u32 flags =0;
@@ -429,7 +429,7 @@ void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
+u32 xmhf_memprot_arch_x86_64vmx_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   u64 entry = pt[pfn];
@@ -455,14 +455,14 @@ u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
   return prottype;
 }
 
-u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu)
+u64 xmhf_memprot_arch_x86_64vmx_get_EPTP(VCPU *vcpu)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   return
     ((u64)(vcpu->vmcs.control_EPT_pointer_high) << 32)
     | (u64)(vcpu->vmcs.control_EPT_pointer_full);
 }
-void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp)
+void xmhf_memprot_arch_x86_64vmx_set_EPTP(VCPU *vcpu, u64 eptp)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   vcpu->vmcs.control_EPT_pointer_full = (u32)eptp;

@@ -76,7 +76,7 @@ static void svm_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
   pts[lapic_page] &= ~(u64)0xFFFFFFFFFFFFFFFFULL;
   pts[lapic_page] |= pae_make_pte(new_lapic_paddr, mapflag);
 
-  xmhf_memprot_arch_x86svm_flushmappings(vcpu);
+  xmhf_memprot_arch_x86_64svm_flushmappings(vcpu);
 #endif //__XMHF_VERIFICATION__
 }
 //----------------------------------------------------------------------

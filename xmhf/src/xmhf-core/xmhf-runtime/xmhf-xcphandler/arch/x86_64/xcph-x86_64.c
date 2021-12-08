@@ -143,7 +143,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
             printf("\n[%02x]: state dump follows...", vcpu->id);
             // things to dump
-            printf("\n[%02x] CS:EIP 0x%04x:0x%16lx with EFLAGS=0x%16lx", vcpu->id,
+            printf("\n[%02x] CS:RIP 0x%04x:0x%16lx with EFLAGS=0x%16lx", vcpu->id,
                 (u16)exception_cs, exception_rip, exception_eflags);
             printf("\n[%02x]: VCPU at 0x%16lx", vcpu->id, (uintptr_t)vcpu, vcpu->id);
             printf("\n[%02x] RAX=0x%16lx RBX=0x%16lx", vcpu->id, r->rax, r->rbx);

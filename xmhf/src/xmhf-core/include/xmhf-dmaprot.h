@@ -97,6 +97,36 @@ u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 void xmhf_dmaprot_arch_protect(u32 start_paddr, u32 size);
 
 
+#ifdef __X86_64__
+
+//----------------------------------------------------------------------
+//x86_64 ARCH. INTERFACES
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+//x86_64vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+u32 xmhf_dmaprot_arch_x86_64svm_earlyinitialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
+	u64 memregionbase_paddr, u32 memregion_size);
+u32 xmhf_dmaprot_arch_x86_64svm_initialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
+void xmhf_dmaprot_arch_x86_64svm_protect(u32 start_paddr, u32 size);
+
+
+//----------------------------------------------------------------------
+//x86_64vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+u32 xmhf_dmaprot_arch_x86_64vmx_earlyinitialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
+	u64 memregionbase_paddr, u32 memregion_size);
+u32 xmhf_dmaprot_arch_x86_64vmx_initialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
+void xmhf_dmaprot_arch_x86_64vmx_protect(u32 start_paddr, u32 size);
+
+#else /* !__X86_64__ */
+
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
@@ -123,6 +153,8 @@ u32 xmhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
 void xmhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size);
 
+#endif /* __X86_64__ */
+
 //VMX VT-d page table buffers; we support a 3 level page-table walk, 
 //4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
 extern u8 g_vmx_vtd_pdp_table[] __attribute__(( section(".palign_data") )); 
@@ -139,8 +171,6 @@ extern u8 g_vmx_vtd_ret[] __attribute__(( section(".palign_data") ));
 //is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
 //with 8 functions each as per the PCI spec.
 extern u8 g_vmx_vtd_cet[] __attribute__(( section(".palign_data") ));
-
-
 
 
 #endif	//__ASSEMBLY__
