@@ -258,10 +258,10 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_GDTR_base = (u64)(hva_t)x_gdt_start;
 	vcpu->vmcs.host_IDTR_base = (u64)(hva_t)xmhf_xcphandler_get_idt_start();
 	vcpu->vmcs.host_TR_base = (u64)(hva_t)g_runtime_TSS;
-	vcpu->vmcs.host_RIP = (u64)(hva_t)xmhf_parteventhub_arch_x86vmx_entry;
+	vcpu->vmcs.host_RIP = (u64)(hva_t)xmhf_parteventhub_arch_x86_64vmx_entry;
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry)
+	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86_64vmx_entry)
 		vcpu->vmcs.host_RIP = 0xDEADBEEF;
 #endif //__XMHF_VERIFICATION__
 

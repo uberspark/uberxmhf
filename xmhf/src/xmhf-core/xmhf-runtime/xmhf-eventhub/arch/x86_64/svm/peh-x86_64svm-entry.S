@@ -52,7 +52,7 @@
 //globals referenced
 	.extern g_midtable_numentries
 	.extern g_midtable
-	.extern xmhf_parteventhub_arch_x86svm_intercept_handler
+	.extern xmhf_parteventhub_arch_x86_64svm_intercept_handler
 
 //----------------------------------------------------------------------
 //macros to save and restore GPRs
@@ -81,8 +81,8 @@
 // xmhf_parteventhub_entry_x86svm
 // we get control here right after any event within a partition
 .section .text
-.global xmhf_parteventhub_arch_x86svm_entry
-xmhf_parteventhub_arch_x86svm_entry:
+.global xmhf_parteventhub_arch_x86_64svm_entry
+xmhf_parteventhub_arch_x86_64svm_entry:
 	
 	//save EAX as it contains the VMCB address
 	//pushl	%eax
@@ -112,7 +112,7 @@ xmhf_parteventhub_arch_x86svm_entry:
     pushl %eax
     pushl %esi
 #endif /* __X86_64__ */
-	call xmhf_parteventhub_arch_x86svm_intercept_handler
+	call xmhf_parteventhub_arch_x86_64svm_intercept_handler
     addl $0x08, %esp
 
 	//step-5: restore all CPU GPRs

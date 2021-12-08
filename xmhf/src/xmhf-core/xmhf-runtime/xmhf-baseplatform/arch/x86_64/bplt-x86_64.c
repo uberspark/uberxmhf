@@ -106,7 +106,7 @@ void xmhf_baseplatform_arch_cpuinitialize(void){
 
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
+	if(xmhf_baseplatform_arch_x86_64_cpuhasxsavefeature()){
 		u32 t_cr4;
 		t_cr4 = read_cr4();
 		t_cr4 |= CR4_OSXSAVE;	
