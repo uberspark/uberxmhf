@@ -11,12 +11,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: apt-get
       run: |
-        apt-get update && \
-        apt-get install \
-                openssh-server tmux vim git aptitude \
-                pbuilder texinfo ruby build-essential autoconf libtool \
-                crossbuild-essential-i386 \
-                -y
+        sudo apt-get update && \
+        sudo apt-get install \
+                      openssh-server tmux vim git aptitude \
+                      pbuilder texinfo ruby build-essential autoconf libtool \
+                      crossbuild-essential-i386 \
+                      -y
     - name: Build x86
       run: |
         ./autogen.sh
