@@ -45,16 +45,6 @@ AS_IF([test "x${with_target_hwplatform}" != "xx86_64"],
 AC_CHECK_PROG([CC32], [i686-linux-gnu-gcc], [i686-linux-gnu-gcc], [gcc])
 AC_SUBST([BCCLIB], [`$CC32 -m32 --print-file-name=`])
 
-# Workaround to run in QEMU
-AC_SUBST([QEMU_WORKAROUND])
-AC_ARG_ENABLE([qemu_workaround],
-        AS_HELP_STRING([--enable-qemu-workaround@<:@=yes|no@:>@],
-                [enable QEMU workaround]),
-                , [enable_qemu_workaround=no])
-AS_IF([test "x${enable_qemu_workaround}" != "xno"],
-      [QEMU_WORKAROUND=y],
-      [QEMU_WORKAROUND=n])
-
 # target platform
 AC_SUBST([TARGET_PLATFORM])
 AC_ARG_WITH([target_platform],
@@ -80,6 +70,16 @@ AC_ARG_ENABLE([debug_symbols],
 AS_IF([test "x${enable_debug_symbols}" != "xno"],
       [DEBUG_SYMBOLS=y],
       [DEBUG_SYMBOLS=n])
+
+# Workaround to run in QEMU
+AC_SUBST([DEBUG_QEMU])
+AC_ARG_ENABLE([debug_qemu],
+        AS_HELP_STRING([--enable-debug-qemu@<:@=yes|no@:>@],
+                [enable QEMU workaround for debugging]),
+                , [enable_debug_qemu=no])
+AS_IF([test "x${enable_debug_qemu}" != "xno"],
+      [DEBUG_QEMU=y],
+      [DEBUG_QEMU=n])
 
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
