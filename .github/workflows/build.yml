@@ -34,7 +34,7 @@ jobs:
     - name: Release
       uses: actions/upload-artifact@v2
       with:
-        name: boot-${{ matrix.target_arch }}
+        name: boot-${{ matrix.target_arch }}-${{ matrix.compile_mode }}
         path: |
           xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe
           xmhf/src/xmhf-core/xmhf-bootloader/init_syms.exe
