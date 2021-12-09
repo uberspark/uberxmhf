@@ -68,16 +68,19 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
          * QEMU will fail on VMWRITE. But looks like those fields are not used,
          * So ignore the failure.
          */
-        if (fieldvalue == 0) {
-            unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
-            if (encoding == 0x6008 || encoding == 0x600a ||
-                encoding == 0x600c || encoding == 0x600e ||
-                encoding == 0x200c || encoding == 0x200d ||
-                encoding == 0x4828) {
+        unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
+        if (encoding == 0x6008 || encoding == 0x600a || encoding == 0x600c ||
+            encoding == 0x600e || encoding == 0x200c || encoding == 0x200d ||
+            encoding == 0x4828) {
+            /* declutter messages since there are too many */
+            static warning_printed = 0;
+            if (!warning_printed) {
                 printf("\nCPU(0x%02x): Ignoring VMWRITE failure %d 0x%lx 0x%lx",
                        vcpu->id, i, encoding, fieldvalue);
-                continue;
+                printf("\nHidding future VMWRITE failures");
+                warning_printed = 1;
             }
+            continue;
         }
 #endif /* __DEBUG_QEMU__ */
 
