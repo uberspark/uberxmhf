@@ -69,20 +69,14 @@ void xmhf_baseplatform_arch_x86_64vmx_putVMCS(VCPU *vcpu){
          * So ignore the failure.
          */
         if (fieldvalue == 0) {
-            switch (g_vmx_vmcsrwfields_encodings[i].encoding) {
-            case 0x6008:  /* fallthrough */
-            case 0x600a:  /* fallthrough */
-            case 0x600c:  /* fallthrough */
-            case 0x600e:  /* fallthrough */
-            case 0x200c:  /* fallthrough */
-            case 0x200d:  /* fallthrough */
-            case 0x4828:
+            unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
+            if (encoding == 0x6008 || encoding == 0x600a ||
+                encoding == 0x600c || encoding == 0x600e ||
+                encoding == 0x200c || encoding == 0x200d ||
+                encoding == 0x4828) {
                 printf("\nCPU(0x%02x): Ignoring VMWRITE failure %d 0x%lx 0x%lx",
-                       vcpu->id, i, g_vmx_vmcsrwfields_encodings[i].encoding,
-                       fieldvalue);
+                       vcpu->id, i, encoding, fieldvalue);
                 continue;
-            default:
-                ;
             }
         }
 #endif /* __DEBUG_QEMU__ */

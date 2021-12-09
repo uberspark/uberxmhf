@@ -61,6 +61,26 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
       unsigned long fieldvalue = *field;
       //printf("\nvmwrite: enc=0x%08x, value=0x%08x", vmcsrwfields_encodings[i].encoding, fieldvalue);
       if(!__vmx_vmwrite(g_vmx_vmcsrwfields_encodings[i].encoding, fieldvalue)){
+
+#ifdef __DEBUG_QEMU__
+        /*
+         * Seems like field encodings not implemented in KVM. When running on
+         * QEMU will fail on VMWRITE. But looks like those fields are not used,
+         * So ignore the failure.
+         */
+        if (fieldvalue == 0) {
+            unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
+            if (encoding == 0x6008 || encoding == 0x600a ||
+                encoding == 0x600c || encoding == 0x600e ||
+                encoding == 0x200c || encoding == 0x200d ||
+                encoding == 0x4828) {
+                printf("\nCPU(0x%02x): Ignoring VMWRITE failure %d 0x%lx 0x%lx",
+                       vcpu->id, i, encoding, fieldvalue);
+                continue;
+            }
+        }
+#endif /* __DEBUG_QEMU__ */
+
         printf("\nCPU(0x%02x): VMWRITE failed. HALT!", vcpu->id);
         HALT();
       }
