@@ -18,7 +18,7 @@ fi; fi
 if [ "$2" == "release" ]; then
 	CONFIGURE_ARGS="${CONFIGURE_ARGS}"
 else if [ "$2" == "debug" ]; then
-	CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-qemu-workaround"
+	CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-qemu"
 else
 	echo '$2 incorrect'; exit 1
 fi; fi

@@ -82,6 +82,7 @@ void xmhf_baseplatform_arch_x86_64vmx_putVMCS(VCPU *vcpu){
                        fieldvalue);
                 continue;
             default:
+                ;
             }
         }
 #endif /* __DEBUG_QEMU__ */
