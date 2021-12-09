@@ -12,6 +12,9 @@ jobs:
         target_arch:
           - 'x86'
           - 'x86_64'
+        compile_mode:
+          - 'debug'
+          - 'release'
 
     steps:
     - uses: actions/checkout@v2
@@ -23,35 +26,19 @@ jobs:
                       pbuilder texinfo ruby build-essential autoconf libtool \
                       crossbuild-essential-i386 \
                       -y
-    - name: nproc
+    - name: Build
       run: |
-        nproc
-    - name: Build x86
-      if: ${{ matrix.target_arch == 'x86' }}
-      run: |
-        ./autogen.sh
-        ./configure \
-          --with-approot=hypapps/trustvisor \
-          --disable-drt \
-          --enable-debug-symbols \
-          CC=i686-linux-gnu-gcc \
-          LD=i686-linux-gnu-ld
-        make -j 4
-    - name: Build x64
-      if: ${{ matrix.target_arch == 'x86_64' }}
-      run: |
-        ./autogen.sh
-        ./configure \
-          --with-approot=hypapps/trustvisor \
-          --disable-drt \
-          --with-target-hwplatform=x86_64 \
-          --enable-debug-symbols
-        make -j 4
+        ./.github/build.sh \
+          ${{ matrix.target_arch }} \
+          ${{ matrix.compile_mode }}
     - name: Release
       uses: actions/upload-artifact@v2
       with:
         name: boot-${{ matrix.target_arch }}
         path: |
+          xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe
+          xmhf/src/xmhf-core/xmhf-bootloader/init_syms.exe
+          xmhf/src/xmhf-core/xmhf-runtime/runtime.exe
           hypervisor-${{ matrix.target_arch }}.bin.gz
           init-${{ matrix.target_arch }}.bin
 
