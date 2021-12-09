@@ -73,7 +73,7 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
             encoding == 0x600e || encoding == 0x200c || encoding == 0x200d ||
             encoding == 0x4828) {
             /* declutter messages since there are too many */
-            static warning_printed = 0;
+            static uint32_t warning_printed = 0;
             if (!warning_printed) {
                 printf("\nCPU(0x%02x): Ignoring VMWRITE failure %d 0x%lx 0x%lx",
                        vcpu->id, i, encoding, fieldvalue);
