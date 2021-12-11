@@ -75,9 +75,18 @@ static void _vmx_initVT(VCPU *vcpu){
 	  hva_t gdtstart = (hva_t)&x_gdt_start;
 	  u16 trselector = 	__TRSEL;
 	  #ifndef __XMHF_VERIFICATION__
-	  // TODO: not implemented
-	  (void) gdtstart;
-	  (void) trselector;
+	  asm volatile("movq %0, %%rdi\r\n"
+		"xorq %%rax, %%rax\r\n"
+		"movw %1, %%ax\r\n"
+		"addq %%rax, %%rdi\r\n"		//%rdi is pointer to TSS descriptor in GDT
+		"addq $0x4, %%rdi\r\n"		//%rdi points to 2nd byte of 128-bit TSS desc.
+		"lock andl $0xFFFF00FF, (%%rdi)\r\n"
+		"lock orl  $0x00008900, (%%rdi)\r\n"
+		"ltr %%ax\r\n"				//load TR
+	     :
+	     : "m"(gdtstart), "m"(trselector)
+	     : "rdi", "rax"
+	  );
 	  #endif
 	}
 	
