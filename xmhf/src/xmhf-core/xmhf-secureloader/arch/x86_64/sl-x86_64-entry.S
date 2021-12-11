@@ -182,12 +182,6 @@ our C main*/
     btsl $(EFER_LME), %eax
     wrmsr
 
-    /* set LDT and TSS (from Linux code) (TODO: likely useless) */
-    xorl %eax, %eax
-    lldt %ax
-    movl $(__TRSEL), %eax   /* 4th entry in GDT (TSS) */
-    ltr %ax
-
     /* setup jump to 64-bit mode */
     pushl $(__CS)           /* 2nd entry in GDT (64-bit CODE) */
     leal _sl_start_64(%ebp), %eax
@@ -353,9 +347,8 @@ sl_cpu_common:
     .quad    0x00cf9a000000ffff                //0x08: 32-bit CODE selector
     .quad    0x00af9a000000ffff                //0x10: 64-bit CODE selector
     .quad    0x00cf92000000ffff                //0x18: 32-bit DATA selector
-    /* TODO: TSS likely unused in secure loader */
-    .quad    0x0080890000000000                //0x20: TSS low (from Linux)
-    .quad    0x0000000000000000                //0x28: TSS high (from Linux)
+    .quad    0x0000000000000000                //0x20: TSS low (unused)
+    .quad    0x0000000000000000                //0x28: TSS high (unused)
     sl_gdt_end:
 
 /*----------------------------------------------------------------------

@@ -83,9 +83,8 @@ CODE
       .quad 0x00cf9a000000ffff  // 0x08: 32-bit CODE selector
       .quad 0x00af9a000000ffff  // 0x10: 64-bit CODE selector
       .quad 0x00cf92000000ffff  // 0x18: 32-bit DATA selector
-      /* TODO: TSS likely unused here */
-      .quad 0x0080890000000000  // 0x20: TSS low (from Linux)
-      .quad 0x0000000000000000  // 0x28: TSS high (from Linux)
+      .quad 0x0000000000000000  // 0x20: TSS low (unused)
+      .quad 0x0000000000000000  // 0x28: TSS high (unused)
     _ap_gdt_end:
       .word 0
     .align 16
@@ -136,18 +135,6 @@ CODE
       rdmsr
       btsl $(EFER_LME), %eax
       wrmsr
-
-      /* set LDT (TODO: likely useless) */
-      xorl %eax, %eax
-      lldt %ax
-
-      /*
-       * Do not set TSS, because multiple APs loading the same TSS will result
-       * in #GP(selector): If the source selector points to ... one for a task
-       * that is already busy.
-       */
-      /* movl $(__TRSEL), %eax */   /* 4th entry in GDT (TSS) */
-      /* ltr %ax */
 
       /*
        * Setup stack in 32-bits in order to perform lret. For convenience use
