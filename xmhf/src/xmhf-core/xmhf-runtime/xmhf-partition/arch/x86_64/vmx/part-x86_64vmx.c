@@ -277,11 +277,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//store vcpu at TOS
 	vcpu->rsp = vcpu->rsp - sizeof(hva_t);
 #ifndef __XMHF_VERIFICATION__
-#ifdef __XMHF_X86_64__
-	// TODO: not implemented
-#else /* !__XMHF_X86_64__ */
 	*(hva_t *)vcpu->rsp = (hva_t)vcpu;
-#endif /* __XMHF_X86_64__ */
 #endif
 	vcpu->vmcs.host_RSP = (u64)vcpu->rsp;
 			
