@@ -93,15 +93,32 @@ void xmhf_baseplatform_arch_x86_64vmx_putVMCS(VCPU *vcpu){
 //---getVMCS--------------------------------------------------------------------
 // routine takes CPU VMCS and stores it in vcpu vmcsfields  
 void xmhf_baseplatform_arch_x86_64vmx_getVMCS(VCPU *vcpu){
-  unsigned int i;
-  for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-      __vmx_vmread(g_vmx_vmcsrwfields_encodings[i].encoding, field);
-  }  
-  for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
-      unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (hva_t)g_vmx_vmcsrofields_encodings[i].fieldoffset);
-      __vmx_vmread(g_vmx_vmcsrofields_encodings[i].encoding, field);
-  }
+    unsigned int i;
+    for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
+        unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
+        unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
+#ifdef __DEBUG_QEMU__
+        /* Skip reading fields not supported by QEMU */
+        if (encoding == 0x6008 || encoding == 0x600a || encoding == 0x600c ||
+            encoding == 0x600e || encoding == 0x200c || encoding == 0x200d ||
+            encoding == 0x4828) {
+            continue;
+        }
+#endif /* __DEBUG_QEMU__ */
+        __vmx_vmread(encoding, field);
+    }
+    for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
+        unsigned long encoding = g_vmx_vmcsrofields_encodings[i].encoding;
+        unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (hva_t)g_vmx_vmcsrofields_encodings[i].fieldoffset);
+#ifdef __DEBUG_QEMU__
+        /* Skip reading fields not supported by QEMU */
+        if (encoding == 0x6402 || encoding == 0x6404 || encoding == 0x6406 ||
+            encoding == 0x6408) {
+            continue;
+        }
+#endif /* __DEBUG_QEMU__ */
+        __vmx_vmread(encoding, field);
+    }
 }
 
 //--debug: dumpVMCS dumps VMCS contents-----------------------------------------
