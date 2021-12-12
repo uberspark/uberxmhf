@@ -270,7 +270,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_RIP = (u64)(hva_t)xmhf_parteventhub_arch_x86vmx_entry;
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry)
+	if( vcpu->vmcs.host_RIP == (u64)(hva_t)xmhf_parteventhub_arch_x86vmx_entry)
 		vcpu->vmcs.host_RIP = 0xDEADBEEF;
 #endif //__XMHF_VERIFICATION__
 

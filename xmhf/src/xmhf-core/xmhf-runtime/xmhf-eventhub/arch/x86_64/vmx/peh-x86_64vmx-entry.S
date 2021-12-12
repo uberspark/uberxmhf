@@ -51,7 +51,7 @@
 
 //----------------------------------------------------------------------
 //globals referenced
-	.extern xmhf_parteventhub_arch_x86_64vmx_intercept_handler
+    .extern xmhf_parteventhub_arch_x86_64vmx_intercept_handler
 
 //----------------------------------------------------------------------
 // xmhf_parteventhub_entry_x86vmx
@@ -60,42 +60,57 @@
 .section .text
 .global xmhf_parteventhub_arch_x86_64vmx_entry
 xmhf_parteventhub_arch_x86_64vmx_entry:
-	//step-1: save all CPU GPRs
-#ifdef __X86_64__
-    // TODO
-#else /* !__X86_64__ */
-	pushal
-#endif /* __X86_64__ */
+    // Currently rsp points to VCPU
 
-	//step-2: grab VCPU *
-	movl 32(%esp), %esi
-	      
-   	//step-4: get hold of pointer to saved GPR on stack
-   	movl %esp, %eax
+    //step-1: save all CPU GPRs
+    pushq   %r15
+    pushq   %r14
+    pushq   %r13
+    pushq   %r12
+    pushq   %r11
+    pushq   %r10
+    pushq   %r9
+    pushq   %r8
+    pushq   %rax
+    pushq   %rcx
+    pushq   %rdx
+    pushq   %rbx
+    pushq   %rsp
+    pushq   %rbp
+    pushq   %rsi
+    pushq   %rdi
 
-	//step-5: invoke "C" event handler
-   	//1st argument is VCPU * followed by pointer to saved GPRs
-#ifdef __X86_64__
-	// TODO
-#else /* !__X86_64__ */
-	pushl %eax
-	pushl %esi
-#endif /* __X86_64__ */
-	call xmhf_parteventhub_arch_x86_64vmx_intercept_handler
-    addl $0x08, %esp
+    //step-2: grab VCPU *, put to 1st argument
+    movq 128(%rsp), %rdi
+
+    //step-4: get hold of pointer to saved GPR on stack, put to 2nd argument
+    movq %rsp, %rsi
+
+    //step-5: invoke "C" event handler
+    call xmhf_parteventhub_arch_x86_64vmx_intercept_handler
 
     //step-6; restore all CPU GPRs
-#ifdef __X86_64__
-    // TODO
-#else /* !__X86_64__ */
-    popal
-#endif /* __X86_64__ */
+    popq    %rdi
+    popq    %rsi
+    popq    %rbp
+    popq    %rsp
+    popq    %rbx
+    popq    %rdx
+    popq    %rcx
+    popq    %rax
+    popq    %r8
+    popq    %r9
+    popq    %r10
+    popq    %r11
+    popq    %r12
+    popq    %r13
+    popq    %r14
+    popq    %r15
 
     //resume partition
     vmresume
-              
-    //if we get here then vm resume failed, just bail out with a BP exception 
+
+    //if we get here then vm resume failed, just bail out with a BP exception
     int $0x03
     hlt
-  
-  
+
