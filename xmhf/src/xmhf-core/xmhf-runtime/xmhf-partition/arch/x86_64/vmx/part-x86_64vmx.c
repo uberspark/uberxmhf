@@ -302,10 +302,16 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 
 	//IO bitmap support
-	vcpu->vmcs.control_IO_BitmapA_address_full = (u32)hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
-	vcpu->vmcs.control_IO_BitmapA_address_high = 0;
-	vcpu->vmcs.control_IO_BitmapB_address_full = (u32)hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
-	vcpu->vmcs.control_IO_BitmapB_address_high = 0;
+	{
+	    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
+	    vcpu->vmcs.control_IO_BitmapA_address_full = (u32)addr;
+	    vcpu->vmcs.control_IO_BitmapA_address_high = (u32)(addr >> 32);
+    }
+    {
+        u64 addr = hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
+	    vcpu->vmcs.control_IO_BitmapB_address_full = (u32)addr;
+	    vcpu->vmcs.control_IO_BitmapB_address_high = (u32)(addr >> 32);
+    }
 	vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
 
 	//Critical MSR load/store
@@ -326,16 +332,25 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		#endif
 
 		//host MSR load on exit, we store it ourselves before entry
-		vcpu->vmcs.control_VM_exit_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
-		vcpu->vmcs.control_VM_exit_MSR_load_address_high=0;
+		{
+		    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
+		    vcpu->vmcs.control_VM_exit_MSR_load_address_full=(u32)addr;
+		    vcpu->vmcs.control_VM_exit_MSR_load_address_high=(u32)(addr >> 32);
+		}
 		vcpu->vmcs.control_VM_exit_MSR_load_count= vmx_msr_area_msrs_count;
 
 		//guest MSR load on entry, store on exit
-		vcpu->vmcs.control_VM_entry_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
-		vcpu->vmcs.control_VM_entry_MSR_load_address_high=0;
+		{
+		    u64 addr = (u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		    vcpu->vmcs.control_VM_entry_MSR_load_address_full=(u32)addr;
+		    vcpu->vmcs.control_VM_entry_MSR_load_address_high=(u32)(addr >> 32);
+		}
 		vcpu->vmcs.control_VM_entry_MSR_load_count=vmx_msr_area_msrs_count;
-		vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
-		vcpu->vmcs.control_VM_exit_MSR_store_address_high=0;
+		{
+		    u64 addr = (u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		    vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)addr;
+		    vcpu->vmcs.control_VM_exit_MSR_store_address_high=(u32)(addr >> 32);
+		}
 		vcpu->vmcs.control_VM_exit_MSR_store_count=vmx_msr_area_msrs_count;
 	}
 
@@ -378,8 +393,8 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		#ifndef __XMHF_VERIFICATION__
 		memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
 		#endif
-			vcpu->vmcs.guest_CS_selector = 0;
-			vcpu->vmcs.guest_CS_base = 0;
+		vcpu->vmcs.guest_CS_selector = 0;
+		vcpu->vmcs.guest_CS_base = 0;
 		vcpu->vmcs.guest_RIP = 0x7c00ULL;
 	}else{
 		vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
