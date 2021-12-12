@@ -64,11 +64,7 @@
 	__vmx_start_hvm:
 	
 	//save GPRs
-#ifdef __X86_64__
-	// TODO: not implemented
-#else /* !__X86_64__ */
 	pushal
-#endif /* __X86_64__ */
    
 	//real-mode setup just like the BIOS
 	movl $0x0, %eax
@@ -85,11 +81,7 @@
 	//if we get here then some error happened during the launch
 	
 	//restore stack frame for a return from this procedure
-#ifdef __X86_64__
-	// TODO: not implemented
-#else /* !__X86_64__ */
 	popal
-#endif /* __X86_64__ */
 
 	//there are two possible causes of failure, VMFailInvalid or
 	//VMFailValid (VM instruction error field contains the error code)
