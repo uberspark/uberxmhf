@@ -158,24 +158,24 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
   //initialize application parameter block and call app main
   {
-  	APP_PARAM_BLOCK appParamBlock;
-  	
-	appParamBlock.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
-  	appParamBlock.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
-  	appParamBlock.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
-  	appParamBlock.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
-	appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+    APP_PARAM_BLOCK appParamBlock;
+
+    appParamBlock.bootsector_ptr = rpb->XtGuestOSBootModuleBase;
+    appParamBlock.bootsector_size = rpb->XtGuestOSBootModuleSize;
+    appParamBlock.optionalmodule_ptr = rpb->runtime_appmodule_base;
+    appParamBlock.optionalmodule_size = rpb->runtime_appmodule_size;
+    appParamBlock.runtimephysmembase = rpb->XtVmmRuntimePhysBase;
     COMPILE_TIME_ASSERT(sizeof(appParamBlock.cmdline) >= sizeof(rpb->cmdline));
-	#ifndef __XMHF_VERIFICATION__
+    #ifndef __XMHF_VERIFICATION__
     strncpy(appParamBlock.cmdline, rpb->cmdline, sizeof(appParamBlock.cmdline));
-	#endif
-	
-  	//call app main
-  	if(xmhf_app_main(vcpu, &appParamBlock)){
-    	printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
-    	HALT();
-  	}
-  }   	
+    #endif
+
+    //call app main
+    if(xmhf_app_main(vcpu, &appParamBlock)){
+        printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
+        HALT();
+    }
+  }
 
 #ifndef __XMHF_VERIFICATION__
   //increment app main success counter

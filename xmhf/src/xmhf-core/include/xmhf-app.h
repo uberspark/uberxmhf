@@ -72,11 +72,11 @@
 //eventually this will be generic enough for both boot-time and dynamic loading
 //capabilities
 typedef struct {
-  u32 bootsector_ptr;
-  u32 bootsector_size;
-  u32 optionalmodule_ptr;
-  u32 optionalmodule_size;
-  u32 runtimephysmembase;
+  hva_t bootsector_ptr;
+  hva_t bootsector_size;
+  hva_t optionalmodule_ptr;
+  hva_t optionalmodule_size;
+  hva_t runtimephysmembase;
   char cmdline[1024];
 } __attribute__((packed)) APP_PARAM_BLOCK;
 
