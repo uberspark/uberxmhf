@@ -585,7 +585,6 @@ static inline void __vmx_vmxon(u64 vmxonRegion){
 
 static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
   unsigned long status;
-#ifdef __X86_64__
   __asm__("vmwrite %%rbx, %%rax \r\n"
           "jbe 1f \r\n"
           "movq $1, %%rdx \r\n"
@@ -596,31 +595,13 @@ static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
 	  : "a"(encoding), "b"(value)
     : "%rdx"
     );
-#else /* !__X86_64__ */
-  __asm__("vmwrite %%ebx, %%eax \r\n"
-          "jbe 1f \r\n"
-          "movl $1, %%edx \r\n"
-          "jmp 2f \r\n"
-          "1: movl $0, %%edx \r\n"
-          "2: movl %%edx, %0"
-	  : "=m"(status)
-	  : "a"(encoding), "b"(value)
-    : "%edx"
-    );
-#endif /* __X86_64__ */
 	return status;
 }
 
 static inline void __vmx_vmread(unsigned long encoding, unsigned long *value){
-#ifdef __X86_64__
 	__asm__ __volatile__("vmread %%rax, %%rbx\n\t"
 	  : "=b"(*value)
 	  : "a"(encoding));
-#else /* !__X86_64__ */
-	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
-	  : "=b"(*value)
-	  : "a"(encoding));
-#endif /* __X86_64__ */
 }
 
 static inline u32 __vmx_vmclear(u64 vmcs){
