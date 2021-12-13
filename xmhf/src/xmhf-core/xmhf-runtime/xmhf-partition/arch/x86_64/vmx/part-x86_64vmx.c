@@ -301,6 +301,14 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
 	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 
+	/*
+	 * For x86_64, set the Host address-space size (bit 9) in
+	 * control_VM_exit_controls. First check whether setting this bit is
+	 * allowed through bit (9 + 32) in the MSR.
+	 */
+	HALT_ON_ERRORCOND(vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] & (1UL << (9 + 32)));
+	vcpu->vmcs.control_VM_exit_controls |= (1UL << 9);
+
 	//IO bitmap support
 	{
 	    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
