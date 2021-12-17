@@ -336,6 +336,15 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			rdmsr(msr, &eax, &edx);
 			hmsr[i].index = gmsr[i].index = msr;
 			hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+			if (msr == MSR_EFER) {
+			    /*
+			     * Host is in x86-64, but guest should enter from x86.
+			     * Need to manually clear MSR_EFER's 8th bit (LME) and
+			     * 10th bit (LMA). Otherwise when guest enables paging
+			     * a #GP exception will occur.
+			     */
+			    gmsr[i].data &= ~((1LU << EFER_LME) | (1LU << EFER_LMA));
+			}
 		}
 		#endif
 
