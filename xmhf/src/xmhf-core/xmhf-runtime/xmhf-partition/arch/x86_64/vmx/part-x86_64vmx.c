@@ -460,6 +460,9 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//allow INVPCID (used by Debian 11)
 	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 12); //enable INVPCID
 
+	//allow RDTSCP (used by Debian 11)
+	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 3); //enable RDTSCP
+
 	//setup VMCS link pointer
 	vcpu->vmcs.guest_VMCS_link_pointer_full = (u32)0xFFFFFFFFUL;
 	vcpu->vmcs.guest_VMCS_link_pointer_high = (u32)0xFFFFFFFFUL;
