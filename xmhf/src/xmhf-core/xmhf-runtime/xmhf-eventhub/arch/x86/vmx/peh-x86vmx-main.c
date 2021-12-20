@@ -331,8 +331,23 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			r->edx = 0;
 			break;
 		default:{
-			HALT_ON_ERRORCOND(rdmsr_safe(r) == 0);
-			// TODO: handle rdmsr_safe != 0
+			if (rdmsr_safe(r) != 0) {
+				/* Inject a Hardware exception #GP */
+				union {
+					struct _vmx_event_injection st;
+					uint32_t ui;
+				} injection_info;
+				injection_info.ui = 0;
+				injection_info.st.vector = 0xd;	    /* #GP */
+				injection_info.st.type = 0x3;       /* Hardware Exception */
+				injection_info.st.errorcode = 1;    /* Deliver error code */
+				injection_info.st.valid = 1;
+				vcpu->vmcs.control_VM_entry_interruption_information = injection_info.ui;
+				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+
+				/* Do not increase guest RIP */
+				return;
+			}
 			break;
 		}
 	}

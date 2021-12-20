@@ -574,7 +574,14 @@ struct _vmx_vmcsrwfields_encodings	{
  unsigned int  fieldoffset; 
 } __attribute__((packed));
 
-
+/* VM-Entry Interruption-Information Field */
+struct _vmx_event_injection {
+    u32 vector:      8;
+    u32 type:        3;
+    u32 errorcode:   1;
+    u32 reserved:   19;
+    u32 valid:       1;
+} __attribute__ ((packed));
 
 //VMX functions 
 static inline void __vmx_vmxon(u64 vmxonRegion){
