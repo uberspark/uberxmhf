@@ -64,9 +64,9 @@ u32 rdmsr_safe(struct regs *r) {
                   "movl $1, %%ebx\r\n"
                   "jmp 3f\r\n"
                   ".section .xcph_table\r\n"
-                  ".long 0xd\r\n"
-                  ".long 1b\r\n"
-                  ".long 2b\r\n"
+                  ".quad 0xd\r\n"
+                  ".quad 1b\r\n"
+                  ".quad 2b\r\n"
                   ".previous\r\n"
                   "3:\r\n"
                   : "=a"(r->eax), "=d"(r->edx), "=b"(result)

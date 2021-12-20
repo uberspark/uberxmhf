@@ -157,13 +157,13 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 		break;
 
 	default:
-		/*
-		 * Search for matching exception in .xcph_table section.
-		 * Each entry in .xcph_table has 3 long values. If the first value
-		 * matches the exception vector and the second value matches the
-		 * current PC, then jump to the third value.
-		 */
 		{
+			/*
+			 * Search for matching exception in .xcph_table section.
+			 * Each entry in .xcph_table has 3 long values. If the first value
+			 * matches the exception vector and the second value matches the
+			 * current PC, then jump to the third value.
+			 */
 			u32 exception_cs, exception_eip, exception_eflags;
 			hva_t *found = NULL;
 
@@ -184,6 +184,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 			for (hva_t *i = (hva_t *)_begin_xcph_table; i < (hva_t *)_end_xcph_table; i += 3) {
 				if (i[0] == vector && i[1] == exception_eip) {
 					found = i;
+					break;
 				}
 			}
 

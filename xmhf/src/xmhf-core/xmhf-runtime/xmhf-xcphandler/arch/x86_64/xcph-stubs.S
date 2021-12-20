@@ -88,17 +88,18 @@
         pushq   %rsi
         pushq   %rdi
 
-        // In x86: movw    $(__DS), %ax
-        // In x86: movw    %ax, %ds            //load DS
+        /* We want %rsp to be the value before the first push */
+        addq $(12 * 8), 24(%rsp)
 
         movq    %rsp, %rsi          // RSI (second argument) = struct regs *
         movq    $0x&vector&, %rdi   // RDI (first argument) = vector
         call    xmhf_xcphandler_hub // call C-land hub
 
+        // push GPR values, except RSP
         popq    %rdi
         popq    %rsi
         popq    %rbp
-        popq    %rsp
+        leaq    8(%rsp), %rsp
         popq    %rbx
         popq    %rdx
         popq    %rcx
@@ -112,8 +113,11 @@
         popq    %r14
         popq    %r15
 
+        /* Calculate RSP value */
+        movq -13*8(%rsp), %rsp
+
         // return from exception
-        iret
+        iretq
 
 .endm
 

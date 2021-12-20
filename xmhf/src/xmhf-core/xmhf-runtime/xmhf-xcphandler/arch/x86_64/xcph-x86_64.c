@@ -110,6 +110,8 @@ u8 * xmhf_xcphandler_arch_get_idt_start(void){
     return (u8 *)&xmhf_xcphandler_idt_start;
 }
 
+extern uint8_t _begin_xcph_table[];
+extern uint8_t _end_xcph_table[];
 
 //EMHF exception handler hub
 void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
@@ -118,12 +120,20 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
     vcpu = _svm_and_vmx_getvcpu();
 
     switch(vector){
-        case CPU_EXCEPTION_NMI:
-            xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(vcpu, r);
-            break;
+    case CPU_EXCEPTION_NMI:
+        xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(vcpu, r);
+        break;
 
-        default: {
+    default:
+        {
+            /*
+             * Search for matching exception in .xcph_table section.
+             * Each entry in .xcph_table has 3 long values. If the first value
+             * matches the exception vector and the second value matches the
+             * current PC, then jump to the third value.
+             */
             uintptr_t exception_cs, exception_rip, exception_eflags;
+            hva_t *found = NULL;
 
             // skip error code on stack if applicable
             if (vector == CPU_EXCEPTION_DF ||
@@ -139,6 +149,21 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             exception_rip = ((uintptr_t *)(r->rsp))[0];
             exception_cs = ((uintptr_t *)(r->rsp))[1];
             exception_eflags = ((uintptr_t *)(r->rsp))[2];
+
+			for (hva_t *i = (hva_t *)_begin_xcph_table;
+			     i < (hva_t *)_end_xcph_table; i += 3) {
+				if (i[0] == vector && i[1] == exception_rip) {
+					found = i;
+					break;
+				}
+			}
+
+			if (found) {
+				/* Found in xcph table; Modify EIP on stack and iret */
+				printf("\nFound in xcph table");
+				((uintptr_t *)(r->rsp))[0] = found[2];
+				break;
+			}
 
             printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
             printf("\n[%02x]: state dump follows...", vcpu->id);

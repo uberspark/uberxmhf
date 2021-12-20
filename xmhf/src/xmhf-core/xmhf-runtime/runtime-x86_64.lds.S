@@ -62,8 +62,8 @@ SECTIONS
   .text : {
     *(.s_rpb)
     *(.text)
-    . = ALIGN(4096);    
-  } =0x9090 
+    . = ALIGN(4096);
+  } =0x9090
 
   .data : {
     *(.data)
@@ -71,17 +71,21 @@ SECTIONS
     *(.comment)
     *(.eh_frame) /* exception-metadata. might be able to discard */
     *(.bss)
-    . = ALIGN(4096);    
-  } =0x9090 
+    . = ALIGN(4);
+    _begin_xcph_table = .;
+    *(.xcph_table)
+    _end_xcph_table = .;
+    . = ALIGN(4096);
+  } =0x9090
 
   .palign_data : {
     *(.palign_data)
-    . = ALIGN(4096);    
-  } =0x9090 
-  
+    . = ALIGN(4096);
+  } =0x9090
+
   .stack : {
     *(.stack)
-    . = ALIGN(4096);    
+    . = ALIGN(4096);
   } =0x9090
 
   /* debug sections */
