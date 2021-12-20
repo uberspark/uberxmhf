@@ -338,7 +338,7 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 					uint32_t ui;
 				} injection_info;
 				injection_info.ui = 0;
-				injection_info.st.vector = 0xd;	    /* #GP */
+				injection_info.st.vector = 0xd;     /* #GP */
 				injection_info.st.type = 0x3;       /* Hardware Exception */
 				injection_info.st.errorcode = 1;    /* Deliver error code */
 				injection_info.st.valid = 1;
