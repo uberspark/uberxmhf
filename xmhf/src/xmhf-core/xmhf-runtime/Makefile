@@ -24,6 +24,7 @@ OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/$(TARGET_HWPLATFORM)/svm/peh-$(TARGE
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/$(TARGET_HWPLATFORM)/svm/peh-$(TARGET_HWPLATFORM)svm-main.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/$(TARGET_HWPLATFORM)/vmx/peh-$(TARGET_HWPLATFORM)vmx-entry.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/$(TARGET_HWPLATFORM)/vmx/peh-$(TARGET_HWPLATFORM)vmx-main.o
+OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/$(TARGET_HWPLATFORM)/vmx/peh-$(TARGET_HWPLATFORM)-safemsr.o
 
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/smpg-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/$(TARGET_HWPLATFORM)/smpg-$(TARGET_HWPLATFORM).o

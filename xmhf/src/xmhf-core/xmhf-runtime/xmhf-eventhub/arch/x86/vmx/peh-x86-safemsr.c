@@ -44,65 +44,33 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-OUTPUT_ARCH(i386)
+// peh-x86-safemsr.c
+// Safely Reading MSRs
+// author: Eric Li (xiaoyili@andrew.cmu.edu)
+#include <xmhf.h> 
 
-ENTRY(xmhf_runtime_entry)
-
-MEMORY
-{
-  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 256M /* length is arbitrary */
-  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
+/*
+ * Perform RDMSR instruction, r->ecx is input, r->eax and r->edx are outputs.
+ * If successful, return 0. If RDMSR causes #GP, return 1.
+ * Implementation similar to Linux's native_read_msr_safe().
+ */
+u32 rdmsr_safe(struct regs *r) {
+    u32 result;
+    asm volatile ("1:\r\n"
+                  "rdmsr\r\n"
+                  "xor %%ebx, %%ebx\r\n"
+                  "jmp 3f\r\n"
+                  "2:\r\n"
+                  "movl $1, %%ebx\r\n"
+                  "jmp 3f\r\n"
+                  ".section .xcph_table\r\n"
+                  ".long 0xd\r\n"
+                  ".long 1b\r\n"
+                  ".long 2b\r\n"
+                  ".previous\r\n"
+                  "3:\r\n"
+                  : "=a"(r->eax), "=d"(r->edx), "=b"(result)
+                  : "c" (r->ecx));
+    return result;
 }
 
-SECTIONS
-{
-  . = 0x10200000;
-
-  .text : {
-    *(.s_rpb)
-    *(.text)
-    . = ALIGN(4096);
-  } =0x9090
-
-  .data : {
-    *(.data)
-    *(.rodata)
-    *(.comment)
-    *(.eh_frame) /* exception-metadata. might be able to discard */
-    *(.bss)
-    . = ALIGN(4);
-    _begin_xcph_table = .;
-    *(.xcph_table)
-    _end_xcph_table = .;
-    . = ALIGN(4096);
-  } =0x9090
-
-  .palign_data : {
-    *(.palign_data)
-    . = ALIGN(4096);
-  } =0x9090
-
-  .stack : {
-    *(.stack)
-    . = ALIGN(4096);
-  } =0x9090
-
-  /* debug sections */
-  .debug_abbrev : { *(.debug_abbrev) } >debug
-  .debug_aranges : { *(.debug_aranges) } >debug
-  .debug_info : { *(.debug_info) } >debug
-  .debug_line : { *(.debug_line) } >debug
-  .debug_ranges : { *(.debug_ranges) } >debug
-  .debug_str : { *(.debug_str) } >debug
-
-  /* this is to cause the link to fail if there is
-   * anything we didn't explicitly place.
-   * when this does cause link to fail, temporarily comment
-   * this part out to see what sections end up in the output
-   * which are not handled above, and handle them.
-   */
-  .unaccounted : {
-    *(*)
-  } >unaccounted
-
-}

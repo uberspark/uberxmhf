@@ -61,6 +61,8 @@ extern void _vmx_putVMCS(VCPU *vcpu);
 extern void _vmx_getVMCS(VCPU *vcpu);
 extern void _vmx_dumpVMCS(VCPU *vcpu);
 
+extern u32 rdmsr_safe(struct regs *r);
+
 //----------------------------------------------------------------------
 //exported DATA 
 //----------------------------------------------------------------------

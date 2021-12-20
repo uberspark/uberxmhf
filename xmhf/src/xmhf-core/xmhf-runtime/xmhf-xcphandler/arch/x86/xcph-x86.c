@@ -137,6 +137,8 @@ u8 * xmhf_xcphandler_arch_get_idt_start(void){
 	return (u8 *)&xmhf_xcphandler_idt_start;
 }
 
+extern uint8_t _begin_xcph_table[];
+extern uint8_t _end_xcph_table[];
 
 //EMHF exception handler hub
 void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
@@ -150,57 +152,79 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 	}	
 	
 	switch(vector){
-			case CPU_EXCEPTION_NMI:
-				xmhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
-				break;
+	case CPU_EXCEPTION_NMI:
+		xmhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
+		break;
 
-			default:{
-				u32 exception_cs, exception_eip, exception_eflags;
+	default:
+		/*
+		 * Search for matching exception in .xcph_table section.
+		 * Each entry in .xcph_table has 3 long values. If the first value
+		 * matches the exception vector and the second value matches the
+		 * current PC, then jump to the third value.
+		 */
+		{
+			u32 exception_cs, exception_eip, exception_eflags;
+			hva_t *found = NULL;
 
-				if(vector == CPU_EXCEPTION_DF ||
-					vector == CPU_EXCEPTION_TS ||
-					vector == CPU_EXCEPTION_NP ||
-					vector == CPU_EXCEPTION_SS ||
-					vector == CPU_EXCEPTION_GP ||
-					vector == CPU_EXCEPTION_PF ||
-					vector == CPU_EXCEPTION_AC){
-					r->esp += sizeof(uint32_t);	//skip error code on stack if applicable
-				}
-				
-				exception_eip = *(uint32_t *)(r->esp+0);
-				exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
-				exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
-
-				printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
-				printf("\n[%02x]: state dump follows...", vcpu->id);
-				//things to dump
-				printf("\n[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x", vcpu->id,
-					(u16)exception_cs, exception_eip, exception_eflags);
-				printf("\n[%02x]: VCPU at 0x%08x", vcpu->id, (u32)vcpu, vcpu->id);
-				printf("\n[%02x] EAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", vcpu->id,
-						r->eax, r->ebx, r->ecx, r->edx);
-				printf("\n[%02x] ESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", vcpu->id,
-						r->esi, r->edi, r->ebp, r->esp);
-				printf("\n[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
-					(u16)read_segreg_cs(), (u16)read_segreg_ds(),
-					(u16)read_segreg_es(), (u16)read_segreg_ss());
-				printf("\n[%02x] FS=0x%04x, GS=0x%04x", vcpu->id,
-					(u16)read_segreg_fs(), (u16)read_segreg_gs());
-				printf("\n[%02x] TR=0x%04x", vcpu->id, (u16)read_tr_sel());
-				
-				//do a stack dump in the hopes of getting more info.
-				{
-					//vcpu->esp is the TOS
-					uint32_t i;
-					//uint32_t stack_start = (r->esp+(3*sizeof(uint32_t)));
-					uint32_t stack_start = r->esp;
-					printf("\n[%02x]-----stack dump-----", vcpu->id);
-					for(i=stack_start; i < vcpu->esp; i+=sizeof(uint32_t)){
-						printf("\n[%02x]  Stack(0x%08x) -> 0x%08x", vcpu->id, i, *(uint32_t *)i);
-					}
-					printf("\n[%02x]-----end------------", vcpu->id);
-				}
-				HALT();
+			if(vector == CPU_EXCEPTION_DF ||
+				vector == CPU_EXCEPTION_TS ||
+				vector == CPU_EXCEPTION_NP ||
+				vector == CPU_EXCEPTION_SS ||
+				vector == CPU_EXCEPTION_GP ||
+				vector == CPU_EXCEPTION_PF ||
+				vector == CPU_EXCEPTION_AC){
+				r->esp += sizeof(uint32_t);	//skip error code on stack if applicable
 			}
+
+			exception_eip = *(uint32_t *)(r->esp+0);
+			exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
+			exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
+
+			for (hva_t *i = (hva_t *)_begin_xcph_table; i < (hva_t *)_end_xcph_table; i += 3) {
+				if (i[0] == vector && i[1] == exception_eip) {
+					found = i;
+				}
+			}
+
+			if (found) {
+				/* Found in xcph table; Modify EIP on stack and iret */
+				printf("\nFound in xcph table");
+				*(uint32_t *)(r->esp+0) = found[2];
+				break;
+			}
+
+			/* Print exception and halt */
+			printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
+			printf("\n[%02x]: state dump follows...", vcpu->id);
+			//things to dump
+			printf("\n[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x", vcpu->id,
+				(u16)exception_cs, exception_eip, exception_eflags);
+			printf("\n[%02x]: VCPU at 0x%08x", vcpu->id, (u32)vcpu, vcpu->id);
+			printf("\n[%02x] EAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", vcpu->id,
+					r->eax, r->ebx, r->ecx, r->edx);
+			printf("\n[%02x] ESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", vcpu->id,
+					r->esi, r->edi, r->ebp, r->esp);
+			printf("\n[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
+				(u16)read_segreg_cs(), (u16)read_segreg_ds(),
+				(u16)read_segreg_es(), (u16)read_segreg_ss());
+			printf("\n[%02x] FS=0x%04x, GS=0x%04x", vcpu->id,
+				(u16)read_segreg_fs(), (u16)read_segreg_gs());
+			printf("\n[%02x] TR=0x%04x", vcpu->id, (u16)read_tr_sel());
+
+			//do a stack dump in the hopes of getting more info.
+			{
+				//vcpu->esp is the TOS
+				uint32_t i;
+				//uint32_t stack_start = (r->esp+(3*sizeof(uint32_t)));
+				uint32_t stack_start = r->esp;
+				printf("\n[%02x]-----stack dump-----", vcpu->id);
+				for(i=stack_start; i < vcpu->esp; i+=sizeof(uint32_t)){
+					printf("\n[%02x]  Stack(0x%08x) -> 0x%08x", vcpu->id, i, *(uint32_t *)i);
+				}
+				printf("\n[%02x]-----end------------", vcpu->id);
+			}
+			HALT();
+		}
 	}
 }

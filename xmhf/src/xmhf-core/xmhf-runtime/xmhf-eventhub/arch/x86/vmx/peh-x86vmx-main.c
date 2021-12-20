@@ -331,9 +331,8 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			r->edx = 0;
 			break;
 		default:{
-			asm volatile ("rdmsr\r\n"
-          : "=a"(r->eax), "=d"(r->edx)
-          : "c" (r->ecx));
+			HALT_ON_ERRORCOND(rdmsr_safe(r) == 0);
+			// TODO: handle rdmsr_safe != 0
 			break;
 		}
 	}
