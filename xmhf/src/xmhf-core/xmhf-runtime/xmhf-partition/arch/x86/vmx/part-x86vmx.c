@@ -248,6 +248,19 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 	}
 }
 
+/* Return nonzero if this CPU supports INVPCID according to CPUID */
+static uint32_t _vmx_check_invpcid_support(void) {
+	uintptr_t eax, ebx, ecx, edx;
+	cpuid(0x7U, &eax, &ebx, &ecx, &edx);
+	return ebx & (1U << 10);
+}
+
+/* Return nonzero if this CPU supports RDTSCP according to CPUID */
+static uint32_t _vmx_check_rdtscp_support(void) {
+	uintptr_t eax, ebx, ecx, edx;
+	cpuid(0x80000001U, &eax, &ebx, &ecx, &edx);
+	return edx & (1U << 27);
+}
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
@@ -426,10 +439,14 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 7); //enable unrestricted guest
 
 	//allow INVPCID (used by Debian 11)
-	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 12); //enable INVPCID
+	if (_vmx_check_invpcid_support()) {
+		vcpu->vmcs.control_VMX_seccpu_based |= (1 << 12); //enable INVPCID
+	}
 
 	//allow RDTSCP (used by Debian 11)
-	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 3); //enable RDTSCP
+	if (_vmx_check_rdtscp_support()) {
+		vcpu->vmcs.control_VMX_seccpu_based |= (1 << 3); //enable RDTSCP
+	}
 
 	//setup VMCS link pointer
 	vcpu->vmcs.guest_VMCS_link_pointer_full = (u32)0xFFFFFFFFUL;
