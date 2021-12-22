@@ -923,7 +923,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   EU_CHKN( copy_from_current_guest(vcpu,
                                    &whitelist[curr].return_v,
                                    VCPU_grsp(vcpu),
-                                   sizeof(void*)));
+                                   sizeof(whitelist[curr].return_v)));
   eu_trace("scode return vaddr is %#x", whitelist[curr].return_v);
 
   /* save the guest stack pointer and set new stack pointer to scode stack */
