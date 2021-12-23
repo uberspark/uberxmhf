@@ -488,6 +488,8 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
 	
 	//trap access to CR0 fixed 1-bits
+	// Make sure to change vmx_handle_intercept_cr0access_ug() if changing
+	// control_CR0_mask.
 	vcpu->vmcs.control_CR0_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
 	vcpu->vmcs.control_CR0_mask &= ~(CR0_PE);
 	vcpu->vmcs.control_CR0_mask &= ~(CR0_PG);
