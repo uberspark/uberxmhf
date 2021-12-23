@@ -291,15 +291,23 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 	//printf("\nCPU(0x%02x): WRMSR 0x%08x 0x%08x%08x @ %p", vcpu->id, r->ecx, r->edx, r->eax, vcpu->vmcs.guest_RIP);
 
+	u64 write_data = ((u64)r->edx << 32) | (u64)r->eax;
+
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
-			vcpu->vmcs.guest_SYSENTER_CS = (unsigned int)r->eax;
+			vcpu->vmcs.guest_SYSENTER_CS = (u32)write_data;
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			vcpu->vmcs.guest_SYSENTER_EIP = (unsigned long long)r->eax;
+			vcpu->vmcs.guest_SYSENTER_EIP = (u64)write_data;
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			vcpu->vmcs.guest_SYSENTER_ESP = (unsigned long long)r->eax;
+			vcpu->vmcs.guest_SYSENTER_ESP = (u64)write_data;
+			break;
+		case IA32_MSR_FS_BASE:
+			vcpu->vmcs.guest_FS_base = (u64)write_data;
+			break;
+		case IA32_MSR_GS_BASE:
+			vcpu->vmcs.guest_GS_base = (u64)write_data;
 			break;
 		case MSR_EFER: /* fallthrough */
 		case MSR_IA32_PAT: /* fallthrough */
@@ -308,7 +316,7 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			for (u32 i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count; i++) {
 				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
 				if (entry->index == r->ecx) {
-					entry->data = ((u64)r->edx << 32) | (u64)r->eax;
+					entry->data = write_data;
 					found = 1;
 					break;
 				}
@@ -332,21 +340,24 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 	//printf("\nCPU(0x%02x): RDMSR 0x%08x @ %p", vcpu->id, r->ecx, vcpu->vmcs.guest_RIP);
 
+	/* After switch statement, will assign this value to r->eax and r->edx */
+	u64 read_result = 0;
+
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
-			r->rax = 0;	/* Clear upper 32-bits of RAX */
-			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_CS;
-			r->edx = 0;
+			read_result = (u64)vcpu->vmcs.guest_SYSENTER_CS;
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			r->rax = 0;	/* Clear upper 32-bits of RAX */
-			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_EIP;
-			r->edx = 0;
+			read_result = (u64)vcpu->vmcs.guest_SYSENTER_EIP;
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			r->rax = 0;	/* Clear upper 32-bits of RAX */
-			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_ESP;
-			r->edx = 0;
+			read_result = (u64)vcpu->vmcs.guest_SYSENTER_ESP;
+			break;
+		case IA32_MSR_FS_BASE:
+			read_result = (u64)vcpu->vmcs.guest_FS_base;
+			break;
+		case IA32_MSR_GS_BASE:
+			read_result = (u64)vcpu->vmcs.guest_GS_base;
 			break;
 		case MSR_EFER: /* fallthrough */
 		case MSR_IA32_PAT: /* fallthrough */
@@ -355,10 +366,7 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			for (u32 i = 0; i < vcpu->vmcs.control_VM_exit_MSR_store_count; i++) {
 				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
 				if (entry->index == r->ecx) {
-					r->rax = 0;
-					r->rdx = 0;
-					r->eax = (u32)(entry->data);
-					r->edx = (u32)(entry->data >> 32);
+					read_result = entry->data;
 					found = 1;
 					break;
 				}
@@ -384,9 +392,19 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 				/* Do not increase guest RIP */
 				return;
 			}
-			break;
+			goto no_assign_read_result;
 		}
 	}
+
+	/* Assign read_result to r->eax and r->edx */
+	{
+		r->rax = 0;	/* Clear upper 32-bits of RAX */
+		r->rdx = 0;	/* Clear upper 32-bits of RDX */
+		r->eax = (u32)(read_result);
+		r->edx = (u32)(read_result >> 32);
+	}
+
+no_assign_read_result:
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 
 	//printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
