@@ -731,17 +731,50 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 
     
 		default:{
-			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
-			printf("\n	CPU(0x%02x): EFLAGS=0x%08x", vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
-			printf("\n	SS:ESP =0x%04x:0x%08x", (u16)vcpu->vmcs.guest_SS_selector, (u32)vcpu->vmcs.guest_RSP);
-			printf("\n	CS:EIP =0x%04x:0x%08x", (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-			printf("\n	IDTR base:limit=0x%08x:0x%04x", (u32)vcpu->vmcs.guest_IDTR_base,
-					(u16)vcpu->vmcs.guest_IDTR_limit);
-			printf("\n	GDTR base:limit=0x%08x:0x%04x", (u32)vcpu->vmcs.guest_GDTR_base,
-					(u16)vcpu->vmcs.guest_GDTR_limit);
-			if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
-				printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
-					vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
+			if (vcpu->vmcs.control_VM_entry_controls & (1U << 9)) {
+				/* x86-64 mode */
+				printf("\nCPU(0x%02x): Unhandled intercept in long mode: 0x%08x",
+						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
+				printf("\n	CPU(0x%02x): EFLAGS=0x%08x",
+						vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
+				printf("\n	SS:RSP =0x%04x:0x%016llx",
+						(u16)vcpu->vmcs.guest_SS_selector,
+						vcpu->vmcs.guest_RSP);
+				printf("\n	CS:RIP =0x%04x:0x%016llx",
+						(u16)vcpu->vmcs.guest_CS_selector,
+						vcpu->vmcs.guest_RIP);
+				printf("\n	IDTR base:limit=0x%016llx:0x%04x",
+						vcpu->vmcs.guest_IDTR_base,
+						(u16)vcpu->vmcs.guest_IDTR_limit);
+				printf("\n	GDTR base:limit=0x%016llx:0x%04x",
+						vcpu->vmcs.guest_GDTR_base,
+						(u16)vcpu->vmcs.guest_GDTR_limit);
+				if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
+					printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
+						vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
+				}
+			} else {
+				/* x86 mode */
+				printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x",
+						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
+				printf("\n	CPU(0x%02x): EFLAGS=0x%08x",
+						vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
+				printf("\n	SS:ESP =0x%04x:0x%08x",
+						(u16)vcpu->vmcs.guest_SS_selector,
+						(u32)vcpu->vmcs.guest_RSP);
+				printf("\n	CS:EIP =0x%04x:0x%08x",
+						(u16)vcpu->vmcs.guest_CS_selector,
+						(u32)vcpu->vmcs.guest_RIP);
+				printf("\n	IDTR base:limit=0x%08x:0x%04x",
+						(u32)vcpu->vmcs.guest_IDTR_base,
+						(u16)vcpu->vmcs.guest_IDTR_limit);
+				printf("\n	GDTR base:limit=0x%08x:0x%04x",
+						(u32)vcpu->vmcs.guest_GDTR_base,
+						(u16)vcpu->vmcs.guest_GDTR_limit);
+				if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
+					printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
+						vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
+				}
 			}
 			HALT();
 		}		
