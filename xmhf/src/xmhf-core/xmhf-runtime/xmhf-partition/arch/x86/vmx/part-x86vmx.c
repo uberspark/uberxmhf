@@ -57,6 +57,7 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 
 
 //critical MSRs that need to be saved/restored across guest VM switches
+// _vmx_handle_intercept_rdmsr() relies on the order of elements in this array
 static const u32 vmx_msr_area_msrs[] = {
 	MSR_EFER, 
 	MSR_IA32_PAT,

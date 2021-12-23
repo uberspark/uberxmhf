@@ -289,7 +289,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
   
 //---intercept handler (WRMSR)--------------------------------------------------
 static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
-	//printf("\nCPU(0x%02x): WRMSR 0x%08x", vcpu->id, r->ecx);
+	//printf("\nCPU(0x%02x): WRMSR 0x%08x 0x%08x%08x @ %p", vcpu->id, r->ecx, r->edx, r->eax, vcpu->vmcs.guest_RIP);
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
@@ -301,6 +301,21 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		case IA32_SYSENTER_ESP_MSR:
 			vcpu->vmcs.guest_SYSENTER_ESP = (unsigned long long)r->eax;
 			break;
+		case MSR_EFER: /* fallthrough */
+		case MSR_IA32_PAT: /* fallthrough */
+		case MSR_K6_STAR: {
+			u32 found = 0;
+			for (u32 i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count; i++) {
+				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
+				if (entry->index == r->ecx) {
+					entry->data = ((u64)r->edx << 32) | (u64)r->eax;
+					found = 1;
+					break;
+				}
+			}
+			HALT_ON_ERRORCOND(found != 0);
+			break;
+		}
 		default:{
 			asm volatile ("wrmsr\r\n"
           : //no outputs
@@ -315,21 +330,42 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 
 //---intercept handler (RDMSR)--------------------------------------------------
 static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
-	//printf("\nCPU(0x%02x): RDMSR 0x%08x", vcpu->id, r->ecx);
+	//printf("\nCPU(0x%02x): RDMSR 0x%08x @ %p", vcpu->id, r->ecx, vcpu->vmcs.guest_RIP);
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
+			r->rax = 0;	/* Clear upper 32-bits of RAX */
 			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_CS;
 			r->edx = 0;
 			break;
 		case IA32_SYSENTER_EIP_MSR:
+			r->rax = 0;	/* Clear upper 32-bits of RAX */
 			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_EIP;
 			r->edx = 0;
 			break;
 		case IA32_SYSENTER_ESP_MSR:
+			r->rax = 0;	/* Clear upper 32-bits of RAX */
 			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_ESP;
 			r->edx = 0;
 			break;
+		case MSR_EFER: /* fallthrough */
+		case MSR_IA32_PAT: /* fallthrough */
+		case MSR_K6_STAR: {
+			u32 found = 0;
+			for (u32 i = 0; i < vcpu->vmcs.control_VM_exit_MSR_store_count; i++) {
+				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
+				if (entry->index == r->ecx) {
+					r->rax = 0;
+					r->rdx = 0;
+					r->eax = (u32)(entry->data);
+					r->edx = (u32)(entry->data >> 32);
+					found = 1;
+					break;
+				}
+			}
+			HALT_ON_ERRORCOND(found != 0);
+			break;
+		}
 		default:{
 			if (rdmsr_safe(r) != 0) {
 				/* Inject a Hardware exception #GP */

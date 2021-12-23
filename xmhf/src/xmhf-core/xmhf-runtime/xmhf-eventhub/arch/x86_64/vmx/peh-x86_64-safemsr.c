@@ -69,8 +69,8 @@ u32 rdmsr_safe(struct regs *r) {
                   ".quad 2b\r\n"
                   ".previous\r\n"
                   "3:\r\n"
-                  : "=a"(r->eax), "=d"(r->edx), "=b"(result)
-                  : "c" (r->ecx));
+                  : "=a"(r->rax), "=d"(r->rdx), "=b"(result)
+                  : "c" (r->rcx));
     return result;
 }
 
