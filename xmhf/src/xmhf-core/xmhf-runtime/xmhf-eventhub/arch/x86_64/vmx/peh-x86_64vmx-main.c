@@ -87,6 +87,8 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	if (old_eax == 0x1) {
 		/* Clear VMX capability */
 		r->ecx &= ~(1U << 5);
+		/* Clear x2APIC capability */
+		r->ecx &= ~(1U << 21);
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
@@ -293,6 +295,9 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 
 	u64 write_data = ((u64)r->edx << 32) | (u64)r->eax;
 
+	/* Disallow x2APIC MSRs */
+	HALT_ON_ERRORCOND((r->ecx & 0xffffff00U) != 0x800);
+
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
 			vcpu->vmcs.guest_SYSENTER_CS = (u32)write_data;
@@ -342,6 +347,9 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 
 	/* After switch statement, will assign this value to r->eax and r->edx */
 	u64 read_result = 0;
+
+	/* Disallow x2APIC MSRs */
+	HALT_ON_ERRORCOND((r->ecx & 0xffffff00U) != 0x800);
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
