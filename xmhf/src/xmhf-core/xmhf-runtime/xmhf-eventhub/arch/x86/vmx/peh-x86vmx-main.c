@@ -314,7 +314,10 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		case IA32_MSR_GS_BASE:
 			vcpu->vmcs.guest_GS_base = (u64)write_data;
 			break;
-		case MSR_EFER: /* fallthrough */
+		case MSR_EFER:
+			vcpu->vmcs.guest_IA32_EFER_full = r->eax;
+			vcpu->vmcs.guest_IA32_EFER_high = r->edx;
+			break;
 		case MSR_IA32_PAT: /* fallthrough */
 		case MSR_K6_STAR: {
 			u32 found = 0;
@@ -367,7 +370,10 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		case IA32_MSR_GS_BASE:
 			read_result = (u64)vcpu->vmcs.guest_GS_base;
 			break;
-		case MSR_EFER: /* fallthrough */
+		case MSR_EFER:
+			r->eax = vcpu->vmcs.guest_IA32_EFER_full;
+			r->edx = vcpu->vmcs.guest_IA32_EFER_high;
+			goto no_assign_read_result;
 		case MSR_IA32_PAT: /* fallthrough */
 		case MSR_K6_STAR: {
 			u32 found = 0;

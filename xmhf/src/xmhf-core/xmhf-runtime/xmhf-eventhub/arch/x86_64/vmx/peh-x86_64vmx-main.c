@@ -314,7 +314,10 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		case IA32_MSR_GS_BASE:
 			vcpu->vmcs.guest_GS_base = (u64)write_data;
 			break;
-		case MSR_EFER: /* fallthrough */
+		case MSR_EFER:
+			vcpu->vmcs.guest_IA32_EFER_full = r->eax;
+			vcpu->vmcs.guest_IA32_EFER_high = r->edx;
+			break;
 		case MSR_IA32_PAT: /* fallthrough */
 		case MSR_K6_STAR: {
 			u32 found = 0;
@@ -367,7 +370,10 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		case IA32_MSR_GS_BASE:
 			read_result = (u64)vcpu->vmcs.guest_GS_base;
 			break;
-		case MSR_EFER: /* fallthrough */
+		case MSR_EFER:
+			r->eax = vcpu->vmcs.guest_IA32_EFER_full;
+			r->edx = vcpu->vmcs.guest_IA32_EFER_high;
+			goto no_assign_read_result;
 		case MSR_IA32_PAT: /* fallthrough */
 		case MSR_K6_STAR: {
 			u32 found = 0;
@@ -516,10 +522,9 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	if (cr0_value & CR0_PG) {
 		/* Set bit 9 of "IA-32e mode guest" according to EFER.LME */
 		u32 value = vcpu->vmcs.control_VM_entry_controls;
-		msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[0];
-		HALT_ON_ERRORCOND(efer->index == MSR_EFER);
+		u32 efer = vcpu->vmcs.guest_IA32_EFER_full;
 		value &= ~(1U << 9);
-		value |= ((efer->data >> 8) & 0x1U) << 9;
+		value |= ((efer >> 8) & 0x1U) << 9;
 		vcpu->vmcs.control_VM_entry_controls = value;
 	}
 

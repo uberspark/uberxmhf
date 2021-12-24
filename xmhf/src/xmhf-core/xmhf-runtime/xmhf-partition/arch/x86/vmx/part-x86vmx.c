@@ -59,7 +59,6 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 //critical MSRs that need to be saved/restored across guest VM switches
 // _vmx_handle_intercept_rdmsr() relies on the order of elements in this array
 static const u32 vmx_msr_area_msrs[] = {
-	MSR_EFER, 
 	MSR_IA32_PAT,
 	MSR_K6_STAR,
 };
@@ -315,12 +314,26 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
 	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 
+	/* Enable Load / Store IA32_EFER in VM exit / entry controls */
+	vcpu->vmcs.control_VM_exit_controls |= (1UL << 20) | (1UL << 21);
+	vcpu->vmcs.control_VM_entry_controls |= (1UL << 15);
+
 	//IO bitmap support
 	vcpu->vmcs.control_IO_BitmapA_address_full = (u32)hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
 	vcpu->vmcs.control_IO_BitmapA_address_high = 0;
 	vcpu->vmcs.control_IO_BitmapB_address_full = (u32)hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
 	vcpu->vmcs.control_IO_BitmapB_address_high = 0;
 	vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
+
+	/* Read MSR_EFER from host */
+	{
+		u32 eax, edx;
+		rdmsr(MSR_EFER, &eax, &edx);
+		vcpu->vmcs.host_IA32_EFER_full = eax;
+		vcpu->vmcs.host_IA32_EFER_high = edx;
+		vcpu->vmcs.guest_IA32_EFER_full = eax;
+		vcpu->vmcs.guest_IA32_EFER_high = edx;
+	}
 
 	//Critical MSR load/store
 	{
