@@ -476,9 +476,6 @@ struct _vmx_vmcsfields {
   unsigned int  host_FS_selector;
   unsigned int  host_GS_selector;
   unsigned int  host_TR_selector;
-  // Full 64-bit Host-State fields
-  unsigned int  host_IA32_EFER_full;
-  unsigned int  host_IA32_EFER_high;
   // Natural 64-bit Guest-State fields
   unsigned long long  guest_CR0;
   unsigned long long  guest_CR3;
@@ -537,8 +534,6 @@ struct _vmx_vmcsfields {
   unsigned int  guest_VMCS_link_pointer_high;
   unsigned int  guest_IA32_DEBUGCTL_full;
   unsigned int  guest_IA32_DEBUGCTL_high;
-  unsigned int  guest_IA32_EFER_full;
-  unsigned int  guest_IA32_EFER_high;
   #if defined(__NESTED_PAGING__)
     unsigned int 	guest_paddr_full;
     unsigned int 	guest_paddr_high;

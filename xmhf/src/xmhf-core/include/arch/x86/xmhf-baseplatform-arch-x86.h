@@ -471,19 +471,7 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
   }
 }
 
-static inline u64 VCPU_gefer(VCPU *vcpu) {
-    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-        return (((u64) vcpu->vmcs.guest_IA32_EFER_high) << 32) |
-               vcpu->vmcs.guest_IA32_EFER_full;
-    } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-        /* Not implemented */
-        HALT_ON_ERRORCOND(false);
-        return 0;
-    } else {
-        HALT_ON_ERRORCOND(false);
-        return 0;
-    }
-}
+
 
 
 //----------------------------------------------------------------------

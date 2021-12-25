@@ -156,9 +156,6 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 	{ 0x0C08, offsetof(struct _vmx_vmcsfields, host_FS_selector) },
 	{ 0x0C0A, offsetof(struct _vmx_vmcsfields, host_GS_selector) },
 	{ 0x0C0C, offsetof(struct _vmx_vmcsfields, host_TR_selector) },
-	// Full 64-bit Host-State fields
-	{ 0x2C02, offsetof(struct _vmx_vmcsfields, host_IA32_EFER_full) },
-	{ 0x2C03, offsetof(struct _vmx_vmcsfields, host_IA32_EFER_high) },
 	// Guest-State fields
 	// Natural 64-bit Guest-State fields
 	{ 0x6800, offsetof(struct _vmx_vmcsfields, guest_CR0) },
@@ -227,9 +224,7 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 	{ 0x2800, offsetof(struct _vmx_vmcsfields, guest_VMCS_link_pointer_full) },
 	{ 0x2801, offsetof(struct _vmx_vmcsfields, guest_VMCS_link_pointer_high) },
 	{ 0x2802, offsetof(struct _vmx_vmcsfields, guest_IA32_DEBUGCTL_full) },
-	{ 0x2803, offsetof(struct _vmx_vmcsfields, guest_IA32_DEBUGCTL_high) },
-	{ 0x2806, offsetof(struct _vmx_vmcsfields, guest_IA32_EFER_full) },
-	{ 0x2807, offsetof(struct _vmx_vmcsfields, guest_IA32_EFER_high) }
+	{ 0x2803, offsetof(struct _vmx_vmcsfields, guest_IA32_DEBUGCTL_high) } 
 };
 
 //count of VMX VMCS read-write fields

@@ -59,6 +59,7 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 //critical MSRs that need to be saved/restored across guest VM switches
 // _vmx_handle_intercept_rdmsr() relies on the order of elements in this array
 static const u32 vmx_msr_area_msrs[] = {
+	MSR_EFER, 
 	MSR_IA32_PAT,
 	MSR_K6_STAR,
 };
@@ -322,10 +323,6 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] & (1UL << (9 + 32)));
 	vcpu->vmcs.control_VM_exit_controls |= (1UL << 9);
 
-	/* Enable Load / Store IA32_EFER in VM exit / entry controls */
-	vcpu->vmcs.control_VM_exit_controls |= (1UL << 20) | (1UL << 21);
-	vcpu->vmcs.control_VM_entry_controls |= (1UL << 15);
-
 	//IO bitmap support
 	{
 	    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
@@ -338,26 +335,6 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	    vcpu->vmcs.control_IO_BitmapB_address_high = (u32)(addr >> 32);
     }
 	vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
-
-	/* Read MSR_EFER from host */
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-
-		vcpu->vmcs.host_IA32_EFER_full = eax;
-		vcpu->vmcs.host_IA32_EFER_high = edx;
-
-	    /*
-	     * Host is in x86-64, but guest should enter from x86.
-	     * Need to manually clear MSR_EFER's 8th bit (LME) and
-	     * 10th bit (LMA). Otherwise when guest enables paging
-	     * a #GP exception will occur.
-	     */
-	    eax &= ~((1LU << EFER_LME) | (1LU << EFER_LMA));
-
-		vcpu->vmcs.guest_IA32_EFER_full = eax;
-		vcpu->vmcs.guest_IA32_EFER_high = edx;
-	}
 
 	//Critical MSR load/store
 	{
@@ -373,8 +350,16 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			rdmsr(msr, &eax, &edx);
 			hmsr[i].index = gmsr[i].index = msr;
 			hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+			if (msr == MSR_EFER) {
+			    /*
+			     * Host is in x86-64, but guest should enter from x86.
+			     * Need to manually clear MSR_EFER's 8th bit (LME) and
+			     * 10th bit (LMA). Otherwise when guest enables paging
+			     * a #GP exception will occur.
+			     */
+			    gmsr[i].data &= ~((1LU << EFER_LME) | (1LU << EFER_LMA));
+			}
 		}
-
 		#endif
 
 		//host MSR load on exit, we store it ourselves before entry
