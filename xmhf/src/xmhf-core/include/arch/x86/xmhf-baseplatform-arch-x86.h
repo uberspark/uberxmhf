@@ -471,7 +471,19 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
   }
 }
 
-
+/* Return whether guest is in long mode (boolean value) */
+static inline u32 VCPU_glm(VCPU *vcpu) {
+    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+        return (vcpu->vmcs.control_VM_entry_controls >> 9) & 1U;
+    } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+        /* Not implemented */
+        HALT_ON_ERRORCOND(false);
+        return 0;
+    } else {
+        HALT_ON_ERRORCOND(false);
+        return 0;
+    }
+}
 
 
 //----------------------------------------------------------------------

@@ -153,12 +153,10 @@ static inline void hpt_emhf_set_root_pm(VCPU *vcpu, hpt_pm_t root)
 }
 
 static inline hpt_type_t hpt_emhf_get_guest_hpt_type(VCPU *vcpu) {
-  /* XXX assumes NORM or PAE. Need to check for 64-bit */
   u64 cr4 = VCPU_gcr4(vcpu);
-  u64 efer = VCPU_gefer(vcpu);
   if (!(cr4 & CR4_PAE)) {
     return HPT_TYPE_NORM;
-  } else if (!(efer & EFER_LME)) {
+  } else if (!(VCPU_glm(vcpu))) {
     return HPT_TYPE_PAE;
   } else if (!(cr4 & CR4_LA57)) {
     return HPT_TYPE_LONG;
