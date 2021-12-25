@@ -315,11 +315,6 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			vcpu->vmcs.guest_GS_base = (u64)write_data;
 			break;
 		case MSR_EFER:
-			printf("\nWRITE EFER 0x%02x [ 0x%08x  0x%08x 0x%08x  0x%08x  0x%08x 0x%08x ]", vcpu->id, vcpu->vmcs.control_VM_entry_controls, vcpu->vmcs.guest_IA32_EFER_full, vcpu->vmcs.guest_IA32_EFER_high, vcpu->vmcs.guest_CR0, r->eax, r->edx);
-			if (r->edx != 0) {
-				printf("\nWARNING: WRMSR EFER EDX != 0");
-				r->edx = 0;
-			}
 			vcpu->vmcs.guest_IA32_EFER_full = r->eax;
 			vcpu->vmcs.guest_IA32_EFER_high = r->edx;
 			break;
@@ -525,16 +520,12 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	vcpu->vmcs.guest_CR0 = (cr0_value | vcpu->vmcs.control_CR0_mask) & ~(CR0_CD | CR0_NW);
 
 	if (cr0_value & CR0_PG) {
-		/* Set bit 9 of "IA-32e mode guest" and EFER.LMA to EFER.LME */
+		/* Set bit 9 of "IA-32e mode guest" according to EFER.LME */
 		u32 value = vcpu->vmcs.control_VM_entry_controls;
 		u32 efer = vcpu->vmcs.guest_IA32_EFER_full;
-		u32 lme = (efer >> EFER_LME) & 0x1U;
 		value &= ~(1U << 9);
-		value |= lme << 9;
+		value |= ((efer >> 8) & 0x1U) << 9;
 		vcpu->vmcs.control_VM_entry_controls = value;
-		efer &= ~(1U << EFER_LMA);
-		efer |= lme << EFER_LMA;
-		vcpu->vmcs.guest_IA32_EFER_full = efer;
 	}
 
 	//flush mappings
