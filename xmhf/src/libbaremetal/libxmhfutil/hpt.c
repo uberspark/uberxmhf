@@ -352,7 +352,7 @@ bool hpt_pme_is_page(hpt_type_t t, int lvl, hpt_pme_t entry)
     assert(lvl<=3);
     return lvl == 1 || (lvl==2 && BR64_GET_BIT(entry, HPT_PAE_PS_L2_MP_BIT));
   } else if (t == HPT_TYPE_LONG) {
-    assert(lvl<=3);
+    assert(lvl<=4);
     return lvl == 1 || ((lvl==2 || lvl==3) && BR64_GET_BIT(entry, HPT_LONG_PS_L32_MP_BIT));
   } else if (t == HPT_TYPE_EPT) {
     assert(lvl<=4);
