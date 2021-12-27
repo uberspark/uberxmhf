@@ -541,6 +541,9 @@ void xmhf_baseplatform_arch_x86_64vmx_getVMCS(VCPU *vcpu);
 //--debug: dumpVMCS dumps VMCS contents
 void xmhf_baseplatform_arch_x86_64vmx_dumpVMCS(VCPU *vcpu);
 
+//--debug: dump_vcpu dumps vcpu contents (more verbose than dumpVMCS)
+void xmhf_baseplatform_arch_x86_64vmx_dump_vcpu(VCPU *vcpu);
+
 //VMX specific platform reboot
 void xmhf_baseplatform_arch_x86_64vmx_reboot(VCPU *vcpu);
 
