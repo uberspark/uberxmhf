@@ -513,13 +513,14 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	vcpu->vmcs.control_CR0_shadow = cr0_value;
 	vcpu->vmcs.guest_CR0 = (cr0_value | vcpu->vmcs.control_CR0_mask) & ~(CR0_CD | CR0_NW);
 
-	if (cr0_value & CR0_PG) {
-		/* Set bit 9 of "IA-32e mode guest" according to EFER.LME */
+	// TODO: this is only needed when (vcpu->vmcs.guest_CR0 & CR0_PG) changes
+	{
+		/* Set bit 9 of "IA-32e mode guest" to EFER.LME && CR0.PG */
 		u32 value = vcpu->vmcs.control_VM_entry_controls;
 		msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[0];
 		HALT_ON_ERRORCOND(efer->index == MSR_EFER);
 		value &= ~(1U << 9);
-		value |= ((efer->data >> 8) & 0x1U) << 9;
+		value |= ((cr0_value & CR0_PG) && (efer->data & (0x1U << EFER_LME))) << 9;
 		vcpu->vmcs.control_VM_entry_controls = value;
 	}
 
