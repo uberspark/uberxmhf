@@ -62,10 +62,10 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 	if(vcpu->isbsp && (g_midtable_numentries > 1)){
 		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 			xmhf_smpguest_arch_x86_64svm_initialize(vcpu);
-			printf("\nCPU(0x%02x): setup x86svm SMP guest capabilities", vcpu->id);
+			printf("\nCPU(0x%02x): setup x86_64svm SMP guest capabilities", vcpu->id);
 		}else{	//CPU_VENDOR_INTEL
 			xmhf_smpguest_arch_x86_64vmx_initialize(vcpu);
-			printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
+			printf("\nCPU(0x%02x): setup x86_64vmx SMP guest capabilities", vcpu->id);
 		}
 	}else{ //we are an AP, so just wait for SIPI signal
 			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
