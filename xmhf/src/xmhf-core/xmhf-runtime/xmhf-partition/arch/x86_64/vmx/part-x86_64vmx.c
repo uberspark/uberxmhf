@@ -412,10 +412,13 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_LDTR_selector = 0;
 	vcpu->vmcs.guest_LDTR_access_rights = 0x10000;
 	//TR, should be usable for VMX to work, but not used by guest
+	// In 32-bit guest, TR access rights can be 0x83 (16-bit busy TSS) or 0x8b
+	// (32-bit busy TSS). In 64-bit guest, it has to be 0x8b. So use 0x8b
+	// (64-bit busy TSS). So use 0x8b here.
 	vcpu->vmcs.guest_TR_base = 0;
 	vcpu->vmcs.guest_TR_limit = 0;
 	vcpu->vmcs.guest_TR_selector = 0;
-	vcpu->vmcs.guest_TR_access_rights = 0x83; //present, 16-bit busy TSS
+	vcpu->vmcs.guest_TR_access_rights = 0x8b; //present, 32/64-bit busy TSS
 	//RSP
 	vcpu->vmcs.guest_RSP = 0x0;
 	//RIP
