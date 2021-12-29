@@ -105,7 +105,6 @@ u64 hpt_cr3_set_address(hpt_type_t t, u64 cr3, hpt_pa_t a)
     cr3 = BR64_COPY_BITS_HL(cr3, 0, HPT_CR3_MBZ2_HI, HPT_CR3_MBZ2_LO, 0);
   } else if (t==HPT_TYPE_LONG) {
     cr3 = BR64_COPY_BITS_HL(cr3, a, HPT_CR3_PML4_LONG_HI, HPT_CR3_PML4_LONG_LO, 0);
-    cr3 = BR64_COPY_BITS_HL(cr3, 0, HPT_CR3_MBZ2_HI, HPT_CR3_MBZ2_LO, 0);
   } else if (t==HPT_TYPE_EPT) {
     assert(0); /* N\A. set EPTP ptr */
   } else {
