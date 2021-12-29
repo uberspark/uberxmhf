@@ -58,6 +58,14 @@ static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 //guest TF and IF bit values during LAPIC emulation
 static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") )) = 0;	 
 
+/*
+ * xmhf_smpguest_arch_x86_64vmx_quiesce() needs to access printf locks defined
+ * in xmhfc-putchar.c
+ */
+extern void *emhfc_putchar_linelock_arg;
+extern void emhfc_putchar_linelock(void *arg);
+extern void emhfc_putchar_lineunlock(void *arg);
+
 //----------------------------------------------------------------------
 //vmx_lapic_changemapping
 //change LAPIC mappings to handle SMP guest bootup
@@ -409,30 +417,35 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
 //note: we are in atomic processsing mode for this "vcpu"
 void xmhf_smpguest_arch_x86_64vmx_quiesce(VCPU *vcpu){
 
+        /* Acquire the printf lock to prevent deadlock */
+        emhfc_putchar_linelock(emhfc_putchar_linelock_arg);
+
         //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
         //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
-		vcpu->quiesced = 1;
-		//reset quiesce counter
+        vcpu->quiesced = 1;
+        //reset quiesce counter
         spin_lock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce_counter=0;
         spin_unlock(&g_vmx_lock_quiesce_counter);
-        
+
         //send all the other CPUs the quiesce signal
         g_vmx_quiesce=1;  //we are now processing quiesce
         _vmx_send_quiesce_signal(vcpu);
-        
+
         //wait for all the remaining CPUs to quiesce
         //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
         //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
 
+        /* Release the printf lock to prevent deadlock */
+        emhfc_putchar_lineunlock(emhfc_putchar_linelock_arg);
+
 }
 
 void xmhf_smpguest_arch_x86_64vmx_endquiesce(VCPU *vcpu){
-		(void)vcpu;
 
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
@@ -440,24 +453,23 @@ void xmhf_smpguest_arch_x86_64vmx_endquiesce(VCPU *vcpu){
         g_vmx_quiesce_resume_counter=0;
         //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
         g_vmx_quiesce_resume_signal=1;
-        
+
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
         vcpu->quiesced=0;
         g_vmx_quiesce=0;  // we are out of quiesce at this point
 
         //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
-        
+
         //reset resume signal
         spin_lock(&g_vmx_lock_quiesce_resume_signal);
         g_vmx_quiesce_resume_signal=0;
         spin_unlock(&g_vmx_lock_quiesce_resume_signal);
-                
+
         //release quiesce lock
         //printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
         spin_unlock(&g_vmx_lock_quiesce);
 
-        
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
