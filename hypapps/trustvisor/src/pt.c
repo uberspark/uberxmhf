@@ -115,7 +115,7 @@ hpt_prot_t reg_prot_of_type(int type)
   HALT_ON_ERRORCOND(0); return 0; /* unreachable; appeases compiler */
 }
 
-int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
+int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, size_t len)
 {
   hptw_emhf_checked_guest_ctx_t ctx;
   int rv=1;
@@ -129,7 +129,7 @@ int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
   return rv;
 }
 
-int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
+int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, size_t len)
 {
   hptw_emhf_checked_guest_ctx_t ctx;
   int rv=1;

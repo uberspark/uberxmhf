@@ -796,7 +796,7 @@ u32 scode_marshall(VCPU * vcpu)
    * change this function to support x86-64.
    */
   uintptr_t pm_addr, pm_addr_base; /*parameter stack base address*/
-  u32 pm_value, pm_tmp;
+  u32 pm_value, pm_tmp; /* For x86 calling convention, need to be u32 */
   u32 pm_type;
   uintptr_t pm_size, pm_size_sum; /*save pm information*/
   int pm_i;
@@ -827,8 +827,8 @@ u32 scode_marshall(VCPU * vcpu)
                                     pm_addr,
                                     &whitelist[curr].gpm_num,
                                     sizeof(whitelist[curr].gpm_num)));
-  pm_addr += 4;
-  pm_size_sum = 4; /*memory used in input pms section*/
+  pm_addr += sizeof(whitelist[curr].gpm_num);
+  pm_size_sum = sizeof(whitelist[curr].gpm_num); /*memory used in input pms section*/
   eu_trace("params number is %d", whitelist[curr].gpm_num);
 
   EU_CHK( whitelist[curr].gpm_num <= TV_MAX_PARAMS);
@@ -844,7 +844,7 @@ u32 scode_marshall(VCPU * vcpu)
       EU_CHKN( copy_from_current_guest(vcpu, &pm_value, grsp + pm_i*4, sizeof(pm_value)));
 
 
-      pm_size_sum += 12;
+      pm_size_sum += sizeof(pm_type)+sizeof(pm_size)+sizeof(pm_value);
       EU_CHK( pm_size_sum <= (whitelist[curr].gpm_size*PAGE_SIZE_4K));
 
       /* save input params in input params memory for sensitive code */
@@ -852,15 +852,17 @@ u32 scode_marshall(VCPU * vcpu)
                                        HPTW_CPL3,
                                        pm_addr,
                                        &pm_type, sizeof(pm_type)));
+      pm_addr += sizeof(pm_type);
       EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                        HPTW_CPL3,
-                                       pm_addr+sizeof(pm_type),
+                                       pm_addr,
                                        &pm_size, sizeof(pm_size)));
+      pm_addr += sizeof(pm_size);
       EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                        HPTW_CPL3,
-                                       pm_addr+sizeof(pm_type)+sizeof(pm_size),
+                                       pm_addr,
                                        &pm_value, sizeof(pm_value)));
-      pm_addr += sizeof(pm_type)+sizeof(pm_size)+sizeof(pm_addr);
+      pm_addr += sizeof(pm_value);
       eu_trace("scode_marshal copied metadata to params area");      
 
       switch (pm_type)
@@ -923,6 +925,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   bool swapped_grsp=false;
   bool pushed_return=false;
   uintptr_t sentinel_return;
+  u32 regular_return; /* For x86 calling convention, need to be u32 */
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
 
@@ -933,10 +936,11 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   eu_trace("got pal_running lock!");
 
   EU_CHKN( copy_from_current_guest(vcpu,
-                                   &whitelist[curr].return_v,
+                                   &regular_return,
                                    VCPU_grsp(vcpu),
-                                   sizeof(whitelist[curr].return_v)));
-  eu_trace("scode return vaddr is %#x", whitelist[curr].return_v);
+                                   sizeof(regular_return)));
+  whitelist[curr].return_v = (uintptr_t)regular_return;
+  eu_trace("scode return vaddr is %#lx", whitelist[curr].return_v);
 
   /* save the guest stack pointer and set new stack pointer to scode stack */
   eu_trace("saved guest regular stack %#lx, switch to sensitive code stack %#lx",
@@ -964,6 +968,8 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
      below in case of error) */
 
   eu_trace("change NPT permission to run PAL!");
+  eu_trace("vcpu=%#x, guest_RIP=%#lx, guest_RSP=%#lx", vcpu->id,
+           VCPU_grip(vcpu), VCPU_grsp(vcpu));
   hpt_emhf_set_root_pm_pa( vcpu, whitelist[curr].hptw_pal_host_ctx.super.root_pa);
   VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
   xmhf_memprot_flushmappings(vcpu); /* XXX */
@@ -1015,8 +1021,8 @@ u32 scode_unmarshall(VCPU * vcpu)
 {
   uintptr_t pm_addr_base, pm_addr;
   size_t i;
-  u32 pm_num, pm_type, pm_value;
-  uintptr_t pm_size;
+  u32 pm_num, pm_type, pm_value; /* Need to be consistent with scode_marshall */
+  uintptr_t pm_size; /* Need to be consistent with scode_marshall */
 
   int curr=scode_curr[vcpu->id];
 
@@ -1045,7 +1051,7 @@ u32 scode_unmarshall(VCPU * vcpu)
                                       &pm_num,
                                       pm_addr,
                                       sizeof(pm_num)));
-  pm_addr += 4;
+  pm_addr += sizeof(pm_num);
   eu_trace("params number is %d", pm_num);
   EU_CHK( pm_num <= TV_MAX_PARAMS);
 
@@ -1058,14 +1064,14 @@ u32 scode_unmarshall(VCPU * vcpu)
                                           &pm_type,
                                           pm_addr,
                                           sizeof(pm_type)));
-      pm_addr += 4;
+      pm_addr += sizeof(pm_type);
 
       switch (pm_type)
         {
         case TV_PAL_PM_INTEGER: /*integer*/
           {
             /* don't need to put integer back to regular code stack */
-            pm_addr += 8; 
+            pm_addr += sizeof(pm_size) + sizeof(pm_value);
             eu_trace("skip an integer parameter!"); 
             break;
           }
@@ -1076,13 +1082,14 @@ u32 scode_unmarshall(VCPU * vcpu)
                                                 &pm_size,
                                                 pm_addr,
                                                 sizeof(pm_size)));
+            pm_addr += sizeof(pm_size);
             /* get pointer adddress in regular code */
             EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                                 HPTW_CPL3,
                                                 &pm_value,
-                                                pm_addr+4,
+                                                pm_addr,
                                                 sizeof(pm_value)));
-            pm_addr += 8;
+            pm_addr += sizeof(pm_value);
 
             eu_trace("PM %d is a pointer (size %d, addr %#x)", i,  pm_size*4, pm_value);
             /* copy data from sensitive code (param space) to guest */

@@ -153,9 +153,9 @@ hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
 /* operations from hypervisor to guest paging */
-int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len);
+int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, size_t len);
 
-int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len);
+int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, size_t len);
 
 /* PAL operations (HPT) */
 u32 hpt_scode_switch_scode(VCPU * vcpu);
