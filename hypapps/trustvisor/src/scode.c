@@ -810,7 +810,7 @@ u32 scode_marshall(VCPU * vcpu)
   uintptr_t pm_size, pm_size_sum; /*save pm information*/
   int pm_i;
   uintptr_t grsp;
-  uintptr_t new_rsp;
+  uintptr_t new_rsp = VCPU_grsp(vcpu);
   int curr=scode_curr[vcpu->id];
   u32 err=1;
   hptw_emhf_checked_guest_ctx_t vcpu_guest_walk_ctx;
@@ -909,14 +909,14 @@ u32 scode_marshall(VCPU * vcpu)
           err=7;
           goto out;
         }
-      new_rsp = VCPU_grsp(vcpu)-sizeof(pm_tmp);
-      VCPU_grsp_set(vcpu, new_rsp);
+      new_rsp -= sizeof(pm_tmp);
       EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                         HPTW_CPL3,
                                         new_rsp,
                                         &pm_tmp,
                                         sizeof(pm_tmp)));
     }
+    VCPU_grsp_set(vcpu, new_rsp);
 
   err=0;
  out:
@@ -933,7 +933,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   int err=1;
   bool swapped_grsp=false;
   bool pushed_return=false;
-  uintptr_t sentinel_return;
+  u32 sentinel_return; /* For x86 calling convention, need to be u32 */
   u32 regular_return; /* For x86 calling convention, need to be u32 */
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
