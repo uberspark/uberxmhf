@@ -102,18 +102,18 @@ typedef struct {
 
 /* scode state struct */
 typedef struct whitelist_entry{
-  u64 gcr3; 
-  u32 id;
-  u32 grsp;		/* guest reguar stack */
-  u32 gssp;		/* guest sensitive code stack */
-  u32 gss_size;   /* guest sensitive code stack page number */
-  u32 entry_v; /* entry point virtual address */
-  u32 entry_p; /* entry point physical address */
-  u32 return_v; /* return point virtual address */
+  u64       gcr3; 
+  u32       id;
+  uintptr_t grsp;		/* guest reguar stack */
+  uintptr_t gssp;		/* guest sensitive code stack */
+  uintptr_t gss_size;   /* guest sensitive code stack page number */
+  uintptr_t entry_v; /* entry point virtual address */
+  uintptr_t entry_p; /* entry point physical address */
+  uintptr_t return_v; /* return point virtual address */
 
-  u32 gpmp;     /* guest parameter page address */
-  u32 gpm_size; /* guest parameter page number */
-  u32 gpm_num;  /* guest parameter number */
+  uintptr_t gpmp;     /* guest parameter page address */
+  uintptr_t gpm_size; /* guest parameter page number */
+  u32       gpm_num;  /* guest parameter number */
 
   u32 saved_exception_intercepts;
 
@@ -123,10 +123,8 @@ typedef struct whitelist_entry{
   struct tv_pal_sections scode_info; /* scode_info struct for registration function inpu */
   struct tv_pal_params params_info; /* param info struct */
   pte_t* scode_pages; /* registered pte's (copied from guest page tables and additional info added) */
-  u32 scode_size; /* scode size */
 
   pte_t * pte_page;  /* holder for guest page table entry to access scode and GDT */
-  u32 pte_size;	/* total size of all PTE pages */
 //#ifdef __MP_VERSION__
   u32 pal_running_lock; /* PAL running lock */
   u32 pal_running_vcpu_id; /* the cpu that is running this PAL */
@@ -155,16 +153,14 @@ hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
 /* operations from hypervisor to guest paging */
-void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len);
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len);
 
-void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, void *src, u32 len);
 int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len);
 
 /* PAL operations (HPT) */
 u32 hpt_scode_switch_scode(VCPU * vcpu);
 u32 hpt_scode_switch_regular(VCPU * vcpu);
-u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
+u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count);
 
