@@ -524,7 +524,6 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		u32 value = vcpu->vmcs.control_VM_entry_controls;
 		u32 lme;
 		msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[0];
-		printf("\nSet bit 9 of 'IA-32e mode guest' to EFER.LME && CR0.PG");
 		HALT_ON_ERRORCOND(efer->index == MSR_EFER);
 		lme = (cr0_value & CR0_PG) && (efer->data & (0x1U << EFER_LME));
 		value &= ~(1U << 9);
@@ -596,8 +595,9 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
-		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
-			(u32)vcpu->vmcs.info_vmexit_reason, (u64)vcpu->vmcs.info_exit_qualification);
+		printf("\nCPU(0x%02x): VM-ENTRY error, reason=0x%08x, qualification=0x%016llx", 
+			vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
+			(u64)vcpu->vmcs.info_exit_qualification);
 		xmhf_baseplatform_arch_x86_64vmx_dumpVMCS(vcpu);
 		HALT();
 	}
