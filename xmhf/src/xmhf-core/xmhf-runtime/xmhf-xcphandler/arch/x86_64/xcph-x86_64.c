@@ -168,17 +168,17 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
             printf("\n[%02x]: state dump follows...", vcpu->id);
             // things to dump
-            printf("\n[%02x] CS:RIP 0x%04x:0x%16lx with EFLAGS=0x%16lx", vcpu->id,
+            printf("\n[%02x] CS:RIP 0x%04x:0x%016lx with EFLAGS=0x%016lx", vcpu->id,
                 (u16)exception_cs, exception_rip, exception_eflags);
-            printf("\n[%02x]: VCPU at 0x%16lx", vcpu->id, (uintptr_t)vcpu, vcpu->id);
-            printf("\n[%02x] RAX=0x%16lx RBX=0x%16lx", vcpu->id, r->rax, r->rbx);
-            printf("\n[%02x] RCX=0x%16lx RDX=0x%16lx", vcpu->id, r->rcx, r->rdx);
-            printf("\n[%02x] RSI=0x%16lx RDI=0x%16lx", vcpu->id, r->rsi, r->rdi);
-            printf("\n[%02x] RBP=0x%16lx RSP=0x%16lx", vcpu->id, r->rbp, r->rsp);
-            printf("\n[%02x] R8 =0x%16lx R9 =0x%16lx", vcpu->id, r->r8 , r->r9 );
-            printf("\n[%02x] R10=0x%16lx R11=0x%16lx", vcpu->id, r->r10, r->r11);
-            printf("\n[%02x] R12=0x%16lx R13=0x%16lx", vcpu->id, r->r12, r->r13);
-            printf("\n[%02x] R14=0x%16lx R15=0x%16lx", vcpu->id, r->r14, r->r15);
+            printf("\n[%02x]: VCPU at 0x%016lx", vcpu->id, (uintptr_t)vcpu, vcpu->id);
+            printf("\n[%02x] RAX=0x%016lx RBX=0x%016lx", vcpu->id, r->rax, r->rbx);
+            printf("\n[%02x] RCX=0x%016lx RDX=0x%016lx", vcpu->id, r->rcx, r->rdx);
+            printf("\n[%02x] RSI=0x%016lx RDI=0x%016lx", vcpu->id, r->rsi, r->rdi);
+            printf("\n[%02x] RBP=0x%016lx RSP=0x%016lx", vcpu->id, r->rbp, r->rsp);
+            printf("\n[%02x] R8 =0x%016lx R9 =0x%016lx", vcpu->id, r->r8 , r->r9 );
+            printf("\n[%02x] R10=0x%016lx R11=0x%016lx", vcpu->id, r->r10, r->r11);
+            printf("\n[%02x] R12=0x%016lx R13=0x%016lx", vcpu->id, r->r12, r->r13);
+            printf("\n[%02x] R14=0x%016lx R15=0x%016lx", vcpu->id, r->r14, r->r15);
             printf("\n[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
                 (u16)read_segreg_cs(), (u16)read_segreg_ds(),
                 (u16)read_segreg_es(), (u16)read_segreg_ss());
@@ -194,9 +194,15 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 uintptr_t stack_start = r->rsp;
                 printf("\n[%02x]-----stack dump-----", vcpu->id);
                 for(i=stack_start; i < vcpu->rsp; i+=sizeof(uintptr_t)){
-                    printf("\n[%02x]  Stack(0x%16lx) -> 0x%16lx", vcpu->id, i, *(uintptr_t *)i);
+                    printf("\n[%02x]  Stack(0x%016lx) -> 0x%016lx", vcpu->id, i, *(uintptr_t *)i);
                 }
                 printf("\n[%02x]-----end------------", vcpu->id);
+            }
+
+            // Exception #BP may be caused by failed VMRESUME. Dump VMCS
+            if (vector == CPU_EXCEPTION_BP && cpu_vendor == CPU_VENDOR_INTEL) {
+                xmhf_baseplatform_arch_x86_64vmx_getVMCS(vcpu);
+                xmhf_baseplatform_arch_x86_64vmx_dump_vcpu(vcpu);
             }
             HALT();
         }
