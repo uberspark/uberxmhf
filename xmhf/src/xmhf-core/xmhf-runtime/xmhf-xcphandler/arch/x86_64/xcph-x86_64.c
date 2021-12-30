@@ -200,7 +200,8 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             }
 
             // Exception #BP may be caused by failed VMRESUME. Dump VMCS
-            if (vector == CPU_EXCEPTION_BP && cpu_vendor == CPU_VENDOR_INTEL) {
+            if (vector == CPU_EXCEPTION_BP &&
+                get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
                 xmhf_baseplatform_arch_x86_64vmx_getVMCS(vcpu);
                 xmhf_baseplatform_arch_x86_64vmx_dump_vcpu(vcpu);
             }
