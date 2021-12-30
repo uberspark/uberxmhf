@@ -447,6 +447,13 @@ void xmhf_smpguest_arch_x86_64vmx_quiesce(VCPU *vcpu){
 
 void xmhf_smpguest_arch_x86_64vmx_endquiesce(VCPU *vcpu){
 
+        /*
+         * g_vmx_quiesce=0 must be before g_vmx_quiesce_resume_signal=1,
+         * otherwise if another CPU enters NMI exception handler again,
+         * a deadlock may occur.
+         */
+        g_vmx_quiesce=0;  // we are out of quiesce at this point
+
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
@@ -457,7 +464,6 @@ void xmhf_smpguest_arch_x86_64vmx_endquiesce(VCPU *vcpu){
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
         vcpu->quiesced=0;
-        g_vmx_quiesce=0;  // we are out of quiesce at this point
 
         //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
 
