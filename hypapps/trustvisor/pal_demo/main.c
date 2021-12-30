@@ -15,6 +15,18 @@ static inline uint32_t vmcall(uint32_t eax, uint32_t ecx, uint32_t edx,
 	return eax;
 }
 
+uint32_t lock_and_touch_page(void *addr, size_t len) {
+	// Call mlock() and then write to page
+	// similar to tv_lock_range() and tv_touch_range() in tee-sdk
+	if (mlock(addr, len)) {
+		perror("mlock");
+		return 1;
+	}
+	// If do not memset, XMHF will see a NULL page
+	memset(addr, 0x90, len);
+	return 0;
+}
+
 uint32_t call_pal(uint32_t a, uint32_t b) {
 	uint32_t b2 = b;
 	// Call mmap(), construct struct tv_pal_sections
@@ -38,8 +50,10 @@ uint32_t call_pal(uint32_t a, uint32_t b) {
 	for (uint32_t i = 0; i < sections->num_sections; i++) {
 		struct tv_pal_section *a = &(sections->sections[i]);
 		assert(a->start_addr);
-		memset((char *)(uintptr_t)(a->start_addr), 0x90, PAGE_SIZE * a->page_num);
-		// If do not memset, XMHF will see a NULL page
+		// Lock and touch page (prevent page getting swapping)
+		void *start = (void *)(uintptr_t)(a->start_addr);
+		size_t size = PAGE_SIZE * a->page_num;
+		assert(!lock_and_touch_page(start, size));
 		printf("Mmap: %u %p %u\n", a->type, a->start_addr, a->page_num);
 	}
 	printf("\n");
