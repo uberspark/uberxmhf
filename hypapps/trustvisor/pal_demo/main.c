@@ -4,16 +4,10 @@
 #include <string.h>
 #include <sys/mman.h>
 #include "pal.h"
+#include "vmcall.h"
 #include "trustvisor.h"
 
 #define PAGE_SIZE ((uintptr_t) 4096)
-
-static inline uint32_t vmcall(uint32_t eax, uint32_t ecx, uint32_t edx,
-								uint32_t esi, uint32_t edi) {
-	asm volatile ("vmcall\n\t" : "=a"(eax) : "a"(eax), "c"(ecx), "d"(edx),
-					"S"(esi), "D"(edi));
-	return eax;
-}
 
 uint32_t lock_and_touch_page(void *addr, size_t len) {
 	// Call mlock() and then write to page

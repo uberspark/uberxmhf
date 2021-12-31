@@ -199,7 +199,7 @@ static u32 do_TV_HC_SHARE(VCPU *vcpu, struct regs *r)
 static u32 do_TV_HC_TEST(VCPU *vcpu, struct regs *r)
 {
   (void)r;
-  eu_trace("CPU(0x%02x): test hypercall", vcpu->id);
+  eu_trace("CPU(0x%02x): test hypercall, ecx=0x%08x", vcpu->id, r->ecx);
   return 0;
 }
 

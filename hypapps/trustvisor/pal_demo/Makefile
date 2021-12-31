@@ -3,9 +3,10 @@
 
 CFLAGS := -g -I../src/include
 
-all: main
+all: main test
 
 main: main.o pal.o
+test: test.c
 
 main.o: main.c
 
