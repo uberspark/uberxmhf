@@ -426,10 +426,12 @@ struct _vmx_vmcsfields {
   unsigned long long  control_CR4_mask;
   unsigned long long  control_CR0_shadow;
   unsigned long long  control_CR4_shadow;
+#ifndef __DEBUG_QEMU__
   unsigned long long  control_CR3_target0;
   unsigned long long  control_CR3_target1;
   unsigned long long  control_CR3_target2;
   unsigned long long  control_CR3_target3;
+#endif /* !__DEBUG_QEMU__ */
   // Full 64-bit Control fields
   unsigned int  control_IO_BitmapA_address_full;
   unsigned int  control_IO_BitmapA_address_high;
@@ -443,8 +445,10 @@ struct _vmx_vmcsfields {
   unsigned int  control_VM_exit_MSR_load_address_high;
   unsigned int  control_VM_entry_MSR_load_address_full;
   unsigned int  control_VM_entry_MSR_load_address_high;
+#ifndef __DEBUG_QEMU__
   unsigned int  control_Executive_VMCS_pointer_full;
   unsigned int  control_Executive_VMCS_pointer_high;
+#endif /* !__DEBUG_QEMU__ */
   unsigned int  control_TSC_offset_full;
   unsigned int  control_TSC_offset_high;
   unsigned int  control_virtual_APIC_page_address_full;
@@ -518,7 +522,9 @@ struct _vmx_vmcsfields {
   unsigned int  guest_TR_access_rights;
   unsigned int  guest_interruptibility; 
   unsigned int  guest_activity_state; 
+#ifndef __DEBUG_QEMU__
   unsigned int  guest_SMBASE;	
+#endif /* !__DEBUG_QEMU__ */
   unsigned int  guest_SYSENTER_CS; 
   // Natural 16-bit Guest-State fields
   unsigned int  guest_ES_selector;
@@ -556,10 +562,12 @@ struct _vmx_vmcsfields {
   unsigned int  info_vmexit_instruction_length;
   unsigned int  info_vmx_instruction_information;
   unsigned long long  info_exit_qualification;
+#ifndef __DEBUG_QEMU__
   unsigned long long  info_IO_RCX;
   unsigned long long  info_IO_RSI;
   unsigned long long  info_IO_RDI;
   unsigned long long  info_IO_RIP;
+#endif /* !__DEBUG_QEMU__ */
   unsigned long long  info_guest_linear_address;
 } __attribute__((packed));
 

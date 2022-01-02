@@ -61,29 +61,6 @@ void xmhf_baseplatform_arch_x86_64vmx_putVMCS(VCPU *vcpu){
       unsigned long fieldvalue = *field;
       //printf("\nvmwrite: enc=0x%08x, value=0x%08x", vmcsrwfields_encodings[i].encoding, fieldvalue);
       if(!__vmx_vmwrite(g_vmx_vmcsrwfields_encodings[i].encoding, fieldvalue)){
-
-#ifdef __DEBUG_QEMU__
-        /*
-         * Seems like field encodings not implemented in KVM. When running on
-         * QEMU will fail on VMWRITE. But looks like those fields are not used,
-         * So ignore the failure.
-         */
-        unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
-        if (encoding == 0x6008 || encoding == 0x600a || encoding == 0x600c ||
-            encoding == 0x600e || encoding == 0x200c || encoding == 0x200d ||
-            encoding == 0x4828) {
-            /* declutter messages since there are too many */
-            static uint32_t warning_printed = 0;
-            if (!warning_printed) {
-                printf("\nCPU(0x%02x): Ignoring VMWRITE failure %d 0x%lx 0x%lx",
-                       vcpu->id, i, encoding, fieldvalue);
-                printf("\nHidding future VMWRITE failures");
-                warning_printed = 1;
-            }
-            continue;
-        }
-#endif /* __DEBUG_QEMU__ */
-
         printf("\nCPU(0x%02x): VMWRITE failed. HALT!", vcpu->id);
         HALT();
       }
@@ -97,26 +74,11 @@ void xmhf_baseplatform_arch_x86_64vmx_getVMCS(VCPU *vcpu){
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
         unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
         unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-#ifdef __DEBUG_QEMU__
-        /* Skip reading fields not supported by QEMU */
-        if (encoding == 0x6008 || encoding == 0x600a || encoding == 0x600c ||
-            encoding == 0x600e || encoding == 0x200c || encoding == 0x200d ||
-            encoding == 0x4828) {
-            continue;
-        }
-#endif /* __DEBUG_QEMU__ */
         __vmx_vmread(encoding, field);
     }
     for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
         unsigned long encoding = g_vmx_vmcsrofields_encodings[i].encoding;
         unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (hva_t)g_vmx_vmcsrofields_encodings[i].fieldoffset);
-#ifdef __DEBUG_QEMU__
-        /* Skip reading fields not supported by QEMU */
-        if (encoding == 0x6402 || encoding == 0x6404 || encoding == 0x6406 ||
-            encoding == 0x6408) {
-            continue;
-        }
-#endif /* __DEBUG_QEMU__ */
         __vmx_vmread(encoding, field);
     }
 }
@@ -246,10 +208,12 @@ void xmhf_baseplatform_arch_x86_64vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR4_mask);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR0_shadow);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR4_shadow);
+#ifndef __DEBUG_QEMU__
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR3_target0);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR3_target1);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR3_target2);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR3_target3);
+#endif /* !__DEBUG_QEMU__ */
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_IO_BitmapA_address_full);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_IO_BitmapA_address_high);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_IO_BitmapB_address_full);
@@ -262,8 +226,10 @@ void xmhf_baseplatform_arch_x86_64vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_exit_MSR_load_address_high);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_MSR_load_address_full);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_MSR_load_address_high);
+#ifndef __DEBUG_QEMU__
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_Executive_VMCS_pointer_full);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_Executive_VMCS_pointer_high);
+#endif /* !__DEBUG_QEMU__ */
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_TSC_offset_full);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_TSC_offset_high);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_virtual_APIC_page_address_full);
@@ -330,7 +296,9 @@ void xmhf_baseplatform_arch_x86_64vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_TR_access_rights);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_interruptibility);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_activity_state);
+#ifndef __DEBUG_QEMU__
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SMBASE);
+#endif /* !__DEBUG_QEMU__ */
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SYSENTER_CS);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_ES_selector);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_CS_selector);
@@ -363,10 +331,12 @@ void xmhf_baseplatform_arch_x86_64vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmexit_instruction_length);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmx_instruction_information);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_exit_qualification);
+#ifndef __DEBUG_QEMU__
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_IO_RCX);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_IO_RSI);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_IO_RDI);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_IO_RIP);
+#endif /* !__DEBUG_QEMU__ */
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_guest_linear_address);
 
 #undef DUMP_VCPU_PRINT_INT16

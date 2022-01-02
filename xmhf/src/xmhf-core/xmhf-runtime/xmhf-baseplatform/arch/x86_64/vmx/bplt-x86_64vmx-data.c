@@ -62,10 +62,12 @@ struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(
 	{ 0x440C, offsetof(struct _vmx_vmcsfields, info_vmexit_instruction_length) },
 	{ 0x440E, offsetof(struct _vmx_vmcsfields, info_vmx_instruction_information) },
 	{ 0x6400, offsetof(struct _vmx_vmcsfields, info_exit_qualification) },
+#ifndef __DEBUG_QEMU__
 	{ 0x6402, offsetof(struct _vmx_vmcsfields, info_IO_RCX) },
 	{ 0x6404, offsetof(struct _vmx_vmcsfields, info_IO_RSI) },
 	{ 0x6406, offsetof(struct _vmx_vmcsfields, info_IO_RDI) },
 	{ 0x6408, offsetof(struct _vmx_vmcsfields, info_IO_RIP) },
+#endif /* !__DEBUG_QEMU__ */
 #if defined(__NESTED_PAGING__)
 	{ 0x2400, offsetof(struct _vmx_vmcsfields, guest_paddr_full) },
 	{ 0x2401, offsetof(struct _vmx_vmcsfields, guest_paddr_high) },
@@ -105,10 +107,12 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 	{ 0x6002, offsetof(struct _vmx_vmcsfields, control_CR4_mask) }, 
 	{ 0x6004, offsetof(struct _vmx_vmcsfields, control_CR0_shadow) },
 	{ 0x6006, offsetof(struct _vmx_vmcsfields, control_CR4_shadow) },
+#ifndef __DEBUG_QEMU__
 	{ 0x6008, offsetof(struct _vmx_vmcsfields, control_CR3_target0) },
 	{ 0x600A, offsetof(struct _vmx_vmcsfields, control_CR3_target1) },
 	{ 0x600C, offsetof(struct _vmx_vmcsfields, control_CR3_target2) },
 	{ 0x600E, offsetof(struct _vmx_vmcsfields, control_CR3_target3) },
+#endif /* !__DEBUG_QEMU__ */
 	// Full 64-bit Control fields
 	{ 0x2000, offsetof(struct _vmx_vmcsfields, control_IO_BitmapA_address_full) },
 	{ 0x2001, offsetof(struct _vmx_vmcsfields, control_IO_BitmapA_address_high) },
@@ -122,8 +126,10 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 	{ 0x2009, offsetof(struct _vmx_vmcsfields, control_VM_exit_MSR_load_address_high) },
 	{ 0x200A, offsetof(struct _vmx_vmcsfields, control_VM_entry_MSR_load_address_full) },
 	{ 0x200B, offsetof(struct _vmx_vmcsfields, control_VM_entry_MSR_load_address_high) },
+#ifndef __DEBUG_QEMU__
 	{ 0x200C, offsetof(struct _vmx_vmcsfields, control_Executive_VMCS_pointer_full) },
 	{ 0x200D, offsetof(struct _vmx_vmcsfields, control_Executive_VMCS_pointer_high) },
+#endif /* !__DEBUG_QEMU__ */
 	{ 0x2010, offsetof(struct _vmx_vmcsfields, control_TSC_offset_full) },
 	{ 0x2011, offsetof(struct _vmx_vmcsfields, control_TSC_offset_high) },
 	//{ 0x2012, offsetof(struct _vmx_vmcsfields, control_virtual_APIC_page_address_full) }, 
@@ -209,7 +215,9 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 	{ 0x4822, offsetof(struct _vmx_vmcsfields, guest_TR_access_rights) },
 	{ 0x4824, offsetof(struct _vmx_vmcsfields, guest_interruptibility) },
 	{ 0x4826, offsetof(struct _vmx_vmcsfields, guest_activity_state) },
+#ifndef __DEBUG_QEMU__
 	{ 0x4828, offsetof(struct _vmx_vmcsfields, guest_SMBASE) },
+#endif /* !__DEBUG_QEMU__ */
 	{ 0x482A, offsetof(struct _vmx_vmcsfields, guest_SYSENTER_CS) },
 	// Natural 16-bit Guest-State fields
 	{ 0x0800, offsetof(struct _vmx_vmcsfields, guest_ES_selector) },
