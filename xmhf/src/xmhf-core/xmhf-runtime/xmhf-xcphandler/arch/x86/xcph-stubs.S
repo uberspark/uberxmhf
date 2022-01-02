@@ -52,7 +52,7 @@
 #include <xmhf-xcphandler.h>
 
 .altmacro
-.macro XtRtmEmitIdtStub vector
+.macro XtRtmEmitIdtStub vector skip_err_code
 	.section .text
 	
 	//notes: 
@@ -86,46 +86,48 @@
 		//restore GPRs
 		popal
 
-		/* popal ignores esp, but we want it. r->esp is at current -20(%esp) */
-		movl -20(%esp), %esp
+		/* If the exception puts an error code on the stack, ignore it */
+		.if &skip_err_code&
+		leal    4(%esp), %esp
+		.endif
 
 		//return from exception
 		iretl
 	
 .endm
 
-XtRtmEmitIdtStub 0
-XtRtmEmitIdtStub 1
-XtRtmEmitIdtStub 2
-XtRtmEmitIdtStub 3
-XtRtmEmitIdtStub 4
-XtRtmEmitIdtStub 5
-XtRtmEmitIdtStub 6
-XtRtmEmitIdtStub 7
-XtRtmEmitIdtStub 8
-XtRtmEmitIdtStub 9
-XtRtmEmitIdtStub a
-XtRtmEmitIdtStub b
-XtRtmEmitIdtStub c
-XtRtmEmitIdtStub d
-XtRtmEmitIdtStub e
-XtRtmEmitIdtStub f
-XtRtmEmitIdtStub 10
-XtRtmEmitIdtStub 11
-XtRtmEmitIdtStub 12
-XtRtmEmitIdtStub 13
-XtRtmEmitIdtStub 14
-XtRtmEmitIdtStub 15
-XtRtmEmitIdtStub 16
-XtRtmEmitIdtStub 17
-XtRtmEmitIdtStub 18
-XtRtmEmitIdtStub 19
-XtRtmEmitIdtStub 1a
-XtRtmEmitIdtStub 1b
-XtRtmEmitIdtStub 1c
-XtRtmEmitIdtStub 1d
-XtRtmEmitIdtStub 1e
-XtRtmEmitIdtStub 1f
+XtRtmEmitIdtStub 0  0
+XtRtmEmitIdtStub 1  0
+XtRtmEmitIdtStub 2  0
+XtRtmEmitIdtStub 3  0
+XtRtmEmitIdtStub 4  0
+XtRtmEmitIdtStub 5  0
+XtRtmEmitIdtStub 6  0
+XtRtmEmitIdtStub 7  0
+XtRtmEmitIdtStub 8  1
+XtRtmEmitIdtStub 9  0
+XtRtmEmitIdtStub a  1
+XtRtmEmitIdtStub b  1
+XtRtmEmitIdtStub c  1
+XtRtmEmitIdtStub d  1
+XtRtmEmitIdtStub e  1
+XtRtmEmitIdtStub f  0
+XtRtmEmitIdtStub 10 0
+XtRtmEmitIdtStub 11 1
+XtRtmEmitIdtStub 12 0
+XtRtmEmitIdtStub 13 0
+XtRtmEmitIdtStub 14 0
+XtRtmEmitIdtStub 15 0
+XtRtmEmitIdtStub 16 0
+XtRtmEmitIdtStub 17 0
+XtRtmEmitIdtStub 18 0
+XtRtmEmitIdtStub 19 0
+XtRtmEmitIdtStub 1a 0
+XtRtmEmitIdtStub 1b 0
+XtRtmEmitIdtStub 1c 0
+XtRtmEmitIdtStub 1d 0
+XtRtmEmitIdtStub 1e 0
+XtRtmEmitIdtStub 1f 0
 
 
 .section .data
