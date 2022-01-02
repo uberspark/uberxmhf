@@ -61,29 +61,6 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
       unsigned long fieldvalue = *field;
       //printf("\nvmwrite: enc=0x%08x, value=0x%08x", vmcsrwfields_encodings[i].encoding, fieldvalue);
       if(!__vmx_vmwrite(g_vmx_vmcsrwfields_encodings[i].encoding, fieldvalue)){
-
-#ifdef __DEBUG_QEMU__
-        /*
-         * Seems like field encodings not implemented in KVM. When running on
-         * QEMU will fail on VMWRITE. But looks like those fields are not used,
-         * So ignore the failure.
-         */
-        unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
-        if (encoding == 0x6008 || encoding == 0x600a || encoding == 0x600c ||
-            encoding == 0x600e || encoding == 0x200c || encoding == 0x200d ||
-            encoding == 0x4828) {
-            /* declutter messages since there are too many */
-            static uint32_t warning_printed = 0;
-            if (!warning_printed) {
-                printf("\nCPU(0x%02x): Ignoring VMWRITE failure %d 0x%lx 0x%lx",
-                       vcpu->id, i, encoding, fieldvalue);
-                printf("\nHidding future VMWRITE failures");
-                warning_printed = 1;
-            }
-            continue;
-        }
-#endif /* __DEBUG_QEMU__ */
-
         printf("\nCPU(0x%02x): VMWRITE failed. HALT!", vcpu->id);
         HALT();
       }
@@ -97,26 +74,11 @@ void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
         unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
         unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-#ifdef __DEBUG_QEMU__
-        /* Skip reading fields not supported by QEMU */
-        if (encoding == 0x6008 || encoding == 0x600a || encoding == 0x600c ||
-            encoding == 0x600e || encoding == 0x200c || encoding == 0x200d ||
-            encoding == 0x4828) {
-            continue;
-        }
-#endif /* __DEBUG_QEMU__ */
         __vmx_vmread(encoding, field);
     }
     for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
         unsigned long encoding = g_vmx_vmcsrofields_encodings[i].encoding;
         unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (hva_t)g_vmx_vmcsrofields_encodings[i].fieldoffset);
-#ifdef __DEBUG_QEMU__
-        /* Skip reading fields not supported by QEMU */
-        if (encoding == 0x6402 || encoding == 0x6404 || encoding == 0x6406 ||
-            encoding == 0x6408) {
-            continue;
-        }
-#endif /* __DEBUG_QEMU__ */
         __vmx_vmread(encoding, field);
     }
 }
