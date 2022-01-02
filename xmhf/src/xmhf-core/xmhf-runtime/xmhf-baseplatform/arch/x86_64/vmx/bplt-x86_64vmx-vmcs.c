@@ -67,19 +67,49 @@ void xmhf_baseplatform_arch_x86_64vmx_putVMCS(VCPU *vcpu){
     }
 }
 
+void xmhf_baseplatform_arch_x86_64vmx_read_field(u32 encoding, void *addr,
+                                                 u32 size) {
+    u64 value;
+    if (!__vmx_vmread(encoding, &value)) {
+        printf("\nVMREAD failed. HALT!");
+        HALT();
+    }
+    /* For now, read 64-bit fields as 2 32-bit fields (same as in x86) */
+    switch ((encoding >> 13) & 0x3) {
+    case 0: /* 16-bit */
+        /* fallthrough */
+    case 1: /* 64-bit */
+        /* fallthrough */
+    case 2: /* 32-bit */
+        HALT_ON_ERRORCOND(size == 4);
+        *(u32 *)addr = (u32)value;
+        break;
+    case 3: /* natural width */
+        HALT_ON_ERRORCOND(size == 8);
+        *(u64 *)addr = value;
+        break;
+    default:
+        HALT();
+    }
+}
+
 //---getVMCS--------------------------------------------------------------------
 // routine takes CPU VMCS and stores it in vcpu vmcsfields  
 void xmhf_baseplatform_arch_x86_64vmx_getVMCS(VCPU *vcpu){
     unsigned int i;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-        unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
-        unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-        __vmx_vmread(encoding, field);
+        u32 encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
+        u32 offset = g_vmx_vmcsrwfields_encodings[i].fieldoffset;
+        void *field = (void *)((hva_t)&vcpu->vmcs + offset);
+        u32 size = g_vmx_vmcsrwfields_encodings[i].membersize;
+        xmhf_baseplatform_arch_x86_64vmx_read_field(encoding, field, size);
     }
     for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
-        unsigned long encoding = g_vmx_vmcsrofields_encodings[i].encoding;
-        unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (hva_t)g_vmx_vmcsrofields_encodings[i].fieldoffset);
-        __vmx_vmread(encoding, field);
+        u32 encoding = g_vmx_vmcsrofields_encodings[i].encoding;
+        u32 offset = g_vmx_vmcsrofields_encodings[i].fieldoffset;
+        void *field = (void *)((hva_t)&vcpu->vmcs + offset);
+        u32 size = g_vmx_vmcsrofields_encodings[i].membersize;
+        xmhf_baseplatform_arch_x86_64vmx_read_field(encoding, field, size);
     }
 }
 

@@ -615,10 +615,18 @@ static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
 	return status;
 }
 
-static inline void __vmx_vmread(unsigned long encoding, unsigned long *value){
-	__asm__ __volatile__("vmread %%rax, %%rbx\n\t"
-	  : "=b"(*value)
-	  : "a"(encoding));
+static inline u32 __vmx_vmread(unsigned long encoding, unsigned long *value){
+	unsigned long status;
+	__asm__ __volatile__("vmread %%rax, %%rbx \r\n"
+                       "jbe 1f \r\n"
+                       "movq $1, %%rdx \r\n"
+                       "jmp 2f \r\n"
+                       "1: movq $0, %%rdx \r\n"
+                       "2: movq %%rdx, %1"
+	  : "=b"(*value), "=m"(status)
+	  : "a"(encoding)
+	  : "%rdx");
+	return status;
 }
 
 static inline u32 __vmx_vmclear(u64 vmcs){
