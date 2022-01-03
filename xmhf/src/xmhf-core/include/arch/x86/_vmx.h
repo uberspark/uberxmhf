@@ -596,7 +596,8 @@ struct _vmx_event_injection {
 static inline void __vmx_vmxon(u64 vmxonRegion){
   __asm__("vmxon %0\n\t"
 	  : //no outputs
-	  : "m"(vmxonRegion));
+	  : "m"(vmxonRegion)
+	  : "cc");
 }
 
 static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
@@ -609,15 +610,23 @@ static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
           "2: movl %%edx, %0"
 	  : "=m"(status)
 	  : "a"(encoding), "b"(value)
-    : "%edx"
+    : "%edx", "cc"
     );
 	return status;
 }
 
-static inline void __vmx_vmread(unsigned long encoding, unsigned long *value){
-	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
-	  : "=b"(*value)
-	  : "a"(encoding));
+static inline u32 __vmx_vmread(unsigned long encoding, unsigned long *value){
+	unsigned long status;
+	__asm__ __volatile__("vmread %%eax, %%ebx \r\n"
+                       "jbe 1f \r\n"
+                       "movl $1, %%edx \r\n"
+                       "jmp 2f \r\n"
+                       "1: movl $0, %%edx \r\n"
+                       "2: movl %%edx, %1"
+	  : "=b"(*value), "=m"(status)
+	  : "a"(encoding)
+	  : "%edx", "cc");
+	return status;
 }
 
 static inline u32 __vmx_vmclear(u64 vmcs){
@@ -630,7 +639,7 @@ static inline u32 __vmx_vmclear(u64 vmcs){
       "2: movl %%eax, %0 \r\n" 
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax"     
+    : "%eax", "cc"
   );
   return status;
 }
@@ -645,7 +654,7 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
       "2: movl %%eax, %0 \r\n" 
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax"     
+    : "%eax", "cc"
   );
   return status;
 }

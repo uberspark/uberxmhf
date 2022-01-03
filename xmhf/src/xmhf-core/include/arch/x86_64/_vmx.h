@@ -598,7 +598,8 @@ struct _vmx_event_injection {
 static inline void __vmx_vmxon(u64 vmxonRegion){
   __asm__("vmxon %0\n\t"
 	  : //no outputs
-	  : "m"(vmxonRegion));
+	  : "m"(vmxonRegion)
+	  : "cc");
 }
 
 static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
@@ -611,7 +612,7 @@ static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
           "2: movq %%rdx, %0"
 	  : "=m"(status)
 	  : "a"(encoding), "b"(value)
-    : "%rdx"
+    : "%rdx", "cc"
     );
 	return status;
 }
@@ -626,7 +627,7 @@ static inline u32 __vmx_vmread(unsigned long encoding, unsigned long *value){
                        "2: movq %%rdx, %1"
 	  : "=b"(*value), "=m"(status)
 	  : "a"(encoding)
-	  : "%rdx");
+	  : "%rdx", "cc");
 	return status;
 }
 
@@ -640,7 +641,7 @@ static inline u32 __vmx_vmclear(u64 vmcs){
       "2: movl %%eax, %0 \r\n" 
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax"     
+    : "%eax", "cc"
   );
   return status;
 }
@@ -655,7 +656,7 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
       "2: movl %%eax, %0 \r\n" 
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax"     
+    : "%eax", "cc"
   );
   return status;
 }

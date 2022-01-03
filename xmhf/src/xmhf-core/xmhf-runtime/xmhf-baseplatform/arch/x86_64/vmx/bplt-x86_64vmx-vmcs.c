@@ -70,10 +70,7 @@ void xmhf_baseplatform_arch_x86_64vmx_putVMCS(VCPU *vcpu){
 void xmhf_baseplatform_arch_x86_64vmx_read_field(u32 encoding, void *addr,
                                                  u32 size) {
     u64 value;
-    if (!__vmx_vmread(encoding, &value)) {
-        printf("\nVMREAD failed. HALT!");
-        HALT();
-    }
+    HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
     /* For now, read 64-bit fields as 2 32-bit fields (same as in x86) */
     switch ((encoding >> 13) & 0x3) {
     case 0: /* 16-bit */

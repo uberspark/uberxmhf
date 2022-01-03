@@ -74,12 +74,12 @@ void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
         unsigned int encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
         unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-        __vmx_vmread(encoding, field);
+        HALT_ON_ERRORCOND(__vmx_vmread(encoding, field));
     }
     for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
         unsigned long encoding = g_vmx_vmcsrofields_encodings[i].encoding;
         unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (hva_t)g_vmx_vmcsrofields_encodings[i].fieldoffset);
-        __vmx_vmread(encoding, field);
+        HALT_ON_ERRORCOND(__vmx_vmread(encoding, field));
     }
 }
 
