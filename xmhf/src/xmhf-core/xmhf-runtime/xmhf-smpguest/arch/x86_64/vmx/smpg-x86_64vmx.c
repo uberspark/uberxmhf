@@ -491,6 +491,7 @@ void xmhf_smpguest_arch_x86_64vmx_endquiesce(VCPU *vcpu){
 // otherwise 0 (within the hypervisor, i.e. caller is exception handler)
 void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm){
 	(void)r;
+	(void)fromhvm;
 
 	/*
 	 * If g_vmx_quiesce = 1, process quiesce regardless of where NMI originated
@@ -520,19 +521,16 @@ void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct r
 
 		vcpu->quiesced=0;
 	}else{
-		//we are not in quiesce
-		//inject the NMI if it was triggered in guest mode
+		//we are not in quiesce, inject the NMI to guest
 
-		if(fromhvm){
-			if(vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI){
-				//TODO: hypapp has chosen to intercept NMI so callback
-			}else{
-				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-					INTR_TYPE_NMI |
-					INTR_INFO_VALID_MASK;
-			}
+		if(vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI){
+			//TODO: hypapp has chosen to intercept NMI so callback
+		}else{
+			//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+			vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+			vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
+				INTR_TYPE_NMI |
+				INTR_INFO_VALID_MASK;
 		}
 	}
 
