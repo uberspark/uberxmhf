@@ -494,19 +494,11 @@ void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct r
 
 	// if g_vmx_quiesce=1 process quiesce regardless of where NMI originated from
 	if(g_vmx_quiesce){
-		/*
-		 * If this core has been quiesced, simply return.
-		 * We want to implement {if(vcpu->quiesced){return;} vcpu->quiesced=1;}
-		 * here, but need to be atomic. Otherwise if an exception happens
-		 * during this code, things may go wrong. Since we are dealing with
-		 * exceptions, cannot use a spin lock.
-		 */
-		u32 old_flag = 0;
-		asm volatile("lock btsl $0, %0; setb %%al; movzbl %%al, %1;" :
-			         "+m" (vcpu->quiesced), "=a" (old_flag) : : "cc");
-		if (old_flag) {
+		//if this core has been quiesced, simply return
+		if(vcpu->quiesced)
 			return;
-		}
+
+		vcpu->quiesced=1;
 
 		//increment quiesce counter
 		spin_lock(&g_vmx_lock_quiesce_counter);
