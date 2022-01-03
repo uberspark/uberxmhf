@@ -59,7 +59,7 @@ static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") )) = 0;	 
 
 /*
- * xmhf_smpguest_arch_x86_64vmx_quiesce() needs to access printf locks defined
+ * xmhf_smpguest_arch_x86vmx_quiesce() needs to access printf locks defined
  * in xmhfc-putchar.c
  */
 extern void *emhfc_putchar_linelock_arg;
@@ -492,11 +492,16 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm){
 	(void)r;
 
-	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
-		//if this core has been quiesced, simply return
-		if(vcpu->quiesced)
-			return;
-
+	/*
+	 * If g_vmx_quiesce = 1, process quiesce regardless of where NMI originated
+	 * from.
+	 *
+	 * If vcpu->quiesced = 1 (i.e. this core has been quiesced), simply return.
+	 * This can only happen for the CPU calling
+	 * xmhf_smpguest_arch_x86vmx_quiesce(). For other CPUs, NMIs are
+	 * blocked during the time where vcpu->quiesced = 1.
+	 */
+	if(g_vmx_quiesce && !vcpu->quiesced){
 		vcpu->quiesced=1;
 
 		//increment quiesce counter
