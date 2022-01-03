@@ -412,6 +412,20 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
   //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
 }
 
+/* Unblock NMI by executing iret, but do not jump to somewhere else */
+static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
+    asm volatile (
+        "pushfl                 \r\n"
+        "xorl    %%eax, %%eax   \r\n"
+        "movw    %%cs, %%ax     \r\n"
+        "pushl   %%eax          \r\n"
+        "pushl   $1f            \r\n"
+        "iretl                  \r\n"
+        "1: nop                 \r\n"
+        : // no output
+        : // no input
+        : "%eax", "cc", "memory");
+}
 
 //quiesce interface to switch all guest cores into hypervisor mode
 //note: we are in atomic processsing mode for this "vcpu"
@@ -534,6 +548,10 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		}
 	}
 
+	/* Unblock NMI in hypervisor */
+	if (fromhvm) {
+		xmhf_smpguest_arch_x86vmx_unblock_nmi();
+	}
 }
 
 //----------------------------------------------------------------------
