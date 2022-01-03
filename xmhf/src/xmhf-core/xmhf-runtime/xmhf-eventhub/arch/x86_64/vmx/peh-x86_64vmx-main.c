@@ -670,7 +670,7 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 				case 0x02:	//NMI
 					#ifndef __XMHF_VERIFICATION__
 					//we currently discharge quiescing via manual inspection
-					xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(vcpu, r);
+					xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(vcpu, r, 1);
 					#endif // __XMHF_VERIFICATION__
 					break;
 

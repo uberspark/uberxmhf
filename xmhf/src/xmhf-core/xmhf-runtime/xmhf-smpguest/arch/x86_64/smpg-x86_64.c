@@ -117,12 +117,12 @@ void xmhf_smpguest_arch_x86_64_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
-void xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+void xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		xmhf_smpguest_arch_x86_64svm_eventhandler_nmiexception(vcpu, r);
 	}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(vcpu, r);
+		xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(vcpu, r, fromhvm);
 	}		
 }	
 

@@ -487,7 +487,9 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //note: we are in atomic processsing mode for this "vcpu"
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+// fromhvm: 1 if NMI originated from the HVM (i.e. caller is intercept handler),
+// otherwise 0 (within the hypervisor, i.e. caller is exception handler)
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm){
 	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
 	unsigned long _vmx_vmcs_info_vmexit_interrupt_information;
 	unsigned long _vmx_vmcs_info_vmexit_reason;
@@ -502,7 +504,8 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	__vmx_vmread(0x4402, &_vmx_vmcs_info_vmexit_reason);
 	
 	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
-	
+	HALT_ON_ERRORCOND(nmiinhvm == fromhvm);
+
 	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
 		//if this core has been quiesced, simply return
 			if(vcpu->quiesced)

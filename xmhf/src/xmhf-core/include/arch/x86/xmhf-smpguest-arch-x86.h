@@ -90,7 +90,7 @@ void xmhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu,
 void xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode);
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
-void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
+void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm);
 
 
 //----------------------------------------------------------------------
@@ -100,7 +100,7 @@ void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r
 void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu);
 void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm);
 u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
 void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu);
 void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);

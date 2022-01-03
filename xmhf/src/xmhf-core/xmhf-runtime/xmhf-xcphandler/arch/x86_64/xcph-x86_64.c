@@ -121,7 +121,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
     switch(vector){
     case CPU_EXCEPTION_NMI:
-        xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(vcpu, r);
+        xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(vcpu, r, 0);
         break;
 
     default:
