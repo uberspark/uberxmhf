@@ -431,13 +431,13 @@ static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
 //note: we are in atomic processsing mode for this "vcpu"
 void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
-        /* Acquire the printf lock to prevent deadlock */
-        emhfc_putchar_linelock(emhfc_putchar_linelock_arg);
-
         //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
         //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
+
+        /* Acquire the printf lock to prevent deadlock */
+        emhfc_putchar_linelock(emhfc_putchar_linelock_arg);
 
         vcpu->quiesced = 1;
         //reset quiesce counter
