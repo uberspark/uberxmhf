@@ -687,6 +687,17 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 		}
 		break;
 
+		case VMX_VMEXIT_NMI_WINDOW: {
+			/* Clear NMI windowing */
+			vcpu->vmcs.control_VMX_cpu_based &= ~(1U << 22);
+			/* Inject NMI to guest */
+			vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+			vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
+				INTR_TYPE_NMI |
+				INTR_INFO_VALID_MASK;
+		}
+		break;
+
  		case VMX_VMEXIT_CRX_ACCESS:{
 			u32 tofrom, gpr, crx;
 			//printf("\nVMEXIT_CRX_ACCESS:");
@@ -816,9 +827,12 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 	} //end switch((u32)vcpu->vmcs.info_vmexit_reason)
 
 
- 	//check and clear guest interruptibility state
-	if(vcpu->vmcs.guest_interruptibility != 0){
-		vcpu->vmcs.guest_interruptibility = 0;
+	/*
+	 * Check and clear guest interruptibility state.
+	 * However, ignore bit 3, because it is for virtual NMI.
+	 */
+	if ((vcpu->vmcs.guest_interruptibility & ~(1U << 3)) != 0){
+		vcpu->vmcs.guest_interruptibility &= (1U << 3);
 	}
 
 	//make sure we have no nested events

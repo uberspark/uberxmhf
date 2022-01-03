@@ -545,11 +545,24 @@ void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct r
 		if(vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI){
 			//TODO: hypapp has chosen to intercept NMI so callback
 		}else{
+			/*
+			 * This code assumes that vcpu->vmcs.control_VMX_cpu_based is only
+			 * changed for NMI handling. Or there will be race conditions.
+			 *
+			 * There is also a very unlikely race condition: if
+			 * xmhf_baseplatform_arch_x86_64vmx_putVMCS() reads the value from
+			 * vcpu->vmcs, then NMI happens and this function gets called,
+			 * then xmhf_baseplatform_arch_x86_64vmx_putVMCS() write the value
+			 * to VMCS using __vmx_vmwrite(), then
+			 * vcpu->vmcs.control_VMX_cpu_based is not updated.
+			 */
 			//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-			vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-			vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-				INTR_TYPE_NMI |
-				INTR_INFO_VALID_MASK;
+			/* Cannot be u32 in x86-64, because VMREAD writes 64-bits */
+			unsigned long __control_VMX_cpu_based;
+			HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
+			__control_VMX_cpu_based |= (1U << 22);
+			vcpu->vmcs.control_VMX_cpu_based |= __control_VMX_cpu_based;
+			HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
 		}
 	}
 

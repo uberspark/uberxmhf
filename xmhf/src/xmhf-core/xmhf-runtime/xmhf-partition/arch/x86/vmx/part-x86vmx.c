@@ -455,6 +455,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	
 	//setup NMI intercept for core-quiescing
 	vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
+	vcpu->vmcs.control_VMX_pin_based |= (1 << 5);	//enable virtual NMIs
 	
 	//trap access to CR0 fixed 1-bits
 	// Make sure to change vmx_handle_intercept_cr0access_ug() if changing
