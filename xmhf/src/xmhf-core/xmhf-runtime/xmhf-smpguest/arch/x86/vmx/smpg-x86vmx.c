@@ -490,49 +490,35 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 // fromhvm: 1 if NMI originated from the HVM (i.e. caller is intercept handler),
 // otherwise 0 (within the hypervisor, i.e. caller is exception handler)
 void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm){
-	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
-	unsigned long _vmx_vmcs_info_vmexit_interrupt_information;
-	unsigned long _vmx_vmcs_info_vmexit_reason;
-
-    (void)r;
-
-	//determine if the NMI originated within the HVM or within the
-	//hypervisor. we use VMCS fields for this purpose. note that we
-	//use vmread directly instead of relying on vcpu-> to avoid 
-	//race conditions
-	__vmx_vmread(0x4404, &_vmx_vmcs_info_vmexit_interrupt_information);
-	__vmx_vmread(0x4402, &_vmx_vmcs_info_vmexit_reason);
-	
-	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
-	HALT_ON_ERRORCOND(nmiinhvm == fromhvm);
+	(void)r;
 
 	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
 		//if this core has been quiesced, simply return
-			if(vcpu->quiesced)
-				return;
-				
-			vcpu->quiesced=1;
-	
-			//increment quiesce counter
-			spin_lock(&g_vmx_lock_quiesce_counter);
-			g_vmx_quiesce_counter++;
-			spin_unlock(&g_vmx_lock_quiesce_counter);
+		if(vcpu->quiesced)
+			return;
 
-			//wait until quiesceing is finished
-			//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
-			while(!g_vmx_quiesce_resume_signal);
-			//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+		vcpu->quiesced=1;
 
-			spin_lock(&g_vmx_lock_quiesce_resume_counter);
-			g_vmx_quiesce_resume_counter++;
-			spin_unlock(&g_vmx_lock_quiesce_resume_counter);
-			
-			vcpu->quiesced=0;
+		//increment quiesce counter
+		spin_lock(&g_vmx_lock_quiesce_counter);
+		g_vmx_quiesce_counter++;
+		spin_unlock(&g_vmx_lock_quiesce_counter);
+
+		//wait until quiesceing is finished
+		//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
+		while(!g_vmx_quiesce_resume_signal);
+		//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+
+		spin_lock(&g_vmx_lock_quiesce_resume_counter);
+		g_vmx_quiesce_resume_counter++;
+		spin_unlock(&g_vmx_lock_quiesce_resume_counter);
+
+		vcpu->quiesced=0;
 	}else{
 		//we are not in quiesce
 		//inject the NMI if it was triggered in guest mode
-		
-		if(nmiinhvm){
+
+		if(fromhvm){
 			if(vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI){
 				//TODO: hypapp has chosen to intercept NMI so callback
 			}else{
@@ -544,7 +530,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 			}
 		}
 	}
-	
+
 }
 
 //----------------------------------------------------------------------
