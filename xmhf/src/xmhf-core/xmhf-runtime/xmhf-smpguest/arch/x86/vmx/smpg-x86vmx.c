@@ -435,13 +435,20 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         g_vmx_quiesce=1;  //we are now processing quiesce
         _vmx_send_quiesce_signal(vcpu);
 
+        /*
+         * Release the printf lock to prevent deadlock
+         * If unlock after waiting for g_vmx_quiesce_counter, will deadlock if
+         * NMI handling code calls printf.
+         * If unlock before waiting for g_vmx_quiesce_counter, need to assume
+         * that NMI arrives to other CPUs before other CPUs observe the unlock.
+         * If this assumption is not met, will deadlock.
+         */
+        emhfc_putchar_lineunlock(emhfc_putchar_linelock_arg);
+
         //wait for all the remaining CPUs to quiesce
         //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
         //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
-
-        /* Release the printf lock to prevent deadlock */
-        emhfc_putchar_lineunlock(emhfc_putchar_linelock_arg);
 
 }
 
