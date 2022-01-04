@@ -217,21 +217,16 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 				//increment e820 descriptor continuation value
 				r->ebx=r->ebx+1;
-
-				if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
-					//we have reached the last record, so set CF and make EBX=0
+				if (r->ebx >= rpb->XtVmmE820NumEntries) {
+					//we have reached the last record, so make EBX=0
 					r->ebx=0;
-					guest_flags |= (u16)EFLAGS_CF;
-					#ifndef __XMHF_VERIFICATION__
-						gueststackregion[2] = guest_flags;
-					#endif
-				}else{
-					//we still have more records, so clear CF
-					guest_flags &= ~(u16)EFLAGS_CF;
-					#ifndef __XMHF_VERIFICATION__
-						gueststackregion[2] = guest_flags;
-					#endif
 				}
+
+				// clear CF when success
+				guest_flags &= ~(u16)EFLAGS_CF;
+				#ifndef __XMHF_VERIFICATION__
+					gueststackregion[2] = guest_flags;
+				#endif
 
 			}
 
