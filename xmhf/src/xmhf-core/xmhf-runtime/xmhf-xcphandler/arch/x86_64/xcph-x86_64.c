@@ -133,6 +133,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
              * current PC, then jump to the third value.
              */
             uintptr_t exception_cs, exception_rip, exception_eflags;
+            u32 error_code_available = 0;
             hva_t *found = NULL;
 
             // skip error code on stack if applicable
@@ -143,6 +144,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 vector == CPU_EXCEPTION_GP ||
                 vector == CPU_EXCEPTION_PF ||
                 vector == CPU_EXCEPTION_AC) {
+                error_code_available = 1;
                 r->rsp += sizeof(uintptr_t);
             }
 
@@ -150,22 +152,25 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             exception_cs = ((uintptr_t *)(r->rsp))[1];
             exception_eflags = ((uintptr_t *)(r->rsp))[2];
 
-			for (hva_t *i = (hva_t *)_begin_xcph_table;
-			     i < (hva_t *)_end_xcph_table; i += 3) {
-				if (i[0] == vector && i[1] == exception_rip) {
-					found = i;
-					break;
-				}
-			}
+            for (hva_t *i = (hva_t *)_begin_xcph_table;
+                 i < (hva_t *)_end_xcph_table; i += 3) {
+                if (i[0] == vector && i[1] == exception_rip) {
+                    found = i;
+                    break;
+                }
+            }
 
-			if (found) {
-				/* Found in xcph table; Modify EIP on stack and iret */
-				printf("\nFound in xcph table");
-				((uintptr_t *)(r->rsp))[0] = found[2];
-				break;
-			}
+            if (found) {
+                /* Found in xcph table; Modify EIP on stack and iret */
+                printf("\nFound in xcph table");
+                ((uintptr_t *)(r->rsp))[0] = found[2];
+                break;
+            }
 
             printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
+            if (error_code_available) {
+                printf("\n[%02x]: error code: 0x%016lx", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
+            }
             printf("\n[%02x]: state dump follows...", vcpu->id);
             // things to dump
             printf("\n[%02x] CS:RIP 0x%04x:0x%016lx with EFLAGS=0x%016lx", vcpu->id,

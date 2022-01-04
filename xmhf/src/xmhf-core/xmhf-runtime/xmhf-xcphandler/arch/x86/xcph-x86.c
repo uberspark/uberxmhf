@@ -165,6 +165,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 			 * current PC, then jump to the third value.
 			 */
 			u32 exception_cs, exception_eip, exception_eflags;
+            u32 error_code_available = 0;
 			hva_t *found = NULL;
 
 			if(vector == CPU_EXCEPTION_DF ||
@@ -174,6 +175,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 				vector == CPU_EXCEPTION_GP ||
 				vector == CPU_EXCEPTION_PF ||
 				vector == CPU_EXCEPTION_AC){
+				error_code_available = 1;
 				r->esp += sizeof(uint32_t);	//skip error code on stack if applicable
 			}
 
@@ -197,6 +199,9 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
 			/* Print exception and halt */
 			printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
+			if (error_code_available) {
+				printf("\n[%02x]: error code: 0x%08lx", vcpu->id, ((uint32_t *)(r->esp))[-1]);
+			}
 			printf("\n[%02x]: state dump follows...", vcpu->id);
 			//things to dump
 			printf("\n[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x", vcpu->id,
