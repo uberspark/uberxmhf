@@ -603,31 +603,31 @@ static inline void __vmx_vmxon(u64 vmxonRegion){
 }
 
 static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
-  unsigned long status;
-  __asm__("vmwrite %%rbx, %%rax \r\n"
+  u32 status;
+  __asm__("vmwrite %2, %1 \r\n"
           "jbe 1f \r\n"
-          "movq $1, %%rdx \r\n"
+          "movl $1, %0 \r\n"
           "jmp 2f \r\n"
-          "1: movq $0, %%rdx \r\n"
-          "2: movq %%rdx, %0"
-	  : "=m"(status)
-	  : "a"(encoding), "b"(value)
-    : "%rdx", "cc"
+          "1: movl $0, %0 \r\n"
+          "2: \r\n"
+	  : "=g"(status)
+	  : "r"(encoding), "g"(value)
+      : "cc"
     );
 	return status;
 }
 
 static inline u32 __vmx_vmread(unsigned long encoding, unsigned long *value){
-	unsigned long status;
-	__asm__ __volatile__("vmread %%rax, %%rbx \r\n"
+	u32 status;
+	__asm__ __volatile__("vmread %2, %0 \r\n"
                        "jbe 1f \r\n"
-                       "movq $1, %%rdx \r\n"
+                       "movl $1, %1 \r\n"
                        "jmp 2f \r\n"
-                       "1: movq $0, %%rdx \r\n"
-                       "2: movq %%rdx, %1"
-	  : "=b"(*value), "=m"(status)
-	  : "a"(encoding)
-	  : "%rdx", "cc");
+                       "1: movl $0, %1 \r\n"
+                       "2: \r\n"
+	  : "=g"(*value), "=g"(status)
+	  : "r"(encoding)
+	  : "cc");
 	return status;
 }
 
