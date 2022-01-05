@@ -138,26 +138,30 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			{
 
 				if( ((sla_t)(vcpu->vmcs.guest_ES_base+(u16)r->edi)) < rpb->XtVmmRuntimePhysBase){
+					GRUBE820 *pe820entry;
 					#ifdef __XMHF_VERIFICATION__
-						GRUBE820 pe820entry;
-						pe820entry.baseaddr_low = g_e820map[r->ebx].baseaddr_low;
-						pe820entry.baseaddr_high = g_e820map[r->ebx].baseaddr_high;
-						pe820entry.length_low = g_e820map[r->ebx].length_low;
-						pe820entry.length_high = g_e820map[r->ebx].length_high;
-						pe820entry.type = g_e820map[r->ebx].type;
+						GRUBE820 e820entry;
+						pe820entry = &e820entry;
 					#else
-						GRUBE820 *pe820entry;
 						pe820entry = (GRUBE820 *)((sla_t)(vcpu->vmcs.guest_ES_base+(u16)r->edi));
-						pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
-						pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
-						pe820entry->length_low = g_e820map[r->ebx].length_low;
-						pe820entry->length_high = g_e820map[r->ebx].length_high;
-						pe820entry->type = g_e820map[r->ebx].type;
 					#endif //__XMHF_VERIFICATION__
+					pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
+					pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
+					pe820entry->length_low = g_e820map[r->ebx].length_low;
+					pe820entry->length_high = g_e820map[r->ebx].length_high;
+					pe820entry->type = g_e820map[r->ebx].type;
+					/* Check whether exceed supported memory */
+					{
+						u64 baseaddr = (((u64)pe820entry->baseaddr_high) << 32) |
+										pe820entry->baseaddr_low;
+						u64 length = (((u64)pe820entry->length_high) << 32) |
+									pe820entry->length_low;
+						HALT_ON_ERRORCOND(baseaddr + length <= MAX_PHYS_ADDR);
+					}
 				}else{
-						printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
-							physical memory bounds. Halting!", vcpu->id);
-						HALT();
+					printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest "
+							"physical memory bounds. Halting!", vcpu->id);
+					HALT();
 				}
 
 			}
