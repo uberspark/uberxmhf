@@ -70,13 +70,15 @@ arch_x86_64_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 
 
 // runtime 4-level page tables
-#define NPDPT   (PAGE_ALIGN_UP512G(ADDR_4GB) >> PAGE_SHIFT_512G)
-#define NPDT    (PAGE_ALIGN_UP1G(ADDR_4GB) >> PAGE_SHIFT_1G)
+#define NPLM4T  (PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
+#define NPDPT   (PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
+#define NPDT    (PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
 
-u8 x_4level_pml4[PAGE_SIZE_4K] __attribute__((section(".palign_data")));
+u8 x_4level_pml4[NPLM4T * PAGE_SIZE_4K] __attribute__((section(".palign_data")));
 u8 x_4level_pdpt[NPDPT * PAGE_SIZE_4K] __attribute__((section(".palign_data")));
 u8 x_4level_pdt[NPDT * PAGE_SIZE_4K] __attribute__((section(".palign_data")));
 
+#undef NPLM4T
 #undef NPDPT
 #undef NPDT
 
