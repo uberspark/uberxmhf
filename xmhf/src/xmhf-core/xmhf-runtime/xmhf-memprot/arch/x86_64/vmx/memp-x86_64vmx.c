@@ -336,49 +336,50 @@ static void _vmx_setupEPT(VCPU *vcpu){
 	//note: the default memory type (usually WB) should be determined using 
 	//IA32_MTRR_DEF_TYPE_MSR. If MTRR's are not enabled (really?)
 	//then all default memory is type UC (uncacheable)
-	u64 *pml4_table, *pdp_table, *pd_table, *p_table, paddr=0;
-	u32 i, j, k;
-	// TODO: rewrite to support > 4 GiB, 
-	// also need to change xmhf_baseplatform_arch_x86_64vmx_allocandsetupvcpus()
-	// but be careful about race conditions between CPUs
-	// TODO: for x86_64, likely need to use 1G / 2M pages
-	// also need to change _vmx_getmemorytypeforphysicalpage()
+	u64 *pml4_entry = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
+	u64 *pdp_entry = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
+	u64 *pd_entry = (u64 *)vcpu->vmx_vaddr_ept_pd_tables;
+	u64 *p_entry = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+	u64 pdp_table = hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table);
+	u64 pd_table = hva2spa((void*)vcpu->vmx_vaddr_ept_pd_tables);
+	u64 p_table = hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables);
+	// TODO: for x86_64, likely can use 1G / 2M pages.
+	// If so, also need to change _vmx_getmemorytypeforphysicalpage()
 
-	pml4_table = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
-	pml4_table[0] = (u64) (hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table) | 0x7); 
-
-	pdp_table = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
-		
-	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		pdp_table[i] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
-		pd_table = (u64 *)  (vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
-		
-		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			pd_table[j] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
-			p_table = (u64 *)  (vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) ;
-			
-			for(k=0; k < PAE_PTRS_PER_PT; k++){
-				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, paddr);
-				//the XMHF memory region includes the secure loader +
-				//the runtime (core + app). this runs from 
-				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
-				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
-				//make XMHF physical pages inaccessible
-				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
-					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) ){
-					p_table[k] = paddr | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
-				}else{
-					if(memorytype == 0)
-						p_table[k] = paddr | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
-					else
-						p_table[k] = paddr | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
-				}
-
-				paddr += PAGE_SIZE_4K;
+	for (u64 paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PAGE_SIZE_4K) {
+		if (PAGE_ALIGNED_512G(paddr)) {
+			/* Create PML4E */
+			u64 i = paddr / PAGE_SIZE_512G;
+			pml4_entry[i] = (pdp_table + i * PAGE_SIZE_4K) | 0x7;
+		}
+		if (PAGE_ALIGNED_1G(paddr)) {
+			/* Create PDPE */
+			u64 i = paddr / PAGE_SIZE_1G;
+			pdp_entry[i] = (pd_table + i * PAGE_SIZE_4K) | 0x7;
+		}
+		if (PAGE_ALIGNED_2M(paddr)) {
+			/* Create PDE */
+			u64 i = paddr / PAGE_SIZE_2M;
+			pd_entry[i] = (p_table + i * PAGE_SIZE_4K) | 0x7;
+		}
+		/* PAGE_ALIGNED_4K */
+		{
+			/* Create PE */
+			u64 i = paddr / PAGE_SIZE_4K;
+			u64 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, paddr);
+			u64 lower;
+			if ((paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+				(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) {
+				lower = 0x0;	/* not present */
+			} else if (memorytype == 0) {
+				lower = 0x7;	/* present, UC */
+			} else {
+				memorytype = 6;
+				lower = 0x7;	/* present, WB, track host MTRR */
 			}
+			p_entry[i] = paddr | (memorytype << 3) | lower;
 		}
 	}
-
 }
 
 
