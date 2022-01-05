@@ -423,7 +423,7 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 	u32 errorcode;
 	u64 gpa, gva;
 	errorcode = (u32)vcpu->vmcs.info_exit_qualification;
-	gpa = vcpu->vmcs.guest_paddr_full;
+	gpa = ((u64)vcpu->vmcs.guest_paddr_high << 32) | vcpu->vmcs.guest_paddr_full;
 	gva = vcpu->vmcs.info_guest_linear_address;
 
 	//check if EPT violation is due to LAPIC interception
