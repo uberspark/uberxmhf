@@ -414,14 +414,15 @@ no_assign_read_result:
 
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
-	u32 errorcode, gpa, gva;
+	u32 errorcode, gva;
+	u64 gpa;
 	errorcode = (u32)vcpu->vmcs.info_exit_qualification;
-	gpa = (u32) vcpu->vmcs.guest_paddr_full;
-	gva = (u32) vcpu->vmcs.info_guest_linear_address;
+	gpa = vcpu->vmcs.guest_paddr_full;
+	gva = (u32)vcpu->vmcs.info_guest_linear_address;
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
-		xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, (u32)gpa, errorcode);
 	}else{ //no, pass it to hypapp
 		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
 		xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
