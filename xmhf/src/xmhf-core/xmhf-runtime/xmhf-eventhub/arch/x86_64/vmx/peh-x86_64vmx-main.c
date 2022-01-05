@@ -689,11 +689,21 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 		case VMX_VMEXIT_NMI_WINDOW: {
 			/* Clear NMI windowing */
 			vcpu->vmcs.control_VMX_cpu_based &= ~(1U << 22);
-			/* Inject NMI to guest */
-			vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-			vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-				INTR_TYPE_NMI |
-				INTR_INFO_VALID_MASK;
+			/* Check whether the CPU can handle NMI */
+			if (vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI) {
+				/*
+				 * TODO: hypapp has chosen to intercept NMI so callback.
+				 * Currently not implemented, so drop the NMI exception.
+				 */
+				printf("\nCPU(0x%02x): drop NMI", vcpu->id);
+			} else {
+				/* Inject NMI to guest */
+				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
+					INTR_TYPE_NMI |
+					INTR_INFO_VALID_MASK;
+				printf("\nCPU(0x%02x): inject NMI", vcpu->id);
+			}
 		}
 		break;
 

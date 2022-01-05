@@ -536,27 +536,23 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	}else{
 		//we are not in quiesce, inject the NMI to guest
 
-		if(vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI){
-			//TODO: hypapp has chosen to intercept NMI so callback
-		}else{
-			/*
-			 * This code assumes that vcpu->vmcs.control_VMX_cpu_based is only
-			 * changed for NMI handling. Or there will be race conditions.
-			 *
-			 * There is also a very unlikely race condition: if
-			 * xmhf_baseplatform_arch_x86vmx_putVMCS() reads the value from
-			 * vcpu->vmcs, then NMI happens and this function gets called,
-			 * then xmhf_baseplatform_arch_x86vmx_putVMCS() write the value
-			 * to VMCS using __vmx_vmwrite(), then
-			 * vcpu->vmcs.control_VMX_cpu_based is not updated.
-			 */
-			//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-			unsigned long __control_VMX_cpu_based;
-			HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
-			__control_VMX_cpu_based |= (1U << 22);
-			vcpu->vmcs.control_VMX_cpu_based = __control_VMX_cpu_based;
-			HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
-		}
+		/*
+		 * This code assumes that vcpu->vmcs.control_VMX_cpu_based is only
+		 * changed for NMI handling. Or there will be race conditions.
+		 *
+		 * There is also a very unlikely race condition: if
+		 * xmhf_baseplatform_arch_x86vmx_putVMCS() reads the value from
+		 * vcpu->vmcs, then NMI happens and this function gets called,
+		 * then xmhf_baseplatform_arch_x86vmx_putVMCS() write the value
+		 * to VMCS using __vmx_vmwrite(), then
+		 * vcpu->vmcs.control_VMX_cpu_based is not updated.
+		 */
+		//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+		unsigned long __control_VMX_cpu_based;
+		HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
+		__control_VMX_cpu_based |= (1U << 22);
+		vcpu->vmcs.control_VMX_cpu_based = __control_VMX_cpu_based;
+		HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
 	}
 
 	/* Unblock NMI in hypervisor */
