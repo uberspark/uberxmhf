@@ -34,13 +34,13 @@ void call_pal(unsigned long a, unsigned long b) {
 	assert(sections);
 	sections->num_sections = 4;
 	sections->sections[0] =
-		(struct tv_pal_section) { TV_PAL_SECTION_CODE, (uintptr_t) code, 1 };
+		(struct tv_pal_section) { TV_PAL_SECTION_CODE, 1, (uintptr_t) code };
 	sections->sections[1] =
-		(struct tv_pal_section) { TV_PAL_SECTION_DATA, (uintptr_t) data, 1 };
+		(struct tv_pal_section) { TV_PAL_SECTION_DATA, 1, (uintptr_t) data };
 	sections->sections[2] =
-		(struct tv_pal_section) { TV_PAL_SECTION_STACK, (uintptr_t) stack, 1 };
+		(struct tv_pal_section) { TV_PAL_SECTION_STACK, 1, (uintptr_t) stack };
 	sections->sections[3] =
-		(struct tv_pal_section) { TV_PAL_SECTION_PARAM, (uintptr_t) param, 1 };
+		(struct tv_pal_section) { TV_PAL_SECTION_PARAM, 1, (uintptr_t) param };
 	for (uint32_t i = 0; i < sections->num_sections; i++) {
 		struct tv_pal_section *a = &(sections->sections[i]);
 		assert(a->start_addr);
@@ -48,7 +48,8 @@ void call_pal(unsigned long a, unsigned long b) {
 		void *start = (void *)(uintptr_t)(a->start_addr);
 		size_t size = PAGE_SIZE * a->page_num;
 		assert(!lock_and_touch_page(start, size));
-		printf("Mmap: %u %p %u\n", a->type, (void*)a->start_addr, a->page_num);
+		printf("Mmap: %u %p %u\n", a->type, (void*)(uintptr_t)a->start_addr,
+				a->page_num);
 	}
 	printf("\n");
 	fflush(stdout);
