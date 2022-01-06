@@ -119,6 +119,12 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
     vcpu = _svm_and_vmx_getvcpu();
 
+	/*
+	 * Cannot print anything before event handler returns if this exception
+	 * is for quiescing (vector == CPU_EXCEPTION_NMI), otherwise will deadlock.
+	 * See xmhf_smpguest_arch_x86_64vmx_quiesce().
+	 */
+
     switch(vector){
     case CPU_EXCEPTION_NMI:
         xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(vcpu, r, 0);

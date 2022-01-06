@@ -577,6 +577,12 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		HALT();
 	}
 
+	/*
+	 * Cannot print anything before event handler returns if this intercept
+	 * is for quiescing (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_EXCEPTION),
+	 * otherwise will deadlock. See xmhf_smpguest_arch_x86vmx_quiesce().
+	 */
+
 	//handle intercepts
 	switch((u32)vcpu->vmcs.info_vmexit_reason){
 		//--------------------------------------------------------------
