@@ -71,16 +71,18 @@ void xmhf_baseplatform_arch_x86_64vmx_read_field(u32 encoding, void *addr,
                                                  u32 size) {
     u64 value;
     HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
-    /* For now, read 64-bit fields as 2 32-bit fields (same as in x86) */
+    /* Read 64-bit fields using 1 VMREAD instruction (different from x86) */
     switch ((encoding >> 13) & 0x3) {
     case 0: /* 16-bit */
-        /* fallthrough */
-    case 1: /* 64-bit */
         /* fallthrough */
     case 2: /* 32-bit */
         HALT_ON_ERRORCOND(size == 4);
         *(u32 *)addr = (u32)value;
         break;
+    case 1: /* 64-bit */
+        /* Disallow high access */
+        HALT_ON_ERRORCOND((encoding & 0x1) == 0x0);
+        /* fallthrough */
     case 3: /* natural width */
         HALT_ON_ERRORCOND(size == 8);
         *(u64 *)addr = value;
