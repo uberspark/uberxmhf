@@ -434,29 +434,79 @@ struct _vmx_vmcsfields {
   unsigned long long  control_CR3_target3;
 #endif /* !__DEBUG_QEMU__ */
   // Full 64-bit Control fields
-  unsigned int  control_IO_BitmapA_address_full;
-  unsigned int  control_IO_BitmapA_address_high;
-  unsigned int  control_IO_BitmapB_address_full;
-  unsigned int  control_IO_BitmapB_address_high;
-  unsigned int  control_MSR_Bitmaps_address_full;
-  unsigned int  control_MSR_Bitmaps_address_high;
-  unsigned int  control_VM_exit_MSR_store_address_full;
-  unsigned int  control_VM_exit_MSR_store_address_high;
-  unsigned int  control_VM_exit_MSR_load_address_full;
-  unsigned int  control_VM_exit_MSR_load_address_high;
-  unsigned int  control_VM_entry_MSR_load_address_full;
-  unsigned int  control_VM_entry_MSR_load_address_high;
+  union {
+    unsigned long long  control_IO_BitmapA_address;
+    struct {
+      unsigned int  control_IO_BitmapA_address_full;
+      unsigned int  control_IO_BitmapA_address_high;
+    };
+  };
+  union {
+    unsigned long long  control_IO_BitmapB_address;
+    struct {
+      unsigned int  control_IO_BitmapB_address_full;
+      unsigned int  control_IO_BitmapB_address_high;
+    };
+  };
+  union {
+    unsigned long long  control_MSR_Bitmaps_address;
+    struct {
+      unsigned int  control_MSR_Bitmaps_address_full;
+      unsigned int  control_MSR_Bitmaps_address_high;
+    };
+  };
+  union {
+    unsigned long long  control_VM_exit_MSR_store_address;
+    struct {
+      unsigned int  control_VM_exit_MSR_store_address_full;
+      unsigned int  control_VM_exit_MSR_store_address_high;
+    };
+  };
+  union {
+    unsigned long long  control_VM_exit_MSR_load_address;
+    struct {
+      unsigned int  control_VM_exit_MSR_load_address_full;
+      unsigned int  control_VM_exit_MSR_load_address_high;
+    };
+  };
+  union {
+    unsigned long long  control_VM_entry_MSR_load_address;
+    struct {
+      unsigned int  control_VM_entry_MSR_load_address_full;
+      unsigned int  control_VM_entry_MSR_load_address_high;
+    };
+  };
 #ifndef __DEBUG_QEMU__
-  unsigned int  control_Executive_VMCS_pointer_full;
-  unsigned int  control_Executive_VMCS_pointer_high;
+  union {
+    unsigned long long  control_Executive_VMCS_pointer;
+    struct {
+      unsigned int  control_Executive_VMCS_pointer_full;
+      unsigned int  control_Executive_VMCS_pointer_high;
+    };
+  };
 #endif /* !__DEBUG_QEMU__ */
-  unsigned int  control_TSC_offset_full;
-  unsigned int  control_TSC_offset_high;
-  unsigned int  control_virtual_APIC_page_address_full;
-  unsigned int  control_virtual_APIC_page_address_high;
+  union {
+    unsigned long long  control_TSC_offset;
+    struct {
+      unsigned int  control_TSC_offset_full;
+      unsigned int  control_TSC_offset_high;
+    };
+  };
+  union {
+    unsigned long long  control_virtual_APIC_page_address;
+    struct {
+      unsigned int  control_virtual_APIC_page_address_full;
+      unsigned int  control_virtual_APIC_page_address_high;
+    };
+  };
 #if defined(__NESTED_PAGING__)
-  unsigned int  control_EPT_pointer_full;
-  unsigned int  control_EPT_pointer_high;
+  union {
+    unsigned long long  control_EPT_pointer;
+    struct {
+      unsigned int  control_EPT_pointer_full;
+      unsigned int  control_EPT_pointer_high;
+    };
+  };
 #endif
   // Natural 64-bit Host-State fields
   unsigned long long  host_CR0;
@@ -537,21 +587,56 @@ struct _vmx_vmcsfields {
   unsigned int  guest_LDTR_selector;
   unsigned int  guest_TR_selector;
   // Full 64-bit Guest-State fields
-  unsigned int  guest_VMCS_link_pointer_full;
-  unsigned int  guest_VMCS_link_pointer_high;
-  unsigned int  guest_IA32_DEBUGCTL_full;
-  unsigned int  guest_IA32_DEBUGCTL_high;
+  union {
+    unsigned long long  guest_VMCS_link_pointer;
+    struct {
+      unsigned int  guest_VMCS_link_pointer_full;
+      unsigned int  guest_VMCS_link_pointer_high;
+    };
+  };
+  union {
+    unsigned long long  guest_IA32_DEBUGCTL;
+    struct {
+      unsigned int  guest_IA32_DEBUGCTL_full;
+      unsigned int  guest_IA32_DEBUGCTL_high;
+    };
+  };
 #if defined(__NESTED_PAGING__)
-  unsigned int  guest_paddr_full;
-  unsigned int  guest_paddr_high;
-  unsigned int  guest_PDPTE0_full;
-  unsigned int  guest_PDPTE0_high;
-  unsigned int  guest_PDPTE1_full;
-  unsigned int  guest_PDPTE1_high;
-  unsigned int  guest_PDPTE2_full;
-  unsigned int  guest_PDPTE2_high;
-  unsigned int  guest_PDPTE3_full;
-  unsigned int  guest_PDPTE3_high;
+  union {
+    unsigned long long  guest_paddr;
+    struct {
+      unsigned int  guest_paddr_full;
+      unsigned int  guest_paddr_high;
+    };
+  };
+  union {
+    unsigned long long  guest_PDPTE0;
+    struct {
+      unsigned int  guest_PDPTE0_full;
+      unsigned int  guest_PDPTE0_high;
+    };
+  };
+  union {
+    unsigned long long  guest_PDPTE1;
+    struct {
+      unsigned int  guest_PDPTE1_full;
+      unsigned int  guest_PDPTE1_high;
+    };
+  };
+  union {
+    unsigned long long  guest_PDPTE2;
+    struct {
+      unsigned int  guest_PDPTE2_full;
+      unsigned int  guest_PDPTE2_high;
+    };
+  };
+  union {
+    unsigned long long  guest_PDPTE3;
+    struct {
+      unsigned int  guest_PDPTE3_full;
+      unsigned int  guest_PDPTE3_high;
+    };
+  };
 #endif
   //Read-Only Fields
   unsigned int  info_vminstr_error;
