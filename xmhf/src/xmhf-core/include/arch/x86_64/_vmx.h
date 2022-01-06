@@ -400,18 +400,18 @@ u64 entryctls;
 //VMX VMCS fields
 struct _vmx_vmcsfields {
 #if defined(__NESTED_PAGING__)
-	//16-bit control fields
-	unsigned int control_vpid;
+  //16-bit control fields
+  unsigned int control_vpid;
 #endif
   // Natural 32-bit Control fields
   unsigned int  control_VMX_pin_based;
   unsigned int  control_VMX_cpu_based;
 //#if defined(__NESTED_PAGING__)
-	unsigned int  control_VMX_seccpu_based;
+  unsigned int  control_VMX_seccpu_based;
 //#endif
   unsigned int  control_exception_bitmap;
-  unsigned int  control_pagefault_errorcode_mask; 
-  unsigned int  control_pagefault_errorcode_match; 
+  unsigned int  control_pagefault_errorcode_mask;
+  unsigned int  control_pagefault_errorcode_match;
   unsigned int  control_CR3_target_count;
   unsigned int  control_VM_exit_controls;
   unsigned int  control_VM_exit_MSR_store_count;
@@ -455,8 +455,8 @@ struct _vmx_vmcsfields {
   unsigned int  control_virtual_APIC_page_address_full;
   unsigned int  control_virtual_APIC_page_address_high;
 #if defined(__NESTED_PAGING__)
-	unsigned int control_EPT_pointer_full; 
-	unsigned int control_EPT_pointer_high;
+  unsigned int  control_EPT_pointer_full;
+  unsigned int  control_EPT_pointer_high;
 #endif
   // Natural 64-bit Host-State fields
   unsigned long long  host_CR0;
@@ -486,7 +486,7 @@ struct _vmx_vmcsfields {
   unsigned long long  guest_CR3;
   unsigned long long  guest_CR4;
   unsigned long long  guest_ES_base;
-  unsigned long long  guest_CS_base; 
+  unsigned long long  guest_CS_base;
   unsigned long long  guest_SS_base;
   unsigned long long  guest_DS_base;
   unsigned long long  guest_FS_base;
@@ -496,9 +496,9 @@ struct _vmx_vmcsfields {
   unsigned long long  guest_GDTR_base;
   unsigned long long  guest_IDTR_base;
   unsigned long long  guest_DR7;
-  unsigned long long  guest_RSP; 
-  unsigned long long  guest_RIP; 
-  unsigned long long  guest_RFLAGS; 
+  unsigned long long  guest_RSP;
+  unsigned long long  guest_RIP;
+  unsigned long long  guest_RFLAGS;
   unsigned long long  guest_pending_debug_x;
   unsigned long long  guest_SYSENTER_ESP;
   unsigned long long  guest_SYSENTER_EIP;
@@ -509,11 +509,11 @@ struct _vmx_vmcsfields {
   unsigned int  guest_DS_limit;
   unsigned int  guest_FS_limit;
   unsigned int  guest_GS_limit;
-  unsigned int  guest_LDTR_limit; 
+  unsigned int  guest_LDTR_limit;
   unsigned int  guest_TR_limit;
   unsigned int  guest_GDTR_limit;
   unsigned int  guest_IDTR_limit;
-  unsigned int  guest_ES_access_rights; 
+  unsigned int  guest_ES_access_rights;
   unsigned int  guest_CS_access_rights;
   unsigned int  guest_SS_access_rights;
   unsigned int  guest_DS_access_rights;
@@ -521,12 +521,12 @@ struct _vmx_vmcsfields {
   unsigned int  guest_GS_access_rights;
   unsigned int  guest_LDTR_access_rights;
   unsigned int  guest_TR_access_rights;
-  unsigned int  guest_interruptibility; 
-  unsigned int  guest_activity_state; 
+  unsigned int  guest_interruptibility;
+  unsigned int  guest_activity_state;
 #ifndef __DEBUG_QEMU__
-  unsigned int  guest_SMBASE;	
+  unsigned int  guest_SMBASE;
 #endif /* !__DEBUG_QEMU__ */
-  unsigned int  guest_SYSENTER_CS; 
+  unsigned int  guest_SYSENTER_CS;
   // Natural 16-bit Guest-State fields
   unsigned int  guest_ES_selector;
   unsigned int  guest_CS_selector;
@@ -541,18 +541,18 @@ struct _vmx_vmcsfields {
   unsigned int  guest_VMCS_link_pointer_high;
   unsigned int  guest_IA32_DEBUGCTL_full;
   unsigned int  guest_IA32_DEBUGCTL_high;
-  #if defined(__NESTED_PAGING__)
-    unsigned int 	guest_paddr_full;
-    unsigned int 	guest_paddr_high;
-    unsigned int  guest_PDPTE0_full; 
-	  unsigned int  guest_PDPTE0_high;
-    unsigned int  guest_PDPTE1_full; 
-	  unsigned int  guest_PDPTE1_high;
-    unsigned int  guest_PDPTE2_full; 
-	  unsigned int  guest_PDPTE2_high;
-    unsigned int  guest_PDPTE3_full; 
-	  unsigned int  guest_PDPTE3_high;
-  #endif
+#if defined(__NESTED_PAGING__)
+  unsigned int  guest_paddr_full;
+  unsigned int  guest_paddr_high;
+  unsigned int  guest_PDPTE0_full;
+  unsigned int  guest_PDPTE0_high;
+  unsigned int  guest_PDPTE1_full;
+  unsigned int  guest_PDPTE1_high;
+  unsigned int  guest_PDPTE2_full;
+  unsigned int  guest_PDPTE2_high;
+  unsigned int  guest_PDPTE3_full;
+  unsigned int  guest_PDPTE3_high;
+#endif
   //Read-Only Fields
   unsigned int  info_vminstr_error;
   unsigned int  info_vmexit_reason;
