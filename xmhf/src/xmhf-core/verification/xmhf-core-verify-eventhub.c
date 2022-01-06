@@ -110,8 +110,7 @@ void main() {
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		//VMX propMED values after init()
 		vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
-		vcpu.vmcs.control_EPT_pointer_high = 0;
-		vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+		vcpu.vmcs.control_EPT_pointer = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
 #else
 		//SVM propMED values after init()
 		_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
@@ -138,7 +137,7 @@ void main() {
 			vcpu.vmcs.info_IO_RDI=nondet_u64();
 			vcpu.vmcs.info_IO_RIP=nondet_u64();
 			vcpu.vmcs.info_guest_linear_address=nondet_u64();		
-			vcpu.vmcs.guest_paddr_full=nondet_u64();
+			vcpu.vmcs.guest_paddr=nondet_u64();
 
 			vcpu.vmcs.guest_CR0=nondet_u64();
 			vcpu.vmcs.guest_CR3=nondet_u64();

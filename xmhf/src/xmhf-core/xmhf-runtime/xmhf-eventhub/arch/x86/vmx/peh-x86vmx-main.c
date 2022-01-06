@@ -417,7 +417,7 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 	u32 errorcode, gva;
 	u64 gpa;
 	errorcode = (u32)vcpu->vmcs.info_exit_qualification;
-	gpa = ((u64)vcpu->vmcs.guest_paddr_high << 32) | vcpu->vmcs.guest_paddr_full;
+	gpa = vcpu->vmcs.guest_paddr;
 	gva = (u32)vcpu->vmcs.info_guest_linear_address;
 
 	//check if EPT violation is due to LAPIC interception
@@ -804,7 +804,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//ensure that whenever a partition is resumed on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
 	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) );
-	assert( (vcpu->vmcs.control_EPT_pointer_high == 0) && (vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
+	assert( vcpu->vmcs.control_EPT_pointer == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E) );
 #endif
 
 	return 1;

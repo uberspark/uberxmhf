@@ -326,13 +326,11 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//IO bitmap support
 	{
 	    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
-	    vcpu->vmcs.control_IO_BitmapA_address_full = (u32)addr;
-	    vcpu->vmcs.control_IO_BitmapA_address_high = (u32)(addr >> 32);
+	    vcpu->vmcs.control_IO_BitmapA_address = addr;
     }
     {
         u64 addr = hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
-	    vcpu->vmcs.control_IO_BitmapB_address_full = (u32)addr;
-	    vcpu->vmcs.control_IO_BitmapB_address_high = (u32)(addr >> 32);
+	    vcpu->vmcs.control_IO_BitmapB_address = addr;
     }
 	vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
 
@@ -365,22 +363,19 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		//host MSR load on exit, we store it ourselves before entry
 		{
 		    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
-		    vcpu->vmcs.control_VM_exit_MSR_load_address_full=(u32)addr;
-		    vcpu->vmcs.control_VM_exit_MSR_load_address_high=(u32)(addr >> 32);
+		    vcpu->vmcs.control_VM_exit_MSR_load_address=addr;
 		}
 		vcpu->vmcs.control_VM_exit_MSR_load_count= vmx_msr_area_msrs_count;
 
 		//guest MSR load on entry, store on exit
 		{
 		    u64 addr = (u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
-		    vcpu->vmcs.control_VM_entry_MSR_load_address_full=(u32)addr;
-		    vcpu->vmcs.control_VM_entry_MSR_load_address_high=(u32)(addr >> 32);
+		    vcpu->vmcs.control_VM_entry_MSR_load_address=addr;
 		}
 		vcpu->vmcs.control_VM_entry_MSR_load_count=vmx_msr_area_msrs_count;
 		{
 		    u64 addr = (u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
-		    vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)addr;
-		    vcpu->vmcs.control_VM_exit_MSR_store_address_high=(u32)(addr >> 32);
+		    vcpu->vmcs.control_VM_exit_MSR_store_address=addr;
 		}
 		vcpu->vmcs.control_VM_exit_MSR_store_count=vmx_msr_area_msrs_count;
 	}
@@ -485,8 +480,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	}
 
 	//setup VMCS link pointer
-	vcpu->vmcs.guest_VMCS_link_pointer_full = (u32)0xFFFFFFFFUL;
-	vcpu->vmcs.guest_VMCS_link_pointer_high = (u32)0xFFFFFFFFUL;
+	vcpu->vmcs.guest_VMCS_link_pointer = (u64)0xFFFFFFFFFFFFFFFFULL;
 	
 	//setup NMI intercept for core-quiescing
 	vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
@@ -541,7 +535,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   //put VMCS to CPU
   xmhf_baseplatform_arch_x86_64vmx_putVMCS(vcpu);
   printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
-  HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer_full == 0xFFFFFFFFUL );
+  HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer == 0xFFFFFFFFFFFFFFFFULL );
 
   {
     u32 errorcode;
@@ -607,7 +601,7 @@ void xmhf_partition_arch_x86_64vmx_start(VCPU *vcpu){
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
-	assert( (vcpu->vmcs.control_EPT_pointer_high == 0) && (vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
+	assert( vcpu->vmcs.control_EPT_pointer == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E) );
 	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) );
 	assert( vcpu->vmcs.host_RIP == 0xDEADBEEF);
 #endif
