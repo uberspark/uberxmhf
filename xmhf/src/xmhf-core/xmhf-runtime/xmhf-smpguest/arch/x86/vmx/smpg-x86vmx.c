@@ -449,20 +449,28 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         g_vmx_quiesce=1;  //we are now processing quiesce
         _vmx_send_quiesce_signal(vcpu);
 
-        /*
-         * Release the printf lock to prevent deadlock
-         * If unlock after waiting for g_vmx_quiesce_counter, will deadlock if
-         * NMI handling code calls printf.
-         * If unlock before waiting for g_vmx_quiesce_counter, need to assume
-         * that NMI arrives to other CPUs before other CPUs observe the unlock.
-         * If this assumption is not met, will deadlock.
-         */
-        emhfc_putchar_lineunlock(emhfc_putchar_linelock_arg);
-
         //wait for all the remaining CPUs to quiesce
         //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
         //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+
+        /*
+         * Release the printf lock to allow printing things after this function
+         * returns.
+         *
+         * This unlock can be placed either before the while loop for
+         * g_vmx_quiesce_counter or after.
+         * If unlock after waiting for g_vmx_quiesce_counter, will deadlock if
+         * NMI handling code in other CPUs calls printf.
+         * If unlock before waiting for g_vmx_quiesce_counter, will deadlock
+         * when the other CPUs acquire the lock, and then interrupted by NMI.
+         *
+         * So in production, should place this unlock after waiting for
+         * g_vmx_quiesce_counter. While debugging, if need to use printf in
+         * NMI handling code, can change the while loop to release printf lock
+         * after a large number of iterations.
+         */
+        emhfc_putchar_lineunlock(emhfc_putchar_linelock_arg);
 
 }
 
