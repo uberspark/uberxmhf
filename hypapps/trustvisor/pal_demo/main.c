@@ -9,7 +9,7 @@
 
 #define PAGE_SIZE ((uintptr_t) 4096)
 
-uint32_t lock_and_touch_page(void *addr, size_t len) {
+int lock_and_touch_page(void *addr, size_t len) {
 	// Call mlock() and then write to page
 	// similar to tv_lock_range() and tv_touch_range() in tee-sdk
 	if (mlock(addr, len)) {
@@ -21,8 +21,8 @@ uint32_t lock_and_touch_page(void *addr, size_t len) {
 	return 0;
 }
 
-uint32_t call_pal(uint32_t a, uint32_t b) {
-	uint32_t b2 = b;
+void call_pal(unsigned long a, unsigned long b) {
+	unsigned long b2 = b;
 	// Call mmap(), construct struct tv_pal_sections
 	int prot = PROT_EXEC | PROT_READ | PROT_WRITE;
 	int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
@@ -48,7 +48,7 @@ uint32_t call_pal(uint32_t a, uint32_t b) {
 		void *start = (void *)(uintptr_t)(a->start_addr);
 		size_t size = PAGE_SIZE * a->page_num;
 		assert(!lock_and_touch_page(start, size));
-		printf("Mmap: %u %p %u\n", a->type, a->start_addr, a->page_num);
+		printf("Mmap: %u %p %u\n", a->type, (void*)a->start_addr, a->page_num);
 	}
 	printf("\n");
 	fflush(stdout);
@@ -66,33 +66,33 @@ uint32_t call_pal(uint32_t a, uint32_t b) {
 	uintptr_t reloc_my_pal_off = (uintptr_t)code + (my_pal_off - begin_pal_off);
 	typeof(my_pal) *reloc_my_pal = (typeof(my_pal) *)reloc_my_pal_off;
 	// Register scode
-	assert(!vmcall(TV_HC_REG, (uint32_t)(uintptr_t)sections, 0,
-					(uint32_t)(uintptr_t)params, (uint32_t)reloc_my_pal_off));
+	assert(!vmcall(TV_HC_REG, (uintptr_t)sections, 0, (uintptr_t)params,
+					reloc_my_pal_off));
 	// Call function
 	printf("With PAL:\n");
-	printf(" %u = *%p\n", b2, &b2);
+	printf(" %lu = *%p\n", b2, &b2);
 	fflush(stdout);
-	uint32_t ret = reloc_my_pal(a, &b2);
-	printf(" %u = my_pal(%u, %p)\n", ret, a, &b2);
-	printf(" %u = *%p\n\n", b2, &b2);
+	unsigned long ret = reloc_my_pal(a, &b2);
+	printf(" %lu = my_pal(%lu, %p)\n", ret, a, &b2);
+	printf(" %lu = *%p\n\n", b2, &b2);
 	fflush(stdout);
 	// Unregister scode
-	assert(!vmcall(TV_HC_UNREG, (uint32_t)reloc_my_pal_off, 0, 0, 0));
+	assert(!vmcall(TV_HC_UNREG, (uintptr_t)reloc_my_pal_off, 0, 0, 0));
 }
 
 int main(int argc, char *argv[]) {
-	uint32_t a, b, b2;
-	uint32_t ret;
+	unsigned long a, b, b2;
+	unsigned long ret;
 	assert(argc > 2);
-	assert(sscanf(argv[1], "%u", &a) == 1);
-	assert(sscanf(argv[2], "%u", &b) == 1);
+	assert(sscanf(argv[1], "%lu", &a) == 1);
+	assert(sscanf(argv[2], "%lu", &b) == 1);
 	b2 = b;
 	printf("Without PAL:\n");
-	printf(" %u = *%p\n", b2, &b2);
+	printf(" %lu = *%p\n", b2, &b2);
 	fflush(stdout);
 	ret = my_pal(a, &b2);
-	printf(" %u = my_pal(%u, %p)\n", ret, a, &b2);
-	printf(" %u = *%p\n\n", b2, &b2);
+	printf(" %lu = my_pal(%lu, %p)\n", ret, a, &b2);
+	printf(" %lu = *%p\n\n", b2, &b2);
 	fflush(stdout);
 	call_pal(a, b);
 	return 0;
