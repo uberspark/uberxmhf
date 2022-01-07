@@ -5,9 +5,10 @@ CFLAGS := -g -I../src/include -Wall -Werror
 
 all: main test
 
-main: main.o pal.o
+main: main.o pal.o caller.o
 test: test.c
 
+caller.o: caller.c
 main.o: main.c
 
 pal.o: pal.c
