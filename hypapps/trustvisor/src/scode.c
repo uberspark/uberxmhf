@@ -104,81 +104,6 @@ u16 * scode_pfn_bitmap_2M;
 /* each CPU has its own scode_curr value, no need to apply a lock on it */
 int * scode_curr = NULL;
 
-// TODO: remove these dead functions
-#if 0
-/* helper function */
-void __set_page_prot(u32 pfn, u8 *bit_vector){
-  u32 byte_offset, bit_offset;
-
-  byte_offset = pfn / 8;
-  bit_offset = pfn & 7;
-  bit_vector[byte_offset] |= (1 << bit_offset);
-
-  return;                        
-}
-
-void __clear_page_prot(u32 pfn, u8 *bit_vector){
-  u32 byte_offset, bit_offset;
-
-  byte_offset = pfn / 8;
-  bit_offset = pfn & 7;
-  bit_vector[byte_offset] &= ~(1 << bit_offset);
-
-  return;
-}
-
-u32 __test_page_prot(u32 pfn, u8 *bit_vector){
-  u32 byte_offset, bit_offset;
-
-  byte_offset = pfn / 8;
-  bit_offset = pfn & 7;
-  if (bit_vector[byte_offset] & (1 << bit_offset))
-    return 1;
-  else 
-    return 0;
-}
-
-
-
-/* set scode remapping protection for a page, pfn is the page frame number */
-#define set_page_scode_bitmap(pfn)	__set_page_prot(pfn, scode_pfn_bitmap)
-/* clear scode remapping protection for a page, pfn is the page frame number */
-#define clear_page_scode_bitmap(pfn)	__clear_page_prot(pfn, scode_pfn_bitmap)
-/* test scode remapping protection enabled for a page, pfn is the page frame number */
-#define test_page_scode_bitmap(pfn)	__test_page_prot(pfn, scode_pfn_bitmap)
-
-static inline u32 set_page_scode_bitmap_2M(u32 pfn)
-{
-  u32 index;
-
-  index = pfn >> (PAGE_SHIFT_2M - PAGE_SHIFT_4K);
-  EU_VERIFY(scode_pfn_bitmap_2M[index] < PAE_PTRS_PER_PDT);
-  scode_pfn_bitmap_2M[index] ++;
-
-  return scode_pfn_bitmap_2M[index];
-}
-
-static inline u32 clear_page_scode_bitmap_2M(u32 pfn)
-{
-  u32 index;
-
-  index = pfn >> (PAGE_SHIFT_2M - PAGE_SHIFT_4K);
-  EU_VERIFY(scode_pfn_bitmap_2M[index] > 0);
-  scode_pfn_bitmap_2M[index] --;
-
-  return scode_pfn_bitmap_2M[index];
-}
-
-static inline u32 test_page_scode_bitmap_2M(u32 pfn)
-{
-  u32 index;
-
-  index = pfn >> (PAGE_SHIFT_2M - PAGE_SHIFT_4K);
-
-  return scode_pfn_bitmap_2M[index];
-}
-#endif
-
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry);
 
 /* search scode in whitelist */
@@ -782,21 +707,6 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
  out:
   return rv;
 }
-
-// TODO: remove these dead functions
-#if 0
-/* test if the page is already in page_list
- * in order to avoid redundency in expose_page() */
-int test_page_in_list(pte_t * page_list, pte_t page, u32 count)
-{
-  size_t i;
-  for( i=0 ; i<count ; i++ )  {
-    if (page_list[i]==page)
-      return 1;
-  }
-  return 0;
-}
-#endif
 
 u32 scode_marshall(VCPU * vcpu)
 {
