@@ -309,7 +309,7 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, uintptr_t pm_a
   eu_trace("pm_info %#x, # of parameters is %d", pm_addr, num);
   EU_CHK( num <= TV_MAX_PARAMS);
 
-  addr = pm_addr+sizeof(pm_info->num_params);
+  addr = pm_addr + offsetof(struct tv_pal_params, params);
   EU_CHKN( copy_from_current_guest(vcpu,
                                    &pm_info->params[0],
                                    addr,
@@ -335,7 +335,7 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
                                    gva_scode_info,
                                    sizeof(ps_scode_info->num_sections)));
 
-  gva_scode_info_offset += sizeof(ps_scode_info->num_sections);
+  gva_scode_info_offset = offsetof(struct tv_pal_sections, sections);
   eu_trace("scode_info addr %x, # of section is %d", gva_scode_info, ps_scode_info->num_sections);
 
   /* copy array of section descriptors */

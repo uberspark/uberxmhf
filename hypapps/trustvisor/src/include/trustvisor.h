@@ -98,13 +98,14 @@ struct tv_pal_section {
   enum tv_pal_section_type type;
   uint32_t page_num; /* size of section in pages */
   uint64_t start_addr;
-};
+} __attribute__((packed));
 
 #define TV_MAX_SECTIONS 10  /* max sections that are allowed in pal registration */
 struct tv_pal_sections {
   uint32_t num_sections;
+  uint32_t :32; /* Padding */
   struct tv_pal_section sections[TV_MAX_SECTIONS];
-};
+} __attribute__((packed));
 
 /* parameter type */
 enum tv_pal_param_type {
@@ -116,13 +117,14 @@ struct tv_pal_param {
   enum tv_pal_param_type type;  /* 1: integer ;  2:pointer*/
   uint32_t :32; /* Padding */
   uint64_t size;
-};
+} __attribute__((packed));
 
 #define TV_MAX_PARAMS 10
 struct tv_pal_params {
   uint32_t num_params;
+  uint32_t :32; /* Padding */
   struct tv_pal_param params[TV_MAX_PARAMS];
-};
+} __attribute__((packed));
 
 #endif
 
