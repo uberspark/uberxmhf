@@ -739,7 +739,7 @@ u32 scode_marshall64(VCPU * vcpu, struct regs *r)
   eu_trace("parameter page base address is %#lx", pm_addr_base);
 
   /* address for parameters in guest stack */
-  grsp = (uintptr_t)whitelist[curr].grsp + 4; /*the stack pointer of parameters in guest stack*/
+  grsp = (uintptr_t)whitelist[curr].grsp + 8; /*the stack pointer of parameters in guest stack*/
 
   /* save params number */
   pm_addr = pm_addr_base;
@@ -770,7 +770,7 @@ u32 scode_marshall64(VCPU * vcpu, struct regs *r)
         case 5: pm_value = r->r9; break;
         default:
           eu_trace("copying param %d", pm_i);
-          EU_CHKN( copy_from_current_guest(vcpu, &pm_value, grsp + pm_i*8, sizeof(pm_value)));
+          EU_CHKN( copy_from_current_guest(vcpu, &pm_value, grsp + (pm_i-6)*8, sizeof(pm_value)));
           break;
       }
 
