@@ -324,7 +324,7 @@ sl_startnew:
 
     //the secure loader GDT
     sl_gdt:
-    .word    sl_gdt_end - sl_gdt_start + 1     // XXX WAS PREVIOUSLY -1 !!!
+    .word    sl_gdt_end - sl_gdt_start - 1
     .long    sl_gdt_start                      // This will be fixed up to sl load-base
     .align    16
     sl_gdt_start:

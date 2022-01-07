@@ -338,7 +338,7 @@ sl_cpu_common:
 
     //the secure loader GDT
     sl_gdt:
-    .word    sl_gdt_end - sl_gdt_start         // XXX WAS PREVIOUSLY +-1 !!!
+    .word    sl_gdt_end - sl_gdt_start - 1
     sl_gdt_ptr:
     .long    sl_gdt_start                      // This will be fixed up to sl load-base
     .align   16
