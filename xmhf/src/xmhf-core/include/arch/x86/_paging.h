@@ -281,10 +281,6 @@ typedef u32 *npt_t;
 #define npae_get_pt_index(paddr)\
     (((paddr) & NPAE_PAGE_TABLE_MASK) >> NPAE_PAGETABLE_SHIFT)
 
-/* returns 1 if addr is 4k page aligned */
-#define is_page_4K_aligned(paddr)\
-    ((((u32)PAGE_SIZE_4K - 1) & ((u32)paddr)) == 0)
-
 #define set_exec(entry) (((u64)entry) &= (~((u64)_PAGE_NX)))
 #define set_nonexec(entry) (((u64)entry) |= ((u64)_PAGE_NX))
 #define set_readonly(entry) (((u64)entry) &= (~((u64)_PAGE_RW)))

@@ -374,7 +374,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
     start = ps_scode_info->sections[i].start_addr;
 
     /* make sure the addr is 4kb page aligned */
-    EU_CHK( is_page_4K_aligned(start));
+    EU_CHK( PAGE_ALIGNED_4K(start));
 
     switch ( type )  {
     case TV_PAL_SECTION_PARAM :
