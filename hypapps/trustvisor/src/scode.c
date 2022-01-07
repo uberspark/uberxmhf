@@ -863,7 +863,7 @@ u32 scode_marshall64(VCPU * vcpu, struct regs *r)
 u32 scode_marshall32(VCPU * vcpu)
 {
   uintptr_t pm_addr, pm_addr_base; /*parameter stack base address*/
-  u64 pm_value;
+  u64 pm_value = 0;
   u32 pm_tmp; /* For x86 calling convention, need to be u32 */
   u64 pm_type;
   u64 pm_size, pm_size_sum; /*save pm information*/
@@ -909,9 +909,8 @@ u32 scode_marshall32(VCPU * vcpu)
       pm_size = whitelist[curr].params_info.params[pm_i].size * 4;
       /* get param value from guest stack */
       eu_trace("copying param %d", pm_i);
+      /* Cannot use sizeof() because pm_value is u64 */
       EU_CHKN( copy_from_current_guest(vcpu, &pm_value, grsp + pm_i*4, 4));
-      /* Clear high 32 bits */
-      pm_value = (u32)pm_value;
 
       pm_size_sum += sizeof(pm_type)+sizeof(pm_size)+sizeof(pm_value);
       EU_CHK( pm_size_sum <= (whitelist[curr].gpm_size*PAGE_SIZE_4K));
@@ -993,8 +992,9 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
   int err=1;
   bool swapped_grsp=false;
   bool pushed_return=false;
-  u32 sentinel_return; /* For x86 calling convention, need to be u32 */
-  u32 regular_return; /* For x86 calling convention, need to be u32 */
+  u64 sentinel_return; /* In x86, only use 4 bytes */
+  u64 regular_return = 0; /* In x86, only use 4 bytes */
+  u32 word_size = VCPU_g64(vcpu) ? 8 : 4;
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
 
@@ -1007,7 +1007,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
   EU_CHKN( copy_from_current_guest(vcpu,
                                    &regular_return,
                                    VCPU_grsp(vcpu),
-                                   sizeof(regular_return)));
+                                   word_size));
   whitelist[curr].return_v = (uintptr_t)regular_return;
   eu_trace("scode return vaddr is %#lx", whitelist[curr].return_v);
 
@@ -1029,10 +1029,10 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
   sentinel_return = RETURN_FROM_PAL_ADDRESS;
   EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                     HPTW_CPL3,
-                                    VCPU_grsp(vcpu)-4,
+                                    VCPU_grsp(vcpu)-word_size,
                                     &sentinel_return,
-                                    sizeof(sentinel_return)));
-  VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
+                                    word_size));
+  VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-word_size);
   pushed_return=true;
 
   eu_trace("host stack pointer before running scode is %#lx",(uintptr_t)VCPU_grsp(vcpu));
@@ -1080,7 +1080,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
       whitelist[curr].grsp = (uintptr_t)-1;
     }
     if (pushed_return) {
-      VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)+4);
+      VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)+word_size);
     }
 
     whitelist[curr].pal_running_vcpu_id=-1;
