@@ -471,10 +471,28 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
   }
 }
 
-/* Return whether guest is in long mode (boolean value) */
+/* Return whether guest OS is in long mode (return 1 or 0) */
 static inline u32 VCPU_glm(VCPU *vcpu) {
     if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
         return (vcpu->vmcs.control_VM_entry_controls >> 9) & 1U;
+    } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+        /* Not implemented */
+        HALT_ON_ERRORCOND(false);
+        return 0;
+    } else {
+        HALT_ON_ERRORCOND(false);
+        return 0;
+    }
+}
+
+/*
+ * Return whether guest application is in 64-bit mode (return 1 or 0).
+ * If guest OS is in long mode, return 1 if guest application in 64-bit mode.
+ * If guest OS in legacy mode (e.g. protected mode), will always return 0;
+ */
+static inline u32 VCPU_g64(VCPU *vcpu) {
+    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+        return (vcpu->vmcs.guest_CS_access_rights >> 13) & 1U;
     } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
         /* Not implemented */
         HALT_ON_ERRORCOND(false);

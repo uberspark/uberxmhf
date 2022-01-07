@@ -104,8 +104,9 @@ typedef struct {
 typedef struct whitelist_entry{
   u64       gcr3; 
   u32       id;
-  uintptr_t grsp;		/* guest reguar stack */
-  uintptr_t gssp;		/* guest sensitive code stack */
+  u32       g64;        /* whether running in 64-bit mode */
+  uintptr_t grsp;       /* guest reguar stack */
+  uintptr_t gssp;       /* guest sensitive code stack */
   uintptr_t gss_size;   /* guest sensitive code stack page number */
   uintptr_t entry_v; /* entry point virtual address */
   uintptr_t entry_p; /* entry point physical address */

@@ -107,14 +107,15 @@ int * scode_curr = NULL;
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry);
 
 /* search scode in whitelist */
-int scode_in_list(u64 gcr3, uintptr_t gvaddr)
+int scode_in_list(u64 gcr3, uintptr_t gvaddr, u32 g64)
 {
   size_t i, j;
 
   for (i = 0; i < whitelist_max; i ++)
     {
       hpt_type_t t = whitelist[i].hptw_pal_checked_guest_ctx.super.t;
-      if (hpt_cr3_get_address(t, gcr3) == whitelist[i].gcr3) {
+      if ((hpt_cr3_get_address(t, gcr3) == whitelist[i].gcr3) &&
+          (g64 == whitelist[i].g64)) {
         for( j=0 ; j<(u32)(whitelist[i].scode_info.num_sections) ; j++ )  {
           if( (gvaddr >= whitelist[i].scode_info.sections[j].start_addr) &&
               (gvaddr < ((whitelist[i].scode_info.sections[j].start_addr)+((whitelist[i].scode_info.sections[j].page_num)<<PAGE_SHIFT_4K)))  )  {
@@ -130,7 +131,7 @@ int scode_in_list(u64 gcr3, uintptr_t gvaddr)
   return -1;
 }
 
-static whitelist_entry_t* find_scode_by_entry(u64 gcr3, uintptr_t gv_entry)
+static whitelist_entry_t* find_scode_by_entry(u64 gcr3, uintptr_t gv_entry, u32 g64)
 {
   size_t i;
 
@@ -139,6 +140,7 @@ static whitelist_entry_t* find_scode_by_entry(u64 gcr3, uintptr_t gv_entry)
       /* find scode with correct cr3 and entry point */
       hpt_type_t t = whitelist[i].hptw_pal_checked_guest_ctx.super.t;
       if ((whitelist[i].gcr3 == hpt_cr3_get_address(t, gcr3)) &&
+          (g64 == whitelist[i].g64) &&
           (whitelist[i].entry_v == gv_entry))
         return &whitelist[i];
     }
@@ -463,6 +465,7 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
    * so we know what to verify each time
    */
   whitelist_new.id = 0;
+  whitelist_new.g64 = VCPU_g64(vcpu);
   whitelist_new.gcr3 = gcr3; /* Will clear lower bits for CR3 later */
   whitelist_new.grsp = (uintptr_t)-1;
 
@@ -633,10 +636,11 @@ u64 scode_unregister(VCPU * vcpu, u64 gvaddr)
 {
   size_t i, j;
   u64 rv=1;
-
+  u32 g64;
   u64 gcr3;
 
   gcr3 = VCPU_gcr3(vcpu);
+  g64 = VCPU_g64(vcpu);
 
   eu_trace("*** scode unregister ***");
 
@@ -648,6 +652,7 @@ u64 scode_unregister(VCPU * vcpu, u64 gvaddr)
     /* find scode with correct cr3 and entry point */
     hpt_type_t t = whitelist[i].hptw_pal_checked_guest_ctx.super.t;
     if ((whitelist[i].gcr3 == hpt_cr3_get_address(t, gcr3)) &&
+        (g64 == whitelist[i].g64) &&
         (whitelist[i].entry_v == gvaddr))
       break;
   }
@@ -1117,6 +1122,7 @@ u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode)
   int * curr=&(scode_curr[vcpu->id]);
   u64 gcr3 = VCPU_gcr3(vcpu);
   uintptr_t rip = (uintptr_t)VCPU_grip(vcpu);
+  u32 g64;
   u32 err=1;
 
 #if defined(__LDN_TV_INTEGRATION__)  
@@ -1132,7 +1138,8 @@ u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode)
   EU_CHK( hpt_error_wasInsnFetch(vcpu, errorcode));
 #endif //__LDN_TV_INTEGRATION__
 
-  index = scode_in_list(gcr3, rip);
+  g64 = VCPU_g64(vcpu);
+  index = scode_in_list(gcr3, rip, g64);
   if ((*curr == -1) && (index >= 0)) {
     /* regular code to sensitive code */
 
@@ -1250,9 +1257,11 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 {
   size_t i;
   whitelist_entry_t* entry;
+  u32 g64;
   u32 err=1;
 
-  EU_CHK( entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry));
+  g64 = VCPU_g64(vcpu);
+  EU_CHK( entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry, g64));
 
   for(i=0; i<count; i++) {
     EU_CHKN( scode_share_range(vcpu, entry, gva_base[i], gva_len[i]));

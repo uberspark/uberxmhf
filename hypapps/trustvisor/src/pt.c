@@ -143,7 +143,6 @@ int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, size_t len)
   return rv;
 }
 
-
 /* clone pal's gdt from 'reg' gdt, and add to pal's guest page tables.
    gdt is allocted using passed-in-pl, whose pages should already be
    accessible to pal's nested page tables. XXX SECURITY need to build
