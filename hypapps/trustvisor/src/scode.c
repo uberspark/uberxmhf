@@ -118,14 +118,14 @@ int scode_in_list(u64 gcr3, uintptr_t gvaddr)
         for( j=0 ; j<(u32)(whitelist[i].scode_info.num_sections) ; j++ )  {
           if( (gvaddr >= whitelist[i].scode_info.sections[j].start_addr) &&
               (gvaddr < ((whitelist[i].scode_info.sections[j].start_addr)+((whitelist[i].scode_info.sections[j].page_num)<<PAGE_SHIFT_4K)))  )  {
-            eu_trace("find gvaddr %#x in scode %d section No.%d", gvaddr, i, j);
+            eu_trace("find gvaddr %#lx in scode %d section No.%d", gvaddr, i, j);
             return i;
           }
         }
       }
     }
 #if !defined(__LDN_TV_INTEGRATION__)  
-  eu_trace("no matching scode found for gvaddr %#x!", gvaddr);
+  eu_trace("no matching scode found for gvaddr %#lx!", gvaddr);
 #endif //__LDN_TV_INTEGRATION__
   return -1;
 }
@@ -309,7 +309,7 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, uintptr_t pm_a
   eu_trace("pm_info %#x, # of parameters is %d", pm_addr, num);
   EU_CHK( num <= TV_MAX_PARAMS);
 
-  addr = pm_addr+4;
+  addr = pm_addr+sizeof(pm_info->num_params);
   EU_CHKN( copy_from_current_guest(vcpu,
                                    &pm_info->params[0],
                                    addr,
@@ -335,7 +335,7 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
                                    gva_scode_info,
                                    sizeof(ps_scode_info->num_sections)));
 
-  gva_scode_info_offset += 4;
+  gva_scode_info_offset += sizeof(ps_scode_info->num_sections);
   eu_trace("scode_info addr %x, # of section is %d", gva_scode_info, ps_scode_info->num_sections);
 
   /* copy array of section descriptors */
@@ -410,14 +410,14 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
 
 
 /* register scode in whitelist */
-u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry) 
+u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry) 
 {
   size_t i;
   whitelist_entry_t whitelist_new;
   u64 gcr3;
   hpt_pmo_t pal_npmo_root, pal_gpmo_root;
   hptw_emhf_checked_guest_ctx_t reg_guest_walk_ctx;
-  u32 rv=1;
+  u64 rv=1;
 
   /* set all CPUs to use the same 'reg' nested page tables,
      and set up a corresponding hpt_pmo.
@@ -457,7 +457,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
   EU_CHK( whitelist_size < whitelist_max);
 
-  eu_trace("CPU(0x%02x): add to whitelist,  scode_info %#x, scode_pm %#x, gventry %#x", vcpu->id, scode_info, scode_pm, gventry);
+  eu_trace("CPU(0x%02x): add to whitelist,  scode_info %#lx, scode_pm %#lx, gventry %#lx", vcpu->id, scode_info, scode_pm, gventry);
 
   /* ATTN: we should assign a ID for each registered sensitive code
    * so we know what to verify each time
@@ -629,10 +629,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 }
 
 /* unregister scode in whitelist */
-u32 scode_unregister(VCPU * vcpu, u32 gvaddr) 
+u64 scode_unregister(VCPU * vcpu, u64 gvaddr) 
 {
   size_t i, j;
-  u32 rv=1;
+  u64 rv=1;
 
   u64 gcr3;
 

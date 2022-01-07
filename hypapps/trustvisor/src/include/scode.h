@@ -164,8 +164,8 @@ u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count);
 
-u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
-u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
+u64 scode_register(VCPU * vcpu, u64 scode_info, u64 scode_pm, u64 gventry);
+u64 scode_unregister(VCPU * vcpu, u64 gvaddr);
 void init_scode(VCPU * vcpu);
 
 void scode_lend_section( hptw_ctx_t *reg_npm_ctx,
