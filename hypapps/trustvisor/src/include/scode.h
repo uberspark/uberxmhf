@@ -114,7 +114,7 @@ typedef struct whitelist_entry{
 
   uintptr_t gpmp;     /* guest parameter page address */
   uintptr_t gpm_size; /* guest parameter page number */
-  u32       gpm_num;  /* guest parameter number */
+  u64       gpm_num;  /* guest parameter number */
 
   u32 saved_exception_intercepts;
 
@@ -159,9 +159,9 @@ int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, size_t len);
 int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, size_t len);
 
 /* PAL operations (HPT) */
-u32 hpt_scode_switch_scode(VCPU * vcpu);
+u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r);
 u32 hpt_scode_switch_regular(VCPU * vcpu);
-u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode);
+u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode, struct regs *r);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count);
 
