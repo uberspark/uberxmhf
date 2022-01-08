@@ -57,8 +57,8 @@ unsigned long pal_5_ptr(unsigned long size0, unsigned long *ptr0,
 		unsigned long size = sizes[i];
 		unsigned long *ptr = ptrs[i];
 		for (int j = 0; j < size; j++) {
-			ans += ptr[i] * (coeff++);
-			ptr[i] += (-1U) / 0xffU;
+			ans += ptr[j] * (coeff++);
+			ptr[j] += (-1UL) / 0xffUL - 1UL;
 		}
 	}
 	return ans;

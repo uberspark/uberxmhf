@@ -158,6 +158,31 @@ unsigned int test_5_ptr(unsigned int iters) {
 				{ TV_PAL_PM_INTEGER, 0 }, { TV_PAL_PM_POINTER, args_i[4] },
 			}
 		};
+		// Dump info
+		if (0) {
+			printf("\narray_size = %ld\n", array_size);
+			for (int i = 0; i < 5; i++) {
+				printf("args_i[%d] = %#lx\n", i, args_i[i]);
+			}
+			for (int i = 0; i < 5; i++) {
+				printf("args_p_actual[%d] = %p\n", i, args_p_actual[i]);
+			}
+			for (int i = 0; i < 5; i++) {
+				printf("args_p_expected[%d] = %p\n", i, args_p_expected[i]);
+			}
+			printf("nums_original = %p\n", nums_original);
+			for (int i = 0; i < array_size; i++) {
+				printf("nums_original[%d] = %#lx\n", i, nums_original[i]);
+			}
+			printf("nums_expected = %p\n", nums_expected);
+			for (int i = 0; i < array_size; i++) {
+				printf("pre  nums_expected[%d] = %#lx\n", i, nums_expected[i]);
+			}
+			printf("nums_actual = %p\n", nums_actual);
+			for (int i = 0; i < array_size; i++) {
+				printf("pre  nums_actual[%d] = %#lx\n", i, nums_actual[i]);
+			}
+		}
 		// Register scode
 		void *entry = register_pal(&params, pal_5_ptr, begin_pal_c, end_pal_c,
 									0);
@@ -167,6 +192,17 @@ unsigned int test_5_ptr(unsigned int iters) {
 		unsigned long actual = func(PASS_ARGS_5(args_i, args_p_actual));
 		// Unregister scode
 		unregister_pal(entry);
+		// Dump info after calling
+		if (0) {
+			printf("nums_expected = %p\n", nums_expected);
+			for (int i = 0; i < array_size; i++) {
+				printf("post nums_expected[%d] = %#lx\n", i, nums_expected[i]);
+			}
+			printf("nums_actual = %p\n", nums_actual);
+			for (int i = 0; i < array_size; i++) {
+				printf("post nums_actual[%d] = %#lx\n", i, nums_actual[i]);
+			}
+		}
 		// Check results
 		if (actual != expected) {
 			result++;
