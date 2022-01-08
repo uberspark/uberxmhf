@@ -8,6 +8,9 @@
 
 #define PASS_ARGS(args) args[0], args[1], args[2], args[3], args[4], \
 						args[5], args[6], args[7], args[8], args[9]
+#define PASS_ARGS_5(args1, args2)	args1[0], args2[0], args1[1], args2[1], \
+									args1[2], args2[2], args1[3], args2[3], \
+									args1[4], args2[4]
 
 unsigned long rand_long(void) {
 	switch (0) { case 0:; case (RAND_MAX >= 0xffff):; };
@@ -114,6 +117,80 @@ unsigned int test_10_ptr(unsigned int iters) {
 	return result;
 }
 
+unsigned int test_5_ptr(unsigned int iters) {
+	unsigned int result = 0;
+	// Call function
+	for (unsigned int iter = 0; iter < iters; iter++) {
+		printf(".");
+		fflush(stdout);
+		// Generate pointer lengths
+		unsigned long args_i[5];
+		size_t array_size = 1;
+		for (int i = 0; i < 5; i++) {
+			args_i[i] = rand_long() % 100;
+			array_size += args_i[i] + 1;
+		}
+		// Allocate nums array
+		unsigned long *nums_original = malloc(array_size * sizeof(long));
+		unsigned long *nums_expected = malloc(array_size * sizeof(long));
+		unsigned long *nums_actual = malloc(array_size * sizeof(long));
+		for (int i = 0; i < array_size; i++) {
+			nums_original[i] = nums_expected[i] = nums_actual[i] = rand_long();
+		}
+		// Set up pointers
+		unsigned long *args_p_expected[5];
+		unsigned long *args_p_actual[5];
+		size_t cur_index = 1;
+		for (int i = 0; i < 5; i++) {
+			args_p_expected[i] = &nums_expected[cur_index];
+			args_p_actual[i] = &nums_actual[cur_index];
+			cur_index += args_i[i] + 1;
+		}
+		assert(cur_index == array_size);
+		// Construct struct tv_pal_params
+		struct tv_pal_params params = {
+			num_params: 10,
+			params: {
+				{ TV_PAL_PM_INTEGER, 0 }, { TV_PAL_PM_POINTER, args_i[0] },
+				{ TV_PAL_PM_INTEGER, 0 }, { TV_PAL_PM_POINTER, args_i[1] },
+				{ TV_PAL_PM_INTEGER, 0 }, { TV_PAL_PM_POINTER, args_i[2] },
+				{ TV_PAL_PM_INTEGER, 0 }, { TV_PAL_PM_POINTER, args_i[3] },
+				{ TV_PAL_PM_INTEGER, 0 }, { TV_PAL_PM_POINTER, args_i[4] },
+			}
+		};
+		// Register scode
+		void *entry = register_pal(&params, pal_5_ptr, begin_pal_c, end_pal_c,
+									0);
+		typeof(pal_5_ptr) *func = (typeof(pal_5_ptr) *)entry;
+		unsigned long expected = pal_5_ptr(PASS_ARGS_5(args_i,
+														args_p_expected));
+		unsigned long actual = func(PASS_ARGS_5(args_i, args_p_actual));
+		// Unregister scode
+		unregister_pal(entry);
+		// Check results
+		if (actual != expected) {
+			result++;
+			printf("Error: expected return %lu, actual %lu\n",
+					expected, actual);
+			fflush(stdout);
+			continue;
+		}
+		for (int i = 0; i < array_size; i++) {
+			if (nums_expected[i] != nums_actual[i]) {
+				result++;
+				printf("Error: expected [i] %lu, actual %lu, original %lu\n",
+						nums_expected[i], nums_actual[i], nums_original[i]);
+				fflush(stdout);
+				break;
+			}
+		}
+		// Free
+		free(nums_expected);
+		free(nums_actual);
+	}
+	return result;
+}
+
 int main(int argc, char *argv[]) {
 	unsigned int funcs, iters, seed;
 	assert(argc > 3);
@@ -127,6 +204,9 @@ int main(int argc, char *argv[]) {
 	}
 	if (funcs & 2) {
 		result += test_10_ptr(iters);
+	}
+	if (funcs & 4) {
+		result += test_5_ptr(iters);
 	}
 	if (result) {
 		printf("\nTest failed\n");
