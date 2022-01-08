@@ -855,6 +855,8 @@ u32 scode_marshall64(VCPU * vcpu, struct regs *r)
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
   return err;
 #else /* !__XMHF_X86_64__ */
+  (void)vcpu;
+  (void)r;
   /* Not supported */
   return 1;
 #endif /* __XMHF_X86_64__ */
