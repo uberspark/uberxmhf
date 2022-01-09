@@ -14,5 +14,5 @@ else
 fi; fi
 
 cd hypapps/trustvisor/pal_demo
-make "${MAKE_ARGS}"
+make ${MAKE_ARGS}
 
