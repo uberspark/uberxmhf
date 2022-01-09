@@ -865,7 +865,7 @@ u32 scode_marshall64(VCPU * vcpu, struct regs *r)
 u32 scode_marshall32(VCPU * vcpu)
 {
   uintptr_t pm_addr, pm_addr_base; /*parameter stack base address*/
-  u64 pm_value = 0;
+  u64 pm_value;
   u32 pm_tmp; /* For x86 calling convention, need to be u32 */
   u64 pm_type;
   u64 pm_size, pm_size_sum; /*save pm information*/
@@ -911,6 +911,8 @@ u32 scode_marshall32(VCPU * vcpu)
       pm_size = whitelist[curr].params_info.params[pm_i].size * 4;
       /* get param value from guest stack */
       eu_trace("copying param %d", pm_i);
+      /* Make sure upper bits of pm_value are clear */
+      pm_value = 0;
       /* Cannot use sizeof() because pm_value is u64 */
       EU_CHKN( copy_from_current_guest(vcpu, &pm_value, grsp + pm_i*4, 4));
 
@@ -1098,7 +1100,7 @@ u32 scode_unmarshall(VCPU * vcpu)
   size_t i;
   u64 pm_num, pm_value; /* Need to be consistent with scode_marshall */
   u64 pm_type;
-  uintptr_t pm_size; /* Need to be consistent with scode_marshall */
+  u64 pm_size; /* Need to be consistent with scode_marshall */
 
   int curr=scode_curr[vcpu->id];
 
