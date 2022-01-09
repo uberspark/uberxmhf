@@ -12,7 +12,7 @@ if [ "$1" == "x86" ]; then
 else if [ "$1" == "x86_64" ]; then
 	CONFIGURE_ARGS="${CONFIGURE_ARGS} --with-target-hwplatform=x86_64"
 else
-	echo '$1 incorrect'; exit 1
+	echo '$1 incorrect, should be x86 or x86_64'; exit 1
 fi; fi
 
 if [ "$2" == "release" ]; then
@@ -20,7 +20,7 @@ if [ "$2" == "release" ]; then
 else if [ "$2" == "debug" ]; then
 	CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-qemu"
 else
-	echo '$2 incorrect'; exit 1
+	echo '$2 incorrect, should be release or debug'; exit 1
 fi; fi
 
 ./autogen.sh

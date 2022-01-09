@@ -160,7 +160,7 @@ unsigned int test_5_ptr(unsigned int iters) {
 		};
 		// Dump info
 		if (0) {
-			printf("\narray_size = %ld\n", array_size);
+			printf("\narray_size = %lu\n", (unsigned long)array_size);
 			for (int i = 0; i < 5; i++) {
 				printf("args_i[%d] = %#lx\n", i, args_i[i]);
 			}
