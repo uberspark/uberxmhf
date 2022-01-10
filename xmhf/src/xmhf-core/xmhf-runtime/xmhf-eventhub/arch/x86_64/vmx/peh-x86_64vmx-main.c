@@ -548,6 +548,13 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	printf("\nMOV TO CR4 (flush TLB?), current=0x%08x, proposed=0x%08x",
 			(u32)vcpu->vmcs.guest_CR4, cr4_proposed_value);
 
+	/*
+	 * CR4 mask is the IA32_VMX_CR4_FIXED0 MSR. Modify CR4 shadow to let the
+	 * guest think MOV CR4 succeeds.
+	 */
+	vcpu->vmcs.control_CR4_shadow = cr4_proposed_value;
+	vcpu->vmcs.guest_CR4 = (cr4_proposed_value | vcpu->vmcs.control_CR4_mask);
+
 	#if defined (__NESTED_PAGING__)
 	//we need to flush EPT mappings as we emulated CR4 load above
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
