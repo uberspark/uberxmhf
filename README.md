@@ -109,7 +109,7 @@ Contributors
 Maintainers:
 Amit Vasudevan (XMHF, libbaremetal and Lockdown), Zongwei Zhou (TrustVisor and tee-sdk)
 
-Other contributors: Jonathan McCune, James Newsome, Ning Qu, and Yanlin Li
+Other contributors: Jonathan McCune, James Newsome, Ning Qu, Yanlin Li, and Eric Li
 
 
 Related Publications
