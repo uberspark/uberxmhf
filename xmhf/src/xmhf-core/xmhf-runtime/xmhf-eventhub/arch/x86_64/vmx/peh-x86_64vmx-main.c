@@ -53,18 +53,18 @@
 //---VMX decode assist----------------------------------------------------------
 //map a CPU register index into appropriate VCPU *vcpu or struct regs *r field
 //and return the address of the field
-static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
+static u64 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
   if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 
 	  switch(gpr){
-		case 0: return ( (u32 *)&r->eax );
-		case 1: return ( (u32 *)&r->ecx );
-		case 2: return ( (u32 *)&r->edx );
-		case 3: return ( (u32 *)&r->ebx );
-		case 4: return ( (u32 *)&vcpu->vmcs.guest_RSP);
-		case 5: return ( (u32 *)&r->ebp );
-		case 6: return ( (u32 *)&r->esi );
-		case 7: return ( (u32 *)&r->edi );
+		case 0: return ( (u64 *)&r->rax );
+		case 1: return ( (u64 *)&r->rcx );
+		case 2: return ( (u64 *)&r->rdx );
+		case 3: return ( (u64 *)&r->rbx );
+		case 4: return ( (u64 *)&vcpu->vmcs.guest_RSP);
+		case 5: return ( (u64 *)&r->rbp );
+		case 6: return ( (u64 *)&r->rsi );
+		case 7: return ( (u64 *)&r->rdi );
 	  }
    }else{
 		printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
@@ -73,7 +73,7 @@ static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
    }
 
 	//we will never get here, appease the compiler
-	return (u32 *)&r->eax;
+	return (u64 *)&r->rax;
 }
 
 
@@ -489,13 +489,13 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
 //---CR0 access handler-------------------------------------------------
 static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
-	u32 cr0_value, old_cr0;
+	u64 cr0_value, old_cr0;
 	u64 fixed_1_fields;
 
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 
-	cr0_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
-	old_cr0 = (u32)vcpu->vmcs.guest_CR0;
+	cr0_value = *((u64 *)_vmx_decode_reg(gpr, vcpu, r));
+	old_cr0 = vcpu->vmcs.guest_CR0;
 
 	//printf("\n[cr0-%02x] MOV TO, current=0x%08x, proposed=0x%08x, shadow=0x%08x",
 	//	vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
@@ -538,9 +538,9 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 //---CR4 access handler---------------------------------------------------------
 static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
   if(tofrom == VMX_CRX_ACCESS_TO){
-	u32 cr4_proposed_value;
+	u64 cr4_proposed_value;
 
-	cr4_proposed_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	cr4_proposed_value = *((u64 *)_vmx_decode_reg(gpr, vcpu, r));
 
 	printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
 		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);

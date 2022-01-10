@@ -483,7 +483,7 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
 //---CR0 access handler-------------------------------------------------
 static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
-	u32 cr0_value;
+	u64 cr0_value;
 
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 
@@ -514,7 +514,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 //---CR4 access handler---------------------------------------------------------
 static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
   if(tofrom == VMX_CRX_ACCESS_TO){
-	u32 cr4_proposed_value;
+	u64 cr4_proposed_value;
 
 	cr4_proposed_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
 
