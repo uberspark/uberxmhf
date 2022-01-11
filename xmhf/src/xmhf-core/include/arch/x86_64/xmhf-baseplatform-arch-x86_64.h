@@ -503,6 +503,24 @@ static inline u32 VCPU_g64(VCPU *vcpu) {
     }
 }
 
+/*
+ * Update vcpu->vmcs.guest_PDPTE{0..3} for PAE guests. This is needed
+ * after guest CR3 is changed.
+ */
+static inline void VCPU_gpdpte_set(VCPU *vcpu, u64 pdptes[4]) {
+    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+        vcpu->vmcs.guest_PDPTE0 = pdptes[0];
+        vcpu->vmcs.guest_PDPTE1 = pdptes[1];
+        vcpu->vmcs.guest_PDPTE2 = pdptes[2];
+        vcpu->vmcs.guest_PDPTE3 = pdptes[3];
+    } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+        /* Not implemented */
+        HALT_ON_ERRORCOND(false);
+    } else {
+        HALT_ON_ERRORCOND(false);
+    }
+}
+
 
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
