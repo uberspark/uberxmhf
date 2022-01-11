@@ -585,7 +585,7 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
                                      RETURN_FROM_PAL_ADDRESS));
   }
 
-  /* Clear lower bits for CR3 later */
+  /* Clear lower bits for CR3 */
   whitelist_new.gcr3 = hpt_cr3_get_address( whitelist_new.hptw_pal_checked_guest_ctx.super.t, 
                                             whitelist_new.gcr3);
 
