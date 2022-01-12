@@ -85,7 +85,7 @@
     movl $0x0, %eax
     movl $0x0, %ebx
     movl $0x0, %ecx
-    movl $0x80, %edx
+    movq %rdi, %rdx	// First argument to this function
     movl $0x0, %ebp
     movl $0x0, %esi
     movl $0x0, %edi

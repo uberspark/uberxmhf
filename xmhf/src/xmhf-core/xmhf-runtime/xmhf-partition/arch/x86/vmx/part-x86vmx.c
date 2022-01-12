@@ -521,7 +521,13 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 
   {
     u32 errorcode;
-    errorcode=__vmx_start_hvm();
+    u32 edx = 0x80;
+    if (!vcpu->isbsp) {
+        uintptr_t _eax, _ebx, _ecx, _edx;
+        cpuid(0x80000001U, &_eax, &_ebx, &_ecx, &_edx);
+        edx = 0x00000600U | (0x000f0000U & _eax);
+    }
+    errorcode=__vmx_start_hvm(edx);
     HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
     //get CPU VMCS into VCPU structure
     xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);

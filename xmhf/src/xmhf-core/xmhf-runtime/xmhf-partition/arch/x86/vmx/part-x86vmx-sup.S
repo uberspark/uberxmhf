@@ -70,7 +70,7 @@
 	movl $0x0, %eax
 	movl $0x0, %ebx
 	movl $0x0, %ecx
-	movl $0x80, %edx
+	movl 8*4+4(%esp), %edx	// First argument to this function
 	movl $0x0, %ebp
 	movl $0x0, %esi
 	movl $0x0, %edi

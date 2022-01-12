@@ -120,7 +120,7 @@ void xmhf_partition_arch_x86_64vmx_setupguestOSstate(VCPU *vcpu);
 void xmhf_partition_arch_x86_64vmx_start(VCPU *vcpu);
 
 //low-level HVM start routine (part-x86_64vmx-sup.S)
-u32 __vmx_start_hvm(void);
+u32 __vmx_start_hvm(u64 rdx);
 
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_x86_64vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
@@ -163,7 +163,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu);
 void xmhf_partition_arch_x86vmx_start(VCPU *vcpu);
 
 //low-level HVM start routine (part-x86vmx-sup.S)
-u32 __vmx_start_hvm(void);
+u32 __vmx_start_hvm(u32 edx);
 
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
