@@ -497,7 +497,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	cr0_value = *((u64 *)_vmx_decode_reg(gpr, vcpu, r));
 	old_cr0 = vcpu->vmcs.guest_CR0;
 
-	//printf("\n[cr0-%02x] MOV TO, current=0x%08x, proposed=0x%08x, shadow=0x%08x",
+	//printf("\n[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx",
 	//	vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
 
 	/*
@@ -517,18 +517,25 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	vcpu->vmcs.guest_CR0 = (cr0_value | fixed_1_fields) & ~(CR0_CD | CR0_NW);
 
 	/*
-	 * If CR0.PG bit changes, need to update bit 9 of VM-Entry Controls
+	 * If CR0.PG bit changes, need to update guest_PDPTE0 - guest_PDPTE3 if
+	 * PAE is enabled.
+	 *
+	 * To support x86-64 guests, also need to update bit 9 of VM-Entry Controls
 	 * (IA-32e mode guest). This bit should always equal to EFER.LME && CR0.PG
 	 */
 	if ((old_cr0 ^ cr0_value) & CR0_PG) {
 		u32 value = vcpu->vmcs.control_VM_entry_controls;
-		u32 lme;
+		u32 lme, pae;
 		msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[0];
 		HALT_ON_ERRORCOND(efer->index == MSR_EFER);
 		lme = (cr0_value & CR0_PG) && (efer->data & (0x1U << EFER_LME));
 		value &= ~(1U << 9);
 		value |= lme << 9;
 		vcpu->vmcs.control_VM_entry_controls = value;
+
+		pae = (cr0_value & CR0_PG) && (!lme) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
+		/* TODO: Need to walk EPT and retrieve values for guest_PDPTE* */
+		HALT_ON_ERRORCOND(!pae);
 	}
 
 	//flush mappings

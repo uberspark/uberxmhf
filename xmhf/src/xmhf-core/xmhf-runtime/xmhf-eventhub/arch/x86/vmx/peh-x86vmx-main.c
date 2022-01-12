@@ -483,14 +483,16 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
 //---CR0 access handler-------------------------------------------------
 static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
-	u64 cr0_value;
+	u64 cr0_value, old_cr0;
+	u64 fixed_1_fields;
 
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 
 	cr0_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	old_cr0 = vcpu->vmcs.guest_CR0;
 
-	//printf("\n[cr0-%02x] MOV TO, current=0x%08x, proposed=0x%08x", vcpu->id,
-	//	(u32)vcpu->vmcs.guest_CR0, cr0_value);
+	//printf("\n[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx",
+	//	vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
 
 	/*
 	 * Make the guest think that move to CR0 succeeds (by changing shadow).
@@ -504,8 +506,19 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	 * set, and other bits to be set.
 	 */
 
+	fixed_1_fields = vcpu->vmcs.control_CR0_mask;
 	vcpu->vmcs.control_CR0_shadow = cr0_value;
-	vcpu->vmcs.guest_CR0 = (cr0_value | vcpu->vmcs.control_CR0_mask) & ~(CR0_CD | CR0_NW);
+	vcpu->vmcs.guest_CR0 = (cr0_value | fixed_1_fields) & ~(CR0_CD | CR0_NW);
+
+	/*
+	 * If CR0.PG bit changes, need to update guest_PDPTE0 - guest_PDPTE3 if
+	 * PAE is enabled.
+	 */
+	if ((old_cr0 ^ cr0_value) & CR0_PG) {
+		u32 pae = (cr0_value & CR0_PG) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
+		/* TODO: Need to walk EPT and retrieve values for guest_PDPTE* */
+		HALT_ON_ERRORCOND(!pae);
+	}
 
 	//flush mappings
 	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
