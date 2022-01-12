@@ -58,13 +58,26 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 	//TODOs:
 	//1. conceal g_midtable_numentries behind "baseplatform" component interface
 	//2. remove g_isl dependency
+	// Only 1 CPU available, just make sure we are BSP and do nothing
+	if (g_midtable_numentries <= 1) {
+		HALT_ON_ERRORCOND(vcpu->isbsp);
+		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+			/* Not implmented */
+			HALT();
+		}else{	//CPU_VENDOR_INTEL
+			xmhf_smpguest_arch_x86_64vmx_initialize(vcpu, 0);
+			printf("\nCPU(0x%02x): x86vmx SMP but only one CPU", vcpu->id);
+		}
+		return;
+	}
+
 	//if we are the BSP and platform has more than 1 CPU, setup SIPI interception to tackle SMP guests
-	if(vcpu->isbsp && (g_midtable_numentries > 1)){
+	if(vcpu->isbsp){
 		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 			xmhf_smpguest_arch_x86_64svm_initialize(vcpu);
 			printf("\nCPU(0x%02x): setup x86_64svm SMP guest capabilities", vcpu->id);
 		}else{	//CPU_VENDOR_INTEL
-			xmhf_smpguest_arch_x86_64vmx_initialize(vcpu);
+			xmhf_smpguest_arch_x86_64vmx_initialize(vcpu, 1);
 			printf("\nCPU(0x%02x): setup x86_64vmx SMP guest capabilities", vcpu->id);
 		}
 	}else{ //we are an AP, so just wait for SIPI signal

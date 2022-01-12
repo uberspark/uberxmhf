@@ -97,7 +97,7 @@ void xmhf_smpguest_arch_x86_64_eventhandler_nmiexception(VCPU *vcpu, struct regs
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 
-void xmhf_smpguest_arch_x86_64vmx_initialize(VCPU *vcpu);
+void xmhf_smpguest_arch_x86_64vmx_initialize(VCPU *vcpu, u32 unmaplapic);
 void xmhf_smpguest_arch_x86_64vmx_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);
 void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm);

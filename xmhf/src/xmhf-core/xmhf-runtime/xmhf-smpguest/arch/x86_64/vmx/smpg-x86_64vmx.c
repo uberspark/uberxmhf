@@ -166,7 +166,10 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 //xmhf_smpguest_arch_x86_64vmx_initialize
 //initialize LAPIC interception machinery
 //note: called from the BSP
-void xmhf_smpguest_arch_x86_64vmx_initialize(VCPU *vcpu){
+// If more than 1 CPU will be used, set unmaplapic to 1. APIC will be mapped
+// When all APs receive SIPI. Otherwise, set unmaplapic to 0 so that APIC will
+// not be unmapped.
+void xmhf_smpguest_arch_x86_64vmx_initialize(VCPU *vcpu, u32 unmaplapic){
   u32 eax, edx;
 
   //read LAPIC base address from MSR
@@ -175,9 +178,11 @@ void xmhf_smpguest_arch_x86_64vmx_initialize(VCPU *vcpu){
 
   g_vmx_lapic_base = eax & 0xFFFFF000UL;
   //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, g_vmx_lapic_base);
-  
-  //unmap LAPIC page
-  vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
+
+  if (unmaplapic) {
+    //unmap LAPIC page
+    vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
+  }
 }
 //----------------------------------------------------------------------
 
