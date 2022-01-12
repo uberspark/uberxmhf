@@ -365,13 +365,25 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_CR3 = 0;
 	//IDTR
 	vcpu->vmcs.guest_IDTR_base = 0;
-	vcpu->vmcs.guest_IDTR_limit = 0x3ff;	//16-bit IVT
+	if (vcpu->isbsp) {
+		vcpu->vmcs.guest_IDTR_limit = 0x3ff;	//16-bit IVT
+	} else {
+		vcpu->vmcs.guest_IDTR_limit = 0xffff;
+	}
 	//GDTR
 	vcpu->vmcs.guest_GDTR_base = 0;
-	vcpu->vmcs.guest_GDTR_limit = 0;	//no GDT
+	if (vcpu->isbsp) {
+		vcpu->vmcs.guest_GDTR_limit = 0;		//no GDT
+	} else {
+		vcpu->vmcs.guest_GDTR_limit = 0xffff;
+	}
 	//LDTR, unusable
 	vcpu->vmcs.guest_LDTR_base = 0;
-	vcpu->vmcs.guest_LDTR_limit = 0;
+	if (vcpu->isbsp) {
+		vcpu->vmcs.guest_LDTR_limit = 0;
+	} else {
+		vcpu->vmcs.guest_LDTR_limit = 0xffff;
+	}
 	vcpu->vmcs.guest_LDTR_selector = 0;
 	vcpu->vmcs.guest_LDTR_access_rights = 0x10000;
 	//TR, should be usable for VMX to work, but not used by guest
@@ -379,6 +391,8 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_TR_limit = 0;
 	vcpu->vmcs.guest_TR_selector = 0;
 	vcpu->vmcs.guest_TR_access_rights = 0x83; //present, 16-bit busy TSS
+	//DR7
+	vcpu->vmcs.guest_DR7 = 0x400;
 	//RSP
 	vcpu->vmcs.guest_RSP = 0x0;
 	//RIP
@@ -396,16 +410,17 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		vcpu->vmcs.guest_RIP = 0x0ULL;
 	}
 
+	//RFLAGS
+	vcpu->vmcs.guest_RFLAGS = (1<<1);					// reserved 1-bits
+	if (vcpu->isbsp) {
+		vcpu->vmcs.guest_RFLAGS &= ~((1<<3)|(1<<5)|(1<<15));	// reserved 0-bits
+		vcpu->vmcs.guest_RFLAGS |= (1<<9);				// IF = enable
+		vcpu->vmcs.guest_RFLAGS &= ~(1<<14);			// Nested Task = disable
+	}
+
+	//CS, DS, ES, FS, GS and SS segments
 	vcpu->vmcs.guest_CS_limit = 0xFFFF;	//64K
 	vcpu->vmcs.guest_CS_access_rights = 0x93; //present, system, read-write accessed
-
-	//RFLAGS
-	vcpu->vmcs.guest_RFLAGS = 0; 
-	vcpu->vmcs.guest_RFLAGS &= ~((1<<3)|(1<<5)|(1<<15));	// reserved 0-bits
-	vcpu->vmcs.guest_RFLAGS |= (1<<1);				// reserved 1-bits
-	vcpu->vmcs.guest_RFLAGS |= (1<<9);				// IF = enable 
-	vcpu->vmcs.guest_RFLAGS &= ~(1<<14);			// Nested Task = disable
-	//CS, DS, ES, FS, GS and SS segments
 	vcpu->vmcs.guest_DS_selector = 0;
 	vcpu->vmcs.guest_DS_base = 0;
 	vcpu->vmcs.guest_DS_limit = 0xFFFF;	//64K
