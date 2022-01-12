@@ -391,6 +391,9 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_CR0 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
 	vcpu->vmcs.guest_CR0 &= ~(CR0_PE);
 	vcpu->vmcs.guest_CR0 &= ~(CR0_PG);
+	if (!vcpu->isbsp) {
+		vcpu->vmcs.guest_CR0 |= CR0_ET;
+	}
 	//CR4, required bits set (usually VMX enabled bit)
 	vcpu->vmcs.guest_CR4 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];
 	//CR3 set to 0, does not matter
@@ -509,8 +512,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_CR0_mask &= ~(CR0_PG);
 	vcpu->vmcs.control_CR0_mask |= CR0_CD;
 	vcpu->vmcs.control_CR0_mask |= CR0_NW;
-	vcpu->vmcs.control_CR0_shadow = vcpu->vmcs.guest_CR0;
-			
+	if (vcpu->isbsp) {
+		vcpu->vmcs.control_CR0_shadow = vcpu->vmcs.guest_CR0;
+	} else {
+		vcpu->vmcs.control_CR0_shadow = 0x60000010U;
+	}
+
 	//trap access to CR4 fixed bits (this includes the VMXE bit)
 	// Make sure to change vmx_handle_intercept_cr4access_ug() if changing
 	// control_CR4_mask.
