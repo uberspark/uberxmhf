@@ -355,13 +355,11 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_CR3_target_count = 0;
       
 	//setup guest state
-	//CR0, real-mode, PE and PG bits cleared
+	//CR0, real-mode, PE and PG bits cleared, set ET bit
 	vcpu->vmcs.guest_CR0 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
 	vcpu->vmcs.guest_CR0 &= ~(CR0_PE);
 	vcpu->vmcs.guest_CR0 &= ~(CR0_PG);
-	if (!vcpu->isbsp) {
-		vcpu->vmcs.guest_CR0 |= CR0_ET;
-	}
+	vcpu->vmcs.guest_CR0 |= CR0_ET;
 	//CR4, required bits set (usually VMX enabled bit)
 	vcpu->vmcs.guest_CR4 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];
 	//CR3 set to 0, does not matter
@@ -478,9 +476,11 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_CR0_mask |= CR0_CD;
 	vcpu->vmcs.control_CR0_mask |= CR0_NW;
 	if (vcpu->isbsp) {
-		vcpu->vmcs.control_CR0_shadow = vcpu->vmcs.guest_CR0;
+		/* 0x00000010U (e.g. after QEMU's SeaBIOS jumps to 0x7c00) */
+		vcpu->vmcs.control_CR0_shadow = CR0_ET;
 	} else {
-		vcpu->vmcs.control_CR0_shadow = 0x60000010U;
+		/* 0x60000010U (Intel's spec on processor state after INIT) */
+		vcpu->vmcs.control_CR0_shadow = CR0_CD | CR0_NW | CR0_ET;
 	}
 
 	//trap access to CR4 fixed bits (this includes the VMXE bit)
@@ -528,6 +528,10 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 
   {
     u32 errorcode;
+    /*
+     * For BSP, use RDX=0x80 (after BIOS setup).
+     * For AP, use RDX=0x000n06xx (Intel's spec on processor state after INIT).
+     */
     u32 edx = 0x80;
     if (!vcpu->isbsp) {
         uintptr_t _eax, _ebx, _ecx, _edx;
