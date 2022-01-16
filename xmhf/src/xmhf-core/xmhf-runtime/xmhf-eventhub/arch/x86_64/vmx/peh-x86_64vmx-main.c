@@ -54,26 +54,31 @@
 //map a CPU register index into appropriate VCPU *vcpu or struct regs *r field
 //and return the address of the field
 static u64 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
-  if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
-
-	  switch(gpr){
-		case 0: return ( (u64 *)&r->rax );
-		case 1: return ( (u64 *)&r->rcx );
-		case 2: return ( (u64 *)&r->rdx );
-		case 3: return ( (u64 *)&r->rbx );
-		case 4: return ( (u64 *)&vcpu->vmcs.guest_RSP);
-		case 5: return ( (u64 *)&r->rbp );
-		case 6: return ( (u64 *)&r->rsi );
-		case 7: return ( (u64 *)&r->rdi );
-	  }
-   }else{
-		printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
-			__FUNCTION__, gpr);
-		HALT();
-   }
-
-	//we will never get here, appease the compiler
-	return (u64 *)&r->rax;
+    switch(gpr){
+        case  0: return &r->rax;
+        case  1: return &r->rcx;
+        case  2: return &r->rdx;
+        case  3: return &r->rbx;
+        case  4: return (u64*)&vcpu->vmcs.guest_RSP;
+        case  5: return &r->rbp;
+        case  6: return &r->rsi;
+        case  7: return &r->rdi;
+        case  8: return &r->r8 ;
+        case  9: return &r->r9 ;
+        case 10: return &r->r10;
+        case 11: return &r->r11;
+        case 12: return &r->r12;
+        case 13: return &r->r13;
+        case 14: return &r->r14;
+        case 15: return &r->r15;
+        default: {
+            printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
+                   __FUNCTION__, gpr);
+            HALT();
+            //we will never get here, appease the compiler
+            return (u64 *)&r->rax;
+        }
+    }
 }
 
 
@@ -739,7 +744,7 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 			(u32) (((u64)vcpu->vmcs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4);
 			//printf("\ncrx=%u, gpr=%u, tofrom=%u", crx, gpr, tofrom);
 
-			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
+			if ( ((int)gpr >=0) && ((int)gpr <= 15) ){
 				switch(crx){
 					case 0x0: //CR0 access
 						vmx_handle_intercept_cr0access_ug(vcpu, r, gpr, tofrom);
