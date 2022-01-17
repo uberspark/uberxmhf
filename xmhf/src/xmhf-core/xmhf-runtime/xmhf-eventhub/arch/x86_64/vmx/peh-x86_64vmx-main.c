@@ -189,7 +189,8 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			{
 				//u16 guest_cs, guest_ip, guest_flags;
 				u16 guest_cs __attribute__((unused)), guest_ip __attribute__((unused)), guest_flags;
-				u16 *gueststackregion = (u16 *)( (hva_t)vcpu->vmcs.guest_SS_base + (hva_t)vcpu->vmcs.guest_RSP );
+				/* Truncate RSP to 16 bits, (higher bits not used in real mode) */
+				u16 *gueststackregion = (u16 *)( (hva_t)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP );
 
 
 				//if V86 mode translate the virtual address to physical address
