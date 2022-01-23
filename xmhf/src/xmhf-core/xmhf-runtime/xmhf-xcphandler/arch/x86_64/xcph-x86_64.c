@@ -138,7 +138,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
              * matches the exception vector and the second value matches the
              * current PC, then jump to the third value.
              */
-            uintptr_t exception_cs, exception_rip, exception_eflags;
+            uintptr_t exception_cs, exception_rip, exception_rflags;
             u32 error_code_available = 0;
             hva_t *found = NULL;
 
@@ -156,7 +156,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
             exception_rip = ((uintptr_t *)(r->rsp))[0];
             exception_cs = ((uintptr_t *)(r->rsp))[1];
-            exception_eflags = ((uintptr_t *)(r->rsp))[2];
+            exception_rflags = ((uintptr_t *)(r->rsp))[2];
 
             for (hva_t *i = (hva_t *)_begin_xcph_table;
                  i < (hva_t *)_end_xcph_table; i += 3) {
@@ -180,8 +180,8 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             }
             printf("\n[%02x]: state dump follows...", vcpu->id);
             // things to dump
-            printf("\n[%02x] CS:RIP 0x%04x:0x%016lx with EFLAGS=0x%016lx", vcpu->id,
-                (u16)exception_cs, exception_rip, exception_eflags);
+            printf("\n[%02x] CS:RIP 0x%04x:0x%016lx with RFLAGS=0x%016lx", vcpu->id,
+                (u16)exception_cs, exception_rip, exception_rflags);
             printf("\n[%02x]: VCPU at 0x%016lx", vcpu->id, (uintptr_t)vcpu, vcpu->id);
             printf("\n[%02x] RAX=0x%016lx RBX=0x%016lx", vcpu->id, r->rax, r->rbx);
             printf("\n[%02x] RCX=0x%016lx RDX=0x%016lx", vcpu->id, r->rcx, r->rdx);
