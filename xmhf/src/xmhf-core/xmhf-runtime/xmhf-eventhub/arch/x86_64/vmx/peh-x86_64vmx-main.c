@@ -815,8 +815,9 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 		default:{
 			if (vcpu->vmcs.control_VM_entry_controls & (1U << 9)) {
 				/* x86-64 mode */
-				printf("\nCPU(0x%02x): Unhandled intercept in long mode: 0x%08x",
-						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
+				printf("\nCPU(0x%02x): Unhandled intercept in long mode: %d (0x%08x)",
+						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
+						(u32)vcpu->vmcs.info_vmexit_reason);
 				printf("\n	CPU(0x%02x): EFLAGS=0x%08x",
 						vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
 				printf("\n	SS:RSP =0x%04x:0x%016llx",
@@ -837,8 +838,9 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 				}
 			} else {
 				/* x86 mode */
-				printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x",
-						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
+				printf("\nCPU(0x%02x): Unhandled intercept: %d (0x%08x)",
+						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
+						(u32)vcpu->vmcs.info_vmexit_reason);
 				printf("\n	CPU(0x%02x): EFLAGS=0x%08x",
 						vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
 				printf("\n	SS:ESP =0x%04x:0x%08x",

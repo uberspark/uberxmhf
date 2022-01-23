@@ -173,7 +173,8 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 break;
             }
 
-            printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
+            printf("\n[%02x]: unhandled exception %d (0x%x), halting!",
+            		vcpu->id, vector, vector);
             if (error_code_available) {
                 printf("\n[%02x]: error code: 0x%016lx", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
             }
