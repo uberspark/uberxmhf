@@ -164,6 +164,8 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 	//0x000F8000-0x000FFFFF
 	_vmx_read_fixed_mtrr(vcpu, IA32_MTRR_FIX4K_F8000,  &index, 0x000F8000ULL, 0x00001000ULL);
 
+	HALT_ON_ERRORCOND(index == MAX_FIXED_MEMORYTYPE_ENTRIES);
+
 
 	//3. grab memory types using variable length MTRRs  
 	{
