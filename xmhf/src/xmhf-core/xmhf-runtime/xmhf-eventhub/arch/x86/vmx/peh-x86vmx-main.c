@@ -325,6 +325,45 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			HALT_ON_ERRORCOND(found != 0);
 			break;
 		}
+		case IA32_MTRR_FIX64K_00000: /* fallthrough */
+		case IA32_MTRR_FIX16K_80000: /* fallthrough */
+		case IA32_MTRR_FIX16K_A0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_C0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_C8000: /* fallthrough */
+		case IA32_MTRR_FIX4K_D0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_D8000: /* fallthrough */
+		case IA32_MTRR_FIX4K_E0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_E8000: /* fallthrough */
+		case IA32_MTRR_FIX4K_F0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_F8000: /* fallthrough */
+		case IA32_MTRR_PHYSBASE0: /* fallthrough */
+		case IA32_MTRR_PHYSMASK0: /* fallthrough */
+		case IA32_MTRR_PHYSBASE1: /* fallthrough */
+		case IA32_MTRR_PHYSMASK1: /* fallthrough */
+		case IA32_MTRR_PHYSBASE2: /* fallthrough */
+		case IA32_MTRR_PHYSMASK2: /* fallthrough */
+		case IA32_MTRR_PHYSBASE3: /* fallthrough */
+		case IA32_MTRR_PHYSMASK3: /* fallthrough */
+		case IA32_MTRR_PHYSBASE4: /* fallthrough */
+		case IA32_MTRR_PHYSMASK4: /* fallthrough */
+		case IA32_MTRR_PHYSBASE5: /* fallthrough */
+		case IA32_MTRR_PHYSMASK5: /* fallthrough */
+		case IA32_MTRR_PHYSBASE6: /* fallthrough */
+		case IA32_MTRR_PHYSMASK6: /* fallthrough */
+		case IA32_MTRR_PHYSBASE7: /* fallthrough */
+		case IA32_MTRR_PHYSMASK7: /* fallthrough */
+		case IA32_MTRR_PHYSBASE8: /* fallthrough */
+		case IA32_MTRR_PHYSMASK8: /* fallthrough */
+		case IA32_MTRR_PHYSBASE9: /* fallthrough */
+		case IA32_MTRR_PHYSMASK9:
+			/*
+			 * Need to change EPT to reflect MTRR changes, because host MTRRs
+			 * are not used when EPT is used.
+			 */
+			printf("\nCPU(0x%02x): Modifying MTRR 0x%08x not supported. Halt!",
+					vcpu->id, r->ecx);
+			HALT();
+			break;
 		default:{
 			asm volatile ("wrmsr\r\n"
           : //no outputs
