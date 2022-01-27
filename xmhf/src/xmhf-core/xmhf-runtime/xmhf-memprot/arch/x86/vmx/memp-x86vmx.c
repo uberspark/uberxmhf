@@ -288,6 +288,14 @@ static void _vmx_setupEPT(VCPU *vcpu){
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
 				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
+				/*
+				 * For memorytype equal to 0 (UC), 1 (WC), 4 (WT), 5 (WP), 6 (WB),
+				 * MTRR memory type and EPT memory type are the same encoding.
+				 * Currently other encodings are reserved.
+				 */
+				HALT_ON_ERRORCOND(memorytype == 0 || memorytype == 1 ||
+									memorytype == 4 || memorytype == 5 ||
+									memorytype == 6);
 				//the XMHF memory region includes the secure loader +
 				//the runtime (core + app). this runs from 
 				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
@@ -295,12 +303,9 @@ static void _vmx_setupEPT(VCPU *vcpu){
 				//make XMHF physical pages inaccessible
 				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
 					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) ){
-					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
+					p_table[k] = (u64) (paddr) | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
 				}else{
-					if(memorytype == 0)
-						p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
-					else
-						p_table[k] = (u64) (paddr)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
+					p_table[k] = (u64) (paddr) | ((u64)memorytype << 3) | (u64)0x7 ;	//present
 				}
 				
 				paddr += PAGE_SIZE_4K;

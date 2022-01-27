@@ -302,14 +302,19 @@ static void _vmx_setupEPT(VCPU *vcpu){
 			u64 i = paddr / PAGE_SIZE_4K;
 			u64 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, paddr);
 			u64 lower;
+			/*
+			 * For memorytype equal to 0 (UC), 1 (WC), 4 (WT), 5 (WP), 6 (WB),
+			 * MTRR memory type and EPT memory type are the same encoding.
+			 * Currently other encodings are reserved.
+			 */
+			HALT_ON_ERRORCOND(memorytype == 0 || memorytype == 1 ||
+								memorytype == 4 || memorytype == 5 ||
+								memorytype == 6);
 			if ((paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
 				(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) {
 				lower = 0x0;	/* not present */
 			} else if (memorytype == 0) {
-				lower = 0x7;	/* present, UC */
-			} else {
-				memorytype = 6;
-				lower = 0x7;	/* present, WB, track host MTRR */
+				lower = 0x7;	/* present */
 			}
 			p_entry[i] = paddr | (memorytype << 3) | lower;
 		}
