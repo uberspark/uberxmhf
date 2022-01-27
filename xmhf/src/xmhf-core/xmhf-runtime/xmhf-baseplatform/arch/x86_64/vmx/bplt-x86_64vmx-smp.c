@@ -174,8 +174,8 @@ void xmhf_baseplatform_arch_x86_64vmx_wakeupAPs(void){
         // unity-mapped trampoline that starts at 64K
         // physical. Without SENTER, or with AMD, APs start in
         // 16-bit mode.  We get to skip that. 
-        printf("\nBSP: _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
-			(u32)_mle_join_start, (u32)_ap_bootstrap_start);
+        printf("\nBSP: _mle_join_start = 0x%08lx, _ap_bootstrap_start = 0x%08lx",
+			(u64)_mle_join_start, (u64)_ap_bootstrap_start);
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first 
@@ -184,7 +184,7 @@ void xmhf_baseplatform_arch_x86_64vmx_wakeupAPs(void){
                 
         // MLE Join structure constructed in runtimesup.S. Debug print. 
         #ifndef __XMHF_VERIFICATION__
-        mle_join = (mle_join_t*)((u32)_mle_join_start - (u32)_ap_bootstrap_start + 0x10000); // XXX magic number
+        mle_join = (mle_join_t*)((u64)_mle_join_start - (u64)_ap_bootstrap_start + 0x10000); // XXX magic number
         #endif
         //printf("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
         //printf("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
