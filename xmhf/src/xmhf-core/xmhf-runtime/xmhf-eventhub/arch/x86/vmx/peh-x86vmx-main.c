@@ -360,8 +360,23 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			 * Need to change EPT to reflect MTRR changes, because host MTRRs
 			 * are not used when EPT is used.
 			 */
-			printf("\nCPU(0x%02x): Modifying MTRR 0x%08x not supported. Halt!",
-					vcpu->id, r->ecx);
+			{
+				/*
+				 * As a workaround, if writing the MSR will not cause change,
+				 * do not halt. For example Windows 10 will do this.
+				 */
+				u32 eax, edx;
+				rdmsr(r->ecx, &eax, &edx);
+				if (eax == r->eax && edx == r->edx) {
+					break;
+				}
+				printf("\nCPU(0x%02x): Old       MTRR 0x%08x is 0x %08x %08x",
+						vcpu->id, r->ecx, edx, eax);
+			}
+			printf("\nCPU(0x%02x): Modifying MTRR 0x%08x to 0x %08x %08x",
+					vcpu->id, r->ecx, r->edx, r->eax);
+			printf("\nCPU(0x%02x): Modifying MTRR not yet supported. Halt!",
+					vcpu->id);
 			HALT();
 			break;
 		default:{
