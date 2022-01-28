@@ -647,14 +647,14 @@ void vmx_eap_zap(void){
 	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
 
 	//grab ACPI RSDT
-	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)(uintptr_t)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
 		__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
 	HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
-	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)((uintptr_t)rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);			
 	printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
@@ -722,14 +722,14 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   printf("\n%s: RSDP at %08x", __FUNCTION__, status);
   
 	//grab ACPI RSDT
-	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)(uintptr_t)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
 		__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 	
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
 	HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
-	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)((uintptr_t)rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(rsdtentries[0])*num_rsdtentries);			
   printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);

@@ -85,7 +85,7 @@ typedef struct {
   u8 checksum;
   u8 oemid[6];
   u8 revision;
-  uintptr_t rsdtaddress;
+  u32 rsdtaddress;
   u32 length;
   u64 xsdtaddress;
   u8 xchecksum;
