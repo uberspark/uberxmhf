@@ -122,8 +122,13 @@ our C main*/
 5:
 
     /* load 64-bit GDT */
-    addl %ebp, sl_gdt_ptr(%ebp)
-    lgdt sl_gdt(%ebp)
+    /*
+     * TODO: for AMD processors, use SS instead of DS.
+     * Need to follow sl-x86-entry.S to query CPUID.
+     * See "Cross-processor challenge:" comment in that file.
+     */
+    addl %ebp, %ds:sl_gdt_ptr(%ebp)
+    lgdt %ds:sl_gdt(%ebp)
 
     /* set CR4 (enable PAE) */
     movl %cr4, %eax
@@ -137,29 +142,29 @@ our C main*/
     leal sl_long_pt_end(%ebp), %ebx
 2:  cmpl %eax, %ebx
     jbe 3f
-    movl $0, (%eax)
+    movl $0, %ds:(%eax)
     addl $4, %eax
     jmp 2b
 3:
 
     /* set PML4T (1 entry, 512 GiB per entry) */
     leal sl_pdpt(%ebp), %eax
-    orl $0x3, %eax              /* set P and R/W bits */
-    movl %eax, sl_pml4t(%ebp)   /* store PML4T[0] */
+    orl $0x3, %eax                  /* set P and R/W bits */
+    movl %eax, %ds:sl_pml4t(%ebp)   /* store PML4T[0] */
 
     /* set PDPT (4 entries, 1 GiB per entry) */
     leal sl_pdt_0(%ebp), %eax
-    orl $0x3, %eax                  /* set P and R/W bits */
-    movl %eax, sl_pdpt+8*0(%ebp)    /* store PDPT[0] */
+    orl $0x3, %eax                      /* set P and R/W bits */
+    movl %eax, %ds:sl_pdpt+8*0(%ebp)    /* store PDPT[0] */
     leal sl_pdt_1(%ebp), %eax
     orl $0x3, %eax
-    movl %eax, sl_pdpt+8*1(%ebp)    /* store PDPT[1] */
+    movl %eax, %ds:sl_pdpt+8*1(%ebp)    /* store PDPT[1] */
     leal sl_pdt_2(%ebp), %eax
     orl $0x3, %eax
-    movl %eax, sl_pdpt+8*2(%ebp)    /* store PDPT[2] */
+    movl %eax, %ds:sl_pdpt+8*2(%ebp)    /* store PDPT[2] */
     leal sl_pdt_3(%ebp), %eax
     orl $0x3, %eax
-    movl %eax, sl_pdpt+8*3(%ebp)    /* store PDPT[3] */
+    movl %eax, %ds:sl_pdpt+8*3(%ebp)    /* store PDPT[3] */
 
     /* set PDT (512*4 = 2048 entries, 2 MiB per entry) */
     movl $0, %eax
@@ -167,7 +172,7 @@ our C main*/
 4:  movl %eax, %ebx
     shll $21, %ebx
     orl $0x83, %ebx
-    movl %ebx, sl_pdt(%ebp, %eax, 8)    /* store PDT[EAX] */
+    movl %ebx, %ds:sl_pdt(%ebp, %eax, 8)    /* store PDT[EAX] */
     incl %eax
     cmpl %eax, %ecx
     ja 4b
