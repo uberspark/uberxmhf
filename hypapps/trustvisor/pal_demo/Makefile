@@ -3,6 +3,10 @@
 
 CFLAGS := -g -I../src/include -Wall -Werror
 
+ifeq ($(WINDOWS), y)
+	CFLAGS += -DWINDOWS
+endif
+
 all: main test test_args
 
 main: main.o pal.o caller.o
@@ -14,5 +18,5 @@ pal.o: pal.c
 
 .PHONY: clean
 clean:
-	rm -rf *.o main test test_args
+	rm -rf *.o *.exe main test test_args
 
