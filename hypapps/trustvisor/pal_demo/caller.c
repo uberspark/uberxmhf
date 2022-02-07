@@ -1,7 +1,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifndef WINDOWS
 #include <sys/mman.h>
+#endif /* !WINDOWS */
 
 #include "vmcall.h"
 #include "caller.h"
@@ -9,12 +12,14 @@
 #define PAGE_SIZE ((uintptr_t) 4096)
 
 static int lock_and_touch_page(void *addr, size_t len) {
+#ifndef WINDOWS
 	// Call mlock() and then write to page
 	// similar to tv_lock_range() and tv_touch_range() in tee-sdk
 	if (mlock(addr, len)) {
 		perror("mlock");
 		return 1;
 	}
+#endif /* !WINDOWS */
 	// If do not memset, XMHF will see a NULL page
 	memset(addr, 0x90, len);
 	return 0;
@@ -31,12 +36,19 @@ static int lock_and_touch_page(void *addr, size_t len) {
 void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 					void *end_pal, int verbose) {
 	// Call mmap(), construct struct tv_pal_sections
+#ifdef WINDOWS
+	void *code = NULL;
+	void *data = NULL;
+	void *stack = NULL;
+	void *param = NULL;
+#else /* !WINDOWS */
 	int prot = PROT_EXEC | PROT_READ | PROT_WRITE;
 	int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
 	void *code = mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
 	void *data = mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
 	void *stack = mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
 	void *param = mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
+#endif /* WINDOWS */
 	struct tv_pal_sections sections = {
 		num_sections: 4,
 		sections: {
