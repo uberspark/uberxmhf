@@ -2,9 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef WINDOWS
+#ifdef WINDOWS
+#include <memoryapi.h>
+#include <errhandlingapi.h>
+#else /* !WINDOWS */
 #include <sys/mman.h>
-#endif /* !WINDOWS */
+#endif /* WINDOWS */
 
 #include "vmcall.h"
 #include "caller.h"
@@ -12,14 +15,20 @@
 #define PAGE_SIZE ((uintptr_t) 4096)
 
 static int lock_and_touch_page(void *addr, size_t len) {
-#ifndef WINDOWS
+#ifdef WINDOWS
+	if (!VirtualLock(addr, len)) {
+		DWORD err = GetLastError();
+		printf("VirtualLock error: %lx", err);
+		return 1;
+	}
+#else /* !WINDOWS */
 	// Call mlock() and then write to page
 	// similar to tv_lock_range() and tv_touch_range() in tee-sdk
 	if (mlock(addr, len)) {
 		perror("mlock");
 		return 1;
 	}
-#endif /* !WINDOWS */
+#endif /* WINDOWS */
 	// If do not memset, XMHF will see a NULL page
 	memset(addr, 0x90, len);
 	return 0;
@@ -37,10 +46,12 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 					void *end_pal, int verbose) {
 	// Call mmap(), construct struct tv_pal_sections
 #ifdef WINDOWS
-	void *code = NULL;
-	void *data = NULL;
-	void *stack = NULL;
-	void *param = NULL;
+	DWORD prot = PAGE_EXECUTE_READWRITE;
+	DWORD va_flags = MEM_COMMIT | MEM_RESERVE;
+	void *code = VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
+	void *data = VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
+	void *stack = VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
+	void *param = VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
 #else /* !WINDOWS */
 	int prot = PROT_EXEC | PROT_READ | PROT_WRITE;
 	int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
