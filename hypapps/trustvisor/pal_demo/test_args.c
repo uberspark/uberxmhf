@@ -13,11 +13,11 @@
 									args1[4], args2[4]
 
 unsigned long rand_long(void) {
-	switch (0) { case 0:; case (RAND_MAX >= 0xffff):; };
+	switch (0) { case 0:; case (RAND_MAX >= 0xff):; };
 	unsigned long ans = 0;
-	for (int i = 0; i < sizeof(long) * 8 / 16; i++) {
+	for (int i = 0; i < sizeof(long) * 8 / 8; i++) {
 		ans <<= 16;
-		ans |= ((unsigned long)rand()) & 0xffff;
+		ans |= ((unsigned long)rand()) & 0xff;
 	}
 	return ans;
 }
