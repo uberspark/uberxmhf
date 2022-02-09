@@ -132,7 +132,14 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   	HALT_ON_ERRORCOND( ((eax & (1 << 8)) >> 8) );
   	//ensure number of variable MTRRs are within the maximum supported
   	HALT_ON_ERRORCOND( (num_vmtrrs <= MAX_VARIABLE_MEMORYTYPE_ENTRIES) );
-  	
+
+	// Read MTRR default type register
+	rdmsr(IA32_MTRR_DEF_TYPE, &eax, &edx);
+	vcpu->vmx_ept_defaulttype = (eax & 0xFFU);
+	// Sanity check that Fixed-range MTRRs are enabled
+	HALT_ON_ERRORCOND(eax & (1 << 10));
+	// Sanity check that MTRRs are enabled
+	HALT_ON_ERRORCOND(eax & (1 << 11));
 
 	#ifndef __XMHF_VERIFICATION__
 	//1. clear memorytypes array
@@ -169,10 +176,20 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 
 	//3. grab memory types using variable length MTRRs  
 	{
-		u64 paddrmask = 0x0000000FFFFFFFFFULL; //36-bits physical address, TODO: need to make this dynamic
+		u32 eax, ebx, ecx, edx;
+		u64 paddrmask; //mask physical address, usually 36-bits
 		u64 vMTRR_base, vMTRR_mask;
 		u32 msrval=IA32_MTRR_PHYSBASE0;
 		u32 i;
+
+		/* Check whether CPUID 0x80000008 is supported */
+		cpuid(0x80000000U, eax, ebx, ecx, edx);
+		HALT_ON_ERRORCOND(eax >= 0x80000008U)
+		/* Compute paddrmask from CPUID.80000008H:EAX[7:0] (max physical addr) */
+		cpuid(0x80000008U, eax, ebx, ecx, edx);
+		eax &= 0xFFU;
+		HALT_ON_ERRORCOND(eax >= 32 && eax <= 64);
+		paddrmask = (1ULL << eax) - 1ULL;
 
 		for(i=0; i < num_vmtrrs; i++){
 			rdmsr(msrval, &eax, &edx);
@@ -182,11 +199,17 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 			vMTRR_mask = ((u64)edx << 32) | (u64)eax;
 			msrval++;
 			if( (vMTRR_mask & ((u64)1 << 11)) ){
-				vcpu->vmx_ept_memorytypes[index].startaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL);
-				vcpu->vmx_ept_memorytypes[index].endaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL) + 
-					(u64) (~(vMTRR_mask & (u64)0xFFFFFFFFFFFFF000ULL) &
-						paddrmask);
-				vcpu->vmx_ept_memorytypes[index++].type = ((u32)vMTRR_base & (u32)0x000000FF);       
+				u64 baseaddr = (vMTRR_base & ~((u64)PAGE_SIZE_4K - 1));
+				u64 maskaddr = (vMTRR_mask & ~((u64)PAGE_SIZE_4K - 1));
+				/* Make sure base and mask do not exceed physical address */
+				HALT_ON_ERRORCOND(!(~paddrmask & baseaddr));
+				HALT_ON_ERRORCOND(!(~paddrmask & maskaddr));
+				/* Make sure mask is of the form 0b111...111000...000 */
+				HALT_ON_ERRORCOND(!(((~(paddrmask & maskaddr)) + 1) &
+									(~(paddrmask & maskaddr))));
+				vcpu->vmx_ept_memorytypes[index].startaddr = baseaddr;
+				vcpu->vmx_ept_memorytypes[index].endaddr = baseaddr + (~maskaddr & paddrmask);
+				vcpu->vmx_ept_memorytypes[index++].type = ((u32)vMTRR_base & 0xFFU);
 			}else{
 				vcpu->vmx_ept_memorytypes[index++].invalid = 1;
 			}
@@ -222,8 +245,8 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
        // return default memory type
 //
 static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
- int i;
- u32 prev_type= MTRR_TYPE_RESV; 
+  int i;
+  u32 prev_type= MTRR_TYPE_RESV;
 
   //check if page base address under 1M, if so used FIXED MTRRs
   if(pagebaseaddr < (1024*1024)){
@@ -267,9 +290,6 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 //---setup EPT for VMX----------------------------------------------------------
 static void _vmx_setupEPT(VCPU *vcpu){
 	//step-1: tie in EPT PML4 structures
-	//note: the default memory type (usually WB) should be determined using 
-	//IA32_MTRR_DEF_TYPE_MSR. If MTRR's are not enabled (really?)
-	//then all default memory is type UC (uncacheable)
 	u64 *pml4_entry = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
 	u64 *pdp_entry = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
 	u64 *pd_entry = (u64 *)vcpu->vmx_vaddr_ept_pd_tables;

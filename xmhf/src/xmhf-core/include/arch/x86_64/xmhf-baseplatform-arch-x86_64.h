@@ -218,6 +218,7 @@ typedef struct _vcpu {
   hva_t vmx_vaddr_ept_pdp_table;  //virtual address of EPT PDP table
   hva_t vmx_vaddr_ept_pd_tables;  //virtual address of base of EPT PD tables
   hva_t vmx_vaddr_ept_p_tables;   //virtual address of base of EPT P tables
+  u32 vmx_ept_defaulttype;        //default EPT memory type
   struct _memorytype vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
   //guest MTRR shadow MSRs
   struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
