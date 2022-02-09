@@ -183,10 +183,10 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 		u32 i;
 
 		/* Check whether CPUID 0x80000008 is supported */
-		cpuid(0x80000000U, eax, ebx, ecx, edx);
+		cpuid(0x80000000U, &eax, &ebx, &ecx, &edx);
 		HALT_ON_ERRORCOND(eax >= 0x80000008U)
 		/* Compute paddrmask from CPUID.80000008H:EAX[7:0] (max physical addr) */
-		cpuid(0x80000008U, eax, ebx, ecx, edx);
+		cpuid(0x80000008U, &eax, &ebx, &ecx, &edx);
 		eax &= 0xFFU;
 		HALT_ON_ERRORCOND(eax >= 32 && eax <= 64);
 		paddrmask = (1ULL << eax) - 1ULL;
@@ -205,8 +205,8 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 				HALT_ON_ERRORCOND(!(~paddrmask & baseaddr));
 				HALT_ON_ERRORCOND(!(~paddrmask & maskaddr));
 				/* Make sure mask is of the form 0b111...111000...000 */
-				HALT_ON_ERRORCOND(!(((~(paddrmask & maskaddr)) + 1) &
-									(~(paddrmask & maskaddr))));
+				HALT_ON_ERRORCOND(!(((paddrmask & ~maskaddr) + 1) &
+									(paddrmask & ~maskaddr)));
 				vcpu->vmx_ept_memorytypes[index].startaddr = baseaddr;
 				vcpu->vmx_ept_memorytypes[index].endaddr = baseaddr + (~maskaddr & paddrmask);
 				vcpu->vmx_ept_memorytypes[index++].type = ((u32)vMTRR_base & 0xFFU);
@@ -281,7 +281,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
   }
  
   if(prev_type == MTRR_TYPE_RESV)
-    prev_type = MTRR_TYPE_WB; //todo: need to dynamically get the default MTRR (usually WB)
+    prev_type = vcpu->vmx_ept_defaulttype;
  
   return prev_type;
 }
