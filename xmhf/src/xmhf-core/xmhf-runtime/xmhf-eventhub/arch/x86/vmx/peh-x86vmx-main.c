@@ -568,6 +568,13 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	/*
 	 * If CR0.PG bit changes, need to update guest_PDPTE0 - guest_PDPTE3 if
 	 * PAE is enabled.
+	 *
+	 * There is a workaround to retry the MOV CR0 instruction, implemented in
+	 * vmx_handle_intercept_cr0access_ug() in peh-x86_64vmx-main.c.
+	 *
+	 * x86 XMHF cannot support PAE guests well because the hypervisor cannot
+	 * access memory above 4GB. So the workaround is not implemented here.
+	 * x86_64 XMHF should be used instead.
 	 */
 	if ((old_cr0 ^ cr0_value) & CR0_PG) {
 		u32 pae = (cr0_value & CR0_PG) && (vcpu->vmcs.guest_CR4 & CR4_PAE);

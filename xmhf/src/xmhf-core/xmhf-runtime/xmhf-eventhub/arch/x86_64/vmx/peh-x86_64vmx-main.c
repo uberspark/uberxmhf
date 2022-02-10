@@ -557,8 +557,8 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	cr0_value = *((u64 *)_vmx_decode_reg(gpr, vcpu, r));
 	old_cr0 = vcpu->vmcs.guest_CR0;
 
-	printf("\n[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx",
-		vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
+	//printf("\n[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx",
+	//	vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
 
 	/*
 	 * Make the guest think that move to CR0 succeeds (by changing shadow).
@@ -596,8 +596,8 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 			 */
 			vcpu->vmcs.guest_CR0 &= ~pg_pe_mask;
 			vcpu->vmcs.guest_CR0 |= old_cr0 & pg_pe_mask;
-			printf("\n[cr0-%02x] RETRY:  old=0x%08llx", vcpu->id,
-				vcpu->vmcs.guest_CR0);
+			//printf("\n[cr0-%02x] RETRY:  old=0x%08llx", vcpu->id,
+			//	vcpu->vmcs.guest_CR0);
 			/* Sanity check: for bits masked, guest CR0 = CR0 shadow */
 			HALT_ON_ERRORCOND(
 				((vcpu->vmcs.guest_CR0 ^ vcpu->vmcs.control_CR0_shadow) &
