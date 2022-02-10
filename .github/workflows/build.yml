@@ -41,17 +41,30 @@ jobs:
           xmhf/src/xmhf-core/xmhf-runtime/runtime.exe
           hypervisor-${{ matrix.target_arch }}.bin.gz
           init-${{ matrix.target_arch }}.bin
-    - name: Build pal_demo
+    - name: Build pal_demo Linux
       if: ${{ matrix.compile_mode == 'debug' }}
       run: |
-        ./.github/build_pal_demo.sh ${{ matrix.target_arch }}
-    - name: Release pal_demo
+        ./.github/build_pal_demo.sh linux ${{ matrix.target_arch }}
+    - name: Release pal_demo Linux
       if: ${{ matrix.compile_mode == 'debug' }}
       uses: actions/upload-artifact@v2
       with:
-        name: pal_demo-${{ matrix.target_arch }}
+        name: pal_demo-linux-${{ matrix.target_arch }}
         path: |
           hypapps/trustvisor/pal_demo/main
           hypapps/trustvisor/pal_demo/test
           hypapps/trustvisor/pal_demo/test_args
+    - name: Build pal_demo Windows
+      if: ${{ matrix.compile_mode == 'debug' }}
+      run: |
+        ./.github/build_pal_demo.sh windows ${{ matrix.target_arch }}
+    - name: Release pal_demo Windows
+      if: ${{ matrix.compile_mode == 'debug' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: pal_demo-windows-${{ matrix.target_arch }}
+        path: |
+          hypapps/trustvisor/pal_demo/main.exe
+          hypapps/trustvisor/pal_demo/test.exe
+          hypapps/trustvisor/pal_demo/test_args.exe
 
