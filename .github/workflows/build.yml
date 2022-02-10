@@ -24,7 +24,7 @@ jobs:
         sudo apt-get install \
                       openssh-server tmux vim git aptitude \
                       pbuilder texinfo ruby build-essential autoconf libtool \
-                      crossbuild-essential-i386 \
+                      crossbuild-essential-i386 gcc-mingw-w64 \
                       -y
     - name: Build
       run: |
