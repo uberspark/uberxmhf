@@ -557,8 +557,8 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	cr0_value = *((u64 *)_vmx_decode_reg(gpr, vcpu, r));
 	old_cr0 = vcpu->vmcs.guest_CR0;
 
-	//printf("\n[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx",
-	//	vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
+	printf("\n[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx",
+		vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
 
 	/*
 	 * Make the guest think that move to CR0 succeeds (by changing shadow).
@@ -575,6 +575,44 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	fixed_1_fields = vcpu->vmcs.control_CR0_mask;
 	vcpu->vmcs.control_CR0_shadow = cr0_value;
 	vcpu->vmcs.guest_CR0 = (cr0_value | fixed_1_fields) & ~(CR0_CD | CR0_NW);
+
+	/*
+	 * If CR0.PG, need to update a lot of things for PAE and long mode support.
+	 * As a workaround, we let the guest retry setting CR0.PG and CR0.PE. This
+	 * way we do not need to calculate the VMCS fields in hypervisor.
+	 */
+	if ((old_cr0 ^ cr0_value) & CR0_PG) {
+		u64 pg_pe_mask = (CR0_PG | CR0_PE);
+		/* Make sure that CR0.PG and CR0.PE are not masked */
+		if (!(pg_pe_mask & vcpu->vmcs.control_CR0_mask)) {
+			/*
+			 * The original MOV CR0 must also change some bits not related to
+			 * CR0.PG or CR0.PE.
+			 */
+			HALT_ON_ERRORCOND((old_cr0 ^ cr0_value) & ~pg_pe_mask);
+			/*
+			 * Change VMCS's guest CR0 to requested value, except CR0.PG and
+			 * CR0.PE.
+			 */
+			vcpu->vmcs.guest_CR0 &= ~pg_pe_mask;
+			vcpu->vmcs.guest_CR0 |= old_cr0 & pg_pe_mask;
+			printf("\n[cr0-%02x] RETRY:  old=0x%08llx", vcpu->id,
+				vcpu->vmcs.guest_CR0);
+			/* Sanity check: for bits masked, guest CR0 = CR0 shadow */
+			HALT_ON_ERRORCOND(
+				((vcpu->vmcs.guest_CR0 ^ vcpu->vmcs.control_CR0_shadow) &
+				vcpu->vmcs.control_CR0_mask) == 0);
+			/*
+			 * Sanity check: for bits not masked other than CR0.PG and CR0.PE,
+			 * guest CR0 = requested new value.
+			 */
+			HALT_ON_ERRORCOND(
+				((vcpu->vmcs.guest_CR0 ^ cr0_value) &
+				~vcpu->vmcs.control_CR0_mask & ~pg_pe_mask) == 0);
+			/* Skip incrementing PC (RIP / EIP), retry this instruction */
+			return;
+		}
+	}
 
 	/*
 	 * If CR0.PG bit changes, need to update guest_PDPTE0 - guest_PDPTE3 if
@@ -594,12 +632,24 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		vcpu->vmcs.control_VM_entry_controls = value;
 
 		pae = (cr0_value & CR0_PG) && (!lme) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
-		/* TODO: Need to walk EPT and retrieve values for guest_PDPTE* */
+		/*
+		 * TODO: Need to walk EPT and retrieve values for guest_PDPTE*
+		 *
+		 * The idea is something like the following, but need to make sure
+		 * the guest OS is allowed to access relevant memory (by walking EPT):
+		 * u64 *pdptes = (u64 *)(uintptr_t)(vcpu->vmcs.guest_CR3 & ~0x1FUL);
+		 * vcpu->vmcs.guest_PDPTE0 = pdptes[0];
+		 * vcpu->vmcs.guest_PDPTE1 = pdptes[1];
+		 * vcpu->vmcs.guest_PDPTE2 = pdptes[2];
+		 * vcpu->vmcs.guest_PDPTE3 = pdptes[3];
+		 */
 		HALT_ON_ERRORCOND(!pae);
 	}
 
 	//flush mappings
 	xmhf_memprot_arch_x86_64vmx_flushmappings(vcpu);
+
+	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
 
 //---CR4 access handler---------------------------------------------------------
@@ -628,6 +678,7 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	#endif
   }
 
+  vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
 
 //---XSETBV intercept handler-------------------------------------------
@@ -818,7 +869,6 @@ u32 xmhf_parteventhub_arch_x86_64vmx_intercept_handler(VCPU *vcpu, struct regs *
 						printf("\nunhandled crx, halting!");
 						HALT();
 				}
-				vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 			}else{
 				printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
 					__FUNCTION__, gpr);
