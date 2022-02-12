@@ -94,6 +94,8 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 		r->ecx &= ~(1U << 5);
 		/* Clear x2APIC capability */
 		r->ecx &= ~(1U << 21);
+		/* Set Hypervisor Present */
+		r->ecx |= (1U << 31);
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
