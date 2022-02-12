@@ -287,9 +287,9 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 //---intercept handler (WRMSR)--------------------------------------------------
 static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
-	//printf("\nCPU(0x%02x): WRMSR 0x%08x", vcpu->id, r->ecx);
-
 	u64 write_data = ((u64)r->edx << 32) | (u64)r->eax;
+
+	//printf("\nCPU(0x%02x): WRMSR 0x%08x", vcpu->id, r->ecx);
 
 	/* Disallow x2APIC MSRs */
 	HALT_ON_ERRORCOND((r->ecx & 0xffffff00U) != 0x800);
@@ -379,6 +379,10 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 					vcpu->id);
 			HALT();
 			break;
+		case IA32_BIOS_UPDT_TRIG:
+			printf("\nCPU(0x%02x): OS tries to write microcode, ignore",
+					vcpu->id);
+			break;
 		default:{
 			asm volatile ("wrmsr\r\n"
           : //no outputs
@@ -393,10 +397,10 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 
 //---intercept handler (RDMSR)--------------------------------------------------
 static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
-	//printf("\nCPU(0x%02x): RDMSR 0x%08x", vcpu->id, r->ecx);
-
 	/* After switch statement, will assign this value to r->eax and r->edx */
 	u64 read_result = 0;
+
+	//printf("\nCPU(0x%02x): RDMSR 0x%08x", vcpu->id, r->ecx);
 
 	/* Disallow x2APIC MSRs */
 	HALT_ON_ERRORCOND((r->ecx & 0xffffff00U) != 0x800);

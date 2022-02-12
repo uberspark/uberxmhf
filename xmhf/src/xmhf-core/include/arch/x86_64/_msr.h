@@ -190,6 +190,10 @@
 #define IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL     0x7f00
 #define IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER        0x8000
 
+// Intel Microcode related
+#define IA32_BIOS_UPDT_TRIG     0x79
+#define IA32_BIOS_SIGN_ID       0x8b
+
 /* AMD64 MSR's */
 #define MSR_EFER        0xc0000080      /* extended features */
 
