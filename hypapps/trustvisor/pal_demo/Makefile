@@ -10,7 +10,7 @@ ifeq ($(WINDOWS), y)
 	CFLAGS += -DWINDOWS
 endif
 
-ifeq ($(CC), /usr/bin/x86_64-w64-mingw32-gcc)
+ifeq ($(CC), x86_64-w64-mingw32-gcc)
 PAL_OBJS += translate.o
 CFLAGS += -DTRANSLATE
 endif
@@ -26,5 +26,5 @@ pal.o: pal.c
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.exe $(BINS)
+	rm -rf *.o $(patsubst %,%.exe,$(BINS)) $(BINS)
 

@@ -24,9 +24,21 @@ else if [ "$1" == "linux" ]; then
 	else
 		echo '$2 incorrect, should be x86 or x86_64'; exit 1
 	fi; fi
+else if [ "$1" == "all" ]; then
+	build_and_move () {
+		"$1" "$2" "$3"
+		for i in hypapps/trustvisor/pal_demo/{main,test,test_args}; do
+			mv "${i}$5" "${i}$4$5"
+		done
+	}
+	build_and_move "$0" linux   x86    32 ""
+	build_and_move "$0" linux   x86_64 64 ""
+	build_and_move "$0" windows x86    32 ".exe"
+	build_and_move "$0" windows x86_64 64 ".exe"
+	exit
 else
 	echo '$1 incorrect, should be windows or linux'; exit 1
-fi; fi
+fi; fi; fi
 
 cd hypapps/trustvisor/pal_demo
 make clean
