@@ -14,6 +14,37 @@
 
 #define PAGE_SIZE ((uintptr_t) 4096)
 
+#define MAX_PAL_RECORDS 10
+
+/* Record PALs in user level */
+typedef struct pal_record_t {
+	/* Where the user should call, NULL if invalid record */
+	void *user_entry;
+	/* Boundary between untrusted app and PAL */
+	uintptr_t pal_entry;
+	void *mmap_code;
+	void *mmap_data;
+	void *mmap_stack;
+	void *mmap_param;
+#ifdef TRANSLATE
+	void *mmap_code2;
+#endif /* TRANSLATE */
+} pal_record_t;
+
+static pal_record_t pal_records[MAX_PAL_RECORDS];
+
+static pal_record_t *get_pal_record(void *user_entry) {
+	for (int i = 0; i < MAX_PAL_RECORDS; i++) {
+		if (pal_records[i].user_entry == user_entry) {
+			return &pal_records[i];
+		}
+	}
+	while (1) {
+		assert(0 && "PAL record not found");
+	}
+}
+
+
 #ifdef TRANSLATE
 extern void *windows2linux();
 extern void *windows2linux_call();
@@ -43,9 +74,9 @@ extern void *linux2windows_end();
  * callee: function to call after relocation
  * return: relocated function entry point
  */
-void *relocate_func(void *plt, void *plt_call, void *plt_call_end,
-					void *plt_end, uintptr_t plt_magic, void *target,
-					void *callee) {
+static void *relocate_func(void *plt, void *plt_call, void *plt_call_end,
+							void *plt_end, uintptr_t plt_magic, void *target,
+							void *callee) {
 	assert(plt < plt_call);
 	assert(plt_call + 10 == plt_call_end);
 	assert(plt_call_end < plt_end);
@@ -78,7 +109,7 @@ static int lock_and_touch_page(void *addr, size_t len) {
 }
 
 /* Call VirtualAlloc on Windows and mmap on Linux */
-void *mmap_wrap(size_t length) {
+static void *mmap_wrap(size_t length) {
 #ifdef WINDOWS
 	DWORD prot = PAGE_EXECUTE_READWRITE;
 	DWORD va_flags = MEM_COMMIT | MEM_RESERVE;
@@ -90,10 +121,15 @@ void *mmap_wrap(size_t length) {
 #endif /* WINDOWS */
 }
 
-// TODO temporary below
-void *tmp1 = 0;
-uintptr_t tmp2 = 0;
-// TODO temporary above
+/* Call VirtualFree on Windows and munmap on Linux */
+static int munmap_wrap(void *addr) {
+#ifdef WINDOWS
+	DWORD va_flags = MEM_DECOMMIT | MEM_RELEASE;
+	return !(VirtualFree(addr, PAGE_SIZE, va_flags));
+#else /* !WINDOWS */
+	return munmap(addr, PAGE_SIZE);
+#endif /* WINDOWS */
+}
 
 /*
  * Auto-register a PAL
@@ -141,35 +177,24 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 	/* Where the user should call */
 	void *user_entry = (void *)pal_entry;
 #ifdef TRANSLATE
+	void *code2 = mmap_wrap(PAGE_SIZE);
 	{
 		// Relocate linux2windows
 		void *target = code + end_pal_off - begin_pal_off;
 		user_entry = relocate_func(
-#ifdef WINDOWS
 			linux2windows, linux2windows_call, linux2windows_call_end,
 			linux2windows_end, 0xfedcba9876543210UL, target, user_entry);
-#else
-			// TODO: Just for testing
-			windows2linux, windows2linux_call, windows2linux_call_end,
-			windows2linux_end, 0x0123456789abcdefUL, target, user_entry);
-#endif
 		// PAL boundary between windows2linux() and linux2windows_call()
 		pal_entry = (uintptr_t)user_entry;
 		// Relocate windows2linux
-		target = mmap_wrap(PAGE_SIZE);
+		target = code2;
 		assert(target);
 		if (verbose) {
 			printf("Mmap:   %p\n", target);
 		}
 		user_entry = relocate_func(
-#ifdef WINDOWS
 			windows2linux, windows2linux_call, windows2linux_call_end,
 			windows2linux_end, 0x0123456789abcdefUL, target, user_entry);
-#else
-			// TODO: Just for testing
-			linux2windows, linux2windows_call, linux2windows_call_end,
-			linux2windows_end, 0xfedcba9876543210UL, target, user_entry);
-#endif
 		// Currently the wrapper has to read 10 arguments, so if params is not
 		// large enough there will be pagefault on accessing stack.
 		while (params->num_params < TV_MAX_PARAMS) {
@@ -178,30 +203,41 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 			params->num_params++;
 		}
 	}
-#endif
+#endif /* TRANSLATE */
 	if (verbose) {
 		printf("\n");
 		fflush(stdout);
 	}
+	// Register PAL locally
+	pal_record_t *pal_record = get_pal_record(NULL);
+	pal_record->user_entry = user_entry;
+	pal_record->pal_entry = pal_entry;
+	pal_record->mmap_code = code;
+	pal_record->mmap_data = data;
+	pal_record->mmap_stack = stack;
+	pal_record->mmap_param = param;
+#ifdef TRANSLATE
+	pal_record->mmap_code2 = code2;
+#endif /* TRANSLATE */
 	// Register scode
 	assert(!vmcall(TV_HC_REG, (uintptr_t)&sections, 0, (uintptr_t)params,
 					pal_entry));
-	tmp2 = pal_entry;
-	tmp1 = user_entry;
 	return user_entry;
 }
 
 /*
  * Auto-unregister a PAL
- * reloc_entry: relocated entry point (return value of register_pal())
+ * user_entry: relocated entry point (return value of register_pal())
  */
-void unregister_pal(void *reloc_entry) {
+void unregister_pal(void *user_entry) {
+	pal_record_t *pal_record = get_pal_record(user_entry);
+	assert(!vmcall(TV_HC_UNREG, pal_record->pal_entry, 0, 0, 0));
+	assert(!munmap_wrap(pal_record->mmap_code));
+	assert(!munmap_wrap(pal_record->mmap_data));
+	assert(!munmap_wrap(pal_record->mmap_stack));
+	assert(!munmap_wrap(pal_record->mmap_param));
 #ifdef TRANSLATE
-	assert(reloc_entry == tmp1);
-	assert(!vmcall(TV_HC_UNREG, tmp2, 0, 0, 0));
-#else
-	assert(!vmcall(TV_HC_UNREG, (uintptr_t)reloc_entry, 0, 0, 0));
-#endif
-	// TODO: munmap / VirtualFree
+	assert(!munmap_wrap(pal_record->mmap_code2));
+#endif /* TRANSLATE */
 }
 
