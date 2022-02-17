@@ -90,6 +90,11 @@ void *mmap_wrap(size_t length) {
 #endif /* WINDOWS */
 }
 
+// TODO temporary below
+void *tmp1 = 0;
+uintptr_t tmp2 = 0;
+// TODO temporary above
+
 /*
  * Auto-register a PAL
  * params: parameters description for TrustVisor
@@ -131,36 +136,47 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 	uintptr_t end_pal_off = (uintptr_t)end_pal;
 	uintptr_t entry_off = (uintptr_t)entry;
 	memcpy(code, begin_pal, end_pal_off - begin_pal_off);
-	uintptr_t reloc_entry_off = (uintptr_t)code + (entry_off - begin_pal_off);
-	void *reloc_entry = (void *)reloc_entry_off;
+	/* Boundary between untrusted app and PAL */
+	uintptr_t pal_entry = (uintptr_t)code + (entry_off - begin_pal_off);
+	/* Where the user should call */
+	void *user_entry = (void *)pal_entry;
 #ifdef TRANSLATE
 	{
 		// Relocate linux2windows
 		void *target = code + end_pal_off - begin_pal_off;
-		reloc_entry = relocate_func(
+		user_entry = relocate_func(
 #ifdef WINDOWS
 			linux2windows, linux2windows_call, linux2windows_call_end,
-			linux2windows_end, 0xfedcba9876543210UL, target, reloc_entry);
+			linux2windows_end, 0xfedcba9876543210UL, target, user_entry);
 #else
 			// TODO: Just for testing
 			windows2linux, windows2linux_call, windows2linux_call_end,
-			windows2linux_end, 0x0123456789abcdefUL, target, reloc_entry);
+			windows2linux_end, 0x0123456789abcdefUL, target, user_entry);
 #endif
+		// PAL boundary between windows2linux() and linux2windows_call()
+		pal_entry = (uintptr_t)user_entry;
 		// Relocate windows2linux
 		target = mmap_wrap(PAGE_SIZE);
 		assert(target);
 		if (verbose) {
 			printf("Mmap:   %p\n", target);
 		}
-		reloc_entry = relocate_func(
+		user_entry = relocate_func(
 #ifdef WINDOWS
 			windows2linux, windows2linux_call, windows2linux_call_end,
-			windows2linux_end, 0x0123456789abcdefUL, target, reloc_entry);
+			windows2linux_end, 0x0123456789abcdefUL, target, user_entry);
 #else
 			// TODO: Just for testing
 			linux2windows, linux2windows_call, linux2windows_call_end,
-			linux2windows_end, 0xfedcba9876543210UL, target, reloc_entry);
+			linux2windows_end, 0xfedcba9876543210UL, target, user_entry);
 #endif
+		// Currently the wrapper has to read 10 arguments, so if params is not
+		// large enough there will be pagefault on accessing stack.
+		while (params->num_params < TV_MAX_PARAMS) {
+			params->params[params->num_params].type = TV_PAL_PM_INTEGER;
+			params->params[params->num_params].size = 0;
+			params->num_params++;
+		}
 	}
 #endif
 	if (verbose) {
@@ -169,8 +185,10 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 	}
 	// Register scode
 	assert(!vmcall(TV_HC_REG, (uintptr_t)&sections, 0, (uintptr_t)params,
-					reloc_entry_off));
-	return reloc_entry;
+					pal_entry));
+	tmp2 = pal_entry;
+	tmp1 = user_entry;
+	return user_entry;
 }
 
 /*
@@ -178,7 +196,12 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
  * reloc_entry: relocated entry point (return value of register_pal())
  */
 void unregister_pal(void *reloc_entry) {
+#ifdef TRANSLATE
+	assert(reloc_entry == tmp1);
+	assert(!vmcall(TV_HC_UNREG, tmp2, 0, 0, 0));
+#else
 	assert(!vmcall(TV_HC_UNREG, (uintptr_t)reloc_entry, 0, 0, 0));
+#endif
 	// TODO: munmap / VirtualFree
 }
 

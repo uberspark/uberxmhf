@@ -1209,6 +1209,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 {
   int curr=scode_curr[vcpu->id];
   u32 rv=1;
+  u32 word_size = VCPU_g64(vcpu) ? 8 : 4;
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
 
@@ -1254,7 +1255,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 
   /* switch back to regular stack */
   eu_trace("switch from scode stack %#x back to regular stack %#lx", (uintptr_t)VCPU_grsp(vcpu), (uintptr_t)whitelist[curr].grsp);
-  VCPU_grsp_set(vcpu, whitelist[curr].grsp + 4);
+  VCPU_grsp_set(vcpu, whitelist[curr].grsp + word_size);
   whitelist[curr].grsp = (uintptr_t)-1;
 
   /* enable interrupts */
