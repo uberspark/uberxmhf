@@ -55,7 +55,7 @@ uintptr_t pal_5_ptr(uintptr_t size0, uintptr_t *ptr0, uintptr_t size1,
 		uintptr_t *ptr = ptrs[i];
 		for (int j = 0; j < size; j++) {
 			ans += ptr[j] * (coeff++);
-			ptr[j] += (-1UL) / 0xffUL - 1UL;
+			ptr[j] += (uintptr_t)0x3141592653589793ULL;
 		}
 	}
 	return ans;
