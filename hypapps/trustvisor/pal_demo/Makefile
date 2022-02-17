@@ -3,14 +3,22 @@
 
 CFLAGS := -g -I../src/include -Wall -Werror
 
+BINS = main test test_args
+PAL_OBJS = pal.o caller.o
+
 ifeq ($(WINDOWS), y)
 	CFLAGS += -DWINDOWS
 endif
 
-all: main test test_args
+ifeq ($(CC), /usr/bin/x86_64-w64-mingw32-gcc)
+PAL_OBJS += translate.o
+CFLAGS += -DTRANSLATE
+endif
 
-main: main.o pal.o caller.o
-test_args: test_args.o pal.o caller.o
+all: $(BINS)
+
+main: main.o $(PAL_OBJS)
+test_args: test_args.o $(PAL_OBJS)
 test: test.c
 
 pal.o: pal.c
@@ -18,5 +26,5 @@ pal.o: pal.c
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.exe main test test_args
+	rm -rf *.o *.exe $(BINS)
 

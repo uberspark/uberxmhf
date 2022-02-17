@@ -14,6 +14,49 @@
 
 #define PAGE_SIZE ((uintptr_t) 4096)
 
+#ifdef TRANSLATE
+extern void *windows2linux();
+extern void *windows2linux_call();
+extern void *windows2linux_call_end();
+extern void *windows2linux_end();
+extern void *linux2windows();
+extern void *linux2windows_call();
+extern void *linux2windows_call_end();
+extern void *linux2windows_end();
+
+/*
+ * Relocate a function (callee) that calls another function (callee). The
+ * caller's template is defined by plt*. The caller should be relocated to
+ * address starting at target. After relocating, the caller should call callee.
+ *
+ * Between plt_call and plt_call_end, there should be a movabs function.
+ * For example:
+ *  48 b8 10 32 54 76 98    movabs $0xfedcba9876543210,%rax
+ *  ba dc fe 
+ *
+ * plt: start of template function
+ * plt_call: before call instruction
+ * plt_call_end: after call instruction
+ * plt_end: end of template function
+ * plt_magic: magic number in template call instruction
+ * target: target memory to relocate function to
+ * callee: function to call after relocation
+ * return: relocated function entry point
+ */
+void *relocate_func(void *plt, void *plt_call, void *plt_call_end,
+					void *plt_end, uintptr_t plt_magic, void *target,
+					void *callee) {
+	assert(plt < plt_call);
+	assert(plt_call + 10 == plt_call_end);
+	assert(plt_call_end < plt_end);
+	memcpy(target, plt, plt_end - plt);
+	uintptr_t *callee_addr = target + (plt_call - plt) + 2;
+	assert(*callee_addr == plt_magic);
+	*callee_addr = (uintptr_t)callee;
+	return target;
+}
+#endif /* TRANSLATE */
+
 static int lock_and_touch_page(void *addr, size_t len) {
 #ifdef WINDOWS
 	if (!VirtualLock(addr, len)) {
@@ -34,6 +77,19 @@ static int lock_and_touch_page(void *addr, size_t len) {
 	return 0;
 }
 
+/* Call VirtualAlloc on Windows and mmap on Linux */
+void *mmap_wrap(size_t length) {
+#ifdef WINDOWS
+	DWORD prot = PAGE_EXECUTE_READWRITE;
+	DWORD va_flags = MEM_COMMIT | MEM_RESERVE;
+	return VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
+#else /* !WINDOWS */
+	int prot = PROT_EXEC | PROT_READ | PROT_WRITE;
+	int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
+	return mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
+#endif /* WINDOWS */
+}
+
 /*
  * Auto-register a PAL
  * params: parameters description for TrustVisor
@@ -45,21 +101,10 @@ static int lock_and_touch_page(void *addr, size_t len) {
 void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 					void *end_pal, int verbose) {
 	// Call mmap(), construct struct tv_pal_sections
-#ifdef WINDOWS
-	DWORD prot = PAGE_EXECUTE_READWRITE;
-	DWORD va_flags = MEM_COMMIT | MEM_RESERVE;
-	void *code = VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
-	void *data = VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
-	void *stack = VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
-	void *param = VirtualAlloc(NULL, PAGE_SIZE, va_flags, prot);
-#else /* !WINDOWS */
-	int prot = PROT_EXEC | PROT_READ | PROT_WRITE;
-	int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
-	void *code = mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
-	void *data = mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
-	void *stack = mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
-	void *param = mmap(NULL, PAGE_SIZE, prot, mmap_flags, -1, 0);
-#endif /* WINDOWS */
+	void *code = mmap_wrap(PAGE_SIZE);
+	void *data = mmap_wrap(PAGE_SIZE);
+	void *stack = mmap_wrap(PAGE_SIZE);
+	void *param = mmap_wrap(PAGE_SIZE);
 	struct tv_pal_sections sections = {
 		num_sections: 4,
 		sections: {
@@ -81,10 +126,6 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 					a->page_num);
 		}
 	}
-	if (verbose) {
-		printf("\n");
-		fflush(stdout);
-	}
 	// Copy function .text
 	uintptr_t begin_pal_off = (uintptr_t)begin_pal;
 	uintptr_t end_pal_off = (uintptr_t)end_pal;
@@ -92,6 +133,40 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 	memcpy(code, begin_pal, end_pal_off - begin_pal_off);
 	uintptr_t reloc_entry_off = (uintptr_t)code + (entry_off - begin_pal_off);
 	void *reloc_entry = (void *)reloc_entry_off;
+#ifdef TRANSLATE
+	{
+		// Relocate linux2windows
+		void *target = code + end_pal_off - begin_pal_off;
+		reloc_entry = relocate_func(
+#ifdef WINDOWS
+			linux2windows, linux2windows_call, linux2windows_call_end,
+			linux2windows_end, 0xfedcba9876543210UL, target, reloc_entry);
+#else
+			// TODO: Just for testing
+			windows2linux, windows2linux_call, windows2linux_call_end,
+			windows2linux_end, 0x0123456789abcdefUL, target, reloc_entry);
+#endif
+		// Relocate windows2linux
+		target = mmap_wrap(PAGE_SIZE);
+		assert(target);
+		if (verbose) {
+			printf("Mmap:   %p\n", target);
+		}
+		reloc_entry = relocate_func(
+#ifdef WINDOWS
+			windows2linux, windows2linux_call, windows2linux_call_end,
+			windows2linux_end, 0x0123456789abcdefUL, target, reloc_entry);
+#else
+			// TODO: Just for testing
+			linux2windows, linux2windows_call, linux2windows_call_end,
+			linux2windows_end, 0xfedcba9876543210UL, target, reloc_entry);
+#endif
+	}
+#endif
+	if (verbose) {
+		printf("\n");
+		fflush(stdout);
+	}
 	// Register scode
 	assert(!vmcall(TV_HC_REG, (uintptr_t)&sections, 0, (uintptr_t)params,
 					reloc_entry_off));
@@ -104,5 +179,6 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
  */
 void unregister_pal(void *reloc_entry) {
 	assert(!vmcall(TV_HC_UNREG, (uintptr_t)reloc_entry, 0, 0, 0));
+	// TODO: munmap / VirtualFree
 }
 
