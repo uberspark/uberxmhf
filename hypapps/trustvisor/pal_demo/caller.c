@@ -92,7 +92,7 @@ static int lock_and_touch_page(void *addr, size_t len) {
 #ifdef WINDOWS
 	if (!VirtualLock(addr, len)) {
 		DWORD err = GetLastError();
-		printf("VirtualLock error: %lx", err);
+		printf("VirtualLock error: %lx\n", err);
 		return 1;
 	}
 #else /* !WINDOWS */
@@ -124,8 +124,7 @@ static void *mmap_wrap(size_t length) {
 /* Call VirtualFree on Windows and munmap on Linux */
 static int munmap_wrap(void *addr) {
 #ifdef WINDOWS
-	DWORD va_flags = MEM_DECOMMIT | MEM_RELEASE;
-	return !(VirtualFree(addr, PAGE_SIZE, va_flags));
+	return !(VirtualFree(addr, 0, MEM_RELEASE));
 #else /* !WINDOWS */
 	return munmap(addr, PAGE_SIZE);
 #endif /* WINDOWS */
