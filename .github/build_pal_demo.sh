@@ -35,6 +35,9 @@ else if [ "$1" == "all" ]; then
 	build_and_move "$0" linux   x86_64 64 ""
 	build_and_move "$0" windows x86    32 ".exe"
 	build_and_move "$0" windows x86_64 64 ".exe"
+	cd hypapps/trustvisor/pal_demo/
+	rm -f pal_demo.zip
+	zip pal_demo.zip {main,test,test_args}{32,64}{,.exe}
 	exit
 else
 	echo '$1 incorrect, should be windows or linux or all'; exit 1
