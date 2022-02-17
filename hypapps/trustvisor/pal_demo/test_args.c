@@ -12,12 +12,12 @@
 									args1[2], args2[2], args1[3], args2[3], \
 									args1[4], args2[4]
 
-unsigned long rand_long(void) {
+uintptr_t rand_long(void) {
 	switch (0) { case 0:; case (RAND_MAX >= 0xff):; };
-	unsigned long ans = 0;
-	for (int i = 0; i < sizeof(long) * 8 / 8; i++) {
+	uintptr_t ans = 0;
+	for (int i = 0; i < sizeof(uintptr_t) * 8 / 8; i++) {
 		ans <<= 8;
-		ans |= ((unsigned long)rand()) & 0xff;
+		ans |= ((uintptr_t)rand()) & 0xff;
 	}
 	return ans;
 }
@@ -40,19 +40,19 @@ unsigned int test_10_int(unsigned int iters) {
 	typeof(pal_10_int) *func = (typeof(pal_10_int) *)entry;
 	// Call function
 	for (unsigned int iter = 0; iter < iters; iter++) {
-		unsigned long args[10];
+		uintptr_t args[10];
 		for (int i = 0; i < 10; i++) {
 			args[i] = rand_long();
 		}
 		printf(".");
 		fflush(stdout);
-		unsigned long expected = pal_10_int(PASS_ARGS(args));
-		unsigned long actual = func(PASS_ARGS(args));
+		uintptr_t expected = pal_10_int(PASS_ARGS(args));
+		uintptr_t actual = func(PASS_ARGS(args));
 		if (actual != expected) {
 			result++;
-			printf("Error: args = {%lu, %lu, %lu, %lu, %lu, %lu, %lu, %lu, "
-					"%lu, %lu}, expected %lu, actual %lu\n", PASS_ARGS(args),
-					expected, actual);
+			printf("Error: args = {%p, %p, %p, %p, %p, %p, %p, %p, %p, %p}, "
+					"expected %p, actual %p\n", PASS_ARGS((void *)args),
+					(void *)expected, (void *)actual);
 			fflush(stdout);
 		}
 	}
@@ -79,11 +79,11 @@ unsigned int test_10_ptr(unsigned int iters) {
 	typeof(pal_10_ptr) *func = (typeof(pal_10_ptr) *)entry;
 	// Call function
 	for (unsigned int iter = 0; iter < iters; iter++) {
-		unsigned long *args_expected[10];
-		unsigned long *args_actual[10];
-		unsigned long nums_original[21];
-		unsigned long nums_expected[21];
-		unsigned long nums_actual[21];
+		uintptr_t *args_expected[10];
+		uintptr_t *args_actual[10];
+		uintptr_t nums_original[21];
+		uintptr_t nums_expected[21];
+		uintptr_t nums_actual[21];
 		for (int i = 0; i < 21; i++) {
 			nums_original[i] = nums_expected[i] = nums_actual[i] = rand_long();
 		}
@@ -93,20 +93,21 @@ unsigned int test_10_ptr(unsigned int iters) {
 		}
 		printf(".");
 		fflush(stdout);
-		unsigned long expected = pal_10_ptr(PASS_ARGS(args_expected));
-		unsigned long actual = func(PASS_ARGS(args_actual));
+		uintptr_t expected = pal_10_ptr(PASS_ARGS(args_expected));
+		uintptr_t actual = func(PASS_ARGS(args_actual));
 		if (actual != expected) {
 			result++;
-			printf("Error: expected return %lu, actual %lu\n",
-					expected, actual);
+			printf("Error: expected return %p, actual %p\n",
+					(void *)expected, (void *)actual);
 			fflush(stdout);
 			continue;
 		}
 		for (int i = 0; i < 21; i++) {
 			if (nums_expected[i] != nums_actual[i]) {
 				result++;
-				printf("Error: expected [i] %lu, actual %lu, original %lu\n",
-						nums_expected[i], nums_actual[i], nums_original[i]);
+				printf("Error: expected [%d] %p, actual %p, original %p\n", i,
+						(void *)nums_expected[i], (void *)nums_actual[i],
+						(void *)nums_original[i]);
 				fflush(stdout);
 				break;
 			}
@@ -124,22 +125,22 @@ unsigned int test_5_ptr(unsigned int iters) {
 		printf(".");
 		fflush(stdout);
 		// Generate pointer lengths
-		unsigned long args_i[5];
+		uintptr_t args_i[5];
 		size_t array_size = 1;
 		for (int i = 0; i < 5; i++) {
 			args_i[i] = rand_long() % 100;
 			array_size += args_i[i] + 1;
 		}
 		// Allocate nums array
-		unsigned long *nums_original = malloc(array_size * sizeof(long));
-		unsigned long *nums_expected = malloc(array_size * sizeof(long));
-		unsigned long *nums_actual = malloc(array_size * sizeof(long));
+		uintptr_t *nums_original = malloc(array_size * sizeof(uintptr_t));
+		uintptr_t *nums_expected = malloc(array_size * sizeof(uintptr_t));
+		uintptr_t *nums_actual = malloc(array_size * sizeof(uintptr_t));
 		for (int i = 0; i < array_size; i++) {
 			nums_original[i] = nums_expected[i] = nums_actual[i] = rand_long();
 		}
 		// Set up pointers
-		unsigned long *args_p_expected[5];
-		unsigned long *args_p_actual[5];
+		uintptr_t *args_p_expected[5];
+		uintptr_t *args_p_actual[5];
 		size_t cur_index = 1;
 		for (int i = 0; i < 5; i++) {
 			args_p_expected[i] = &nums_expected[cur_index];
@@ -160,9 +161,9 @@ unsigned int test_5_ptr(unsigned int iters) {
 		};
 		// Dump info
 		if (0) {
-			printf("\narray_size = %lu\n", (unsigned long)array_size);
+			printf("\narray_size = %p\n", (void *)array_size);
 			for (int i = 0; i < 5; i++) {
-				printf("args_i[%d] = %#lx\n", i, args_i[i]);
+				printf("args_i[%d] = %p\n", i, (void *)args_i[i]);
 			}
 			for (int i = 0; i < 5; i++) {
 				printf("args_p_actual[%d] = %p\n", i, args_p_actual[i]);
@@ -172,50 +173,56 @@ unsigned int test_5_ptr(unsigned int iters) {
 			}
 			printf("nums_original = %p\n", nums_original);
 			for (int i = 0; i < array_size; i++) {
-				printf("nums_original[%d] = %#lx\n", i, nums_original[i]);
+				printf("nums_original[%d] = %p\n", i,
+						(void *)nums_original[i]);
 			}
 			printf("nums_expected = %p\n", nums_expected);
 			for (int i = 0; i < array_size; i++) {
-				printf("pre  nums_expected[%d] = %#lx\n", i, nums_expected[i]);
+				printf("pre  nums_expected[%d] = %p\n", i,
+						(void *)nums_expected[i]);
 			}
 			printf("nums_actual = %p\n", nums_actual);
 			for (int i = 0; i < array_size; i++) {
-				printf("pre  nums_actual[%d] = %#lx\n", i, nums_actual[i]);
+				printf("pre  nums_actual[%d] = %p\n", i,
+						(void *)nums_actual[i]);
 			}
 		}
 		// Register scode
 		void *entry = register_pal(&params, pal_5_ptr, begin_pal_c, end_pal_c,
 									0);
 		typeof(pal_5_ptr) *func = (typeof(pal_5_ptr) *)entry;
-		unsigned long expected = pal_5_ptr(PASS_ARGS_5(args_i,
-														args_p_expected));
-		unsigned long actual = func(PASS_ARGS_5(args_i, args_p_actual));
+		uintptr_t expected = pal_5_ptr(PASS_ARGS_5(args_i,
+													args_p_expected));
+		uintptr_t actual = func(PASS_ARGS_5(args_i, args_p_actual));
 		// Unregister scode
 		unregister_pal(entry);
 		// Dump info after calling
 		if (0) {
 			printf("nums_expected = %p\n", nums_expected);
 			for (int i = 0; i < array_size; i++) {
-				printf("post nums_expected[%d] = %#lx\n", i, nums_expected[i]);
+				printf("post nums_expected[%d] = %p\n", i,
+						(void *)nums_expected[i]);
 			}
 			printf("nums_actual = %p\n", nums_actual);
 			for (int i = 0; i < array_size; i++) {
-				printf("post nums_actual[%d] = %#lx\n", i, nums_actual[i]);
+				printf("post nums_actual[%d] = %p\n", i,
+						(void *)nums_actual[i]);
 			}
 		}
 		// Check results
 		if (actual != expected) {
 			result++;
-			printf("Error: expected return %lu, actual %lu\n",
-					expected, actual);
+			printf("Error: expected return %p, actual %p\n",
+					(void *)expected, (void *)actual);
 			fflush(stdout);
 			continue;
 		}
 		for (int i = 0; i < array_size; i++) {
 			if (nums_expected[i] != nums_actual[i]) {
 				result++;
-				printf("Error: expected [i] %lu, actual %lu, original %lu\n",
-						nums_expected[i], nums_actual[i], nums_original[i]);
+				printf("Error: expected [%d] %p, actual %p, original %p\n", i,
+						(void *)nums_expected[i], (void *)nums_actual[i],
+						(void *)nums_original[i]);
 				fflush(stdout);
 				break;
 			}

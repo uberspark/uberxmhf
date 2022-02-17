@@ -2,16 +2,15 @@
 
 void begin_pal_c() {}
 
-unsigned long my_pal(unsigned long arg1, unsigned long *arg2) {
+uintptr_t my_pal(uintptr_t arg1, uintptr_t *arg2) {
 	return arg1 + ((*arg2)++);
 }
 
-unsigned long pal_10_int(unsigned long arg0, unsigned long arg1,
-						unsigned long arg2, unsigned long arg3,
-						unsigned long arg4, unsigned long arg5,
-						unsigned long arg6, unsigned long arg7,
-						unsigned long arg8, unsigned long arg9) {
-	unsigned long ans = 0;
+uintptr_t pal_10_int(uintptr_t arg0, uintptr_t arg1, uintptr_t arg2,
+						uintptr_t arg3, uintptr_t arg4, uintptr_t arg5,
+						uintptr_t arg6, uintptr_t arg7, uintptr_t arg8,
+						uintptr_t arg9) {
+	uintptr_t ans = 0;
 	ans += arg0 * 1;
 	ans += arg1 * 2;
 	ans += arg2 * 3;
@@ -25,12 +24,11 @@ unsigned long pal_10_int(unsigned long arg0, unsigned long arg1,
 	return ans;
 }
 
-unsigned long pal_10_ptr(unsigned long *arg0, unsigned long *arg1,
-						unsigned long *arg2, unsigned long *arg3,
-						unsigned long *arg4, unsigned long *arg5,
-						unsigned long *arg6, unsigned long *arg7,
-						unsigned long *arg8, unsigned long *arg9) {
-	unsigned long ans = 0;
+uintptr_t pal_10_ptr(uintptr_t *arg0, uintptr_t *arg1, uintptr_t *arg2,
+						uintptr_t *arg3, uintptr_t *arg4, uintptr_t *arg5,
+						uintptr_t *arg6, uintptr_t *arg7, uintptr_t *arg8,
+						uintptr_t *arg9) {
+	uintptr_t ans = 0;
 	ans += ((*arg0)++) * 1;
 	ans += ((*arg1)++) * 2;
 	ans += ((*arg2)++) * 3;
@@ -44,18 +42,17 @@ unsigned long pal_10_ptr(unsigned long *arg0, unsigned long *arg1,
 	return ans;
 }
 
-unsigned long pal_5_ptr(unsigned long size0, unsigned long *ptr0,
-						unsigned long size1, unsigned long *ptr1,
-						unsigned long size2, unsigned long *ptr2,
-						unsigned long size3, unsigned long *ptr3,
-						unsigned long size4, unsigned long *ptr4) {
-	unsigned long ans = 0;
-	unsigned long sizes[] = {size0, size1, size2, size3, size4};
-	unsigned long *ptrs[] = {ptr0, ptr1, ptr2, ptr3, ptr4};
-	unsigned long coeff = 1;
+uintptr_t pal_5_ptr(uintptr_t size0, uintptr_t *ptr0, uintptr_t size1,
+					uintptr_t *ptr1, uintptr_t size2, uintptr_t *ptr2,
+					uintptr_t size3, uintptr_t *ptr3, uintptr_t size4,
+					uintptr_t *ptr4) {
+	uintptr_t ans = 0;
+	uintptr_t sizes[] = {size0, size1, size2, size3, size4};
+	uintptr_t *ptrs[] = {ptr0, ptr1, ptr2, ptr3, ptr4};
+	uintptr_t coeff = 1;
 	for (int i = 0; i < 5; i++) {
-		unsigned long size = sizes[i];
-		unsigned long *ptr = ptrs[i];
+		uintptr_t size = sizes[i];
+		uintptr_t *ptr = ptrs[i];
 		for (int j = 0; j < size; j++) {
 			ans += ptr[j] * (coeff++);
 			ptr[j] += (-1UL) / 0xffUL - 1UL;

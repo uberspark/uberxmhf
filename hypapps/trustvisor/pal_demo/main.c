@@ -5,8 +5,8 @@
 #include "caller.h"
 #include "trustvisor.h"
 
-void call_pal(unsigned long a, unsigned long b) {
-	unsigned long b2 = b;
+void call_pal(uintptr_t a, uintptr_t b) {
+	uintptr_t b2 = b;
 	// Construct struct tv_pal_params
 	struct tv_pal_params params = {
 		num_params: 2,
@@ -20,29 +20,29 @@ void call_pal(unsigned long a, unsigned long b) {
 	typeof(my_pal) *func = (typeof(my_pal) *)entry;
 	// Call function
 	printf("With PAL:\n");
-	printf(" %lu = *%p\n", b2, &b2);
+	printf(" %p = *%p\n", (void *)b2, &b2);
 	fflush(stdout);
-	unsigned long ret = func(a, &b2);
-	printf(" %lu = my_pal(%lu, %p)\n", ret, a, &b2);
-	printf(" %lu = *%p\n\n", b2, &b2);
+	uintptr_t ret = func(a, &b2);
+	printf(" %p = my_pal(%p, %p)\n", (void *)ret, (void *)a, &b2);
+	printf(" %p = *%p\n\n", (void *)b2, &b2);
 	fflush(stdout);
 	// Unregister scode
 	unregister_pal(entry);
 }
 
 int main(int argc, char *argv[]) {
-	unsigned long a, b, b2;
-	unsigned long ret;
+	uintptr_t a, b, b2;
+	uintptr_t ret;
 	assert(argc > 2);
-	assert(sscanf(argv[1], "%lu", &a) == 1);
-	assert(sscanf(argv[2], "%lu", &b) == 1);
+	assert(sscanf(argv[1], "%p", (void **)&a) == 1);
+	assert(sscanf(argv[2], "%p", (void **)&b) == 1);
 	b2 = b;
 	printf("Without PAL:\n");
-	printf(" %lu = *%p\n", b2, &b2);
+	printf(" %p = *%p\n", (void *)b2, &b2);
 	fflush(stdout);
 	ret = my_pal(a, &b2);
-	printf(" %lu = my_pal(%lu, %p)\n", ret, a, &b2);
-	printf(" %lu = *%p\n\n", b2, &b2);
+	printf(" %p = my_pal(%p, %p)\n", (void *)ret, (void *)a, &b2);
+	printf(" %p = *%p\n\n", (void *)b2, &b2);
 	fflush(stdout);
 	call_pal(a, b);
 	return 0;
