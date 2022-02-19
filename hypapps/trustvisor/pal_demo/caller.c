@@ -238,5 +238,6 @@ void unregister_pal(void *user_entry) {
 #ifdef TRANSLATE
 	assert(!munmap_wrap(pal_record->mmap_code2));
 #endif /* TRANSLATE */
+	pal_record->user_entry = NULL;
 }
 
