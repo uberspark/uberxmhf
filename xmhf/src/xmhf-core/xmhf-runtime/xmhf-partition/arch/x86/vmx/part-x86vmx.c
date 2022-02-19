@@ -529,12 +529,12 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   {
     u32 errorcode;
     /*
-     * For BSP, use RDX=0x80 (after BIOS setup).
-     * For AP, use RDX=0x000n06xx (Intel's spec on processor state after INIT).
+     * For BSP, use boot drive number (usually EDX=0x80 for frist HDD).
+     * For AP, use EDX=0x000n06xx (Intel's spec on processor state after INIT).
      */
-    u32 edx = 0x80;
+    u32 edx = (u32)rpb->XtGuestOSBootDrive;
     if (!vcpu->isbsp) {
-        uintptr_t _eax, _ebx, _ecx, _edx;
+        u32 _eax, _ebx, _ecx, _edx;
         cpuid(0x80000001U, &_eax, &_ebx, &_ecx, &_edx);
         edx = 0x00000600U | (0x000f0000U & _eax);
     }

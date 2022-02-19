@@ -90,6 +90,7 @@ typedef struct {
     hva_t   XtGuestOSBootModuleSize;
     hva_t   runtime_appmodule_base;
     hva_t   runtime_appmodule_size;
+    u8      XtGuestOSBootDrive;         /* drive used to boot (can be passed to INT 13h) */
     hva_t   XtVmmStackBase;
     hva_t   XtVmmStackSize;
     hva_t   XtVmmGdt;
@@ -107,7 +108,7 @@ typedef struct {
     uart_config_t RtmUartConfig;        /* runtime options parsed in init and passed forward */
     char cmdline[1024];                 /* runtime options parsed in init and passed forward */
     u32 isEarlyInit;                    //1 for an "early init" else 0 (late-init)
-} __attribute__((packed)) RPB, *PRPB;
+} RPB, *PRPB;
 
 
 //"sl" parameter block structure 
@@ -126,11 +127,12 @@ typedef struct _sl_parameter_block {
     u32     runtime_appmodule_size;     // XMHF hypapp optional module size
     u64     rdtsc_before_drtm;          // Performance measurements related to DRTM
     u64     rdtsc_after_drtm;
+    u8      runtime_osbootdrive;        // Boot drive number (usually 0x80)
 
     /* runtime options parsed in init and passed forward */
     uart_config_t uart_config;
     char cmdline[1024]; /* runtime options parsed in init and passed forward */
-} __attribute__((packed)) SL_PARAMETER_BLOCK;
+} SL_PARAMETER_BLOCK;
 
 
 

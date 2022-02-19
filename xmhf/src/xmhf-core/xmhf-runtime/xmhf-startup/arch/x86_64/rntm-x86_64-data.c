@@ -96,6 +96,7 @@ RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.XtGuestOSBootModuleSize= 0,
 	.runtime_appmodule_base= 0,
 	.runtime_appmodule_size= 0,
+	.XtGuestOSBootDrive = 0x80u,
 	.XtVmmStackBase= (hva_t)x_init_stack,
 	.XtVmmStackSize= 8192,
 	.XtVmmGdt= (hva_t)&x_gdt,

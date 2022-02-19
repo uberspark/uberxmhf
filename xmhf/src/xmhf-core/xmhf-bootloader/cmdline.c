@@ -105,6 +105,7 @@ static const cmdline_option_t g_tboot_cmdline_options[] = {
     { "loglvl",     "all" },     /* all|none */
     { "logging",    "serial,vga" },  /* vga,serial,memory|none */
     { "serial",     "115200,8n1,0x3f8" },
+    { "boot_drive", "0x80" },
     /* serial=<baud>[/<clock_hz>][,<DPS>[,<io-base>[,<irq>[,<serial-bdf>[,<bridge-bdf>]]]]] */
 
     /* { "vga_delay",  "0" },      /\* # secs *\/ */
@@ -344,6 +345,17 @@ bool get_tboot_serial(void)
 }
 
 #endif
+
+u8 get_tboot_boot_drive()
+{
+    const char *boot_drive = cmdline_get_option_val(g_tboot_cmdline_options,
+                                                    g_tboot_param_values,
+                                                    "boot_drive");
+    if (boot_drive == NULL) {
+        return 0x80u;
+    }
+    return (u8)strtoul(boot_drive, NULL, 0);
+}
 
 /* void get_tboot_vga_delay(void) */
 /* { */

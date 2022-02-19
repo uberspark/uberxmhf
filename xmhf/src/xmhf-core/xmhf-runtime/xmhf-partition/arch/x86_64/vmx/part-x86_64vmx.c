@@ -564,14 +564,14 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   {
     u32 errorcode;
     /*
-     * For BSP, use RDX=0x80 (after BIOS setup).
+     * For BSP, use boot drive number (usually EDX=0x80 for frist HDD).
      * For AP, use RDX=0x000n06xx (Intel's spec on processor state after INIT).
      */
-    u32 rdx = 0x80;
+    u64 rdx = (u64)rpb->XtGuestOSBootDrive;
     if (!vcpu->isbsp) {
-        uintptr_t _eax, _ebx, _ecx, _edx;
+        u32 _eax, _ebx, _ecx, _edx;
         cpuid(0x80000001U, &_eax, &_ebx, &_ecx, &_edx);
-        rdx = 0x00000600U | (0x000f0000U & _eax);
+        rdx = 0x00000600ULL | (0x000f0000ULL & _eax);
     }
     errorcode=__vmx_start_hvm(rdx);
     HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.

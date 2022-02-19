@@ -930,6 +930,7 @@ void cstartup(multiboot_info_t *mbi){
         slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;      
         slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
         slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
+        slpb->runtime_osbootdrive = get_tboot_boot_drive();
 
 		//check if we have an optional app module and if so populate relevant SLPB
 		//fields

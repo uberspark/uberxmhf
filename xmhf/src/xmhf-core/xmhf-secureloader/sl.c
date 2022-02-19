@@ -108,6 +108,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	runtime size= %u bytes", slpb.runtime_size);
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
+    printf("\n  OS boot_drive is 0x%02x", (u32)slpb.runtime_osbootdrive);
     printf("\n\tcmdline = \"%s\"", slpb.cmdline);
 
 	//debug: if we are doing some performance measurements
@@ -168,6 +169,8 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		//pass optional app module if any
 		rpb->runtime_appmodule_base = (hva_t)(slpb.runtime_appmodule_base);
 		rpb->runtime_appmodule_size = (hva_t)(slpb.runtime_appmodule_size);
+
+		rpb->XtGuestOSBootDrive = slpb.runtime_osbootdrive;
 
 	#if defined (__DEBUG_SERIAL__)
 		//pass along UART config for serial debug output

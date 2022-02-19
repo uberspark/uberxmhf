@@ -77,8 +77,9 @@ typedef struct {
   hva_t optionalmodule_ptr;
   hva_t optionalmodule_size;
   hva_t runtimephysmembase;
+  u8 boot_drive;
   char cmdline[1024];
-} __attribute__((packed)) APP_PARAM_BLOCK;
+} APP_PARAM_BLOCK;
 
 
 //EMHF application callbacks
