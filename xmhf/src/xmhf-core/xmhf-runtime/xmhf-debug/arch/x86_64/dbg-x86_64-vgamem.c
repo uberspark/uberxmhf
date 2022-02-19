@@ -59,8 +59,8 @@ static void vgamem_newln(void){
 
     if (vid_y >= ROWS){
         vid_y = ROWS-1;
-        memcpy((char*)vidmem,(char*)vidmem + 2*COLS, (ROWS-1)*2*COLS);
-        memcpy((char*)vidmem + (ROWS-1)*2*COLS, 0, 2*COLS);
+        memmove((char*)vidmem,(char*)vidmem + 2*COLS, (ROWS-1)*2*COLS);
+        memset((char*)vidmem + (ROWS-1)*2*COLS, 0, 2*COLS);
     }
 }
 
