@@ -136,7 +136,7 @@ void udelay(u32 usecs){
     outb(0xB0, 0x43);
   
     //compute appropriate latch register value depending on usecs
-    latchregval = (1193182 * usecs) / 1000000;
+    latchregval = ((u64)1193182 * usecs) / 1000000;
 
     //write latch register to ch-2
     val = (u8)latchregval;
