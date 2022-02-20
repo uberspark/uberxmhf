@@ -100,8 +100,8 @@ typedef union {
         uint16_t  reserved          : 14;
         uint16_t  pre_production    : 1;
         uint16_t  debug_signed      : 1;
-    };
-} acm_flags_t;
+    } __attribute__((packed));
+} __attribute__((packed)) acm_flags_t;
 
 typedef struct {
     uint32_t     module_type;
@@ -127,7 +127,7 @@ typedef struct {
     uint8_t      rsa2048_sig[256];
     uint32_t     scratch[143];
     uint8_t      user_area[];
-} acm_hdr_t;
+} __attribute__((packed)) acm_hdr_t;
 
 /* value of module_type field */
 #define ACM_TYPE_CHIPSET        0x02
@@ -146,7 +146,7 @@ typedef struct {
     txt_caps_t  capabilities;
     uint8_t     acm_ver;
     uint8_t     reserved[3];
-} acm_info_table_t;
+} __attribute__((packed)) acm_info_table_t;
 
 /* ACM UUID value */
 #define ACM_UUID_V3        {0x7fc03aaa, 0x46a7, 0x18db, 0xac2e, \
@@ -163,12 +163,12 @@ typedef struct {
     uint16_t  revision_id;
     uint16_t  reserved;
     uint32_t  extended_id;
-} acm_chipset_id_t;
+} __attribute__((packed)) acm_chipset_id_t;
 
 typedef struct {
     uint32_t           count;
     acm_chipset_id_t   chipset_ids[];
-} acm_chipset_id_list_t;
+} __attribute__((packed)) acm_chipset_id_list_t;
 
 extern void print_uuid(const uuid_t *uuid);
 extern void print_txt_caps(const char *prefix, txt_caps_t caps);
