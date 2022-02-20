@@ -204,6 +204,14 @@ our C main*/
 
     _sl_start_64:
 
+    /* Load new segment selectors for DS, ES, FS, GS, and SS */
+    movw $(__DS), %bx
+    movw %bx, %ds
+    movw %bx, %es
+    movw %bx, %fs
+    movw %bx, %gs
+    movw %bx, %ss
+
     /*
      * Modify the page table so that (VA + RBP) % 4GiB = PA.
      * When address is now too high, VA + RBP = PA.
