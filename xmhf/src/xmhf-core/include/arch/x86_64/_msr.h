@@ -224,15 +224,16 @@ static inline void wrmsr(u32 msr, u32 eax, u32 edx){
 
 static inline u64 rdmsr64(uint32_t msr)
 {
-    u64 rv;
+    u32 eax, edx;
 
-    __asm__ __volatile__ ("rdmsr" : "=A" (rv) : "c" (msr));
-    return (rv);
+    __asm__ __volatile__ ("rdmsr" : "=a" (eax), "=d" (edx) : "c" (msr));
+    return ((u64)edx << 32) | eax;
 }
 
 static inline void wrmsr64(uint32_t msr, uint64_t newval)
 {
-    __asm__ __volatile__ ("wrmsr" : : "A" (newval), "c" (msr));
+    __asm__ __volatile__ ("wrmsr" : : "a" (newval & ((1UL << 32) - 1)),
+                          "d" (newval >> 32), "c" (msr));
 }
 
 #endif /* __ASSEMBLY__ */
