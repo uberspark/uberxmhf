@@ -158,7 +158,7 @@ static void print_os_mle_data(os_mle_data_t *os_mle_data)
            *((uint64_t *)os_mle_data - 1));
     printf("\t version: %u\n", os_mle_data->version);
     /* TBD: perhaps eventually print saved_mtrr_state field */
-    printf("\t mbi: %p\n", os_mle_data->mbi);
+    printf("\t mbi: %p\n", (multiboot_info_t *)os_mle_data->mbi);
 }
 
 static bool verify_os_mle_data(txt_heap_t *txt_heap)
@@ -196,7 +196,7 @@ static bool verify_os_mle_data(txt_heap_t *txt_heap)
     }
 
     /* field checks */
-    if ( os_mle_data->mbi == NULL ) {
+    if ( (multiboot_info_t *)os_mle_data->mbi == NULL ) {
         printf("OS to MLE data mbi field is NULL\n");
         return false;
     }

@@ -113,14 +113,17 @@ typedef struct {
  */
 #define MAX_LCP_PO_DATA_SIZE     64*1024  /* 64k */
 
+/* This struct is manually aligned */
 typedef struct {
     uint32_t          version;           /* currently 2 */
+    uint32_t          _;                 /* alignment padding for x86-64 */
     mtrr_state_t      saved_mtrr_state;  /* saved prior to changes for SINIT */
-    multiboot_info_t* mbi;               /* needs to be restored to ebx */
+    uint32_t          mbi;               /* needs to be restored to ebx */
+                                         /* type was multiboot_info_t* */
     uint32_t          saved_misc_enable_msr;  /* saved prior to SENTER */
                                          /* PO policy data */
     uint8_t           lcp_po_data[MAX_LCP_PO_DATA_SIZE];
-} os_mle_data_t;
+} __attribute__((packed)) os_mle_data_t;
 
 /*
  * OS/loader to SINIT structure

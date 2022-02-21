@@ -263,7 +263,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     *size = sizeof(*os_mle_data) + sizeof(uint64_t);
     memset(os_mle_data, 0, sizeof(*os_mle_data));
     os_mle_data->version = 0x02;
-    os_mle_data->mbi = NULL;
+    os_mle_data->mbi = (uint32_t)NULL;
     os_mle_data->saved_misc_enable_msr = rdmsr64(MSR_IA32_MISC_ENABLE);
 
     /*
