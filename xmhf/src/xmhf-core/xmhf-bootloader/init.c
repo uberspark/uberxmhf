@@ -682,14 +682,7 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __at
         printf("\nINIT(early): transferring control to SL via SKINIT...");
 		#ifndef PERF_CRIT
         if(NULL != slpb) {
-            __asm__ __volatile__ (
-                "cpuid\r\n"
-                "cpuid\r\n"
-                "cpuid\r\n"
-                "rdtsc\r\n"
-                : "=A"(slpb->rdtsc_before_drtm)
-                : /* no inputs */
-                : "ebx","ecx");
+            slpb->rdtsc_before_drtm = rdtsc64();
         }
 		#endif
         skinit((u32)slbase);

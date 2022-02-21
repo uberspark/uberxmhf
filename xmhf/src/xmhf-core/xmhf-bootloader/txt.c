@@ -393,14 +393,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 
 #ifndef PERF_CRIT
     if(NULL != slpb) {
-        __asm__ __volatile__ (
-            "cpuid\r\n"
-            "cpuid\r\n"
-            "cpuid\r\n"
-            "rdtsc\r\n"
-            : "=A"(slpb->rdtsc_before_drtm)
-            : /* no inputs */
-            : "ebx","ecx");
+        slpb->rdtsc_before_drtm = rdtsc64();
     }
 #endif
     

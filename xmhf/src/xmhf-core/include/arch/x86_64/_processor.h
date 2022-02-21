@@ -212,10 +212,10 @@ typedef struct {
 
 static inline uint64_t rdtsc64(void)
 {
-        uint64_t rv;
+        u32 eax, edx;
 
-        __asm__ __volatile__ ("rdtsc" : "=A" (rv));
-        return (rv);
+        __asm__ __volatile__ ("rdtsc" : "=a" (eax), "=d" (edx));
+        return ((u64)edx << 32) | eax;
 }
 
 
