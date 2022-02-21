@@ -160,7 +160,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
 
 void print_mtrrs(const mtrr_state_t *saved_state)
 {
-    int i;
+    u64 i;
     
     printf("mtrr_def_type: e = %d, fe = %d, type = %x\n",
            saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
@@ -179,7 +179,7 @@ void print_mtrrs(const mtrr_state_t *saved_state)
 void save_mtrrs(mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
-    int ndx;
+    u64 ndx;
 
     /* IA32_MTRR_DEF_TYPE MSR */
     saved_state->mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
@@ -215,7 +215,7 @@ static int get_page_type(const mtrr_state_t *saved_state, uint32_t base)
 {
     int type = -1;
     bool wt = false;
-    int i;
+    u64 i;
 
     /* omit whether the fix mtrrs are enabled, just check var mtrrs */
 
@@ -349,7 +349,7 @@ static int get_region_type(const mtrr_state_t *saved_state,
 bool validate_mtrrs(const mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
-    int ndx;
+    u64 ndx;
 
     /* check is meaningless if MTRRs were disabled */
     if ( saved_state->mtrr_def_type.e == 0 )
@@ -391,7 +391,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
 
     /* overlaping regions with invalid memory type combinations */
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
-        int i;
+        u64 i;
         const mtrr_physbase_t *base_ndx = &saved_state->mtrr_physbases[ndx];
         const mtrr_physmask_t *mask_ndx = &saved_state->mtrr_physmasks[ndx];
 
@@ -399,7 +399,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
             continue;
 
         for ( i = ndx + 1; i < saved_state->num_var_mtrrs; i++ ) {
-            int j;
+            u64 j;
             const mtrr_physbase_t *base_i = &saved_state->mtrr_physbases[i];
             const mtrr_physmask_t *mask_i = &saved_state->mtrr_physmasks[i];
 
@@ -471,7 +471,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
 
 void restore_mtrrs(mtrr_state_t *saved_state)
 {
-    int ndx;
+    u64 ndx;
 
     if(NULL == saved_state) {
         printf("\nFATAL ERROR: restore_mtrrs(): called with NULL\n");
