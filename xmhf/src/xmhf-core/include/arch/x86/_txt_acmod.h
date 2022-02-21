@@ -101,7 +101,7 @@ typedef union {
         uint16_t  pre_production    : 1;
         uint16_t  debug_signed      : 1;
     } __attribute__((packed));
-} __attribute__((packed)) acm_flags_t;
+} acm_flags_t;
 
 typedef struct {
     uint32_t     module_type;

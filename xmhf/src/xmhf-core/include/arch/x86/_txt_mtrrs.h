@@ -137,7 +137,7 @@ typedef union {
         uint64_t reserved1   : 1;
         uint64_t wc          : 1;    /* write-combining mem type supported */
         uint64_t reserved2   : 53;
-    };
+    } __attribute__((packed));
 } mtrr_cap_t;
 
 typedef union {
@@ -148,7 +148,7 @@ typedef union {
         uint64_t fe          : 1;    /* fixed MTRR enable */
         uint64_t e           : 1;    /* (all) MTRR enable */
         uint64_t reserved2   : 52;
-    };
+    } __attribute__((packed));
 } mtrr_def_type_t;
 
 typedef union {
@@ -160,7 +160,7 @@ typedef union {
         /* the MTRRs are set for SINIT and it must be <4GB, can use 24b */
         uint64_t base      : 24;
         uint64_t reserved2 : 28;
-    };
+    } __attribute__((packed));
 } mtrr_physbase_t;
 
 typedef union {
@@ -172,7 +172,7 @@ typedef union {
         /* the MTRRs are set for SINIT and it must be <4GB, can use 24b */
         uint64_t mask      : 24;
         uint64_t reserved2 : 28;
-    };
+    } __attribute__((packed));
 } mtrr_physmask_t;
 
 /* current procs only have 8, so this should hold us for a while */
@@ -180,10 +180,10 @@ typedef union {
 
 typedef struct {
     mtrr_def_type_t	    mtrr_def_type;
-    int	                num_var_mtrrs;
+    uint64_t            num_var_mtrrs;
     mtrr_physbase_t     mtrr_physbases[MAX_VARIABLE_MTRRS];
     mtrr_physmask_t     mtrr_physmasks[MAX_VARIABLE_MTRRS];
-} mtrr_state_t;
+} __attribute__((packed)) mtrr_state_t;
 
 extern bool set_mtrrs_for_acmod(acm_hdr_t *hdr);
 extern void print_mtrrs(const mtrr_state_t *saved_state);
