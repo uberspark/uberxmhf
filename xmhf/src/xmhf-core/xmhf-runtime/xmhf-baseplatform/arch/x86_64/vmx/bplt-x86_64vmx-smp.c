@@ -156,16 +156,16 @@ void xmhf_baseplatform_arch_x86_64vmx_wakeupAPs(void){
         // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
         #ifndef __XMHF_VERIFICATION__
         txt_heap = get_txt_heap();
-        //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+        //printf("\ntxt_heap = 0x%016llx", txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
         (void)os_mle_data;
-        //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+        //printf("\nos_mle_data = 0x%016llx", os_mle_data);
         sinit_mle_data = get_sinit_mle_data_start(txt_heap);
-        //printf("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
+        //printf("\nsinit_mle_data = 0x%016llx", sinit_mle_data);
         os_sinit_data = get_os_sinit_data_start(txt_heap);
-        //printf("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
+        //printf("\nos_sinit_data = 0x%016llx", os_sinit_data);
 	#endif
-            
+
         // Start APs.  Choose wakeup mechanism based on
         // capabilities used. MLE Dev Guide says MLEs should
         // support both types of Wakeup mechanism. 
@@ -174,29 +174,29 @@ void xmhf_baseplatform_arch_x86_64vmx_wakeupAPs(void){
         // unity-mapped trampoline that starts at 64K
         // physical. Without SENTER, or with AMD, APs start in
         // 16-bit mode.  We get to skip that. 
-        printf("\nBSP: _mle_join_start = 0x%08lx, _ap_bootstrap_start = 0x%08lx",
+        printf("\nBSP: _mle_join_start = 0x%016llx, _ap_bootstrap_start = 0x%016llx",
 			(u64)_mle_join_start, (u64)_ap_bootstrap_start);
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first 
         //printf("Enabling SMIs on BSP\n");
         //__getsec_smctrl();
-                
+
         // MLE Join structure constructed in runtimesup.S. Debug print. 
         #ifndef __XMHF_VERIFICATION__
         mle_join = (mle_join_t*)((u64)_mle_join_start - (u64)_ap_bootstrap_start + 0x10000); // XXX magic number
         #endif
-        //printf("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
-        //printf("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
-        //printf("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
-        //printf("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);                
+        //printf("\nBSP: mle_join.gdt_limit = 0x%08x", mle_join->gdt_limit);
+        //printf("\nBSP: mle_join.gdt_base = 0x%08x", mle_join->gdt_base);
+        //printf("\nBSP: mle_join.seg_sel = 0x%08x", mle_join->seg_sel);
+        //printf("\nBSP: mle_join.entry_point = 0x%08x", mle_join->entry_point);
 
 	#ifndef __XMHF_VERIFICATION__
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 		
         if (os_sinit_data->capabilities.rlp_wake_monitor) {
             printf("\nBSP: joining RLPs to MLE with MONITOR wakeup");
-            printf("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
+            printf("\nBSP: rlp_wakeup_addr = 0x%08x", sinit_mle_data->rlp_wakeup_addr);
             *((uint32_t *)(unsigned long)(sinit_mle_data->rlp_wakeup_addr)) = 0x01;
         }else {
             printf("\nBSP: joining RLPs to MLE with GETSEC[WAKEUP]");
