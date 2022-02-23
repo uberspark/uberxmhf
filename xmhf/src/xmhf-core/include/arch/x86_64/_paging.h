@@ -49,8 +49,8 @@
 #ifndef __PAGING_H__
 #define __PAGING_H__
 
-// maximum supported physical address, currently 8GB
-#define MAX_PHYS_ADDR 0x200000000ULL
+// maximum supported physical address, currently 9GB
+#define MAX_PHYS_ADDR 0x240000000ULL
 
 //physical memory limit
 #ifndef __ASSEMBLY__
