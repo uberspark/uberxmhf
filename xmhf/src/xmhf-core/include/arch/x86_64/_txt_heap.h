@@ -105,7 +105,7 @@ typedef struct {
     uint32_t  num_logical_procs;
     /* versions >= 3 */
     uint64_t  flags;
-} bios_data_t;
+} __attribute__((packed)) bios_data_t;
 
 /*
  * OS/loader to MLE structure
@@ -143,7 +143,7 @@ typedef struct {
     txt_caps_t  capabilities;
     /* versions >= 5 */
     uint64_t    efi_rsdt_ptr;
-} os_sinit_data_t;
+} __attribute__((packed)) os_sinit_data_t;
 
 /*
  * SINIT to MLE structure
@@ -159,7 +159,7 @@ typedef struct __attribute__ ((packed)) {
     uint64_t  length;
     uint8_t   mem_type;
     uint8_t   reserved[7];
-} sinit_mdr_t;
+} __attribute__((packed)) sinit_mdr_t;
 
 #define SHA1_SIZE      20
 typedef uint8_t   sha1_hash_t[SHA1_SIZE];
