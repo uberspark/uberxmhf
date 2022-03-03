@@ -183,7 +183,7 @@ typedef struct {
     uint64_t            num_var_mtrrs;
     mtrr_physbase_t     mtrr_physbases[MAX_VARIABLE_MTRRS];
     mtrr_physmask_t     mtrr_physmasks[MAX_VARIABLE_MTRRS];
-} mtrr_state_t;
+} __attribute__((packed)) mtrr_state_t;
 
 extern bool set_mtrrs_for_acmod(acm_hdr_t *hdr);
 extern void print_mtrrs(const mtrr_state_t *saved_state);
