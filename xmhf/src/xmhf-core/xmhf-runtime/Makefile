@@ -126,7 +126,11 @@ $(OBJECTS_PRECOMPILED_LIBBACKENDS): %: runtimecomponents
 
 runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM).lds.S
 	$(LD) -T runtime-$(TARGET_HWPLATFORM).lds.S -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+	# Optional: use sparse file for runtime.exe to reduce fs space usage
+	fallocate -d runtime.exe
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
+	# Optional: use sparse file for runtime.bin to reduce fs space usage
+	fallocate -d runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<

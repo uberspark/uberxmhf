@@ -65,6 +65,10 @@ sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl-$(TARGET_HWPLATFORM).lds.S
 	$(CP) sl.exe sl_syms.exe
 	$(STRIP) -s sl.exe
 	$(OBJCOPY) --output-format=binary sl.exe sl.bin
+	# Optional: use sparse file to reduce fs space usage
+	fallocate -d sl.exe
+	fallocate -d sl.bin
+	fallocate -d sl_syms.exe
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<

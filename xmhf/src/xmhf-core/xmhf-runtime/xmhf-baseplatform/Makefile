@@ -56,6 +56,9 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 # targets
 .PHONY: all
 all: $(OBJECTS)
+	# Optional: use sparse file to reduce fs space usage
+	fallocate -d ./arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx-data.o
+	fallocate -d ./arch/$(TARGET_HWPLATFORM)/svm/bplt-$(TARGET_HWPLATFORM)svm-data.o
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
