@@ -182,7 +182,7 @@ typedef struct {
     uint32_t     vtd_dmars_off;
     /* versions >= 8 */
     uint32_t     proc_scrtm_status;
-} sinit_mle_data_t;
+} __attribute__((packed)) sinit_mle_data_t;
 
 
 /*
