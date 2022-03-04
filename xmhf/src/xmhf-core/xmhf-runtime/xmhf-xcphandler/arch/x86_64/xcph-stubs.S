@@ -166,7 +166,7 @@ XtRtmEmitIdtStub 1f 0
     .align 16
     .global xmhf_xcphandler_idt_start
     xmhf_xcphandler_idt_start:
-    .fill   EMHF_XCPHANDLER_MAXEXCEPTIONS, 16, 0
+    .fill   (EMHF_XCPHANDLER_MAXEXCEPTIONS * 16), 1, 0
     xmhf_xcphandler_idt_end:
 
 
