@@ -62,6 +62,7 @@ MEMORY
 {
   low  (rwxai) : ORIGIN = 0,   LENGTH = 64K
   high (rwxai) : ORIGIN = 64K, LENGTH = 1984K /* balance of 2M total */ 
+  debug (rwxai) : ORIGIN = 0, LENGTH = 1024M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 

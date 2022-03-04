@@ -52,6 +52,7 @@ ENTRY(init_start)
 MEMORY
 {
   all (rwxai) : ORIGIN = 0x1E00000, LENGTH = 100M /* length is arbitrary */
+  debug (rwxai) : ORIGIN = 0, LENGTH = 1024M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
