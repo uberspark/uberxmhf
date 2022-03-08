@@ -567,6 +567,7 @@ void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct r
 		 */
 		//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
 		/* Cannot be u32 in x86-64, because VMREAD writes 64-bits */
+		// TODO: if hypapp has multiple VMCS, need to select which one to inject
 		unsigned long __control_VMX_cpu_based;
 		HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
 		__control_VMX_cpu_based |= (1U << 22);
