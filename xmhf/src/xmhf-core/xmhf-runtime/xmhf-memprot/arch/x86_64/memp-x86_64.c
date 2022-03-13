@@ -54,10 +54,10 @@
 void xmhf_memprot_arch_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		xmhf_memprot_arch_x86_64svm_initialize(vcpu);
+		xmhf_memprot_arch_x86svm_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
 	}else{	//CPU_VENDOR_INTEL
-		xmhf_memprot_arch_x86_64vmx_initialize(vcpu);
+		xmhf_memprot_arch_x86vmx_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
 	}
 }
@@ -115,9 +115,9 @@ void xmhf_memprot_arch_flushmappings(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		xmhf_memprot_arch_x86_64svm_flushmappings(vcpu);
+		xmhf_memprot_arch_x86svm_flushmappings(vcpu);
 	else //CPU_VENDOR_INTEL
-		xmhf_memprot_arch_x86_64vmx_flushmappings(vcpu);
+		xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 
 }
 
@@ -126,9 +126,9 @@ void xmhf_memprot_arch_flushmappings_localtlb(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		xmhf_memprot_arch_x86_64svm_flushmappings(vcpu);
+		xmhf_memprot_arch_x86svm_flushmappings(vcpu);
 	else //CPU_VENDOR_INTEL
-		xmhf_memprot_arch_x86_64vmx_flushmappings_localtlb(vcpu);
+		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
 }
 
 //set protection for a given physical memory address
@@ -152,16 +152,16 @@ void xmhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 
 	//invoke appropriate sub arch. backend
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		xmhf_memprot_arch_x86_64svm_setprot(vcpu, gpa, prottype);
+		xmhf_memprot_arch_x86svm_setprot(vcpu, gpa, prottype);
 	else //CPU_VENDOR_INTEL
-		xmhf_memprot_arch_x86_64vmx_setprot(vcpu, gpa, prottype);
+		xmhf_memprot_arch_x86vmx_setprot(vcpu, gpa, prottype);
 }
 
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa){
 	//invoke appropriate sub arch. backend
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		return xmhf_memprot_arch_x86_64svm_getprot(vcpu, gpa);
+		return xmhf_memprot_arch_x86svm_getprot(vcpu, gpa);
 	else //CPU_VENDOR_INTEL
-		return xmhf_memprot_arch_x86_64vmx_getprot(vcpu, gpa);
+		return xmhf_memprot_arch_x86vmx_getprot(vcpu, gpa);
 }

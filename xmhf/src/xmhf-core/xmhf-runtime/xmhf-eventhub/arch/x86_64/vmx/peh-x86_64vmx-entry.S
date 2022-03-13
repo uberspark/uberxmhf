@@ -51,15 +51,15 @@
 
 //----------------------------------------------------------------------
 //globals referenced
-    .extern xmhf_parteventhub_arch_x86_64vmx_intercept_handler
+    .extern xmhf_parteventhub_arch_x86vmx_intercept_handler
 
 //----------------------------------------------------------------------
 // xmhf_parteventhub_entry_x86vmx
 // we get control here right after any event within a partition
 // note: the h/w is the "caller" so we never actually "return"
 .section .text
-.global xmhf_parteventhub_arch_x86_64vmx_entry
-xmhf_parteventhub_arch_x86_64vmx_entry:
+.global xmhf_parteventhub_arch_x86vmx_entry
+xmhf_parteventhub_arch_x86vmx_entry:
     // Currently rsp points to VCPU
 
     //step-1: save all CPU GPRs
@@ -87,7 +87,7 @@ xmhf_parteventhub_arch_x86_64vmx_entry:
     movq %rsp, %rsi
 
     //step-5: invoke "C" event handler
-    call xmhf_parteventhub_arch_x86_64vmx_intercept_handler
+    call xmhf_parteventhub_arch_x86vmx_intercept_handler
 
     //step-6; restore all CPU GPRs
     popq    %rdi

@@ -52,7 +52,7 @@
 #include <xmhf.h>
 
 //open TPM locality
-int xmhf_tpm_arch_x86_64svm_open_locality(int locality){
+int xmhf_tpm_arch_x86svm_open_locality(int locality){
 		// some systems leave locality 0 open for legacy software 
         //dump_locality_access_regs();
         xmhf_tpm_arch_deactivate_all_localities();

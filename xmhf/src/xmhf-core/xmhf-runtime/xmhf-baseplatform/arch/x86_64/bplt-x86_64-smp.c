@@ -53,7 +53,7 @@
 #include <xmhf.h>
 
 //return 1 if the calling CPU is the BSP
-u32 xmhf_baseplatform_arch_x86_64_isbsp(void){
+u32 xmhf_baseplatform_arch_x86_isbsp(void){
   u32 eax, edx;
   //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
@@ -66,7 +66,7 @@ u32 xmhf_baseplatform_arch_x86_64_isbsp(void){
 }
 
 //wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
-void xmhf_baseplatform_arch_x86_64_wakeupAPs(void){
+void xmhf_baseplatform_arch_x86_wakeupAPs(void){
   u32 eax, edx;
   volatile u32 *icr;
   
@@ -86,7 +86,7 @@ void xmhf_baseplatform_arch_x86_64_wakeupAPs(void){
 	*icr = 0x000c4500UL;
   #endif
 
-  xmhf_baseplatform_arch_x86_64_udelay(10000);
+  xmhf_baseplatform_arch_x86_udelay(10000);
 
   //wait for command completion
   #ifndef __XMHF_VERIFICATION__
@@ -107,7 +107,7 @@ void xmhf_baseplatform_arch_x86_64_wakeupAPs(void){
 	//TODO: plug in LAPIC h/w model
 	*icr = 0x000c4610UL;
       #endif
-      xmhf_baseplatform_arch_x86_64_udelay(200);
+      xmhf_baseplatform_arch_x86_udelay(200);
         //wait for command completion
         #ifndef __XMHF_VERIFICATION__
 		//TODO: plug in LAPIC h/w model
@@ -150,16 +150,16 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 
   //allocate and setup VCPU structure on each CPU
   if(cpu_vendor == CPU_VENDOR_AMD)
-	xmhf_baseplatform_arch_x86_64svm_allocandsetupvcpus(cpu_vendor);
+	xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(cpu_vendor);
   else //CPU_VENDOR_INTEL
-	xmhf_baseplatform_arch_x86_64vmx_allocandsetupvcpus(cpu_vendor);
+	xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
 
   //wake up APS
   if(g_midtable_numentries > 1){
     if(cpu_vendor == CPU_VENDOR_AMD)
-	  xmhf_baseplatform_arch_x86_64svm_wakeupAPs();
+	  xmhf_baseplatform_arch_x86svm_wakeupAPs();
     else //CPU_VENDOR_INTEL
-	  xmhf_baseplatform_arch_x86_64vmx_wakeupAPs();
+	  xmhf_baseplatform_arch_x86vmx_wakeupAPs();
   }
 
 
@@ -177,10 +177,10 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
-void xmhf_baseplatform_arch_x86_64_smpinitialize_commonstart(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 	  //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
-  if(xmhf_baseplatform_arch_x86_64_isbsp()){
+  if(xmhf_baseplatform_arch_x86_isbsp()){
     vcpu->isbsp = 1;	//this core is a BSP
     
 	printf("\nBSP rallying APs...");

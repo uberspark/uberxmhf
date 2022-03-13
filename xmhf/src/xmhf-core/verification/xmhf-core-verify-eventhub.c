@@ -269,9 +269,9 @@ void main() {
 #ifdef __X86_64__
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
-			xmhf_parteventhub_arch_x86_64vmx_intercept_handler(&vcpu, &r);
+			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
 #else
-			xmhf_parteventhub_arch_x86_64svm_intercept_handler(&vcpu, &r);
+			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 #endif
 
 #else /* !__X86_64__ */

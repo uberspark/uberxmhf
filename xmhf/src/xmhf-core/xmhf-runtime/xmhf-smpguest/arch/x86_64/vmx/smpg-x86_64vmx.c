@@ -59,7 +59,7 @@ static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") )) = 0;	 
 
 /*
- * xmhf_smpguest_arch_x86_64vmx_quiesce() needs to access printf locks defined
+ * xmhf_smpguest_arch_x86vmx_quiesce() needs to access printf locks defined
  * in xmhfc-putchar.c
  */
 extern void *emhfc_putchar_linelock_arg;
@@ -85,7 +85,7 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
   
   pts[lapic_page] = value;
 
-  xmhf_memprot_arch_x86_64vmx_flushmappings(vcpu);
+  xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 #endif //__XMHF_VERIFICATION__
 }
 //----------------------------------------------------------------------
@@ -163,13 +163,13 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 
 
 //----------------------------------------------------------------------
-//xmhf_smpguest_arch_x86_64vmx_initialize
+//xmhf_smpguest_arch_x86vmx_initialize
 //initialize LAPIC interception machinery
 //note: called from the BSP
 // If more than 1 CPU will be used, set unmaplapic to 1. APIC will be mapped
 // When all APs receive SIPI. Otherwise, set unmaplapic to 0 so that APIC will
 // not be unmapped.
-void xmhf_smpguest_arch_x86_64vmx_initialize(VCPU *vcpu, u32 unmaplapic){
+void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu, u32 unmaplapic){
   u32 eax, edx;
 
   //read LAPIC base address from MSR
@@ -195,9 +195,9 @@ void xmhf_smpguest_arch_x86_64vmx_initialize(VCPU *vcpu, u32 unmaplapic){
 	bool g_vmx_lapic_npf_verification_pre = false;
 #endif
 //----------------------------------------------------------------------
-//xmhf_smpguest_arch_x86_64vmx_eventhandler_hwpgtblviolation
+//xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation
 //handle LAPIC accesses by the guest, used for SMP guest boot
-u32 xmhf_smpguest_arch_x86_64vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
+u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
 
   //get LAPIC register being accessed
   g_vmx_lapic_reg = (paddr - g_vmx_lapic_base);
@@ -271,9 +271,9 @@ u32 xmhf_smpguest_arch_x86_64vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 p
 	bool g_vmx_lapic_db_verification_pre = false;
 #endif
 //------------------------------------------------------------------------------
-//xmhf_smpguest_arch_x86_64vmx_eventhandler_dbexception
+//xmhf_smpguest_arch_x86vmx_eventhandler_dbexception
 //handle instruction that performed the LAPIC operation
-void xmhf_smpguest_arch_x86_64vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
+void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
   u32 delink_lapic_interception=0;
   
   (void)r;
@@ -418,7 +418,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
 }
 
 /* Unblock NMI by executing iret, but do not jump to somewhere else */
-static void xmhf_smpguest_arch_x86_64vmx_unblock_nmi(void) {
+static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
     asm volatile (
         "movq    %%rsp, %%rsi   \r\n"
         "xorq    %%rax, %%rax   \r\n"
@@ -439,7 +439,7 @@ static void xmhf_smpguest_arch_x86_64vmx_unblock_nmi(void) {
 
 //quiesce interface to switch all guest cores into hypervisor mode
 //note: we are in atomic processsing mode for this "vcpu"
-void xmhf_smpguest_arch_x86_64vmx_quiesce(VCPU *vcpu){
+void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
         //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
@@ -484,7 +484,7 @@ void xmhf_smpguest_arch_x86_64vmx_quiesce(VCPU *vcpu){
 
 }
 
-void xmhf_smpguest_arch_x86_64vmx_endquiesce(VCPU *vcpu){
+void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 
         /*
          * g_vmx_quiesce=0 must be before g_vmx_quiesce_resume_signal=1,
@@ -525,7 +525,7 @@ void xmhf_smpguest_arch_x86_64vmx_endquiesce(VCPU *vcpu){
 //note: we are in atomic processsing mode for this "vcpu"
 // from_guest: 1 if NMI originated from the VM (i.e. caller is intercept handler),
 // otherwise 0 (within the hypervisor, i.e. caller is exception handler)
-void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest){
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest){
 	(void)r;
 
 	/*
@@ -534,7 +534,7 @@ void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct r
 	 *
 	 * If vcpu->quiesced = 1 (i.e. this core has been quiesced), simply return.
 	 * This can only happen for the CPU calling
-	 * xmhf_smpguest_arch_x86_64vmx_quiesce(). For other CPUs, NMIs are
+	 * xmhf_smpguest_arch_x86vmx_quiesce(). For other CPUs, NMIs are
 	 * blocked during the time where vcpu->quiesced = 1.
 	 */
   /*
@@ -584,9 +584,9 @@ void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct r
 		 * changed for NMI handling. Or there will be race conditions.
 		 *
 		 * There is also a very unlikely race condition: if
-		 * xmhf_baseplatform_arch_x86_64vmx_putVMCS() reads the value from
+		 * xmhf_baseplatform_arch_x86vmx_putVMCS() reads the value from
 		 * vcpu->vmcs, then NMI happens and this function gets called,
-		 * then xmhf_baseplatform_arch_x86_64vmx_putVMCS() write the value
+		 * then xmhf_baseplatform_arch_x86vmx_putVMCS() write the value
 		 * to VMCS using __vmx_vmwrite(), then
 		 * vcpu->vmcs.control_VMX_cpu_based is not updated.
 		 */
@@ -602,7 +602,7 @@ void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct r
 
 	/* Unblock NMI in hypervisor */
 	if (from_guest) {
-		xmhf_smpguest_arch_x86_64vmx_unblock_nmi();
+		xmhf_smpguest_arch_x86vmx_unblock_nmi();
 	}
 }
 
@@ -610,7 +610,7 @@ void xmhf_smpguest_arch_x86_64vmx_eventhandler_nmiexception(VCPU *vcpu, struct r
 
 
 //perform required setup after a guest awakens a new CPU
-void xmhf_smpguest_arch_x86_64vmx_postCPUwakeup(VCPU *vcpu){
+void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
 	//setup guest CS and EIP as specified by the SIPI vector
 	vcpu->vmcs.guest_CS_selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
 	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K); 
@@ -619,7 +619,7 @@ void xmhf_smpguest_arch_x86_64vmx_postCPUwakeup(VCPU *vcpu){
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_arch_x86_64vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
+u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
   if((u32)vcpu->vmcs.guest_CR4 & CR4_PAE ){
     //PAE paging used by guest
     u32 kcr3 = (u32)vcpu->vmcs.guest_CR3;

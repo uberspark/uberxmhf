@@ -73,11 +73,11 @@ static u32 vmx_eap_initialize_early(
     memset(&g_vtd_cap, 0, sizeof(struct dmap_vmx_cap));
 
     // get ACPI RSDP
-    //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_64_acpi_getRSDP>, and then remove the following #ifdef
+    //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
 #ifdef __X86__
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 #elif defined(__X86_64__)
-    status = xmhf_baseplatform_arch_x86_64_acpi_getRSDP(&rsdp);
+    status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 #else
     #error "Unsupported Arch"
 #endif

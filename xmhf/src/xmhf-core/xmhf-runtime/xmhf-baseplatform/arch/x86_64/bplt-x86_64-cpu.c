@@ -53,7 +53,7 @@
 #include <xmhf.h>
 
 //returns true if CPU has support for XSAVE/XRSTOR
-bool xmhf_baseplatform_arch_x86_64_cpuhasxsavefeature(void){
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	u32 eax, ebx, ecx, edx;
 	
 	//bit 26 of ECX is 1 in CPUID function 0x00000001 if

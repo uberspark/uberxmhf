@@ -281,10 +281,10 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_GDTR_base = (u64)(hva_t)x_gdt_start;
 	vcpu->vmcs.host_IDTR_base = (u64)(hva_t)xmhf_xcphandler_get_idt_start();
 	vcpu->vmcs.host_TR_base = (u64)(hva_t)g_runtime_TSS;
-	vcpu->vmcs.host_RIP = (u64)(hva_t)xmhf_parteventhub_arch_x86_64vmx_entry;
+	vcpu->vmcs.host_RIP = (u64)(hva_t)xmhf_parteventhub_arch_x86vmx_entry;
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-	if( vcpu->vmcs.host_RIP == (u64)(hva_t)xmhf_parteventhub_arch_x86_64vmx_entry)
+	if( vcpu->vmcs.host_RIP == (u64)(hva_t)xmhf_parteventhub_arch_x86vmx_entry)
 		vcpu->vmcs.host_RIP = 0xDEADBEEF;
 #endif //__XMHF_VERIFICATION__
 
@@ -525,7 +525,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_CR4_shadow = 0;
 
 	//flush guest TLB to start with
-	xmhf_memprot_arch_x86_64vmx_flushmappings(vcpu);
+	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 }
 
 
@@ -557,7 +557,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   printf("\nCPU(0x%02x): VMPTRLD success.", vcpu->id);
   
   //put VMCS to CPU
-  xmhf_baseplatform_arch_x86_64vmx_putVMCS(vcpu);
+  xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
   printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
   HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer == 0xFFFFFFFFFFFFFFFFULL );
 
@@ -576,7 +576,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
     errorcode=__vmx_start_hvm(rdx);
     HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
     //get CPU VMCS into VCPU structure
-    xmhf_baseplatform_arch_x86_64vmx_getVMCS(vcpu);
+    xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
     
     switch(errorcode){
 			case 0:	//no error code, VMCS pointer is invalid
@@ -586,7 +586,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 				unsigned long code=5;
 				HALT_ON_ERRORCOND(__vmx_vmread(0x4400, &code));
 			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%lx. HALT!", vcpu->id, code);
-			    xmhf_baseplatform_arch_x86_64vmx_dumpVMCS(vcpu);
+			    xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
 				break;
 			}
 	}
@@ -600,7 +600,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 
 
 //initialize partition monitor for a given CPU
-void xmhf_partition_arch_x86_64vmx_initializemonitor(VCPU *vcpu){
+void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 
   //initialize VT
   _vmx_initVT(vcpu);
@@ -623,14 +623,14 @@ void xmhf_partition_arch_x86_64vmx_initializemonitor(VCPU *vcpu){
 
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_x86_64vmx_setupguestOSstate(VCPU *vcpu){
+void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 		//initialize VMCS
 		_vmx_initVMCS(vcpu);
 	
 }
 
 //start executing the partition and guest OS
-void xmhf_partition_arch_x86_64vmx_start(VCPU *vcpu){
+void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
     
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
@@ -649,7 +649,7 @@ void xmhf_partition_arch_x86_64vmx_start(VCPU *vcpu){
 }
 
 //set legacy I/O protection for the partition
-void xmhf_partition_arch_x86_64vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
+void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
 	u8 *bit_vector = (u8 *)vcpu->vmx_vaddr_iobitmap;
 	u32 byte_offset, bit_offset;
 	u32 i;

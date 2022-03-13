@@ -83,14 +83,14 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 //initialize basic platform elements
 void xmhf_baseplatform_arch_initialize(void){
 	//initialize PCI subsystem
-	xmhf_baseplatform_arch_x86_64_pci_initialize();
+	xmhf_baseplatform_arch_x86_pci_initialize();
 	
 	//check ACPI subsystem
 	{
 		ACPI_RSDP rsdp;
 		#ifndef __XMHF_VERIFICATION__
 			//TODO: plug in a BIOS data area map/model
-			if(!xmhf_baseplatform_arch_x86_64_acpi_getRSDP(&rsdp)){
+			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
 				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
 				HALT();
 			}
@@ -106,7 +106,7 @@ void xmhf_baseplatform_arch_cpuinitialize(void){
 
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_64_cpuhasxsavefeature()){
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
 		u32 t_cr4;
 		t_cr4 = read_cr4();
 		t_cr4 |= CR4_OSXSAVE;	
@@ -114,5 +114,5 @@ void xmhf_baseplatform_arch_cpuinitialize(void){
 	}
 
 	if(cpu_vendor == CPU_VENDOR_INTEL)
-		xmhf_baseplatform_arch_x86_64vmx_cpuinitialize();
+		xmhf_baseplatform_arch_x86vmx_cpuinitialize();
 }

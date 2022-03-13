@@ -52,8 +52,8 @@
 
 .section .text
 /*------------------------------------------------------------------------------*/
-    .global xmhf_sl_arch_x86_64_invoke_runtime_entrypoint
-xmhf_sl_arch_x86_64_invoke_runtime_entrypoint:
+    .global xmhf_sl_arch_x86_invoke_runtime_entrypoint
+xmhf_sl_arch_x86_invoke_runtime_entrypoint:
 /*------------------------------------------------------------------------------*/
     /* test whether sla == spa */
     cmpq    $0, %r9

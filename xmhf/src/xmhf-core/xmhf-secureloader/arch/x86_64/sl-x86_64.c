@@ -89,7 +89,7 @@ void xmhf_setup_sl_paging(u32 baseaddr) {
 //build a 4-level paging that identity maps the lowest 4GiB memory
 //returns 64-bit address of PML4 Table (can be loaded into CR3)
 
-u64 xmhf_sl_arch_x86_64_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t runtime_sva, hva_t totalsize) 
+u64 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t runtime_sva, hva_t totalsize) 
 {
     pml4t_t xpml4;
     pdpt_t xpdpt;
@@ -290,7 +290,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 
 	#ifndef __XMHF_VERIFICATION__
 	//setup paging structures for runtime
-	ptba=xmhf_sl_arch_x86_64_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
+	ptba=xmhf_sl_arch_x86_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
 	#endif
 
 	printf("\nSL: setup runtime paging structures.");
@@ -302,7 +302,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 
 	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
-	xmhf_sl_arch_x86_64_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt,
+	xmhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt,
 				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba, sla2spa((void *)0));
 	#else
 	return;

@@ -54,7 +54,7 @@
 
 //---putVMCS--------------------------------------------------------------------
 // routine takes vcpu vmcsfields and stores it in the CPU VMCS 
-void xmhf_baseplatform_arch_x86_64vmx_putVMCS(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
     unsigned int i;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
       unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
@@ -67,7 +67,7 @@ void xmhf_baseplatform_arch_x86_64vmx_putVMCS(VCPU *vcpu){
     }
 }
 
-void xmhf_baseplatform_arch_x86_64vmx_read_field(u32 encoding, void *addr,
+void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
                                                  u32 size) {
     u64 value;
     HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
@@ -94,26 +94,26 @@ void xmhf_baseplatform_arch_x86_64vmx_read_field(u32 encoding, void *addr,
 
 //---getVMCS--------------------------------------------------------------------
 // routine takes CPU VMCS and stores it in vcpu vmcsfields  
-void xmhf_baseplatform_arch_x86_64vmx_getVMCS(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
     unsigned int i;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
         u32 encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
         u32 offset = g_vmx_vmcsrwfields_encodings[i].fieldoffset;
         void *field = (void *)((hva_t)&vcpu->vmcs + offset);
         u32 size = g_vmx_vmcsrwfields_encodings[i].membersize;
-        xmhf_baseplatform_arch_x86_64vmx_read_field(encoding, field, size);
+        xmhf_baseplatform_arch_x86vmx_read_field(encoding, field, size);
     }
     for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
         u32 encoding = g_vmx_vmcsrofields_encodings[i].encoding;
         u32 offset = g_vmx_vmcsrofields_encodings[i].fieldoffset;
         void *field = (void *)((hva_t)&vcpu->vmcs + offset);
         u32 size = g_vmx_vmcsrofields_encodings[i].membersize;
-        xmhf_baseplatform_arch_x86_64vmx_read_field(encoding, field, size);
+        xmhf_baseplatform_arch_x86vmx_read_field(encoding, field, size);
     }
 }
 
 //--debug: dumpVMCS dumps VMCS contents-----------------------------------------
-void xmhf_baseplatform_arch_x86_64vmx_dumpVMCS(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
   		printf("\nGuest State follows:");
 		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
 		printf("\nguest_DS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_DS_selector);
@@ -169,7 +169,7 @@ void xmhf_baseplatform_arch_x86_64vmx_dumpVMCS(VCPU *vcpu){
 		printf("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);
 }
 
-void xmhf_baseplatform_arch_x86_64vmx_dump_vcpu(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
 
 #define DUMP_VCPU_PRINT_INT16(x) \
     printf("\nCPU(0x%02x): " #x "=0x%08x", vcpu->id, (x));

@@ -63,7 +63,7 @@ u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
 };
 
 //runtime GDT descriptor
-arch_x86_64_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
+arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 	.size=sizeof(x_gdt_start)-1,
 	.base=(u64)&x_gdt_start,
 };

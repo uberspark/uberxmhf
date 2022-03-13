@@ -108,7 +108,7 @@ void ACPIInitializeRegisters(void){
 	
 	//rsdp=(ACPI_RSDP *)acpi_getRSDP();
 #ifdef __X86_64__
-	rsdp_paddr = xmhf_baseplatform_arch_x86_64_acpi_getRSDP(&rsdp);
+	rsdp_paddr = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 #else /* !__X86_64__ */
 	rsdp_paddr = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 #endif /* __X86_64__ */
