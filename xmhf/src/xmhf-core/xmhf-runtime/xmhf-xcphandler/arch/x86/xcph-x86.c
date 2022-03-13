@@ -53,9 +53,9 @@
 #include <xmhf.h>
 
 //---function to obtain the vcpu of the currently executing core----------------
-//XXX: TODO, move this into baseplatform as backend
-//note: this always returns a valid VCPU pointer
-static VCPU *_svm_getvcpu(void){
+// XXX: TODO, move this into baseplatform as backend
+// note: this always returns a valid VCPU pointer
+static VCPU *_svm_and_vmx_getvcpu(void){
   int i;
   u32 eax, edx, *lapic_reg;
   u32 lapic_id;
@@ -64,7 +64,7 @@ static VCPU *_svm_getvcpu(void){
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
   eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
+  lapic_reg = (u32 *)((uintptr_t)eax + (uintptr_t)LAPIC_ID);
   lapic_id = *lapic_reg;
   //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
   lapic_id = lapic_id >> 24;
@@ -78,35 +78,6 @@ static VCPU *_svm_getvcpu(void){
   printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
   HALT(); return NULL; // will never return presently 
 }
-
-//---function to obtain the vcpu of the currently executing core----------------
-//XXX: move this into baseplatform as backend
-//note: this always returns a valid VCPU pointer
-static VCPU *_vmx_getvcpu(void){
-  int i;
-  u32 eax, edx, *lapic_reg;
-  u32 lapic_id;
-  
-  //read LAPIC id of this core
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
-  lapic_id = *lapic_reg;
-  //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
-  lapic_id = lapic_id >> 24;
-  //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
-  
-  for(i=0; i < (int)g_midtable_numentries; i++){
-    if(g_midtable[i].cpu_lapic_id == lapic_id)
-        return( (VCPU *)g_midtable[i].vcpu_vaddr_ptr );
-  }
-
-  printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
-  HALT();
-  return NULL; // currently unreachable 
-}
-
 
 //initialize EMHF core exception handlers
 void xmhf_xcphandler_arch_initialize(void){
@@ -145,11 +116,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 	VCPU *vcpu;
 	
-	if(cpu_vendor == CPU_VENDOR_AMD){
-		vcpu=_svm_getvcpu();
-	}else{	//CPU_VENDOR_INTEL
-	    vcpu=_vmx_getvcpu();
-	}
+	vcpu=_svm_and_vmx_getvcpu();
 
 	/*
 	 * Cannot print anything before event handler returns if this exception

@@ -46,16 +46,15 @@
 
 /*
  * EMHF exception handler component interface
- * x86_64 arch. backend
+ * x86 arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
 
 //---function to obtain the vcpu of the currently executing core----------------
-// XXX: move this into baseplatform as backend
+// XXX: TODO, move this into baseplatform as backend
 // note: this always returns a valid VCPU pointer
-// in x86, this function was _svm_getvcpu() and _vmx_getvcpu() with same body
 static VCPU *_svm_and_vmx_getvcpu(void){
   int i;
   u32 eax, edx, *lapic_reg;
@@ -65,7 +64,7 @@ static VCPU *_svm_and_vmx_getvcpu(void){
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
   eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u64)eax + (u64)LAPIC_ID);
+  lapic_reg = (u32 *)((uintptr_t)eax + (uintptr_t)LAPIC_ID);
   lapic_id = *lapic_reg;
   //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
   lapic_id = lapic_id >> 24;
