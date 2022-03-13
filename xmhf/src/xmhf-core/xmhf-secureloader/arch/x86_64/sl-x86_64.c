@@ -45,8 +45,8 @@
  */
 
 /**
- * sl-x86_64.c
- * EMHF secure loader x86_64 arch. backend
+ * sl-x86.c
+ * EMHF secure loader x86 arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -85,10 +85,10 @@ void xmhf_setup_sl_paging(u32 baseaddr) {
 
 #ifndef __XMHF_VERIFICATION__
 
+#ifdef __X86_64__
 //---runtime paging setup-------------------------------------------------------
 //build a 4-level paging that identity maps the lowest 4GiB memory
 //returns 64-bit address of PML4 Table (can be loaded into CR3)
-
 u64 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t runtime_sva, hva_t totalsize) 
 {
     pml4t_t xpml4;
@@ -142,6 +142,55 @@ u64 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t run
 
     return sla2spa((void *)xpml4);
 }
+#else /* !__X86_64__ */
+//---runtime paging setup-------------------------------------------------------
+//physaddr and virtaddr are assumed to be 2M aligned
+//returns 32-bit base address of page table root (can be loaded into CR3)
+u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
+  pdpt_t xpdpt;
+  pdt_t xpdt;
+  hva_t hva=0;
+  u32 i;
+  u64 default_flags;
+	
+  printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
+         __FUNCTION__, runtime_spa, runtime_sva, totalsize);
+	
+  xpdpt= hva2sla((void *)rpb->XtVmmPdptBase);
+  xpdt = hva2sla((void *)rpb->XtVmmPdtsBase);
+	
+  printf("\n	pa xpdpt=0x%p, xpdt=0x%p", xpdpt, xpdt);
+	
+  default_flags = (u64)(_PAGE_PRESENT);
+
+  //init pdpt
+  for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
+    u64 pdt_spa = sla2spa((void *)xpdt) + (i << PAGE_SHIFT_4K);
+    xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
+  }
+
+  //init pdts with unity mappings
+  default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
+  for(i = 0, hva = 0;
+      i < (ADDR_4GB >> (PAE_PDT_SHIFT));
+      i ++, hva += PAGE_SIZE_2M) {
+    u64 spa = hva2spa((void*)hva);
+    u64 flags = default_flags;
+
+    if(spa == 0xfee00000 || spa == 0xfec00000) {
+      //Unity-map some MMIO regions with Page Cache disabled 
+      //0xfed00000 contains Intel TXT config regs & TPM MMIO 
+      //0xfee00000 contains LAPIC base 
+      HALT_ON_ERRORCOND(hva==spa); // expecting these to be unity-mapped
+      flags |= (u64)(_PAGE_PCD);
+    }
+
+    xpdt[i] = pae_make_pde_big(spa, flags);
+  }
+
+  return sla2spa((void *)xpdpt);
+}
+#endif /* __X86_64__ */
 
 #endif //__XMHF_VERIFICATION__
 
@@ -197,10 +246,10 @@ void xmhf_sl_arch_sanitize_post_launch(void){
 
         // sl.c unity-maps 0xfed00000 for 2M so these should work fine
         txt_heap = get_txt_heap();
-		printf("\nSL: txt_heap = 0x%08lx", (u64)txt_heap);
+		printf("\nSL: txt_heap = 0x%08lx", (uintptr_t)txt_heap);
         /// compensate for special DS here in SL
-        os_mle_data = get_os_mle_data_start((txt_heap_t*)((u64)txt_heap - sl_baseaddr));
-        printf("\nSL: os_mle_data = 0x%08lx", (u64)os_mle_data);
+        os_mle_data = get_os_mle_data_start((txt_heap_t*)((uintptr_t)txt_heap - sl_baseaddr));
+        printf("\nSL: os_mle_data = 0x%08lx", (uintptr_t)os_mle_data);
         // restore pre-SENTER MTRRs that were overwritten for SINIT launch
         if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
             printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
@@ -221,10 +270,10 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 {
 
 		{
-			sla_t protectedbuffer_paddr;
+			spa_t protectedbuffer_paddr;
 			sla_t protectedbuffer_vaddr;
 			u32 protectedbuffer_size;
-			sla_t memregionbase_paddr;
+			spa_t memregionbase_paddr;
 			u32 memregion_size;
 			u32 cpu_vendor = get_cpu_vendor_or_die();
 
@@ -236,9 +285,9 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 				protectedbuffer_vaddr = (sla_t)&g_sl_protected_dmabuffer;
 				protectedbuffer_size = (2 * PAGE_SIZE_4K);
 			}else{	//CPU_VENDOR_INTEL
-					protectedbuffer_paddr = sl_baseaddr + 0x100000;
-					protectedbuffer_vaddr = 0x100000;
-					protectedbuffer_size = (2 * PAGE_SIZE_4K);
+				protectedbuffer_paddr = sl_baseaddr + 0x100000;
+				protectedbuffer_vaddr = 0x100000;
+				protectedbuffer_size = (2 * PAGE_SIZE_4K);
 			}
 
 			memregionbase_paddr = sl_baseaddr;
@@ -271,14 +320,14 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	#ifndef __XMHF_VERIFICATION__
 		//setup runtime TSS
 		tss_base=(hva_t)rpb->XtVmmTSSBase;
-		gdt_base= *(uintptr_t *)(hva2sla((void *)(rpb->XtVmmGdt + 2)));
+		gdt_base= *(hva_t *)(hva2sla((void *)(rpb->XtVmmGdt + 2)));
 	#else
 		tss_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
 		gdt_base=PAGE_SIZE_2M+PAGE_SIZE_4K+2048;
 	#endif
 
 		//fix TSS descriptor, 18h
-		t= (TSSENTRY *)((uintptr_t)(hva2sla((void *)gdt_base)) + __TRSEL );
+		t= (TSSENTRY *)((hva_t)(hva2sla((void *)gdt_base)) + __TRSEL );
 		t->attributes1= 0x89;
 		t->limit16_19attributes2= 0x10;
 		t->baseAddr0_15= (u16)(tss_base & 0x000000000000FFFF);
