@@ -76,6 +76,12 @@ hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo)
   return hpt_pme_getprot(pmeo->t, pmeo->lvl, pmeo->pme);
 }
 
+// Set Cachable
+void hpt_pmeo_setcache(hpt_pmeo_t *pmeo, hpt_pmt_t pmt)
+{
+  pmeo->pme = hpt_pme_set_pmt(pmeo->t, pmeo->lvl, pmeo->pme, pmt);
+}
+
 bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo)
 {
   return hpt_pme_getuser(pmeo->t, pmeo->lvl, pmeo->pme);

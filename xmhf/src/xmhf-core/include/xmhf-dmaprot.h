@@ -53,6 +53,27 @@
 
 #ifndef __ASSEMBLY__
 
+/// @brief The invalid handler of the IOMMU PageTable
+#define IOMMU_PT_INVALID	0xFFFFFFFF
+
+/// @brief The IOMMU PT ID of the untrusted OS
+#define UNTRUSTED_OS_IOMMU_PT_ID	1
+
+/// @brief The handler type of the IOMMU PageTable
+typedef uint32_t iommu_pt_t;
+
+/// @brief The descriptor to locate a Device
+// [TODO] We only support PCI/PCIe devices at current.
+typedef union 
+{
+	struct {
+		unsigned short	func:3,
+			dev:5,
+			bus:8;
+		char __resvs[sizeof(unsigned long) - sizeof(unsigned short)];
+	} __attribute__ ((packed));
+	unsigned long 	raw;
+} DEVICEDESC;
 
 //----------------------------------------------------------------------
 //exported DATA 
@@ -62,6 +83,57 @@
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
+
+typedef enum
+{
+    /// @brief Invalid type of IOMMU PT.
+    IOMMU_PT_TYPE_INVALID = 0,
+
+    /// @brief Support DMA accesses to secure domain's memory only.
+    /// [NOTE] This type of IOMMU PT allows DMA destinations to be paddrs of the secure domain.
+    IOMMU_PT_TYPE_S_EXCLUSIVE = 1,
+
+    /// @brief Support DMA accesses to both secure domain's memory and non-secure domain's memory.
+    /// [NOTE] This type of IOMMU PT requires that DMA destinations must be spaddrs instead of paddrs of 
+    /// secure/non-secure domains.
+    IOMMU_PT_TYPE_S_NS_SHARED = 2
+} IOMMU_PT_TYPE;
+
+/// @brief Initialize the IOMMU (DMA Protection to the main memory) subsystem
+extern void xmhf_iommu_init(void);
+
+/// @brief Finalize the IOMMU subsystem
+extern void xmhf_iommu_fini(void);
+
+extern uint32_t iommu_is_pt_s_exclusive(iommu_pt_t pt_handle, bool* out_result);
+extern uint32_t iommu_is_pt_s_ns_shared(iommu_pt_t pt_handle, bool* out_result);
+
+/// @brief Create a new IOMMU Page Table
+extern iommu_pt_t xmhf_iommu_pt_create(IOMMU_PT_TYPE type);
+
+/// @brief Destroy an IOMMU Page Table
+extern bool xmhf_iommu_pt_destroy(iommu_pt_t pt_handle);
+
+// Mapping flags
+#define DMA_ALLOW_ACCESS	1
+#define DMA_DENY_ACCESS		2
+
+/// @brief Map <spa> with <gpa> in the IOMMU PT
+extern bool xmhf_iommu_pt_map(iommu_pt_t pt_handle, gpa_t gpa, spa_t spa, uint32_t flags);
+
+/// @brief Load the IOMMU PT for a specific device
+extern bool xmhf_iommu_bind_device(iommu_pt_t pt_handle, DEVICEDESC* device);
+
+/// @brief Bind the untrusted OS's default IOMMU PT to the specific device
+extern bool xmhf_iommu_unbind_device(DEVICEDESC* device);
+
+/// @brief Map <spa> with <gpa> in all IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs.
+/// [NOTE] This function is needed when moving memory between S and NS domains. Otherwise, a shared IOMMU PT created 
+/// by a SecProcess ealier may map isolated memory given to other SecProcesses later. This violates memory separation
+/// between SecProcesses.
+/// [TODO][Issue 60] SecBase needs to prove: All IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs map NS domain's memory and given 
+/// S domain's memory, but not any other S domain's memory.
+extern bool xmhf_iommu_all_shared_pts_map(gpa_t gpa, uint32_t flags);
 
 //return size (in bytes) of the memory buffer required for
 //DMA protection for a given physical memory limit
@@ -83,7 +155,11 @@ u32 xmhf_dmaprot_initialize(u64 protectedbuffer_paddr,
 
 //DMA protect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
-void xmhf_dmaprot_protect(u32 start_paddr, u32 size);
+void xmhf_dmaprot_protect(spa_t start_paddr, size_t size);
+
+extern void xmhf_dmaprot_unprotect(spa_t start_paddr, size_t size);
+
+extern void xmhf_dmaprot_invalidate_cache(void);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
@@ -94,72 +170,52 @@ u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr,
 	u64 memregionbase_paddr, u32 memregion_size);
 u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void xmhf_dmaprot_arch_protect(u32 start_paddr, u32 size);
+void xmhf_dmaprot_arch_protect(spa_t start_paddr, size_t size);
 
+extern void xmhf_dmaprot_arch_unprotect(spa_t start_paddr, size_t size);
 
-#ifdef __X86_64__
-
-//----------------------------------------------------------------------
-//x86_64 ARCH. INTERFACES
-//----------------------------------------------------------------------
+extern void xmhf_dmaprot_arch_invalidate_cache(void);
 
 
 //----------------------------------------------------------------------
-//x86_64vmx SUBARCH. INTERFACES
+//x86_vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
-u32 xmhf_dmaprot_arch_x86_64svm_earlyinitialize(u64 protectedbuffer_paddr,
+// Capabilities of Intel VT-d HW
+struct dmap_vmx_cap
+{
+	u32 nd:3;
+	u32 sagaw:5;
+	u32 _reserved1:24;
+} __attribute__ ((packed));
+
+//----------------------------------------------------------------------
+//vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+u32 xmhf_dmaprot_arch_x86_vmx_earlyinitialize(sla_t protectedbuffer_paddr,
+	sla_t protectedbuffer_vaddr, size_t protectedbuffer_size,
+	sla_t memregionbase_paddr, u32 memregion_size);
+u32 xmhf_dmaprot_arch_x86_vmx_initialize(spa_t protectedbuffer_paddr,
+	hva_t protectedbuffer_vaddr, size_t protectedbuffer_size);
+void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size);
+extern void xmhf_dmaprot_arch_x86_vmx_unprotect(spa_t start_paddr, size_t size);
+extern void xmhf_dmaprot_arch_x86_vmx_invalidate_cache(void);
+
+//----------------------------------------------------------------------
+//svm SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+u32 xmhf_dmaprot_arch_x86_svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);
-u32 xmhf_dmaprot_arch_x86_64svm_initialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86_svm_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void xmhf_dmaprot_arch_x86_64svm_protect(u32 start_paddr, u32 size);
-
-
-//----------------------------------------------------------------------
-//x86_64vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-u32 xmhf_dmaprot_arch_x86_64vmx_earlyinitialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
-	u64 memregionbase_paddr, u32 memregion_size);
-u32 xmhf_dmaprot_arch_x86_64vmx_initialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void xmhf_dmaprot_arch_x86_64vmx_protect(u32 start_paddr, u32 size);
-
-#else /* !__X86_64__ */
-
-//----------------------------------------------------------------------
-//x86 ARCH. INTERFACES
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-u32 xmhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
-	u64 memregionbase_paddr, u32 memregion_size);
-u32 xmhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void xmhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size);
-
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-u32 xmhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
-	u64 memregionbase_paddr, u32 memregion_size);
-u32 xmhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void xmhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size);
-
-#endif /* __X86_64__ */
+void xmhf_dmaprot_arch_x86_svm_protect(u32 start_paddr, u32 size);
+extern void xmhf_dmaprot_arch_x86_svm_invalidate_cache(void);
 
 //VMX VT-d page table buffers; we support a 3 level page-table walk, 
 //4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
-extern u8 g_vmx_vtd_pdp_table[] __attribute__(( section(".palign_data") )); 
-extern u8 g_vmx_vtd_pd_tables[] __attribute__(( section(".palign_data") ));
-extern u8 g_vmx_vtd_p_tables[] __attribute__(( section(".palign_data") ));
+//extern u8 g_vmx_vtd_pdp_table[] __attribute__(( section(".palign_data") )); 
+//extern u8 g_vmx_vtd_pd_tables[] __attribute__(( section(".palign_data") ));
+//extern u8 g_vmx_vtd_p_tables[] __attribute__(( section(".palign_data") ));
 
 //VMX VT-d Root Entry Table (RET)
 //the RET is 4kb, each root entry (RE) is 128-bits

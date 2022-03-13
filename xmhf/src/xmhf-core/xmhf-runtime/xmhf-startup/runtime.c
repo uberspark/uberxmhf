@@ -98,16 +98,17 @@ void xmhf_runtime_entry(void){
 #if defined (__DMAP__)
 		// TODO: DMAP code not ported to x86_64 yet
 		{
+			#define ADDR_512GB  (PAGE_SIZE_512G)
 				u64 protectedbuffer_paddr;
 				hva_t protectedbuffer_vaddr;
 				u32 protectedbuffer_size;
 				
 				protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
 				protectedbuffer_vaddr = (hva_t)&g_rntm_dmaprot_buffer;
-				protectedbuffer_size = xmhf_dmaprot_getbuffersize(ADDR_4GB);
+				protectedbuffer_size = xmhf_dmaprot_getbuffersize(DMAPROT_PHY_ADDR_SPACE_SIZE); // ADDR_512GB
 				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
 				
-				printf("\nRuntime: Re-initializing DMA protection...");
+				printf("\nRuntime: Re-initializing DMA protection (physical address space size:0x%llX)...", DMAPROT_PHY_ADDR_SPACE_SIZE);
 				if(!xmhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
 					printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
 					HALT();

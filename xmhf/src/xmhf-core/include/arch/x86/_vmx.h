@@ -73,7 +73,9 @@
 
 //
 #define DF_VECTOR 	8
+#define INT1_VECTOR	0x1
 #define NMI_VECTOR	0x2
+#define INT3_VECTOR	0x3
 #define GP_VECTOR 	13
 #define PF_VECTOR 	14
 

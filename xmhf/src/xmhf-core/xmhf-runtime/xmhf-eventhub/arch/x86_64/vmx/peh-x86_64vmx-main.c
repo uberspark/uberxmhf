@@ -604,9 +604,9 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 			vcpu->vmcs.guest_CR0 |= old_cr0 & pg_pe_mask;
 			//printf("\n[cr0-%02x] RETRY:  old=0x%08llx", vcpu->id,
 			//	vcpu->vmcs.guest_CR0);
-			/* Sanity check: for bits masked, guest CR0 = CR0 shadow */
+			/* Sanity check: for bits masked, requested value = CR0 shadow */
 			HALT_ON_ERRORCOND(
-				((vcpu->vmcs.guest_CR0 ^ vcpu->vmcs.control_CR0_shadow) &
+				((cr0_value ^ vcpu->vmcs.control_CR0_shadow) &
 				vcpu->vmcs.control_CR0_mask) == 0);
 			/*
 			 * Sanity check: for bits not masked other than CR0.PG and CR0.PE,

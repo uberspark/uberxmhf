@@ -5,6 +5,9 @@
 AS_SOURCES =  
 C_SOURCES = xmhfc-putchar.c
 
+C_SOURCES += ./stl/xmhfc-bitmap.c
+C_SOURCES += ./stl/xmhfc-dlist.c
+
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
@@ -36,4 +39,4 @@ endif
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
-
+	$(RM) -rf ./stl/*.o

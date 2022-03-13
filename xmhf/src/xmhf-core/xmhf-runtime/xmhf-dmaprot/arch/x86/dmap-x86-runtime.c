@@ -54,28 +54,13 @@
 //DMA protection for a given physical memory limit
 u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
-	HALT_ON_ERRORCOND( physical_memory_limit <= ADDR_4GB ); 	//we only support 4GB physical memory currently
+	HALT_ON_ERRORCOND( physical_memory_limit <= PAGE_SIZE_512G ); 	//we only support 512GB physical memory currently
+	HALT_ON_ERRORCOND( physical_memory_limit <= DMAPROT_PHY_ADDR_SPACE_SIZE ); 	//we only support <DMAPROT_PHY_ADDR_SPACE_SIZE> physical memory currently
 	
 	if(cpu_vendor == CPU_VENDOR_AMD){
 		return ((physical_memory_limit / PAGE_SIZE_4K) / 8); //each page takes up 1-bit with AMD DEV
 	}else{	//CPU_VENDOR_INTEL
-		return (PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K +	(PAGE_SIZE_4K * PCI_BUS_MAX));	//4-level PML4 page tables + 4KB root entry table + 4K context entry table per PCI bus
-	}
-}
-
-
-//"early" DMA protection initialization to setup minimal
-//structures to protect a range of physical memory
-//return 1 on success 0 on failure
-u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 memregionbase_paddr, u32 memregion_size){
-	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
-	
-	
-	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86_64svm_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr,	memregion_size);
-	}
-	else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86_64vmx_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr, 	memregion_size);
+		return (SIZE_G_RNTM_DMAPROT_BUFFER);	//4-level PML4 page tables + 4KB root entry table + 4K context entry table per PCI bus
 	}
 }
 
@@ -87,22 +72,45 @@ u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 
 	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86_64svm_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
+	  return xmhf_dmaprot_arch_x86_svm_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
 	}else{	//CPU_VENDOR_INTEL
-	  return 1; //we use Vtd PMRs to protect the SL + runtime during SL launch
+		return xmhf_dmaprot_arch_x86_vmx_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size);
+	//   return 1; //we use Vtd PMRs to protect the SL + runtime during SL launch
 	}
-		
 }
-
 
 //DMA protect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
-void xmhf_dmaprot_arch_protect(u32 start_paddr, u32 size){
+void xmhf_dmaprot_arch_protect(spa_t start_paddr, size_t size){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 
 	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86_64svm_protect(start_paddr, size);
+	  return xmhf_dmaprot_arch_x86_svm_protect(start_paddr, size);
 	}else{	//CPU_VENDOR_INTEL
-	  return; //we use Vtd PMRs to protect the SL + runtime during SL launch
+		return xmhf_dmaprot_arch_x86_vmx_protect(start_paddr, size);
+	//   return; //we use Vtd PMRs to protect the SL + runtime during SL launch
+	} 
+}
+
+//DMA unprotect a given region of memory, start_paddr is
+//assumed to be page aligned physical memory address
+void xmhf_dmaprot_arch_unprotect(spa_t start_paddr, size_t size){
+	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+
+	if(cpu_vendor == CPU_VENDOR_AMD){
+	  return;
+	}else{	//CPU_VENDOR_INTEL
+	  return xmhf_dmaprot_arch_x86_vmx_unprotect(start_paddr, size);	
+	} 
+}
+
+void xmhf_dmaprot_arch_invalidate_cache(void)
+{
+	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+
+	if(cpu_vendor == CPU_VENDOR_AMD){
+	  return xmhf_dmaprot_arch_x86_svm_invalidate_cache();
+	}else{	//CPU_VENDOR_INTEL
+	  return xmhf_dmaprot_arch_x86_vmx_invalidate_cache();	
 	} 
 }

@@ -5,7 +5,7 @@
 AS_SOURCES =  ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smptrampoline.S
 AS_SOURCES +=  ./arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smplock.S
 
-C_SOURCES = bplt-interface.c
+C_SOURCES = bplt-interface.c bplt-interface-runtime.c 
 C_SOURCES += bplt-interface-smp.c
 C_SOURCES += bplt-data.c
 

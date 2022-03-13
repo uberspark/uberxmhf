@@ -89,8 +89,9 @@ void xmhf_setup_sl_paging(u32 baseaddr) {
 //build a 4-level paging that identity maps the lowest 4GiB memory
 //returns 64-bit address of PML4 Table (can be loaded into CR3)
 
-u64 xmhf_sl_arch_x86_64_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t runtime_sva, hva_t totalsize) {
-    plm4_t xpml4;
+u64 xmhf_sl_arch_x86_64_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t runtime_sva, hva_t totalsize) 
+{
+    pml4t_t xpml4;
     pdpt_t xpdpt;
     pdt_t xpdt;
     u64 i, default_flags;
@@ -220,10 +221,10 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 {
 
 		{
-			u64 protectedbuffer_paddr;
-			u32 protectedbuffer_vaddr;
+			sla_t protectedbuffer_paddr;
+			sla_t protectedbuffer_vaddr;
 			u32 protectedbuffer_size;
-			u64 memregionbase_paddr;
+			sla_t memregionbase_paddr;
 			u32 memregion_size;
 			u32 cpu_vendor = get_cpu_vendor_or_die();
 
@@ -235,14 +236,9 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 				protectedbuffer_vaddr = (sla_t)&g_sl_protected_dmabuffer;
 				protectedbuffer_size = (2 * PAGE_SIZE_4K);
 			}else{	//CPU_VENDOR_INTEL
-				#if 0
 					protectedbuffer_paddr = sl_baseaddr + 0x100000;
 					protectedbuffer_vaddr = 0x100000;
-					protectedbuffer_size = (3 * PAGE_SIZE_4K);
-				#else
-					return;
-				#endif
-
+					protectedbuffer_size = (2 * PAGE_SIZE_4K);
 			}
 
 			memregionbase_paddr = sl_baseaddr;

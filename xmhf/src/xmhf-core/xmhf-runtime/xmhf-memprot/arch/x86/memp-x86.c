@@ -121,6 +121,16 @@ void xmhf_memprot_arch_flushmappings(VCPU *vcpu){
 
 }
 
+//flush the TLB of all nested page tables in the current core
+void xmhf_memprot_arch_flushmappings_localtlb(VCPU *vcpu){
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		xmhf_memprot_arch_x86svm_flushmappings(vcpu);
+	else //CPU_VENDOR_INTEL
+		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
+}
+
 //set protection for a given physical memory address
 void xmhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__

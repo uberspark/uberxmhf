@@ -147,6 +147,12 @@
 
 #ifndef __ASSEMBLY__
 
+// Return the low 32 bits
+#define LOW32(v)    ((u32)v)
+
+// Return the high 32 bits
+#define HIGH32(v)   ((u32)(v >> 32))
+
 //x86 GPR set definition (follows the order enforced by PUSHAD/POPAD
 //SDM Vol 2B. 4-427)
 struct regs

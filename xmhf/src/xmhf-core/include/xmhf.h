@@ -85,6 +85,7 @@
 
 #include <xmhf-debug.h>			//XMHF debug component 
 #include <xmhf-types.h>			//XMHF specific base types
+#include <xmhf-var.h>
 
 #ifdef __XMHF_VERIFICATION__
 	//include verification related primitives
@@ -96,10 +97,15 @@
 extern RPB *rpb;	
 #endif	//__ASSEMBLY__
 
+// STL for XMHF
+#include <stl/xmhfc-bitmap.h>
+#include <stl/xmhfc-dlist.h>
 
 //----------------------------------------------------------------------
 // component headers
+#include <xmhf-config.h>		// Global configurations of XMHF
 #include <xmhf-baseplatform.h>	//XMHF base platform component
+#include <xmhf-mm.h>            //XMHF memory management component
 #include <xmhf-memprot.h>		//XMHF memory protection component
 #include <xmhf-dmaprot.h>		//XMHF DMA protection component
 #include <xmhf-partition.h>		//XMHF partition component
@@ -108,7 +114,7 @@ extern RPB *rpb;
 #include <xmhf-xcphandler.h>	//XMHF exception handler component
 #include <xmhf-tpm.h>			//XMHF Trusted Platform Module component
 #include <xmhf-sl.h>			//XMHF secure loader component
-#include <xmhf-runtime.h>		//XMHF secure loader component
+#include <xmhf-runtime.h>		//XMHF runtime component
 #include <xmhf-app.h>			//XMHF Application callback declarations
 
 

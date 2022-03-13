@@ -49,15 +49,16 @@
 #ifndef __PAGING_H__
 #define __PAGING_H__
 
-// maximum supported physical address, currently 9GB
-#define MAX_PHYS_ADDR 0x240000000ULL
-
 //physical memory limit
 #ifndef __ASSEMBLY__
 #define ADDR_4GB 0x100000000ULL
 #else
 #define ADDR_4GB 0x100000000
 #endif
+
+
+#define PAGE_MASK_4K				0xfffff000
+#define PAGE_MASK_1G       0xC0000000
 
 // page sizes
 #define PAGE_SHIFT_4K   12
@@ -68,12 +69,12 @@
 #define PAGE_SHIFT_256T 42
 
 #ifndef __ASSEMBLY__
-#define PAGE_SIZE_4K    (1UL << PAGE_SHIFT_4K)
-#define PAGE_SIZE_2M    (1UL << PAGE_SHIFT_2M)
-#define PAGE_SIZE_4M    (1UL << PAGE_SHIFT_4M)
-#define PAGE_SIZE_1G    (1UL << PAGE_SHIFT_1G)
-#define PAGE_SIZE_512G  (1UL << PAGE_SHIFT_512G)
-#define PAGE_SIZE_256T  (1UL << PAGE_SHIFT_256T)
+#define PAGE_SIZE_4K    (1ULL << PAGE_SHIFT_4K)
+#define PAGE_SIZE_2M    (1ULL << PAGE_SHIFT_2M)
+#define PAGE_SIZE_4M    (1ULL << PAGE_SHIFT_4M)
+#define PAGE_SIZE_1G    (1ULL << PAGE_SHIFT_1G)
+#define PAGE_SIZE_512G  (1ULL << PAGE_SHIFT_512G)
+#define PAGE_SIZE_256T  (1ULL << PAGE_SHIFT_256T)
 #else   
 #define PAGE_SIZE_4K    (1 << PAGE_SHIFT_4K)
 #define PAGE_SIZE_2M    (1 << PAGE_SHIFT_2M)
@@ -103,6 +104,8 @@
 #define PAGE_ALIGNED_1G(size)   (PAGE_ALIGN_1G(size) == size)
 #define PAGE_ALIGNED_512G(size) (PAGE_ALIGN_512G(size) == size)
 #define PAGE_ALIGNED_256T(size) (PAGE_ALIGN_256T(size) == size)
+
+#define BYTES_TO_PAGE4K(size)	(PAGE_ALIGN_UP4K(size) >> PAGE_SHIFT_4K)
 
 // non-PAE mode specific definitions 
 #define NPAE_PTRS_PER_PDT       1024
@@ -168,12 +171,12 @@
 
 #ifndef __ASSEMBLY__
 
-typedef u64 plm4e_t;
+typedef u64 pml4te_t;
 typedef u64 pdpte_t;
 typedef u64 pdte_t;
 typedef u64 pte_t;
 
-typedef plm4e_t *plm4_t;
+typedef pml4te_t *pml4t_t;
 typedef pdpte_t *pdpt_t;
 typedef pdte_t *pdt_t;
 typedef pte_t *pt_t;

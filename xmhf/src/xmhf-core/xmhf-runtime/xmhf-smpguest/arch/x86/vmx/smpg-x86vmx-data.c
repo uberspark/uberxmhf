@@ -93,3 +93,7 @@ u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
 //SMP lock to access the above variable
 //smpguest x86vmx
 u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
+
+//Flush all EPT TLB on all cores
+//smpguest x86vmx
+u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )) = 0; 

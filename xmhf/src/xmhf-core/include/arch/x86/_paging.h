@@ -57,32 +57,53 @@
 #define ADDR_4GB 0x100000000
 #endif
 
-// page sizes 
-#ifndef __ASSEMBLY__
-#define PAGE_SIZE_4K (1UL << 12)
-#define PAGE_SIZE_2M (1UL << 21)
-#define PAGE_SIZE_4M (1UL << 22)
-#else   
-#define PAGE_SIZE_4K (1 << 12)
-#define PAGE_SIZE_2M (1 << 21)
-#define PAGE_SIZE_4M (1 << 22)
-#endif
 
-#define PAGE_SHIFT_4K 12
-#define PAGE_SHIFT_2M 21
-#define PAGE_SHIFT_4M 22
+#define PAGE_MASK_4K				0xfffff000
+#define PAGE_MASK_1G       0xC0000000
+
+#define PAGE_SHIFT_4K   12
+#define PAGE_SHIFT_2M   21
+#define PAGE_SHIFT_4M   22
+#define PAGE_SHIFT_1G   30
+#define PAGE_SHIFT_512G 39
+#define PAGE_SHIFT_256T 42
+
+// page sizes
+#ifndef __ASSEMBLY__
+#define PAGE_SIZE_4K (1UL << PAGE_SHIFT_4K)
+#define PAGE_SIZE_2M (1UL << PAGE_SHIFT_2M)
+#define PAGE_SIZE_4M (1UL << PAGE_SHIFT_4M)
+#define PAGE_SIZE_1G    (1UL << PAGE_SHIFT_1G)
+#define PAGE_SIZE_512G  (1ULL << PAGE_SHIFT_512G)
+#define PAGE_SIZE_256T  (1ULL << PAGE_SHIFT_256T)
+#else   
+#define PAGE_SIZE_4K    (1 << PAGE_SHIFT_4K)
+#define PAGE_SIZE_2M    (1 << PAGE_SHIFT_2M)
+#define PAGE_SIZE_4M    (1 << PAGE_SHIFT_4M)
+#define PAGE_SIZE_1G    (1 << PAGE_SHIFT_1G)
+#define PAGE_SIZE_512G  (1 << PAGE_SHIFT_512G)
+#define PAGE_SIZE_256T  (1 << PAGE_SHIFT_256T)
+#endif
 
 #define PAGE_ALIGN_UP4K(size)	(((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_UP2M(size)	(((size) + PAGE_SIZE_2M - 1) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_UP4M(size)	(((size) + PAGE_SIZE_4M - 1) & ~(PAGE_SIZE_4M - 1))
+#define PAGE_ALIGN_UP1G(size)   (((size) + PAGE_SIZE_1G - 1) & ~(PAGE_SIZE_1G - 1))
+#define PAGE_ALIGN_UP512G(size) (((size) + PAGE_SIZE_512G - 1) & ~(PAGE_SIZE_512G - 1))
+#define PAGE_ALIGN_UP256T(size) (((size) + PAGE_SIZE_256T - 1) & ~(PAGE_SIZE_256T - 1))
 
 #define PAGE_ALIGN_4K(size)	((size) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_2M(size)	((size) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_4M(size)	((size) & ~(PAGE_SIZE_4M - 1))
+#define PAGE_ALIGN_1G(size)     ((size) & ~(PAGE_SIZE_1G - 1))
+#define PAGE_ALIGN_512G(size)   ((size) & ~(PAGE_SIZE_512G - 1))
+#define PAGE_ALIGN_256T(size)   ((size) & ~(PAGE_SIZE_256T - 1))
 
 #define PAGE_ALIGNED_4K(size) (PAGE_ALIGN_4K(size) == size)
 #define PAGE_ALIGNED_2M(size) (PAGE_ALIGN_2M(size) == size)
 #define PAGE_ALIGNED_4M(size) (PAGE_ALIGN_4M(size) == size)
+
+#define BYTES_TO_PAGE4K(size)	(PAGE_ALIGN_UP4K(size) >> PAGE_SHIFT_4K)
 
 // non-PAE mode specific definitions 
 #define NPAE_PTRS_PER_PDT       1024
@@ -142,10 +163,12 @@
 
 #ifndef __ASSEMBLY__
 
+typedef u64 pml4te_t;
 typedef u64 pdpte_t;
 typedef u64 pdte_t;
 typedef u64 pte_t;
 
+typedef pml4te_t *pml4t_t;
 typedef pdpte_t *pdpt_t;
 typedef pdte_t *pdt_t;
 typedef pte_t *pt_t;

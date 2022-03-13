@@ -4,6 +4,7 @@ set -xe
 
 CONFIGURE_ARGS="--with-approot=hypapps/trustvisor"
 CONFIGURE_ARGS="${CONFIGURE_ARGS} --disable-drt"
+CONFIGURE_ARGS="${CONFIGURE_ARGS} --disable-dmap"
 CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-symbols"
 
 if [ "$1" == "x86" ]; then

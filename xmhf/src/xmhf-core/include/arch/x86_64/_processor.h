@@ -147,6 +147,12 @@
 
 #ifndef __ASSEMBLY__
 
+// Return the low 32 bits
+#define LOW32(v)    ((u32)v)
+
+// Return the high 32 bits
+#define HIGH32(v)   ((u32)(v >> 32))
+
 //x86_64 GPR set definition
 struct regs
 {

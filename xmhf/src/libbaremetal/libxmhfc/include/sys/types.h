@@ -112,6 +112,11 @@ typedef __size_t        size_t;
 #define _SIZE_T_DECLARED
 #endif
 
+#ifndef _ULONG_T_DECLARED
+typedef size_t          ulong_t;
+#define _ULONG_T_DECLARED
+#endif
+
 #ifndef _SSIZE_T_DECLARED
 typedef __ssize_t        ssize_t;
 #define _SSIZE_T_DECLARED

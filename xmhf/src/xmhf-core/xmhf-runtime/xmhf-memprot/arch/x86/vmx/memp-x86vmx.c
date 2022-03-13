@@ -342,6 +342,13 @@ void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
           (u64)vcpu->vmcs.control_EPT_pointer);
 }
 
+//flush hardware page table mappings (TLB) 
+void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu){
+	(void)vcpu;
+  __vmx_invept(VMX_INVEPT_GLOBAL, 
+          (u64)0);
+}
+
 //set protection for a given physical memory address
 void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u32 pfn;

@@ -12,6 +12,8 @@ OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/$(TARGET_HWPLATFORM)/tpm-$(TARGET_HWPLATF
 OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/$(TARGET_HWPLATFORM)/svm/tpm-$(TARGET_HWPLATFORM)svm.o
 OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/$(TARGET_HWPLATFORM)/vmx/tpm-$(TARGET_HWPLATFORM)vmx.o
 
+OBJECTS_PRECOMPILED += ./xmhf-mm/xmhf-tlsf.o 
+OBJECTS_PRECOMPILED += ./xmhf-mm/xmhf-mm.o
 
 OBJECTS_PRECOMPILED += ./xmhf-memprot/memp-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/$(TARGET_HWPLATFORM)/memp-$(TARGET_HWPLATFORM).o
@@ -33,17 +35,27 @@ OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/$(TARGET_HWPLATFORM)/svm/smpg-$(TARG
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/$(TARGET_HWPLATFORM)/vmx/smpg-$(TARGET_HWPLATFORM)vmx.o
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/$(TARGET_HWPLATFORM)/vmx/smpg-$(TARGET_HWPLATFORM)vmx-data.o
 
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/dmap-interface.o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/dmap-$(TARGET_HWPLATFORM).o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/svm/dmap-$(TARGET_HWPLATFORM)svm.o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/vmx/dmap-$(TARGET_HWPLATFORM)vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/vmx/dmap-$(TARGET_HWPLATFORM)vmx-data.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/dmap-interface-runtime.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/iommu-pt.o
+# OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/dmap-$(TARGET_HWPLATFORM).o
+# OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/svm/dmap-$(TARGET_HWPLATFORM)svm.o
+# OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/vmx/dmap-$(TARGET_HWPLATFORM)vmx.o
+# OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-earlyinit.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/dmap-x86-runtime.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/svm/dmap-svm.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-internal.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-runtime.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-utils.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-data.o
+# OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/vmx/dmap-$(TARGET_HWPLATFORM)vmx-data.o
+# OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/vmx/dmap-$(TARGET_HWPLATFORM)vmx-runtime.o
 
 OBJECTS_PRECOMPILED += ./xmhf-xcphandler/xcph-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/$(TARGET_HWPLATFORM)/xcph-$(TARGET_HWPLATFORM).o
 OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/$(TARGET_HWPLATFORM)/xcph-stubs.o
 
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface.o
+OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface-runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface-smp.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-data.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM).o
@@ -86,15 +98,18 @@ OBJECTS_PRECOMPILED += ./xmhf-startup/arch/$(TARGET_HWPLATFORM)/rntm-$(TARGET_HW
 OBJECTS_PRECOMPILED += ./xmhf-debug/lib.a
 
 
-# separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
+# separate from OBJECTS_PRECOMPILED because needs to come after libs on link line
 OBJECTS_PRECOMPILED_LIBBACKENDS = ./xmhf-xmhfcbackend/xmhfc-putchar.o
-
+OBJECTS_PRECOMPILED_LIBBACKENDS += ./xmhf-xmhfcbackend/stl/xmhfc-bitmap.o
+OBJECTS_PRECOMPILED_LIBBACKENDS += ./xmhf-xmhfcbackend/stl/xmhfc-dlist.o
 
 # targets
 .PHONY: runtimecomponents
 runtimecomponents:
 	#XMHF memory protection component
 	cd xmhf-memprot && $(MAKE) -w all
+	#XMHF Memory management component
+	cd xmhf-mm && $(MAKE) -w all
 	#XMHF partition event-hub component
 	cd xmhf-eventhub && $(MAKE) -w all
 	#XMHF SMP guest component
@@ -143,6 +158,7 @@ clean:
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz
 
+	cd xmhf-mm && $(MAKE) -w clean
 	cd xmhf-memprot && $(MAKE) -w clean
 	cd xmhf-eventhub && $(MAKE) -w clean
 	cd xmhf-dmaprot && $(MAKE) -w clean

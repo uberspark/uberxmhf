@@ -325,7 +325,7 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void);
 void xmhf_baseplatform_arch_x86_reboot(void);
 
 //get the physical address of the root system description pointer (rsdp)
-u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
+uintptr_t xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 //PCI subsystem initialization
 void xmhf_baseplatform_arch_x86_pci_initialize(void);
@@ -437,6 +437,29 @@ static inline void VCPU_grsp_set(VCPU *vcpu, u64 val)
   }
 }
 
+static inline u64 VCPU_gcr0(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    return vcpu->vmcs.guest_CR0;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr0;
+  } else {
+    HALT_ON_ERRORCOND(false);
+    return 0;
+  }
+}
+
+static inline void VCPU_gcr0_set(VCPU *vcpu, u64 cr0)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    vcpu->vmcs.guest_CR0 = cr0;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr0 = cr0;
+  } else {
+    HALT_ON_ERRORCOND(false);
+  }
+}
+
 static inline u64 VCPU_gcr3(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -472,6 +495,17 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
   }
 }
 
+static inline void VCPU_gcr4_set(VCPU *vcpu, u64 cr4)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    vcpu->vmcs.guest_CR4 = cr4;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr4 = cr4;
+  } else {
+    HALT_ON_ERRORCOND(false);
+  }
+}
+
 /* Return whether guest OS is in long mode (return 1 or 0) */
 static inline u32 VCPU_glm(VCPU *vcpu) {
     (void)vcpu;
@@ -504,6 +538,106 @@ static inline void VCPU_gpdpte_set(VCPU *vcpu, u64 pdptes[4]) {
     }
 }
 
+/*
+ * Selector for VCPU_reg_get and VCPU_reg_set
+ */
+enum CPU_Reg_Sel 
+{ 
+    CPU_REG_AX,
+    CPU_REG_BX,
+    CPU_REG_CX,
+    CPU_REG_DX,
+    CPU_REG_SI,
+    CPU_REG_DI,
+    CPU_REG_SP,
+    CPU_REG_BP,
+
+    CPU_REG_FLAGS,
+    CPU_REG_IP
+};
+
+/*
+ * Get a guest register
+ */
+static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
+                                     enum CPU_Reg_Sel sel)
+{
+    switch (sel)
+    {
+        case CPU_REG_AX:
+            return r->eax;
+        case CPU_REG_BX:
+            return r->ebx;
+        case CPU_REG_CX:
+            return r->ecx;
+        case CPU_REG_DX:
+            return r->edx;
+        case CPU_REG_SI:
+            return r->esi;
+        case CPU_REG_DI:
+            return r->edi;
+        case CPU_REG_SP:
+            return r->esp;
+        case CPU_REG_BP:
+            return r->ebp;
+
+        case CPU_REG_FLAGS:
+            return VCPU_grflags(vcpu);
+        case CPU_REG_IP:
+            return VCPU_grip(vcpu);
+
+        default:
+            printf("CPU_Reg_Read: Invalid CPU register is given (sel:%u)!\n", sel);
+            HALT();
+            return 0; // should never hit
+    }
+}
+
+/*
+ * Set a guest register
+ */
+static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
+                                enum CPU_Reg_Sel sel, uintptr_t val)
+{
+    switch (sel)
+    {
+        case CPU_REG_AX:
+            r->eax = val;
+            break;
+        case CPU_REG_BX:
+            r->ebx = val;
+            break;
+        case CPU_REG_CX:
+            r->ecx = val;
+            break;
+        case CPU_REG_DX:
+            r->edx = val;
+            break;
+        case CPU_REG_SI:
+            r->esi = val;
+            break;
+        case CPU_REG_DI:
+            r->edi = val;
+            break;
+        case CPU_REG_SP:
+            r->esp = val;
+            break;
+        case CPU_REG_BP:
+            r->ebp = val;
+            break;
+
+        case CPU_REG_FLAGS:
+            VCPU_grflags_set(vcpu, val);
+            break;
+        case CPU_REG_IP:
+            VCPU_grip_set(vcpu, val);
+            break;
+
+        default:
+            printf("CPU_Reg_Read: Invalid CPU register is given (sel:%u)!\n", sel);
+            HALT();
+    }
+}
 
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES

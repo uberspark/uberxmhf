@@ -506,6 +506,10 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         g_vmx_quiesce_resume_signal=0;
         spin_unlock(&g_vmx_lock_quiesce_resume_signal);
 
+        // Reset flush all TLB signal
+        if(g_vmx_flush_all_tlb_signal)
+          g_vmx_flush_all_tlb_signal = 0;
+
         //release quiesce lock
         //printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
         spin_unlock(&g_vmx_lock_quiesce);
@@ -514,9 +518,10 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //note: we are in atomic processsing mode for this "vcpu"
-// fromhvm: 1 if NMI originated from the HVM (i.e. caller is intercept handler),
+// from_guest: 1 if NMI originated from the HVM (i.e. caller is intercept handler),
 // otherwise 0 (within the hypervisor, i.e. caller is exception handler)
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 fromhvm){
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest)
+{
 	(void)r;
 
 	/*
@@ -528,6 +533,24 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	 * xmhf_smpguest_arch_x86vmx_quiesce(). For other CPUs, NMIs are
 	 * blocked during the time where vcpu->quiesced = 1.
 	 */
+  /*
+   * Issue 1: If two cores request CPU quiescing at the same time, will an NMI be incorrectly injected to guest?
+   * Issue 2: Will it be simpler to use an exception (e.g., one reserved exception in 22-27, see https://wiki.osdev.org/Exceptions)
+   * instead of NMI? 
+   * Issue 3: The function always inject NMI to the *current* guest, not the *correct* guest. Will it cause problem? For
+   * example, NMIs may be injected to PALs, not the red OS.
+   * Issue 4: If we decide (1) not using NMI for CPU quiescing, and (2) the function always inject NMI to the current guest
+   * for simplicity, then TrustVisor must be modified to inject NMI to the red OS.
+   * Issue 5: Will the "__control_VMX_cpu_based" code in <xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception> and 
+   * virtual NMI VMExit mismatch when there are multiple guests/domains? In other words, they are reading/writing different VMCS. 
+   */
+
+  // The function handles NMI as follows:
+  // (1) If XMHF on core i requests quiesce and the current core is not quiesced yet, XMHF must quiesce the current core
+  // (2) If XMHF on core i requests quiesce and the current core is quiesced, then some device must issue NMI after core i
+  // requesting quiesce. This NMI should be injected to a guest. XMHF currently injects NMI to the trapped guest.
+  //      - [TODO] XMHF should query hypapp to find out which guest should receive this NMI
+  // (3) If no one requests quiesce and the current core receives NMI, then it should be injected to the trapped guest.
 	if(g_vmx_quiesce && !vcpu->quiesced){
 		vcpu->quiesced=1;
 
@@ -540,6 +563,10 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
 		while(!g_vmx_quiesce_resume_signal);
 		//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+
+    // Flush EPT TLB, if instructed so
+    if(g_vmx_flush_all_tlb_signal)
+      xmhf_memprot_flushmappings_localtlb(vcpu);
 
 		spin_lock(&g_vmx_lock_quiesce_resume_counter);
 		g_vmx_quiesce_resume_counter++;
@@ -570,7 +597,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	}
 
 	/* Unblock NMI in hypervisor */
-	if (fromhvm) {
+	if (from_guest) {
 		xmhf_smpguest_arch_x86vmx_unblock_nmi();
 	}
 }

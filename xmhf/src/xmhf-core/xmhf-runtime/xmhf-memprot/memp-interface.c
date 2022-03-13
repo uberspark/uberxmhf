@@ -86,6 +86,12 @@ void xmhf_memprot_flushmappings(VCPU *vcpu){
 	xmhf_memprot_arch_flushmappings(vcpu);
 }
 
+//flush the TLB of all nested page tables in the current core
+void xmhf_memprot_flushmappings_localtlb(VCPU *vcpu){
+	//printf("\nCPU(0x%02x): <xmhf_memprot_flushmappings_localtlb>\n", vcpu->id);
+	xmhf_memprot_arch_flushmappings_localtlb(vcpu);
+}
+
 
 //set protection for a given physical memory address
 void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
@@ -113,4 +119,16 @@ void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 //get protection for a given physical memory address
 u32 xmhf_memprot_getprot(VCPU *vcpu, u64 gpa){
 	return xmhf_memprot_arch_getprot(vcpu, gpa);
+}
+
+// Is the given system paddr belong to mHV (XMHF + hypapp)?
+bool xmhf_is_mhv_memory(spa_t spa)
+{
+	u64 base = rpb->XtVmmRuntimePhysBase;
+	size_t size = rpb->XtVmmRuntimeSize;
+	
+	if((spa >= base) && (spa < base + size))
+		return true;
+	
+	return false;
 }

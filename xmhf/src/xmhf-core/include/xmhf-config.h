@@ -44,28 +44,34 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * dmap-x86vmx-data.c
- * EMHF DMA protection component implementation for x86 VMX
- * data definitions
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// EMHF x86 arch. specific configurable definitions
+// author: amit vasudevan (amitvasudevan@acm.org)
+// author: Eric Li
+// author: Miao Yu
 
-#include <xmhf.h> 
+// This file must be modified first to support hardware configuration
 
-//VMX VT-d page table buffers; we support a 3 level page-table walk, 
-//4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
-u8 g_vmx_vtd_pdp_table[PAGE_SIZE_4K] __attribute__(( section(".palign_data") )); 
-u8 g_vmx_vtd_pd_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
-u8 g_vmx_vtd_p_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+#ifndef __XMHF_CONFIG_H__
+#define __XMHF_CONFIG_H__
 
-//VMX VT-d Root Entry Table (RET)
-//the RET is 4kb, each root entry (RE) is 128-bits
-//this gives us 256 entries in the RET, each corresponding to a PCI bus num. (0-255)
-u8 g_vmx_vtd_ret[PAGE_SIZE_4K] __attribute__(( section(".palign_data") )); 
+// maximum supported physical address, currently 16GB
+// Note: This value must be larger than 4GB
+#ifdef __X86__
+    // Note: 32-bit XMHF (non-PAE) always assumes the maximum physical memory size == 4GB.
+	#define MAX_PHYS_ADDR					ADDR_4GB
+#elif defined(__X86_64__)
+	#define MAX_PHYS_ADDR                   GB(16)
+#else
+    #error "Unsupported Arch"
+#endif // __X86__
 
-//VMX VT-d Context Entry Table (CET)
-//each RE points to a context entry table (CET) of 4kb, each context entry (CE)
-//is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
-//with 8 functions each as per the PCI spec.
-u8 g_vmx_vtd_cet[PAGE_SIZE_4K * PCI_BUS_MAX] __attribute__(( section(".palign_data") ));
+
+// max. cores/vcpus we support currently
+#define MAX_MIDTAB_ENTRIES  			(8)
+#define MAX_PCPU_ENTRIES  				(MAX_MIDTAB_ENTRIES)
+#define MAX_VCPU_ENTRIES    			(MAX_PCPU_ENTRIES)
+
+#ifndef __ASSEMBLY__
+
+#endif // __ASSEMBLY__
+#endif // __XMHF_CONFIG_H__
