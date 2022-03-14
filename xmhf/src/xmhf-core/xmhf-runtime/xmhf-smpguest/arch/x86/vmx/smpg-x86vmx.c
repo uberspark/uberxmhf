@@ -47,7 +47,7 @@
 // smpg-x86vmx - EMHF SMP guest component x86 (VMX) backend
 // implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
-#include <xmhf.h> 
+#include <xmhf.h>
 
 //the LAPIC register that is being accessed during emulation
 static u32 g_vmx_lapic_reg __attribute__(( section(".data") )) = 0;
@@ -56,7 +56,7 @@ static u32 g_vmx_lapic_reg __attribute__(( section(".data") )) = 0;
 static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 
 //guest TF and IF bit values during LAPIC emulation
-static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") )) = 0;	 
+static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") )) = 0;
 
 /*
  * xmhf_smpguest_arch_x86vmx_quiesce() needs to access printf locks defined
@@ -78,11 +78,11 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
   u64 *pts;
   u32 lapic_page;
   u64 value;
-  
+
   pts = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   lapic_page=lapic_paddr/PAGE_SIZE_4K;
   value = (u64)new_lapic_paddr | mapflag;
-  
+
   pts[lapic_page] = value;
 
   xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
@@ -96,17 +96,17 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
 static u32 have_all_cores_recievedSIPI(void){
   u32 i;
   VCPU *vcpu;
-  
+
 	//iterate through all logical processors in master-id table
 	for(i=0; i < g_midtable_numentries; i++){
   	vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
 		if(vcpu->isbsp)
 			continue;	//BSP does not receive SIPI
-		
+
 		if(!vcpu->sipireceived)
 			return 0;	//one or more logical cores have not received SIPI
   }
-  
+
   return 1;	//all logical cores have received SIPI
 }
 
@@ -114,18 +114,18 @@ static u32 have_all_cores_recievedSIPI(void){
 //return 1 if lapic interception has to be discontinued, typically after
 //all aps have received their SIPI, else 0
 static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
-  //we assume that destination is always physical and 
+  //we assume that destination is always physical and
   //specified via top 8 bits of icr_high_value
   u32 dest_lapic_id;
   VCPU *dest_vcpu = (VCPU *)0;
-  
+
   HALT_ON_ERRORCOND( (icr_low_value & 0x000C0000) == 0x0 );
-  
+
   dest_lapic_id= icr_high_value >> 24;
-  
-  printf("\nCPU(0x%02x): %s, dest_lapic_id is 0x%02x", 
+
+  printf("\nCPU(0x%02x): %s, dest_lapic_id is 0x%02x",
 		vcpu->id, __FUNCTION__, dest_lapic_id);
-  
+
   //find the vcpu entry of the core with dest_lapic_id
   {
     int i;
@@ -133,17 +133,17 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
       if(g_midtable[i].cpu_lapic_id == dest_lapic_id){
         dest_vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
         HALT_ON_ERRORCOND( dest_vcpu->id == dest_lapic_id );
-        break;        
+        break;
       }
     }
-    
+
     HALT_ON_ERRORCOND( dest_vcpu != (VCPU *)0 );
   }
 
   printf("\nCPU(0x%02x): found AP to pass SIPI; id=0x%02x, vcpu=0x%08x",
-      vcpu->id, dest_vcpu->id, (uintptr_t)dest_vcpu);  
-  
-  
+      vcpu->id, dest_vcpu->id, (uintptr_t)dest_vcpu);
+
+
   //send the sipireceived flag to trigger the AP to start the HVM
   if(dest_vcpu->sipireceived){
     printf("\nCPU(0x%02x): destination CPU #0x%02x has already received SIPI, ignoring", vcpu->id, dest_vcpu->id);
@@ -157,7 +157,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 	if(have_all_cores_recievedSIPI())
 		return 1;	//all cores have received SIPI, we can discontinue LAPIC interception
 	else
-		return 0;	//some cores are still to receive SIPI, continue LAPIC interception  
+		return 0;	//some cores are still to receive SIPI, continue LAPIC interception
 }
 
 
@@ -178,7 +178,7 @@ void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu, u32 unmaplapic){
 
   g_vmx_lapic_base = eax & 0xFFFFF000UL;
   //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, g_vmx_lapic_base);
-  
+
   if (unmaplapic) {
     //unmap LAPIC page
     vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
@@ -216,8 +216,8 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 		}else{
 			g_vmx_lapic_op = LAPIC_OP_RSVD;
 			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
-		}    
-	
+		}
+
 	}else{											//LAPIC read
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
 			g_vmx_lapic_op = LAPIC_OP_READ;
@@ -225,14 +225,14 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 		}else{
 			g_vmx_lapic_op = LAPIC_OP_RSVD;
 			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
-		}  
+		}
 	}
 
-  //setup #DB intercept 
+  //setup #DB intercept
   vcpu->vmcs.control_exception_bitmap |= (1UL << 1); //enable INT 1 intercept (#DB fault)
-  
+
   //save guest IF and TF masks
-  g_vmx_lapic_guest_eflags_tfifmask = (u32)vcpu->vmcs.guest_RFLAGS & ((u32)EFLAGS_IF | (u32)EFLAGS_TF);	
+  g_vmx_lapic_guest_eflags_tfifmask = (u32)vcpu->vmcs.guest_RFLAGS & ((u32)EFLAGS_IF | (u32)EFLAGS_TF);
 
   //set guest TF
   vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
@@ -240,8 +240,8 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	g_vmx_lapic_npf_verification_guesttrapping = true;
   #endif
-	
-  //disable interrupts by clearing guest IF on this CPU until we get 
+
+  //disable interrupts by clearing guest IF on this CPU until we get
   //control in lapic_access_dbexception after a DB exception
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
 
@@ -250,14 +250,14 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 #endif
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-  assert ( ((g_vmx_lapic_op == LAPIC_OP_RSVD) || 
+  assert ( ((g_vmx_lapic_op == LAPIC_OP_RSVD) ||
 					   (g_vmx_lapic_op == LAPIC_OP_READ) ||
 					   (g_vmx_lapic_op == LAPIC_OP_WRITE))
-					 );	
+					 );
 
   assert ( ((g_vmx_lapic_reg >= 0) &&
 					   (g_vmx_lapic_reg < PAGE_SIZE_4K))
-					 );	
+					 );
 #endif
 
     return 0; // TODO: currently meaningless
@@ -275,11 +275,11 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 //handle instruction that performed the LAPIC operation
 void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
   u32 delink_lapic_interception=0;
-  
+
   (void)r;
 
 #ifdef	__XMHF_VERIFICATION_DRIVEASSERTS__
-	//this handler relies on two global symbols apart from the parameters, set them 
+	//this handler relies on two global symbols apart from the parameters, set them
 	//to non-deterministic values with correct range
 	//note: LAPIC #npf handler ensures this at runtime
 	g_vmx_lapic_op = (nondet_u32() % 3) + 1;
@@ -290,12 +290,12 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   if(g_vmx_lapic_op == LAPIC_OP_WRITE){			//LAPIC write
     hva_t src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
-    
+
     HALT_ON_ERRORCOND( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
-   
+
     src_registeraddress = (hva_t)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
     dst_registeraddress = (hva_t)g_vmx_lapic_base + g_vmx_lapic_reg;
-    
+
 	#ifdef __XMHF_VERIFICATION__
 		//TODO: hardware modeling
 		value_tobe_written= nondet_u32();
@@ -304,16 +304,16 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 		(g_vmx_lapic_reg == LAPIC_ICR_LOW) &&
 		(((value_tobe_written & 0x00000F00) == 0x500) || ( (value_tobe_written & 0x00000F00) == 0x600 ));
 		#endif
-		
+
 	#else
 		value_tobe_written= *((uintptr_t *)src_registeraddress);
 	#endif
 
-    
+
     if(g_vmx_lapic_reg == LAPIC_ICR_LOW){
       if ( (value_tobe_written & 0x00000F00) == 0x500){
         //this is an INIT IPI, we just void it
-        printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x", 
+        printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x",
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);
         #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 			g_vmx_lapic_db_verification_coreprotected = true;
@@ -322,9 +322,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
         u32 icr_value_high = *((u32 *)((hva_t)&g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
-        printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
-          (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);        
-		
+        printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x",
+          (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);
+
 		#ifdef __XMHF_VERIFICATION__
 			#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 			g_vmx_lapic_db_verification_coreprotected = true;
@@ -343,14 +343,14 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 			*((u32 *)dst_registeraddress) = value_tobe_written;
 	   #endif  //TODO: hardware modeling
     }
-                
+
   }else if( g_vmx_lapic_op == LAPIC_OP_READ){		//LAPIC read
     hva_t src_registeraddress;
     u32 value_read __attribute__((unused));
     HALT_ON_ERRORCOND( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
 
     src_registeraddress = (hva_t)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
-   
+
     //TODO: hardware modeling
     #ifndef __XMHF_VERIFICATION__
 		value_read = *((u32 *)src_registeraddress);
@@ -359,8 +359,8 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 	#endif
   }
 
-  //clear #DB intercept 
-  vcpu->vmcs.control_exception_bitmap &= ~(1UL << 1); 
+  //clear #DB intercept
+  vcpu->vmcs.control_exception_bitmap &= ~(1UL << 1);
 
   //remove LAPIC interception if all cores have booted up
   if(delink_lapic_interception){
@@ -393,15 +393,15 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
   u32 icr_high_value= 0xFFUL << 24;
   u32 prev_icr_high_value;
   u32 delivered;
-  
+
   prev_icr_high_value = *icr_high;
-  
+
   *icr_high = icr_high_value;    //send to all but self
-  *icr_low = 0x000C0400UL;      //send NMI        
-  
+  *icr_low = 0x000C0400UL;      //send NMI
+
   //check if IPI has been delivered successfully
   //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
-#ifndef __XMHF_VERIFICATION__  
+#ifndef __XMHF_VERIFICATION__
   do{
 	delivered = *icr_high;
 	delivered &= 0x00001000;
@@ -413,12 +413,30 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
 
   //restore icr high
   *icr_high = prev_icr_high_value;
-    
+
   //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
 }
 
 /* Unblock NMI by executing iret, but do not jump to somewhere else */
 static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
+#ifdef __X86_64__
+    asm volatile (
+        "movq    %%rsp, %%rsi   \r\n"
+        "xorq    %%rax, %%rax   \r\n"
+        "movw    %%ss, %%ax     \r\n"
+        "pushq   %%rax          \r\n"
+        "pushq   %%rsi          \r\n"
+        "pushfq                 \r\n"
+        "xorq    %%rax, %%rax   \r\n"
+        "movw    %%cs, %%ax     \r\n"
+        "pushq   %%rax          \r\n"
+        "pushq   $1f            \r\n"
+        "iretq                  \r\n"
+        "1: nop                 \r\n"
+        : // no output
+        : // no input
+        : "%rax", "%rsi", "cc", "memory");
+#else /* !__X86_64__ */
     asm volatile (
         "pushfl                 \r\n"
         "xorl    %%eax, %%eax   \r\n"
@@ -430,6 +448,7 @@ static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
         : // no output
         : // no input
         : "%eax", "cc", "memory");
+#endif /* __X86_64__ */
 }
 
 //quiesce interface to switch all guest cores into hypervisor mode
@@ -520,8 +539,7 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 //note: we are in atomic processsing mode for this "vcpu"
 // from_guest: 1 if NMI originated from the HVM (i.e. caller is intercept handler),
 // otherwise 0 (within the hypervisor, i.e. caller is exception handler)
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest)
-{
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest){
 	(void)r;
 
 	/*
@@ -536,15 +554,17 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
   /*
    * Issue 1: If two cores request CPU quiescing at the same time, will an NMI be incorrectly injected to guest?
    * Issue 2: Will it be simpler to use an exception (e.g., one reserved exception in 22-27, see https://wiki.osdev.org/Exceptions)
-   * instead of NMI? 
+   * instead of NMI?
    * Issue 3: The function always inject NMI to the *current* guest, not the *correct* guest. Will it cause problem? For
    * example, NMIs may be injected to PALs, not the red OS.
    * Issue 4: If we decide (1) not using NMI for CPU quiescing, and (2) the function always inject NMI to the current guest
    * for simplicity, then TrustVisor must be modified to inject NMI to the red OS.
-   * Issue 5: Will the "__control_VMX_cpu_based" code in <xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception> and 
-   * virtual NMI VMExit mismatch when there are multiple guests/domains? In other words, they are reading/writing different VMCS. 
+   * Issue 5: Will the "__control_VMX_cpu_based" code in <xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception> and
+   * virtual NMI VMExit mismatch when there are multiple guests/domains? In other words, they are reading/writing different VMCS.
    */
+#ifndef __X86_64__
 
+#endif /* __X86_64__ */
   // The function handles NMI as follows:
   // (1) If XMHF on core i requests quiesce and the current core is not quiesced yet, XMHF must quiesce the current core
   // (2) If XMHF on core i requests quiesce and the current core is quiesced, then some device must issue NMI after core i
@@ -588,6 +608,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 * vcpu->vmcs.control_VMX_cpu_based is not updated.
 		 */
 		//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+		/* Cannot be u32 in x86-64, because VMREAD writes 64-bits */
 		// TODO: if hypapp has multiple VMCS, need to select which one to inject
 		unsigned long __control_VMX_cpu_based;
 		HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
@@ -608,8 +629,8 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 //perform required setup after a guest awakens a new CPU
 void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
 	//setup guest CS and EIP as specified by the SIPI vector
-	vcpu->vmcs.guest_CS_selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
-	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K); 
+	vcpu->vmcs.guest_CS_selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4);
+	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
 	vcpu->vmcs.guest_RIP = 0x0ULL;
 }
 
@@ -622,79 +643,79 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
     u32 pdpt_index, pd_index, pt_index, offset;
     u64 paddr;
     pdpt_t kpdpt;
-    pdt_t kpd; 
-    pt_t kpt; 
+    pdt_t kpd;
+    pt_t kpt;
     u32 pdpt_entry, pd_entry, pt_entry;
     uintptr_t tmp;
 
-    // get fields from virtual addr 
+    // get fields from virtual addr
     pdpt_index = pae_get_pdpt_index(vaddr);
     pd_index = pae_get_pdt_index(vaddr);
     pt_index = pae_get_pt_index(vaddr);
-    offset = pae_get_offset_4K_page(vaddr);  
+    offset = pae_get_offset_4K_page(vaddr);
 
     //grab pdpt entry
     tmp = pae_get_addr_from_32bit_cr3(kcr3);
-    kpdpt = (pdpt_t)((uintptr_t)tmp); 
+    kpdpt = (pdpt_t)((uintptr_t)tmp);
     pdpt_entry = kpdpt[pdpt_index];
-  
+
     //grab pd entry
     tmp = pae_get_addr_from_pdpe(pdpt_entry);
-    kpd = (pdt_t)((uintptr_t)tmp); 
+    kpd = (pdt_t)((uintptr_t)tmp);
     pd_entry = kpd[pd_index];
 
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
       tmp = (uintptr_t)pae_get_addr_from_pde(pd_entry);
-      kpt = (pt_t)((uintptr_t)tmp);  
+      kpt = (pt_t)((uintptr_t)tmp);
       pt_entry  = kpt[pt_index];
-      
-      // find physical page base addr from page table entry 
+
+      // find physical page base addr from page table entry
       paddr = (u64)pae_get_addr_from_pte(pt_entry) + offset;
     }
-    else { // 2MB page 
+    else { // 2MB page
       offset = pae_get_offset_big(vaddr);
       paddr = (u64)pae_get_addr_from_pde_big(pd_entry);
       paddr += (u64)offset;
     }
-  
+
     return (u8 *)(uintptr_t)paddr;
-    
+
   }else{
     //non-PAE 2 level paging used by guest
     u32 kcr3 = (u32)vcpu->vmcs.guest_CR3;
     u32 pd_index, pt_index, offset;
     u64 paddr;
-    npdt_t kpd; 
-    npt_t kpt; 
+    npdt_t kpd;
+    npt_t kpt;
     u32 pd_entry, pt_entry;
     uintptr_t tmp;
 
-    // get fields from virtual addr 
+    // get fields from virtual addr
     pd_index = npae_get_pdt_index(vaddr);
     pt_index = npae_get_pt_index(vaddr);
-    offset = npae_get_offset_4K_page(vaddr);  
-  
+    offset = npae_get_offset_4K_page(vaddr);
+
     // grab pd entry
     tmp = npae_get_addr_from_32bit_cr3(kcr3);
-    kpd = (npdt_t)((uintptr_t)tmp); 
+    kpd = (npdt_t)((uintptr_t)tmp);
     pd_entry = kpd[pd_index];
-  
+
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
       tmp = (uintptr_t)npae_get_addr_from_pde(pd_entry);
-      kpt = (npt_t)((uintptr_t)tmp);  
+      kpt = (npt_t)((uintptr_t)tmp);
       pt_entry  = kpt[pt_index];
-      
-      // find physical page base addr from page table entry 
+
+      // find physical page base addr from page table entry
       paddr = (u64)npae_get_addr_from_pte(pt_entry) + offset;
     }
-    else { // 4MB page 
+    else { // 4MB page
       offset = npae_get_offset_big(vaddr);
       paddr = (u64)npae_get_addr_from_pde_big(pd_entry);
       paddr += (u64)offset;
     }
-  
+
     return (u8 *)(uintptr_t)paddr;
   }
 }
