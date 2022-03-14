@@ -69,7 +69,7 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
 
 void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
                                                  u32 size) {
-    u64 value;
+    uintptr_t value;
     HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
     /* Read 64-bit fields using 1 VMREAD instruction (different from x86) */
     switch ((encoding >> 13) & 0x3) {
