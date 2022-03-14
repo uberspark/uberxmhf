@@ -292,7 +292,7 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 //x86 GDT descriptor type
 typedef struct {
   u16 size;
-  u32 base;
+  uintptr_t base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
 
 

@@ -54,21 +54,29 @@
 
 //runtime GDT
 u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
+#ifdef __X86_64__
 	0x0000000000000000ULL,  /* 0x00: NULL selector */
 	0x00cf9a000000ffffULL,  /* 0x08: 32-bit CODE selector */
 	0x00af9a000000ffffULL,  /* 0x10: 64-bit CODE selector */
 	0x00cf92000000ffffULL,  /* 0x18: 32-bit DATA selector */
 	0x0000000000000000ULL,  /* 0x20: TSS low (set by secure loader) */
 	0x0000000000000000ULL   /* 0x28: TSS high (set by secure loader) */
+#else /* !__X86_64__ */
+	0x0000000000000000ULL,
+	0x00cf9a000000ffffULL,
+	0x00cf92000000ffffULL,
+	0x0000000000000000ULL
+#endif /* __X86_64__ */
 };
 
 //runtime GDT descriptor
 arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 	.size=sizeof(x_gdt_start)-1,
-	.base=(u64)&x_gdt_start,
+	.base=(uintptr_t)&x_gdt_start,
 };
 
 
+#ifdef __X86_64__
 // runtime 4-level page tables
 #define NPLM4T  (PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
 #define NPDPT   (PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
@@ -81,6 +89,11 @@ u8 x_4level_pdt[NPDT * PAGE_SIZE_4K] __attribute__((section(".palign_data")));
 #undef NPLM4T
 #undef NPDPT
 #undef NPDT
+#else /* !__X86_64__ */
+//runtime PAE page tables
+u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+#endif /* __X86_64__ */
 
 //runtime stack
 u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
@@ -89,9 +102,14 @@ u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
 RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
 	.XtVmmEntryPoint= (hva_t)xmhf_runtime_entry,
+#ifdef __X86_64__
 	.XtVmmPml4Base= (hva_t)x_4level_pml4,
 	.XtVmmPdptBase= (hva_t)x_4level_pdpt,
 	.XtVmmPdtsBase= (hva_t)x_4level_pdt,
+#else /* !__X86_64__ */
+	.XtVmmPdptBase= (hva_t)x_3level_pdpt,
+	.XtVmmPdtsBase= (hva_t)x_3level_pdt,
+#endif /* __X86_64__ */
 	.XtGuestOSBootModuleBase= 0,
 	.XtGuestOSBootModuleSize= 0,
 	.runtime_appmodule_base= 0,
@@ -114,4 +132,3 @@ RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.RtmUartConfig = {0, 0, 0, 0, 0, 0, 0},
 	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
 };
- 
