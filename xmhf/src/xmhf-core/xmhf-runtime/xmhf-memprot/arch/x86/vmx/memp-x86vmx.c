@@ -48,7 +48,7 @@
 // intel VMX arch. backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 //----------------------------------------------------------------------
 // local (static) support function forward declarations
@@ -64,7 +64,7 @@ void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	_vmx_gathermemorytypes(vcpu);
-#ifndef __XMHF_VERIFICATION__	
+#ifndef __XMHF_VERIFICATION__
 	_vmx_setupEPT(vcpu);
 #endif
 
@@ -106,7 +106,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
  	u32 eax, ebx, ecx, edx;
 	u32 index=0;
 	u32 num_vmtrrs=0;	//number of variable length MTRRs supported by the CPU
-  
+
 	//0. sanity check
   	//check MTRR support
   	eax=0x00000001;
@@ -116,7 +116,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
             :"=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
             :"a"(eax), "c" (ecx));
   	#endif
-  	
+
   	if( !(edx & (u32)(1 << 12)) ){
   		printf("\nCPU(0x%02x): CPU does not support MTRRs!", vcpu->id);
   		HALT();
@@ -174,7 +174,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 	HALT_ON_ERRORCOND(index == MAX_FIXED_MEMORYTYPE_ENTRIES);
 
 
-	//3. grab memory types using variable length MTRRs  
+	//3. grab memory types using variable length MTRRs
 	{
 		u32 eax, ebx, ecx, edx;
 		u64 paddrmask; //mask physical address, usually 36-bits
@@ -223,11 +223,11 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   //{
   //  int i;
   //  for(i=0; i < MAX_MEMORYTYPE_ENTRIES; i++){
-  //    printf("\nrange  0x%016llx-0x%016llx (type=%u)", 
+  //    printf("\nrange  0x%016llx-0x%016llx (type=%u)",
   //      vcpu->vmx_ept_memorytypes[i].startaddr, vcpu->vmx_ept_memorytypes[i].endaddr, vcpu->vmx_ept_memorytypes[i].type);
   //  }
   //}
-  
+
 }
 
 //---get memory type for a given physical page address--------------------------
@@ -252,16 +252,16 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
   if(pagebaseaddr < (1024*1024)){
     for(i=0; i < MAX_FIXED_MEMORYTYPE_ENTRIES; i++){
       if( pagebaseaddr >= vcpu->vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= vcpu->vmx_ept_memorytypes[i].endaddr )
-        return vcpu->vmx_ept_memorytypes[i].type;    
+        return vcpu->vmx_ept_memorytypes[i].type;
     }
-    
+
     printf("\n%s: endaddr < 1M and unmatched fixed MTRR. Halt!", __FUNCTION__);
     HALT();
   }
- 
+
   //page base address is above 1M, use VARIABLE MTRRs
   for(i= MAX_FIXED_MEMORYTYPE_ENTRIES; i < MAX_MEMORYTYPE_ENTRIES; i++){
-    if( pagebaseaddr >= vcpu->vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= vcpu->vmx_ept_memorytypes[i].endaddr && 
+    if( pagebaseaddr >= vcpu->vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= vcpu->vmx_ept_memorytypes[i].endaddr &&
           (!vcpu->vmx_ept_memorytypes[i].invalid) ){
        if(vcpu->vmx_ept_memorytypes[i].type == MTRR_TYPE_UC){
         prev_type = MTRR_TYPE_UC;
@@ -276,36 +276,90 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
             HALT_ON_ERRORCOND ( prev_type == vcpu->vmx_ept_memorytypes[i].type);
           }
         }
-       }        
+       }
     }
   }
- 
+
   if(prev_type == MTRR_TYPE_RESV)
     prev_type = vcpu->vmx_ept_defaulttype;
- 
+
   return prev_type;
 }
 
 
 //---setup EPT for VMX----------------------------------------------------------
+#ifdef __X86_64__
+static void _vmx_setupEPT(VCPU *vcpu){
+	//step-1: tie in EPT PML4 structures
+	u64 *pml4_entry = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
+	u64 *pdp_entry = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
+	u64 *pd_entry = (u64 *)vcpu->vmx_vaddr_ept_pd_tables;
+	u64 *p_entry = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+	u64 pdp_table = hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table);
+	u64 pd_table = hva2spa((void*)vcpu->vmx_vaddr_ept_pd_tables);
+	u64 p_table = hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables);
+	// TODO: for x86_64, likely can use 1G / 2M pages.
+	// If so, also need to change _vmx_getmemorytypeforphysicalpage()
+
+	for (u64 paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PAGE_SIZE_4K) {
+		if (PAGE_ALIGNED_512G(paddr)) {
+			/* Create PML4E */
+			u64 i = paddr / PAGE_SIZE_512G;
+			pml4_entry[i] = (pdp_table + i * PAGE_SIZE_4K) | 0x7;
+		}
+		if (PAGE_ALIGNED_1G(paddr)) {
+			/* Create PDPE */
+			u64 i = paddr / PAGE_SIZE_1G;
+			pdp_entry[i] = (pd_table + i * PAGE_SIZE_4K) | 0x7;
+		}
+		if (PAGE_ALIGNED_2M(paddr)) {
+			/* Create PDE */
+			u64 i = paddr / PAGE_SIZE_2M;
+			pd_entry[i] = (p_table + i * PAGE_SIZE_4K) | 0x7;
+		}
+		/* PAGE_ALIGNED_4K */
+		{
+			/* Create PE */
+			u64 i = paddr / PAGE_SIZE_4K;
+			u64 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, paddr);
+			u64 lower;
+			/*
+			 * For memorytype equal to 0 (UC), 1 (WC), 4 (WT), 5 (WP), 6 (WB),
+			 * MTRR memory type and EPT memory type are the same encoding.
+			 * Currently other encodings are reserved.
+			 */
+			HALT_ON_ERRORCOND(memorytype == 0 || memorytype == 1 ||
+								memorytype == 4 || memorytype == 5 ||
+								memorytype == 6);
+			if ((paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+				(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) {
+				lower = 0x0;	/* not present */
+			} else {
+				lower = 0x7;	/* present */
+			}
+			p_entry[i] = paddr | (memorytype << 3) | lower;
+		}
+	}
+}
+#else /* !__X86_64__ */
 static void _vmx_setupEPT(VCPU *vcpu){
 	//step-1: tie in EPT PML4 structures
 	u64 *pml4_table, *pdp_table, *pd_table, *p_table;
 	u32 i, j, k, paddr=0;
 
 	pml4_table = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
-	pml4_table[0] = (u64) (hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table) | 0x7); 
+	pml4_table[0] = (u64) (hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table) | 0x7);
 
 	pdp_table = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
-		
+
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		pdp_table[i] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
 		pd_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
-		
+
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			pd_table[j] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
 			p_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) ;
-			
+
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
 				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
 				/*
@@ -317,7 +371,7 @@ static void _vmx_setupEPT(VCPU *vcpu){
 									memorytype == 4 || memorytype == 5 ||
 									memorytype == 6);
 				//the XMHF memory region includes the secure loader +
-				//the runtime (core + app). this runs from 
+				//the runtime (core + app). this runs from
 				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
 				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
 				//make XMHF physical pages inaccessible
@@ -327,25 +381,25 @@ static void _vmx_setupEPT(VCPU *vcpu){
 				}else{
 					p_table[k] = (u64) (paddr) | ((u64)memorytype << 3) | (u64)0x7 ;	//present
 				}
-				
+
 				paddr += PAGE_SIZE_4K;
 			}
 		}
 	}
-
 }
+#endif /* __X86_64__ */
 
 
-//flush hardware page table mappings (TLB) 
+//flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
-  __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
+  __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
           (u64)vcpu->vmcs.control_EPT_pointer);
 }
 
-//flush hardware page table mappings (TLB) 
+//flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu){
 	(void)vcpu;
-  __vmx_invept(VMX_INVEPT_GLOBAL, 
+  __vmx_invept(VMX_INVEPT_GLOBAL,
           (u64)0);
 }
 
@@ -354,43 +408,43 @@ void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u32 pfn;
   u64 *pt;
   u32 flags =0;
-  
+
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
    	assert ( (vcpu != NULL) );
-	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
-							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
+	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) ||
+							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))
 						   ) );
-	assert ( ( (prottype > 0)	&& 
-	                         (prottype <= MEMP_PROT_MAXVALUE) 
-	                       ) );						
+	assert ( ( (prottype > 0)	&&
+	                         (prottype <= MEMP_PROT_MAXVALUE)
+	                       ) );
 	assert (
 	 (prottype == MEMP_PROT_NOTPRESENT) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE))
 	);
 #endif
-  
+
   pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
-  
-  //default is not-present, read-only, no-execute	
+
+  //default is not-present, read-only, no-execute
   pt[pfn] &= ~(u64)7; //clear all previous flags
 
   //map high level protection type to EPT protection bits
   if(prottype & MEMP_PROT_PRESENT){
 	flags=1;	//present is defined by the read bit in EPT
-	
+
 	if(prottype & MEMP_PROT_READWRITE)
 		flags |= 0x2;
-		
+
 	if(prottype & MEMP_PROT_EXECUTE)
 		flags |= 0x4;
   }
-  	
+
   //set new flags
-  pt[pfn] |= flags; 
+  pt[pfn] |= flags;
 }
 
 
@@ -400,14 +454,14 @@ u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   u64 entry = pt[pfn];
   u32 prottype;
-  
+
   if(! (entry & 0x1) ){
 	prottype = MEMP_PROT_NOTPRESENT;
 	return prottype;
   }
- 
+
   prottype = MEMP_PROT_PRESENT;
-  
+
   if( entry & 0x2 )
 	prottype |= MEMP_PROT_READWRITE;
   else
