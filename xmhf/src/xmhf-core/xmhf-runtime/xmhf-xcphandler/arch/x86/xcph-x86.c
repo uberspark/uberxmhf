@@ -256,7 +256,6 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 printf("\n[%02x]-----end------------", vcpu->id);
             }
 
-#ifdef __X86_64__
             // Exception #BP may be caused by failed VMRESUME. Dump VMCS
             // This function is not implemented in x86 yet
             if (vector == CPU_EXCEPTION_BP &&
@@ -264,7 +263,6 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
                 xmhf_baseplatform_arch_x86vmx_dump_vcpu(vcpu);
             }
-#endif /* __X86_64__ */
             HALT();
         }
     }

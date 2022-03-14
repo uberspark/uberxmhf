@@ -53,7 +53,7 @@
 #include <xmhf.h>
 
 //---putVMCS--------------------------------------------------------------------
-// routine takes vcpu vmcsfields and stores it in the CPU VMCS 
+// routine takes vcpu vmcsfields and stores it in the CPU VMCS
 void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
     unsigned int i;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
@@ -69,13 +69,36 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
 
 void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
                                                  u32 size) {
-    uintptr_t value;
+    unsigned long value;
     HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
+#ifdef __X86_64__
+    /* Read 64-bit fields using 1 VMREAD instruction (different from x86) */
+    switch ((encoding >> 13) & 0x3) {
+    case 0: /* 16-bit */
+        /* fallthrough */
+    case 2: /* 32-bit */
+        HALT_ON_ERRORCOND(size == 4);
+        *(u32 *)addr = (u32)value;
+        break;
+    case 1: /* 64-bit */
+        /* Disallow high access */
+        HALT_ON_ERRORCOND((encoding & 0x1) == 0x0);
+        /* fallthrough */
+    case 3: /* natural width */
+        HALT_ON_ERRORCOND(size == 8);
+        *(u64 *)addr = value;
+        break;
+    default:
+        HALT();
+    }
+#else /* !__X86_64__ */
+	(void)size;
     *(u32 *)addr = (u32)value;
+#endif /* __X86_64__ */
 }
 
 //---getVMCS--------------------------------------------------------------------
-// routine takes CPU VMCS and stores it in vcpu vmcsfields  
+// routine takes CPU VMCS and stores it in vcpu vmcsfields
 void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
     unsigned int i;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
@@ -105,43 +128,43 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 		printf("\nguest_SS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_SS_selector);
 		printf("\nguest_TR_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_TR_selector);
 		printf("\nguest_LDTR_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_LDTR_selector);
-		printf("\nguest_CS_access_rights=0x%08lx", 
+		printf("\nguest_CS_access_rights=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_CS_access_rights);
-		printf("\nguest_DS_access_rights=0x%08lx", 
+		printf("\nguest_DS_access_rights=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_DS_access_rights);
-		printf("\nguest_ES_access_rights=0x%08lx", 
+		printf("\nguest_ES_access_rights=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_ES_access_rights);
-		printf("\nguest_FS_access_rights=0x%08lx", 
+		printf("\nguest_FS_access_rights=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_FS_access_rights);
-		printf("\nguest_GS_access_rights=0x%08lx", 
+		printf("\nguest_GS_access_rights=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_GS_access_rights);
-		printf("\nguest_SS_access_rights=0x%08lx", 
+		printf("\nguest_SS_access_rights=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_SS_access_rights);
-		printf("\nguest_TR_access_rights=0x%08lx", 
+		printf("\nguest_TR_access_rights=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_TR_access_rights);
-		printf("\nguest_LDTR_access_rights=0x%08lx", 
+		printf("\nguest_LDTR_access_rights=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_LDTR_access_rights);
 
-		printf("\nguest_CS_base/limit=0x%08lx/0x%04x", 
+		printf("\nguest_CS_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_CS_base, (unsigned short)vcpu->vmcs.guest_CS_limit);
-		printf("\nguest_DS_base/limit=0x%08lx/0x%04x", 
+		printf("\nguest_DS_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_DS_base, (unsigned short)vcpu->vmcs.guest_DS_limit);
-		printf("\nguest_ES_base/limit=0x%08lx/0x%04x", 
+		printf("\nguest_ES_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_ES_base, (unsigned short)vcpu->vmcs.guest_ES_limit);
-		printf("\nguest_FS_base/limit=0x%08lx/0x%04x", 
+		printf("\nguest_FS_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_FS_base, (unsigned short)vcpu->vmcs.guest_FS_limit);
-		printf("\nguest_GS_base/limit=0x%08lx/0x%04x", 
+		printf("\nguest_GS_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_GS_base, (unsigned short)vcpu->vmcs.guest_GS_limit);
-		printf("\nguest_SS_base/limit=0x%08lx/0x%04x", 
+		printf("\nguest_SS_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_SS_base, (unsigned short)vcpu->vmcs.guest_SS_limit);
 		printf("\nguest_GDTR_base/limit=0x%08lx/0x%04x",
-			(unsigned long)vcpu->vmcs.guest_GDTR_base, (unsigned short)vcpu->vmcs.guest_GDTR_limit);		
+			(unsigned long)vcpu->vmcs.guest_GDTR_base, (unsigned short)vcpu->vmcs.guest_GDTR_limit);
 		printf("\nguest_IDTR_base/limit=0x%08lx/0x%04x",
-			(unsigned long)vcpu->vmcs.guest_IDTR_base, (unsigned short)vcpu->vmcs.guest_IDTR_limit);		
+			(unsigned long)vcpu->vmcs.guest_IDTR_base, (unsigned short)vcpu->vmcs.guest_IDTR_limit);
 		printf("\nguest_TR_base/limit=0x%08lx/0x%04x",
-			(unsigned long)vcpu->vmcs.guest_TR_base, (unsigned short)vcpu->vmcs.guest_TR_limit);		
+			(unsigned long)vcpu->vmcs.guest_TR_base, (unsigned short)vcpu->vmcs.guest_TR_limit);
 		printf("\nguest_LDTR_base/limit=0x%08lx/0x%04x",
-			(unsigned long)vcpu->vmcs.guest_LDTR_base, (unsigned short)vcpu->vmcs.guest_LDTR_limit);		
+			(unsigned long)vcpu->vmcs.guest_LDTR_base, (unsigned short)vcpu->vmcs.guest_LDTR_limit);
 
 		printf("\nguest_CR0=0x%08lx, guest_CR4=0x%08lx, guest_CR3=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_CR0, (unsigned long)vcpu->vmcs.guest_CR4,
