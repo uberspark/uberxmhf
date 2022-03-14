@@ -125,6 +125,12 @@
 #define PAE_PDPT_MASK      0xc0000000
 #define PAE_ENTRY_SIZE     8
 
+// 4-level paging specific definitions
+#define P4L_NPLM4T  (PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
+#define P4L_NPDPT   (PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
+#define P4L_NPDT    (PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
+#define P4L_NPT     (PAGE_ALIGN_UP2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
+
 // various paging flags 
 #define _PAGE_BIT_PRESENT	0
 #define _PAGE_BIT_RW		1
