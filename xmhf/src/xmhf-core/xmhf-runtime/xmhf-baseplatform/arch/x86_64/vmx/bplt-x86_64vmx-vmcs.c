@@ -185,7 +185,11 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
 #define DUMP_VCPU_PRINT_INT64_INDEX(x, i) \
     printf("\nCPU(0x%02x): " #x "[%x]=0x%016lx", vcpu->id, (i), (x)[i]);
 
+#ifdef __X86_64__
     DUMP_VCPU_PRINT_INT64(vcpu->rsp);
+#else /* !__X86_64__ */
+    DUMP_VCPU_PRINT_INT64(vcpu->esp);
+#endif /* __X86_64__ */
     DUMP_VCPU_PRINT_INT64(vcpu->sipi_page_vaddr);
     DUMP_VCPU_PRINT_INT32(vcpu->id);
     DUMP_VCPU_PRINT_INT32(vcpu->idx);
