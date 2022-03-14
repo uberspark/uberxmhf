@@ -58,7 +58,7 @@
 
 #define INTEL_STRING_DWORD1	0x756E6547
 #define INTEL_STRING_DWORD2	0x49656E69
-#define INTEL_STRING_DWORD3	0x6C65746E	
+#define INTEL_STRING_DWORD3	0x6C65746E
 
 #define EFLAGS_CF	0x00000001 /* Carry Flag */
 #define EFLAGS_PF	0x00000004 /* Parity Flag */
@@ -153,10 +153,28 @@
 // Return the high 32 bits
 #define HIGH32(v)   ((u32)(v >> 32))
 
-//x86 GPR set definition (follows the order enforced by PUSHAD/POPAD
-//SDM Vol 2B. 4-427)
+// i386: follow the order enforced by PUSHAD/POPAD
+// amd64: manually follow this order in assembly code
 struct regs
 {
+#ifdef __X86_64__
+  union { u64 rdi; u32 edi; } __attribute__ ((packed));
+  union { u64 rsi; u32 esi; } __attribute__ ((packed));
+  union { u64 rbp; u32 ebp; } __attribute__ ((packed));
+  union { u64 rsp; u32 esp; } __attribute__ ((packed));
+  union { u64 rbx; u32 ebx; } __attribute__ ((packed));
+  union { u64 rdx; u32 edx; } __attribute__ ((packed));
+  union { u64 rcx; u32 ecx; } __attribute__ ((packed));
+  union { u64 rax; u32 eax; } __attribute__ ((packed));
+  u64 r8;
+  u64 r9;
+  u64 r10;
+  u64 r11;
+  u64 r12;
+  u64 r13;
+  u64 r14;
+  u64 r15;
+#else /* !__X86_64__ */
   u32 edi;
   u32 esi;
   u32 ebp;
@@ -165,29 +183,49 @@ struct regs
   u32 edx;
   u32 ecx;
   u32 eax;
-}__attribute__ ((packed));
+#endif /* __X86_64__ */
+} __attribute__ ((packed));
 
 
 typedef struct {
+#ifdef __X86_64__
+  u16 isrLow16;
+#else /* !__X86_64__ */
   u16 isrLow;
+#endif /* __X86_64__ */
   u16 isrSelector;
   u8  count;
   u8  type;
+#ifdef __X86_64__
+  u16 isrHigh16;
+  u32 isrHigh32;
+  u32 reserved_zero;
+#else /* !__X86_64__ */
   u16 isrHigh;
+#endif /* __X86_64__ */
 } __attribute__ ((packed)) idtentry_t;
 
 typedef struct {
-  unsigned short limit0_15;
-  unsigned short baseAddr0_15;
-  unsigned char baseAddr16_23;
-  unsigned char attributes1;
-  unsigned char limit16_19attributes2;    
-  unsigned char baseAddr24_31;
+  u16 limit0_15;
+  u16 baseAddr0_15;
+  u8  baseAddr16_23;
+  u8  attributes1;
+  u8  limit16_19attributes2;
+  u8  baseAddr24_31;
+#ifdef __X86_64__
+  u32 baseAddr32_63;
+  u32 reserved_zero;
+#endif /* __X86_64__ */
 } __attribute__ ((packed)) TSSENTRY;
 
 
+#ifdef __X86_64__
+#define get_eflags(x) __asm__ __volatile__("pushfq ; popq %0 ":"=g" (x): /* no input */ :"memory")
+#define set_eflags(x) __asm__ __volatile__("pushq %0 ; popfq": /* no output */ :"g" (x):"memory", "cc")
+#else /* !__X86_64__ */
 #define get_eflags(x) __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
 #define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
+#endif /* __X86_64__ */
 
 #define cpuid(op, eax, ebx, ecx, edx)		\
 ({						\
@@ -206,14 +244,19 @@ typedef struct {
 
 static inline uint64_t rdtsc64(void)
 {
+#ifdef __X86_64__
+        u32 eax, edx;
+        __asm__ __volatile__ ("rdtsc" : "=a" (eax), "=d" (edx));
+        return ((u64)edx << 32) | eax;
+#else /* !__X86_64__ */
         uint64_t rv;
-
         __asm__ __volatile__ ("rdtsc" : "=A" (rv));
         return (rv);
+#endif /* __X86_64__ */
 }
 
 
-/* Calls to read and write control registers */ 
+/* Calls to read and write control registers */
 static inline unsigned long read_cr0(void){
   unsigned long __cr0;
   __asm__("mov %%cr0,%0\n\t" :"=r" (__cr0));
@@ -246,7 +289,7 @@ static inline void write_cr3(unsigned long val){
   __asm__("mov %0,%%cr3\n\t"
           "jmp 1f\n\t"
           "1:"
-          : 
+          :
           :"r" ((unsigned long)val));
 }
 
@@ -369,7 +412,7 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 	static inline u32 get_cpu_vendor_or_die(void) {
 	    u32 dummy;
 	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
-	    
+
 	    cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 	    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 	       && vendor_dword3 == AMD_STRING_DWORD3)
@@ -380,7 +423,7 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 	    else
 		HALT();
 
-	    return 0; // never reached 
+	    return 0; // never reached
 	}
 
 
