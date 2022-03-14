@@ -59,7 +59,7 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 //critical MSRs that need to be saved/restored across guest VM switches
 // _vmx_handle_intercept_rdmsr() relies on the order of elements in this array
 static const u32 vmx_msr_area_msrs[] = {
-	MSR_EFER, 
+	MSR_EFER,
 	MSR_IA32_PAT,
 	MSR_K6_STAR,
 };
@@ -76,6 +76,20 @@ static void _vmx_initVT(VCPU *vcpu){
 	  hva_t gdtstart = (hva_t)&x_gdt_start;
 	  u16 trselector = 	__TRSEL;
 	  #ifndef __XMHF_VERIFICATION__
+#ifdef __X86_64__
+	  asm volatile("movq %0, %%rdi\r\n"
+		"xorq %%rax, %%rax\r\n"
+		"movw %1, %%ax\r\n"
+		"addq %%rax, %%rdi\r\n"		//%rdi is pointer to TSS descriptor in GDT
+		"addq $0x4, %%rdi\r\n"		//%rdi points to 2nd byte of 128-bit TSS desc.
+		"lock andl $0xFFFF00FF, (%%rdi)\r\n"
+		"lock orl  $0x00008900, (%%rdi)\r\n"
+		"ltr %%ax\r\n"				//load TR
+	     :
+	     : "m"(gdtstart), "m"(trselector)
+	     : "rdi", "rax"
+	  );
+#else /* !__X86_64__ */
 	  asm volatile("movl %0, %%edi\r\n"
 		"xorl %%eax, %%eax\r\n"
 		"movw %1, %%ax\r\n"
@@ -84,13 +98,14 @@ static void _vmx_initVT(VCPU *vcpu){
 		"lock andl $0xFFFF00FF, (%%edi)\r\n"
 		"lock orl  $0x00008900, (%%edi)\r\n"
 		"ltr %%ax\r\n"				//load TR
-	     : 
+	     :
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
+#endif /* __X86_64__ */
 	  #endif
 	}
-	
+
 
 
   //step-1: check if intel CPU
@@ -98,7 +113,7 @@ static void _vmx_initVT(VCPU *vcpu){
     char cpu_oemid[12];
 	  #ifndef __XMHF_VERIFICATION__
 	  asm(	"xor	%%eax, %%eax \n"
-				  "cpuid \n"		
+				  "cpuid \n"
 				  "mov	%%ebx, %0 \n"
 				  "mov	%%edx, %1 \n"
 				  "mov	%%ecx, %2 \n"
@@ -110,7 +125,7 @@ static void _vmx_initVT(VCPU *vcpu){
    	}
    	#endif
   }
-  
+
   //step-2: check VT support
   {
   	u32	cpu_features;
@@ -126,7 +141,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	#endif
   }
 
-  //step-3: save contents of VMX MSRs as well as MSR EFER and EFCR 
+  //step-3: save contents of VMX MSRs as well as MSR EFER and EFCR
   //into vcpu
   {
     u32 i;
@@ -137,47 +152,53 @@ static void _vmx_initVT(VCPU *vcpu){
 	for(i=0; i < 1; i++){
 	#endif
         rdmsr( (IA32_VMX_BASIC_MSR + i), &eax, &edx);
-        vcpu->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;        
+        vcpu->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;
     }
-  
+
     rdmsr(MSR_EFER, &eax, &edx);
     vcpu->vmx_msr_efer = (u64)edx << 32 | (u64) eax;
     rdmsr(MSR_EFCR, &eax, &edx);
     vcpu->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
-  
+
     //[debug: dump contents of MSRs]
     //for(i=0; i < IA32_VMX_MSRCOUNT; i++)
-    //  printf("\nCPU(0x%02x): VMX MSR 0x%08x = 0x%08x%08x", vcpu->id, IA32_VMX_BASIC_MSR+i, 
+    //  printf("\nCPU(0x%02x): VMX MSR 0x%08x = 0x%08x%08x", vcpu->id, IA32_VMX_BASIC_MSR+i,
     //      (u32)((u64)vcpu->vmx_msrs[i] >> 32), (u32)vcpu->vmx_msrs[i]);
-    
+
 		//check if VMX supports unrestricted guest, if so we don't need the
 		//v86 monitor and the associated state transition handling
 		if( (u32)((u64)vcpu->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 )
 			vcpu->vmx_guest_unrestricted = 1;
 		else
 			vcpu->vmx_guest_unrestricted = 0;
-				
+
 		#if defined(__DISABLE_UG__)
 		//for now disable unrestricted bit, as we still need to intercept
 		//E820 mem-map access and VMX doesnt provide software INT intercept :(
 		vcpu->guest_unrestricted=0;
-		#endif				
-				
+		#endif
+
 		if(vcpu->vmx_guest_unrestricted)
 			printf("\nCPU(0x%02x): UNRESTRICTED-GUEST supported.", vcpu->id);
-		
-		printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efer >> 32), 
+
+		printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efer >> 32),
           (u32)vcpu->vmx_msr_efer);
-    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efcr >> 32), 
+    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efcr >> 32),
           (u32)vcpu->vmx_msr_efcr);
-  
+
   }
 
   //step-4: enable VMX by setting CR4
 	#ifndef __XMHF_VERIFICATION__
+#ifdef __X86_64__
+	asm(	" mov  %%cr4, %%rax	\n"\
+		" bts  $13, %%rax	\n"\
+		" mov  %%rax, %%cr4	" ::: "rax" );
+#else /* !__X86_64__ */
 	asm(	" mov  %%cr4, %%eax	\n"\
 		" bts  $13, %%eax	\n"\
 		" mov  %%eax, %%cr4	" ::: "eax" );
+#endif /* __X86_64__ */
 	#endif
   printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
 
@@ -189,55 +210,70 @@ static void _vmx_initVT(VCPU *vcpu){
 	  	#ifndef __XMHF_VERIFICATION__
 	  	*((u32 *)vcpu->vmx_vmxonregion_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 	    #endif
-	    
+
 	    #ifndef __XMHF_VERIFICATION__
+#ifdef __X86_64__
+	    asm( "vmxon %1 \n"
+				 "jbe vmfail \n"
+				 "movq $0x1, %%rax \n"
+				 "movq %%rax, %0 \n"
+				 "jmp vmsuccess \n"
+				 "vmfail: \n"
+				 "movq $0x0, %%rax \n"
+				 "movq %%rax, %0 \n"
+				 "vmsuccess: \n"
+	       : "=m" (retval)
+	       : "m"(vmxonregion_paddr)
+	       : "rax");
+#else /* !__X86_64__ */
 	   	asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
-				 "movl $0x1, %%eax \n" 
+				 "movl $0x1, %%eax \n"
 				 "movl %%eax, %0 \n"
 				 "jmp vmsuccess \n"
 				 "vmfail: \n"
 				 "movl $0x0, %%eax \n"
 				 "movl %%eax, %0 \n"
-				 "vmsuccess: \n" 
+				 "vmsuccess: \n"
 	       : "=m" (retval)
-	       : "m"(vmxonregion_paddr) 
+	       : "m"(vmxonregion_paddr)
 	       : "eax");
+#endif /* __X86_64__ */
 			#endif
-		
+
 	    if(!retval){
 	      printf("\nCPU(0x%02x): Fatal, unable to enter VMX root operation", vcpu->id);
 	      HALT();
-	    }  
-	  
+	    }
+
 	    printf("\nCPU(0x%02x): Entered VMX root operation", vcpu->id);
 	  }
-	
+
 }
 
 //---vmx int 15 hook enabling function------------------------------------------
 static void	_vmx_int15_initializehook(VCPU *vcpu){
 	//we should only be called from the BSP
 	HALT_ON_ERRORCOND(vcpu->isbsp);
-	
+
 	{
 		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
-		
+
 		u16 *ivt_int15 = (u16 *)(0x54);			//32-bit CS:IP for IVT INT 15 handler
-		
+
 		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
 			ivt_int15[1], ivt_int15[0]);
 
-		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original 
+		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original
 		//IVT INT 15h handler address, zero them to start off
-		memset(bdamemory, 0x0, 8);		
+		memset(bdamemory, 0x0, 8);
 
 		//implant VMCALL followed by IRET at 0040:04AC
-		bdamemory[0]= 0x0f;	//VMCALL						
+		bdamemory[0]= 0x0f;	//VMCALL
 		bdamemory[1]= 0x01;
-		bdamemory[2]= 0xc1;																	
+		bdamemory[2]= 0xc1;
 		bdamemory[3]= 0xcf;	//IRET
-		
+
 		//store original INT 15h handler CS:IP following VMCALL and IRET
 		*((u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
 		*((u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
@@ -245,7 +281,7 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 
 		//point IVT INT15 handler to the VMCALL instruction
 		ivt_int15[0]=0x00AC;
-		ivt_int15[1]=0x0040;					
+		ivt_int15[1]=0x0040;
 	}
 }
 
@@ -289,14 +325,26 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif //__XMHF_VERIFICATION__
 
 	//store vcpu at TOS
+#ifdef __X86_64__
+	vcpu->rsp = vcpu->rsp - sizeof(hva_t);
+#else /* !__X86_64__ */
 	vcpu->esp = vcpu->esp - sizeof(hva_t);
+#endif /* __X86_64__ */
 #ifndef __XMHF_VERIFICATION__
+#ifdef __X86_64__
+	*(hva_t *)vcpu->rsp = (hva_t)vcpu;
+#else /* !__X86_64__ */
 	*(hva_t *)vcpu->esp = (hva_t)vcpu;
+#endif /* __X86_64__ */
 #endif
+#ifdef __X86_64__
+	vcpu->vmcs.host_RSP = (u64)vcpu->rsp;
+#else /* !__X86_64__ */
 	vcpu->vmcs.host_RSP = (u64)vcpu->esp;
-			
+#endif /* __X86_64__ */
 
-#ifndef __XMHF_VERIFICATION__			
+
+#ifndef __XMHF_VERIFICATION__
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
 	vcpu->vmcs.host_SYSENTER_CS = lodword;
 	rdmsr(IA32_SYSENTER_ESP_MSR, &lodword, &hidword);
@@ -315,9 +363,25 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
 	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 
+#ifdef __X86_64__
+	/*
+	 * For x86_64, set the Host address-space size (bit 9) in
+	 * control_VM_exit_controls. First check whether setting this bit is
+	 * allowed through bit (9 + 32) in the MSR.
+	 */
+	HALT_ON_ERRORCOND(vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] & (1UL << (9 + 32)));
+	vcpu->vmcs.control_VM_exit_controls |= (1UL << 9);
+#endif /* __X86_64__ */
+
 	//IO bitmap support
-	vcpu->vmcs.control_IO_BitmapA_address = hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
-	vcpu->vmcs.control_IO_BitmapB_address = hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
+	{
+	    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
+	    vcpu->vmcs.control_IO_BitmapA_address = addr;
+    }
+    {
+        u64 addr = hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
+	    vcpu->vmcs.control_IO_BitmapB_address = addr;
+    }
 	vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
 
 	//Critical MSR load/store
@@ -330,30 +394,50 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		//store initial values of the MSRs
 		for(i=0; i < vmx_msr_area_msrs_count; i++){
 			u32 msr, eax, edx;
-			msr = vmx_msr_area_msrs[i];						
+			msr = vmx_msr_area_msrs[i];
 			rdmsr(msr, &eax, &edx);
 			hmsr[i].index = gmsr[i].index = msr;
 			hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+#ifdef __X86_64__
+			if (msr == MSR_EFER) {
+			    /*
+			     * Host is in x86-64, but guest should enter from x86.
+			     * Need to manually clear MSR_EFER's 8th bit (LME) and
+			     * 10th bit (LMA). Otherwise when guest enables paging
+			     * a #GP exception will occur.
+			     */
+			    gmsr[i].data &= ~((1LU << EFER_LME) | (1LU << EFER_LMA));
+			}
+#endif /* __X86_64__ */
 		}
 		#endif
 
 		//host MSR load on exit, we store it ourselves before entry
-		vcpu->vmcs.control_VM_exit_MSR_load_address=hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
+		{
+		    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
+		    vcpu->vmcs.control_VM_exit_MSR_load_address=addr;
+		}
 		vcpu->vmcs.control_VM_exit_MSR_load_count= vmx_msr_area_msrs_count;
 
 		//guest MSR load on entry, store on exit
-		vcpu->vmcs.control_VM_entry_MSR_load_address=hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		{
+		    u64 addr = (u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		    vcpu->vmcs.control_VM_entry_MSR_load_address=addr;
+		}
 		vcpu->vmcs.control_VM_entry_MSR_load_count=vmx_msr_area_msrs_count;
-		vcpu->vmcs.control_VM_exit_MSR_store_address=hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		{
+		    u64 addr = (u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		    vcpu->vmcs.control_VM_exit_MSR_store_address=addr;
+		}
 		vcpu->vmcs.control_VM_exit_MSR_store_count=vmx_msr_area_msrs_count;
 	}
 
 
-	vcpu->vmcs.control_pagefault_errorcode_mask  = 0x00000000;	//dont be concerned with 
+	vcpu->vmcs.control_pagefault_errorcode_mask  = 0x00000000;	//dont be concerned with
 	vcpu->vmcs.control_pagefault_errorcode_match = 0x00000000; //guest page-faults
 	vcpu->vmcs.control_exception_bitmap = 0;
 	vcpu->vmcs.control_CR3_target_count = 0;
-      
+
 	//setup guest state
 	//CR0, real-mode, PE and PG bits cleared, set ET bit
 	vcpu->vmcs.guest_CR0 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
@@ -387,11 +471,19 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	}
 	vcpu->vmcs.guest_LDTR_selector = 0;
 	vcpu->vmcs.guest_LDTR_access_rights = 0x10000;
-	//TR, should be usable for VMX to work, but not used by guest
+	// TR, should be usable for VMX to work, but not used by guest
+	// In 32-bit guest, TR access rights can be 0x83 (16-bit busy TSS) or 0x8b
+	// (32-bit busy TSS). In 64-bit guest, it has to be 0x8b. So use 0x8b
+	// (64-bit busy TSS). So use 0x8b here.
 	vcpu->vmcs.guest_TR_base = 0;
 	vcpu->vmcs.guest_TR_limit = 0;
 	vcpu->vmcs.guest_TR_selector = 0;
+#ifdef __X86_64__
+	vcpu->vmcs.guest_TR_access_rights = 0x8b; //present, 32/64-bit busy TSS
+#else /* !__X86_64__ */
+	// TODO: should be able to use 0x8b, not 0x83
 	vcpu->vmcs.guest_TR_access_rights = 0x83; //present, 16-bit busy TSS
+#endif /* __X86_64__ */
 	//DR7
 	vcpu->vmcs.guest_DR7 = 0x400;
 	//RSP
@@ -402,8 +494,8 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		#ifndef __XMHF_VERIFICATION__
 		memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
 		#endif
-			vcpu->vmcs.guest_CS_selector = 0;
-			vcpu->vmcs.guest_CS_base = 0;
+		vcpu->vmcs.guest_CS_selector = 0;
+		vcpu->vmcs.guest_CS_base = 0;
 		vcpu->vmcs.guest_RIP = 0x7c00ULL;
 	}else{
 		vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
@@ -462,11 +554,11 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 
 	//setup VMCS link pointer
 	vcpu->vmcs.guest_VMCS_link_pointer = (u64)0xFFFFFFFFFFFFFFFFULL;
-	
+
 	//setup NMI intercept for core-quiescing
 	vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
 	vcpu->vmcs.control_VMX_pin_based |= (1 << 5);	//enable virtual NMIs
-	
+
 	//trap access to CR0 fixed 1-bits
 	// Make sure to change vmx_handle_intercept_cr0access_ug() if changing
 	// control_CR0_mask.
@@ -486,7 +578,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//trap access to CR4 fixed bits (this includes the VMXE bit)
 	// Make sure to change vmx_handle_intercept_cr4access_ug() if changing
 	// control_CR4_mask.
-	vcpu->vmcs.control_CR4_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];  
+	vcpu->vmcs.control_CR4_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];
 	vcpu->vmcs.control_CR4_shadow = 0;
 
 	//flush guest TLB to start with
@@ -509,8 +601,8 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
     HALT();
   }
   printf("\nCPU(0x%02x): VMCLEAR success.", vcpu->id);
-  
-  
+
+
   //set VMCS revision id
  	*((u32 *)vcpu->vmx_vmcs_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 
@@ -520,7 +612,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
     HALT();
   }
   printf("\nCPU(0x%02x): VMPTRLD success.", vcpu->id);
-  
+
   //put VMCS to CPU
   xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
   printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
@@ -529,20 +621,20 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   {
     u32 errorcode;
     /*
-     * For BSP, use boot drive number (usually EDX=0x80 for frist HDD).
-     * For AP, use EDX=0x000n06xx (Intel's spec on processor state after INIT).
+     * For BSP, use boot drive number (usually RDX=0x80 for frist HDD).
+     * For AP, use RDX=0x000n06xx (Intel's spec on processor state after INIT).
      */
-    u32 edx = (u32)rpb->XtGuestOSBootDrive;
+    uintptr_t rdx = (uintptr_t)rpb->XtGuestOSBootDrive;
     if (!vcpu->isbsp) {
         u32 _eax, _ebx, _ecx, _edx;
         cpuid(0x80000001U, &_eax, &_ebx, &_ecx, &_edx);
-        edx = 0x00000600U | (0x000f0000U & _eax);
+        rdx = 0x00000600UL | (0x000f0000UL & _eax);
     }
-    errorcode=__vmx_start_hvm(edx);
+    errorcode=__vmx_start_hvm(rdx);
     HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
     //get CPU VMCS into VCPU structure
     xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
-    
+
     switch(errorcode){
 			case 0:	//no error code, VMCS pointer is invalid
 			    printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", vcpu->id);
@@ -575,7 +667,7 @@ void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
    //clear VMCS
   memset((void *)&vcpu->vmcs, 0, sizeof(struct _vmx_vmcsfields));
    #endif
-   
+
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	if(vcpu->isbsp){
@@ -591,12 +683,12 @@ void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 		//initialize VMCS
 		_vmx_initVMCS(vcpu);
-	
+
 }
 
 //start executing the partition and guest OS
 void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
-    
+
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
@@ -609,7 +701,7 @@ void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
     _vmx_start_hvm(vcpu, hva2spa((void*)vcpu->vmx_vmcs_vaddr));
 	//we never get here, if we do, we just return and our caller is responsible
 	//for halting the core as something really bad happened!
-#endif	
+#endif
 
 }
 
@@ -623,10 +715,10 @@ void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size,
 		byte_offset = (port+i) / 8;
 		bit_offset = (port+i) % 8;
 		if(prottype & PART_LEGACYIO_NOACCESS){
-			bit_vector[byte_offset] |= (1 << bit_offset);	
+			bit_vector[byte_offset] |= (1 << bit_offset);
 		}else{
 			prottype = PART_LEGACYIO_READWRITE;
-			bit_vector[byte_offset] &= ~((1 << bit_offset));	
+			bit_vector[byte_offset] &= ~((1 << bit_offset));
 		}
 	}
 }
