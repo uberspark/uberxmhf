@@ -57,7 +57,7 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
   u32 i;
   u32 npt_current_asid=ASID_GUEST_KERNEL;
   VCPU *vcpu;
-  
+
   printf("\n%s: g_cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
     __FUNCTION__, (hva_t)g_cpustacks, (hva_t)g_cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
         RUNTIME_STACK_SIZE);
@@ -79,28 +79,32 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
   printf("\n%s: g_svm_npt_pts_buffers range 0x%08x-0x%08x in 0x%08x chunks",
     __FUNCTION__, (hva_t)g_svm_npt_pts_buffers, (hva_t)g_svm_npt_pts_buffers + ((2048*4096) * MAX_VCPU_ENTRIES),
         (2048*4096));
-          
+
   for(i=0; i < g_midtable_numentries; i++){
     vcpu = (VCPU *)((hva_t)g_vcpubuffers + (hva_t)(i * SIZE_STRUCT_VCPU));
     #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu, 0, sizeof(VCPU));
     #endif
-    
+
     vcpu->cpu_vendor = cpu_vendor;
-    
-    vcpu->esp = ((hva_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
+
+#ifdef __X86_64__
+    vcpu->rsp = ((hva_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
+#else /* !__X86_64__ */
+    vcpu->esp = ((hva_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
+#endif /* __X86_64__ */
     vcpu->hsave_vaddr_ptr = ((hva_t)g_svm_hsave_buffers + (i * 8192));
     vcpu->vmcb_vaddr_ptr = (struct _svm_vmcbfields *)((hva_t)g_svm_vmcb_buffers + (i * 8192));
 
 	//allocate SVM IO bitmap region and clear it
-	vcpu->svm_vaddr_iobitmap = (hva_t)g_svm_iobitmap_buffer; 
+	vcpu->svm_vaddr_iobitmap = (hva_t)g_svm_iobitmap_buffer;
 	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->svm_vaddr_iobitmap, 0, (3*PAGE_SIZE_4K));
 	#endif
 
     {
       u32 npt_pdpt_base, npt_pdts_base, npt_pts_base;
-      npt_pdpt_base = ((hva_t)g_svm_npt_pdpt_buffers + (i * 4096)); 
+      npt_pdpt_base = ((hva_t)g_svm_npt_pdpt_buffers + (i * 4096));
       npt_pdts_base = ((hva_t)g_svm_npt_pdts_buffers + (i * 16384));
       npt_pts_base = ((hva_t)g_svm_npt_pts_buffers + (i * (2048*4096)));
       vcpu->npt_vaddr_ptr = npt_pdpt_base;
@@ -109,15 +113,20 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
       vcpu->npt_asid = npt_current_asid;
       npt_current_asid++;
     }
-    
+
     vcpu->id = g_midtable[i].cpu_lapic_id;
     vcpu->idx = i;
     vcpu->sipivector = 0;
     vcpu->sipireceived = 0;
 
     g_midtable[i].vcpu_vaddr_ptr = (hva_t)vcpu;
+#ifdef __X86_64__
+    printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, rsp=0x%16lx", i, g_midtable[i].vcpu_vaddr_ptr,
+      vcpu->rsp);
+#else /* !__X86_64__ */
     printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, g_midtable[i].vcpu_vaddr_ptr,
       vcpu->esp);
+#endif /* __X86_64__ */
     printf("\n  hsave_vaddr_ptr=0x%08x, vmcb_vaddr_ptr=0x%08x", vcpu->hsave_vaddr_ptr,
           vcpu->vmcb_vaddr_ptr);
   }
@@ -125,7 +134,7 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
 
 //wake up application processors (cores) in the system
 void xmhf_baseplatform_arch_x86svm_wakeupAPs(void){
-	//step-1: setup AP boot-strap code at in the desired physical memory location 
+	//step-1: setup AP boot-strap code at in the desired physical memory location
 	//note that we need an address < 1MB since the APs are woken up in real-mode
 	//we choose 0x10000 physical or 0x1000:0x0000 logical
   {
@@ -135,9 +144,9 @@ void xmhf_baseplatform_arch_x86svm_wakeupAPs(void){
     memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (uintptr_t)_ap_bootstrap_end - (uintptr_t)_ap_bootstrap_start + 1);
     #endif
   }
-	
+
 	//step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
-	//MP protocol. Use the APIC for IPI purposes.	
+	//MP protocol. Use the APIC for IPI purposes.
   printf("\nBSP: Using APIC to awaken APs...");
   xmhf_baseplatform_arch_x86_wakeupAPs();
   printf("\nBSP: APs should be awake.");
