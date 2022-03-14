@@ -81,12 +81,12 @@ static VCPU *_svm_and_vmx_getvcpu(void){
 
 //initialize EMHF core exception handlers
 void xmhf_xcphandler_arch_initialize(void){
-    u64 *pexceptionstubs;
-    u64 i;
+    uintptr_t *pexceptionstubs;
+    uintptr_t i;
 
     printf("\n%s: setting up runtime IDT...", __FUNCTION__);
 
-    pexceptionstubs = (u64 *)&xmhf_xcphandler_exceptionstubs;
+    pexceptionstubs = (uintptr_t *)&xmhf_xcphandler_exceptionstubs;
 
     for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
         idtentry_t *idtentry=(idtentry_t *)((hva_t)xmhf_xcphandler_arch_get_idt_start()+ (i*16));
@@ -118,11 +118,11 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
     vcpu = _svm_and_vmx_getvcpu();
 
-	/*
-	 * Cannot print anything before event handler returns if this exception
-	 * is for quiescing (vector == CPU_EXCEPTION_NMI), otherwise will deadlock.
-	 * See xmhf_smpguest_arch_x86vmx_quiesce().
-	 */
+    /*
+     * Cannot print anything before event handler returns if this exception
+     * is for quiescing (vector == CPU_EXCEPTION_NMI), otherwise will deadlock.
+     * See xmhf_smpguest_arch_x86vmx_quiesce().
+     */
 
     switch(vector){
     case CPU_EXCEPTION_NMI:
@@ -136,6 +136,9 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
              * Each entry in .xcph_table has 3 long values. If the first value
              * matches the exception vector and the second value matches the
              * current PC, then jump to the third value.
+             *
+             * In x86, these names should be interpreted as EIP and EFLAGS, not
+             * RIP and RFLAGS.
              */
             uintptr_t exception_cs, exception_rip, exception_rflags;
             u32 error_code_available = 0;
@@ -172,8 +175,9 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 break;
             }
 
+            /* Print exception and halt */
             printf("\n[%02x]: unhandled exception %d (0x%x), halting!",
-            		vcpu->id, vector, vector);
+                    vcpu->id, vector, vector);
             if (error_code_available) {
                 printf("\n[%02x]: error code: 0x%016lx", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
             }

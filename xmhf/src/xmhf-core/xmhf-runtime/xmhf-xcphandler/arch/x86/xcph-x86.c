@@ -81,13 +81,12 @@ static VCPU *_svm_and_vmx_getvcpu(void){
 
 //initialize EMHF core exception handlers
 void xmhf_xcphandler_arch_initialize(void){
-    u32 *pexceptionstubs;
-    u32 i;
+    uintptr_t *pexceptionstubs;
+    uintptr_t i;
 
     printf("\n%s: setting up runtime IDT...", __FUNCTION__);
     
-    //pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
-    pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
+    pexceptionstubs = (uintptr_t *)&xmhf_xcphandler_exceptionstubs;
     
     for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
         idtentry_t *idtentry=(idtentry_t *)((hva_t)xmhf_xcphandler_arch_get_idt_start()+ (i*8));
@@ -113,10 +112,9 @@ extern uint8_t _end_xcph_table[];
 
 //EMHF exception handler hub
 void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
-    u32 cpu_vendor = get_cpu_vendor_or_die();   //determine CPU vendor
     VCPU *vcpu;
     
-    vcpu=_svm_and_vmx_getvcpu();
+    vcpu = _svm_and_vmx_getvcpu();
 
     /*
      * Cannot print anything before event handler returns if this exception
@@ -136,28 +134,33 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
              * Each entry in .xcph_table has 3 long values. If the first value
              * matches the exception vector and the second value matches the
              * current PC, then jump to the third value.
+             *
+             * In x86, these names should be interpreted as EIP and EFLAGS, not
+             * RIP and RFLAGS.
              */
-            u32 exception_cs, exception_eip, exception_eflags;
+            uintptr_t exception_cs, exception_rip, exception_rflags;
             u32 error_code_available = 0;
             hva_t *found = NULL;
 
-            if(vector == CPU_EXCEPTION_DF ||
+            // skip error code on stack if applicable
+            if (vector == CPU_EXCEPTION_DF ||
                 vector == CPU_EXCEPTION_TS ||
                 vector == CPU_EXCEPTION_NP ||
                 vector == CPU_EXCEPTION_SS ||
                 vector == CPU_EXCEPTION_GP ||
                 vector == CPU_EXCEPTION_PF ||
-                vector == CPU_EXCEPTION_AC){
+                vector == CPU_EXCEPTION_AC) {
                 error_code_available = 1;
-                r->esp += sizeof(uint32_t); //skip error code on stack if applicable
+                r->rsp += sizeof(uintptr_t);
             }
 
-            exception_eip = *(uint32_t *)(r->esp+0);
-            exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
-            exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
+            exception_rip = ((uintptr_t *)(r->rsp))[0];
+            exception_cs = ((uintptr_t *)(r->rsp))[1];
+            exception_rflags = ((uintptr_t *)(r->rsp))[2];
 
-            for (hva_t *i = (hva_t *)_begin_xcph_table; i < (hva_t *)_end_xcph_table; i += 3) {
-                if (i[0] == vector && i[1] == exception_eip) {
+            for (hva_t *i = (hva_t *)_begin_xcph_table;
+                 i < (hva_t *)_end_xcph_table; i += 3) {
+                if (i[0] == vector && i[1] == exception_rip) {
                     found = i;
                     break;
                 }
@@ -166,7 +169,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             if (found) {
                 /* Found in xcph table; Modify EIP on stack and iret */
                 printf("\nFound in xcph table");
-                *(uint32_t *)(r->esp+0) = found[2];
+                ((uintptr_t *)(r->rsp))[0] = found[2];
                 break;
             }
 
@@ -174,17 +177,17 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             printf("\n[%02x]: unhandled exception %d (0x%x), halting!",
                     vcpu->id, vector, vector);
             if (error_code_available) {
-                printf("\n[%02x]: error code: 0x%08lx", vcpu->id, ((uint32_t *)(r->esp))[-1]);
+                printf("\n[%02x]: error code: 0x%08lx", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
             }
             printf("\n[%02x]: state dump follows...", vcpu->id);
-            //things to dump
+            // things to dump
             printf("\n[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x", vcpu->id,
-                (u16)exception_cs, exception_eip, exception_eflags);
+                (u16)exception_cs, exception_rip, exception_rflags);
             printf("\n[%02x]: VCPU at 0x%08x", vcpu->id, (u32)vcpu, vcpu->id);
             printf("\n[%02x] EAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", vcpu->id,
                     r->eax, r->ebx, r->ecx, r->edx);
             printf("\n[%02x] ESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", vcpu->id,
-                    r->esi, r->edi, r->ebp, r->esp);
+                    r->esi, r->edi, r->ebp, r->rsp);
             printf("\n[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
                 (u16)read_segreg_cs(), (u16)read_segreg_ds(),
                 (u16)read_segreg_es(), (u16)read_segreg_ss());
@@ -194,13 +197,13 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
             //do a stack dump in the hopes of getting more info.
             {
-                //vcpu->esp is the TOS
-                uint32_t i;
-                //uint32_t stack_start = (r->esp+(3*sizeof(uint32_t)));
-                uint32_t stack_start = r->esp;
+                //vcpu->rsp is the TOS
+                uintptr_t i;
+                //uintptr_t stack_start = (r->rsp+(3*sizeof(uintptr_t)));
+                uintptr_t stack_start = r->rsp;
                 printf("\n[%02x]-----stack dump-----", vcpu->id);
-                for(i=stack_start; i < vcpu->esp; i+=sizeof(uint32_t)){
-                    printf("\n[%02x]  Stack(0x%08x) -> 0x%08x", vcpu->id, i, *(uint32_t *)i);
+                for(i=stack_start; i < vcpu->rsp; i+=sizeof(uintptr_t)){
+                    printf("\n[%02x]  Stack(0x%08x) -> 0x%08x", vcpu->id, i, *(uintptr_t *)i);
                 }
                 printf("\n[%02x]-----end------------", vcpu->id);
             }
