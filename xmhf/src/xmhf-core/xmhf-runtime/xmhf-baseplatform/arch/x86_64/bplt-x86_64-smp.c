@@ -58,7 +58,7 @@ u32 xmhf_baseplatform_arch_x86_isbsp(void){
   //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-  
+
   if(eax & 0x100)
     return 1;
   else
@@ -69,14 +69,14 @@ u32 xmhf_baseplatform_arch_x86_isbsp(void){
 void xmhf_baseplatform_arch_x86_wakeupAPs(void){
   u32 eax, edx;
   volatile u32 *icr;
-  
+
   //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
 
-	//construct the command register address (offset 0x300)    
+	//construct the command register address (offset 0x300)
   icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
-    
+
   //our AP boot-strap code is at physical memory location 0x10000.
 	//so use 0x10 as the vector (0x10000/0x1000 = 0x10)
 
@@ -98,7 +98,7 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 	    }while( (val & 0x1000) );
 	  }
   #endif
-  
+
   //send SIPI (twice as per the MP protocol)
   {
     int i;
@@ -119,7 +119,7 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 		}
         #endif
       }
-  }    
+  }
 
 }
 
@@ -127,12 +127,12 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 //initialize SMP
 void xmhf_baseplatform_arch_smpinitialize(void){
   u32 cpu_vendor;
-  
+
   //grab CPU vendor
   cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
   HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 
-  
+
   //setup Master-ID Table (MIDTABLE)
   {
     int i;
@@ -163,12 +163,12 @@ void xmhf_baseplatform_arch_smpinitialize(void){
   }
 
 
-  //fall through to common code  
+  //fall through to common code
   {
 	 void _ap_pmode_entry_with_paging(void);
    printf("\nRelinquishing BSP thread and moving to common...");
    // Do some low-level init and then call allcpus_common_start() below
-   _ap_pmode_entry_with_paging(); 
+   _ap_pmode_entry_with_paging();
    printf("\nBSP must never get here. HALT!");
    HALT();
   }
@@ -182,9 +182,13 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
   //a task for the BSP
   if(xmhf_baseplatform_arch_x86_isbsp()){
     vcpu->isbsp = 1;	//this core is a BSP
-    
+
 	printf("\nBSP rallying APs...");
+#ifdef __X86_64__
     printf("\nBSP(0x%02x): My RSP is 0x%016lx", vcpu->id, vcpu->rsp);
+#else /* !__X86_64__ */
+    printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
+#endif /* __X86_64__ */
 
     //increment a CPU to account for the BSP
     spin_lock(&g_lock_cpus_active);
@@ -194,13 +198,13 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     //wait for g_cpus_active to become g_midtable_numentries -1 to indicate
     //that all APs have been successfully started
     while(g_cpus_active < g_midtable_numentries);
-    
+
     printf("\nAPs all awake...Setting them free...");
     spin_lock(&g_lock_ap_go_signal);
     g_ap_go_signal=1;
     spin_unlock(&g_lock_ap_go_signal);
 
-  
+
   }else{
     //we are an AP, so we need to simply update the AP startup counter
     //and wait until we are told to proceed
@@ -212,11 +216,15 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     spin_unlock(&g_lock_cpus_active);
 
     while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
- 
+
+#ifdef __X86_64__
     printf("\nAP(0x%02x): My RSP is 0x%016lx, proceeding...", vcpu->id, vcpu->rsp);
+#else /* !__X86_64__ */
+    printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
+#endif /* __X86_64__ */
   }
-	
+
   //invoke EMHF runtime component main function for this CPU
   //TODO: don't reference rpb->isEarlyInit directly
-  xmhf_runtime_main(vcpu, rpb->isEarlyInit);	
+  xmhf_runtime_main(vcpu, rpb->isEarlyInit);
 }
