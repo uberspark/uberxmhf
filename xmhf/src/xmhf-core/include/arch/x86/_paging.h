@@ -52,7 +52,7 @@
 
 //physical memory limit
 #ifndef __ASSEMBLY__
-#define ADDR_4GB 0x100000000ULL 	
+#define ADDR_4GB 0x100000000ULL
 #else
 #define ADDR_4GB 0x100000000
 #endif
@@ -70,34 +70,62 @@
 #define PAGE_SHIFT_256T 42
 
 #ifndef __ASSEMBLY__
+
+/* Normal macros: u32 for i386, u64 for amd64 */
 #define PAGE_SIZE_4K    (1UL << PAGE_SHIFT_4K)
 #define PAGE_SIZE_2M    (1UL << PAGE_SHIFT_2M)
 #define PAGE_SIZE_4M    (1UL << PAGE_SHIFT_4M)
 #define PAGE_SIZE_1G    (1UL << PAGE_SHIFT_1G)
-#else   
+#ifdef __X86_64__
+#define PAGE_SIZE_512G  (1UL << PAGE_SHIFT_512G)
+#define PAGE_SIZE_256T  (1UL << PAGE_SHIFT_256T)
+#endif /* __X86_64__ */
+
+/* For i386 to access large page size: u64 for both word size */
+#define PAGE_SIZE_512G_LL   (1ULL << PAGE_SHIFT_512G)
+#define PAGE_SIZE_256T_LL   (1ULL << PAGE_SHIFT_256T)
+
+#else
+
 #define PAGE_SIZE_4K    (1 << PAGE_SHIFT_4K)
 #define PAGE_SIZE_2M    (1 << PAGE_SHIFT_2M)
 #define PAGE_SIZE_4M    (1 << PAGE_SHIFT_4M)
 #define PAGE_SIZE_1G    (1 << PAGE_SHIFT_1G)
+#define PAGE_SIZE_512G  (1 << PAGE_SHIFT_512G)
+#define PAGE_SIZE_256T  (1 << PAGE_SHIFT_256T)
+
 #endif
 
 #define PAGE_ALIGN_UP4K(size)   (((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_UP2M(size)   (((size) + PAGE_SIZE_2M - 1) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_UP4M(size)   (((size) + PAGE_SIZE_4M - 1) & ~(PAGE_SIZE_4M - 1))
 #define PAGE_ALIGN_UP1G(size)   (((size) + PAGE_SIZE_1G - 1) & ~(PAGE_SIZE_1G - 1))
+#ifdef __X86_64__
+#define PAGE_ALIGN_UP512G(size) (((size) + PAGE_SIZE_512G - 1) & ~(PAGE_SIZE_512G - 1))
+#define PAGE_ALIGN_UP256T(size) (((size) + PAGE_SIZE_256T - 1) & ~(PAGE_SIZE_256T - 1))
+#endif /* __X86_64__ */
 
 #define PAGE_ALIGN_4K(size)     ((size) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_2M(size)     ((size) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_4M(size)     ((size) & ~(PAGE_SIZE_4M - 1))
 #define PAGE_ALIGN_1G(size)     ((size) & ~(PAGE_SIZE_1G - 1))
+#ifdef __X86_64__
+#define PAGE_ALIGN_512G(size)   ((size) & ~(PAGE_SIZE_512G - 1))
+#define PAGE_ALIGN_256T(size)   ((size) & ~(PAGE_SIZE_256T - 1))
+#endif /* __X86_64__ */
 
 #define PAGE_ALIGNED_4K(size)   (PAGE_ALIGN_4K(size) == size)
 #define PAGE_ALIGNED_2M(size)   (PAGE_ALIGN_2M(size) == size)
 #define PAGE_ALIGNED_4M(size)   (PAGE_ALIGN_4M(size) == size)
+#ifdef __X86_64__
+#define PAGE_ALIGNED_1G(size)   (PAGE_ALIGN_1G(size) == size)
+#define PAGE_ALIGNED_512G(size) (PAGE_ALIGN_512G(size) == size)
+#define PAGE_ALIGNED_256T(size) (PAGE_ALIGN_256T(size) == size)
+#endif /* __X86_64__ */
 
 #define BYTES_TO_PAGE4K(size)   (PAGE_ALIGN_UP4K(size) >> PAGE_SHIFT_4K)
 
-// non-PAE mode specific definitions 
+// non-PAE mode specific definitions
 #define NPAE_PTRS_PER_PDT       1024
 #define NPAE_PTRS_PER_PT        1024
 #define NPAE_PAGETABLE_SHIFT    12
@@ -105,7 +133,7 @@
 #define NPAE_PAGE_DIR_MASK      0xffc00000
 #define NPAE_PAGE_TABLE_MASK    0x003ff000
 
-// PAE mode specific definitions 
+// PAE mode specific definitions
 #define PAE_PTRS_PER_PDPT  4
 #define PAE_PTRS_PER_PDT   512
 #define PAE_PTRS_PER_PT    512
@@ -118,13 +146,20 @@
 #define PAE_ENTRY_SIZE     8
 
 // 4-level paging specific definitions
-/* Cannot calculate using PAGE_ALIGN_UP, because PAGE_SIZE is 32-bits */
+#ifdef __X86_64__
+#define P4L_NPLM4T  (PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
+#define P4L_NPDPT   (PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
+#define P4L_NPDT    (PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
+#define P4L_NPT     (PAGE_ALIGN_UP2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
+#else /* !__X86_64__ */
+/* i386: cannot calculate using PAGE_ALIGN_UP, because PAGE_SIZE is 32-bits */
 #define P4L_NPLM4T  1
 #define P4L_NPDPT   1
 #define P4L_NPDT    4
 #define P4L_NPT     2048
+#endif /* __X86_64__ */
 
-// various paging flags 
+// various paging flags
 #define _PAGE_BIT_PRESENT       0
 #define _PAGE_BIT_RW            1
 #define _PAGE_BIT_USER          2
@@ -140,7 +175,7 @@
 #define _PAGE_BIT_NX            63
 
 #define _PAGE_PRESENT   0x001
-#define _PAGE_RW        0x002   
+#define _PAGE_RW        0x002
 #define _PAGE_USER      0x004
 #define _PAGE_PWT       0x008
 #define _PAGE_PCD       0x010
@@ -156,7 +191,7 @@
 #define _PAGE_NX        (1ULL<<_PAGE_BIT_NX)
 #else
 #define _PAGE_NX  (1 << _PAGE_BIT_NX)
-#endif 
+#endif
 
 #define PAGE_FAULT_BITS (_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_NX)
 
@@ -174,6 +209,82 @@ typedef pte_t *pt_t;
 
 typedef u32 *npdt_t;
 typedef u32 *npt_t;
+
+#ifdef __X86_64__
+
+/* 4-level paging macros */
+
+/* make a PML4 entry from individual fields */
+#define p4l_make_plm4e(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
+
+/* make a page directory pointer entry from individual fields */
+#define p4l_make_pdpe(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
+
+/* make a page directory entry for a 2MB page from individual fields */
+#define p4l_make_pde_big(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_2M - 1) | _PAGE_NX))) | (u64)(flags)
+
+/* make a page directory entry for a 4KB page from individual fields */
+#define p4l_make_pde(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
+
+/* make a page table entry from individual fields */
+#define p4l_make_pte(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
+
+/* get address field from 64-bit cr3 (page directory pointer) */
+#define p4l_get_addr_from_32bit_cr3(entry) \
+  ((u64)(entry) & (~((1UL << 12) - 1)))
+
+/* get flags field from 64-bit cr3 (page directory pointer) */
+#define p4l_get_flags_from_32bit_cr3(entry) \
+  ((u64)(entry) & ((1UL << 12) - 1))
+
+/* get address field of a PML4E (page directory pointer entry) */
+#define p4l_get_addr_from_pml4e(entry) \
+  ((u64)(entry) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX)))
+
+/* get flags field of a PML4E (page directory pointer entry) */
+#define p4l_get_flags_from_pml4e(entry) \
+  ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))
+
+/* get address field of a pdpe (page directory pointer entry) */
+#define p4l_get_addr_from_pdpe(entry) \
+  ((u64)(entry) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX)))
+
+/* get flags field of a pdpe (page directory pointer entry) */
+#define p4l_get_flags_from_pdpe(entry) \
+  ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))
+
+/* get address field of a 2MB pdte (page directory entry) */
+#define p4l_get_addr_from_pde_big(entry) \
+  ((u64)(entry) & (~(((u64)PAGE_SIZE_2M - 1) | _PAGE_NX)))
+
+/* get flags field of a 2MB pdte (page directory entry) */
+#define p4l_get_flags_from_pde_big(entry) \
+  ((u64)(entry) & (((u64)PAGE_SIZE_2M - 1) | _PAGE_NX))
+
+/* get address field of a 4K pdte (page directory entry) */
+#define p4l_get_addr_from_pde(entry) \
+  ((u64)(entry) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX)))
+
+/* get flags field of a 4K pdte (page directory entry) */
+#define p4l_get_flags_from_pde(entry) \
+  ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))
+
+/* get address field of a pte (page table entry) */
+#define p4l_get_addr_from_pte(entry) \
+  ((u64)(entry) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX)))
+
+/* get flags field of a pte (page table entry) */
+#define p4l_get_flags_from_pte(entry) \
+  ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))
+
+#endif /* __X86_64__ */
+
+/* 32-bit macros */
 
 /* make a page directory pointer entry from individual fields */
 #define pae_make_pdpe(paddr, flags) \
@@ -193,19 +304,19 @@ typedef u32 *npt_t;
 
 /* get address field from 32-bit cr3 (page directory pointer) in PAE mode */
 #define pae_get_addr_from_32bit_cr3(entry) \
-  ((u32)(entry) & (~((1UL << 5) - 1))) 
+  ((u32)(entry) & (~((1UL << 5) - 1)))
 
 /* get flags field from 32-bit cr3 (page directory pointer) in PAE mode */
 #define pae_get_flags_from_32bit_cr3(entry) \
-  ((u32)(entry) & ((1UL << 5) - 1)) 
+  ((u32)(entry) & ((1UL << 5) - 1))
 
 /* get address field of a pdpe (page directory pointer entry) */
 #define pae_get_addr_from_pdpe(entry) \
-  ((u64)(entry) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) 
+  ((u64)(entry) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX)))
 
 /* get flags field of a pdpe (page directory pointer entry) */
 #define pae_get_flags_from_pdpe(entry) \
-  ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX)) 
+  ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))
 
 /* get address field of a 2MB pdte (page directory entry) */
 #define pae_get_addr_from_pde_big(entry) \
@@ -241,7 +352,7 @@ typedef u32 *npt_t;
 
 /* get address field from NON-PAE cr3 (page directory pointer) */
 #define npae_get_addr_from_32bit_cr3(entry) \
-  ((u32)(entry) & (~((u32)PAGE_SIZE_4K - 1))) 
+  ((u32)(entry) & (~((u32)PAGE_SIZE_4K - 1)))
 
 /* get address field of a 4K non-PAE pdte (page directory entry) */
 #define npae_get_addr_from_pde(entry) \
