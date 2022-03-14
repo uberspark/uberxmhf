@@ -50,11 +50,11 @@
 #ifndef __MSR_H__
 #define __MSR_H__
 
-#define MSR_EFER 0xc0000080     // prevent write to efer.sce 
+#define MSR_EFER 0xc0000080     // prevent write to efer.sce
 #define MSR_K6_STAR                     0xc0000081
 #define VM_CR_MSR 0xc0010114
 #define VM_HSAVE_PA 0xc0010117  //this is critical
-#define IGNNE 0xc0010115        //can be used to freeze/restart 
+#define IGNNE 0xc0010115        //can be used to freeze/restart
 #define SMM_CTL 0xc0010116      //SMRAM control
 
 #define MSR_IA32_PAT	0x277	//Page Attribute Table MSR
@@ -64,14 +64,14 @@
 
 #define MSR_APIC_BASE 0x0000001B
 
-// EFER bits 
+// EFER bits
 #define EFER_SCE 0  /* SYSCALL/SYSRET */
 #define EFER_LME 8  /* Long Mode enable */
 #define EFER_LMA 10 /* Long Mode Active (read-only) */
 #define EFER_NXE 11  /* no execute */
 #define EFER_SVME 12   /* SVM extensions enable */
 
-// VM CR MSR bits 
+// VM CR MSR bits
 #define VM_CR_DPD 0
 #define VM_CR_R_INIT 1
 #define VM_CR_DIS_A20M 2
@@ -108,7 +108,9 @@
 #define IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL     0x7f00
 #define IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER        0x8000
 
+#ifdef __X86_64__
 
+#endif /* __X86_64__ */
 //MTRRs
 #define	IA32_MTRRCAP	0x000000fe
 #define IA32_MTRR_DEF_TYPE 	0x000002ff
@@ -224,16 +226,25 @@ static inline void wrmsr(u32 msr, u32 eax, u32 edx){
 
 static inline u64 rdmsr64(uint32_t msr)
 {
+#ifdef __X86_64__
     u32 eax, edx;
-
     __asm__ __volatile__ ("rdmsr" : "=a" (eax), "=d" (edx) : "c" (msr));
     return ((u64)edx << 32) | eax;
+#else /* !__X86_64__ */
+    u64 rv;
+    __asm__ __volatile__ ("rdmsr" : "=A" (rv) : "c" (msr));
+    return (rv);
+#endif /* __X86_64__ */
 }
 
 static inline void wrmsr64(uint32_t msr, uint64_t newval)
 {
+#ifdef __X86_64__
     __asm__ __volatile__ ("wrmsr" : : "a" (newval & ((1UL << 32) - 1)),
                           "d" (newval >> 32), "c" (msr));
+#else /* !__X86_64__ */
+    __asm__ __volatile__ ("wrmsr" : : "A" (newval), "c" (msr));
+#endif /* __X86_64__ */
 }
 
 #endif /* __ASSEMBLY__ */
