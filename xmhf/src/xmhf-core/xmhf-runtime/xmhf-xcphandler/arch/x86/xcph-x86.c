@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * EMHF exception handler component interface
  * x86 arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
@@ -59,7 +59,7 @@ static VCPU *_svm_and_vmx_getvcpu(void){
   int i;
   u32 eax, edx, *lapic_reg;
   u32 lapic_id;
-  
+
   //read LAPIC id of this core
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
@@ -69,14 +69,14 @@ static VCPU *_svm_and_vmx_getvcpu(void){
   //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
   lapic_id = lapic_id >> 24;
   //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
-  
+
   for(i=0; i < (int)g_midtable_numentries; i++){
     if(g_midtable[i].cpu_lapic_id == lapic_id)
         return( (VCPU *)g_midtable[i].vcpu_vaddr_ptr );
   }
 
   printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
-  HALT(); return NULL; // will never return presently 
+  HALT(); return NULL; // will never return presently
 }
 
 //initialize EMHF core exception handlers
@@ -85,19 +85,33 @@ void xmhf_xcphandler_arch_initialize(void){
     uintptr_t i;
 
     printf("\n%s: setting up runtime IDT...", __FUNCTION__);
-    
+
     pexceptionstubs = (uintptr_t *)&xmhf_xcphandler_exceptionstubs;
-    
+
     for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
+#ifdef __X86_64__
+        idtentry_t *idtentry=(idtentry_t *)((hva_t)xmhf_xcphandler_arch_get_idt_start()+ (i*16));
+        idtentry->isrLow16 = (u16)(pexceptionstubs[i]);
+        idtentry->isrHigh16 = (u16)(pexceptionstubs[i] >> 16);
+        idtentry->isrHigh32 = (u32)(pexceptionstubs[i] >> 32);
+#else /* !__X86_64__ */
         idtentry_t *idtentry=(idtentry_t *)((hva_t)xmhf_xcphandler_arch_get_idt_start()+ (i*8));
         idtentry->isrLow= (u16)pexceptionstubs[i];
         idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
+#endif /* __X86_64__ */
         idtentry->isrSelector = __CS;
+#ifdef __X86_64__
+        idtentry->count = 0x0;  // for now, set IST to 0
+        idtentry->type = 0x8E;  // 64-bit interrupt gate
+                                // present=1, DPL=00b, system=0, type=1110b
+        idtentry->reserved_zero = 0x0;
+#else /* !__X86_64__ */
         idtentry->count=0x0;
         idtentry->type=0x8E;    //32-bit interrupt gate
                                 //present=1, DPL=00b, system=0, type=1110b
+#endif /* __X86_64__ */
     }
-    
+
     printf("\n%s: IDT setup done.", __FUNCTION__);
 }
 
@@ -113,7 +127,7 @@ extern uint8_t _end_xcph_table[];
 //EMHF exception handler hub
 void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
     VCPU *vcpu;
-    
+
     vcpu = _svm_and_vmx_getvcpu();
 
     /*
@@ -177,17 +191,37 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             printf("\n[%02x]: unhandled exception %d (0x%x), halting!",
                     vcpu->id, vector, vector);
             if (error_code_available) {
+#ifdef __X86_64__
+                printf("\n[%02x]: error code: 0x%016lx", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
+#else /* !__X86_64__ */
                 printf("\n[%02x]: error code: 0x%08lx", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
+#endif /* __X86_64__ */
             }
             printf("\n[%02x]: state dump follows...", vcpu->id);
             // things to dump
+#ifdef __X86_64__
+            printf("\n[%02x] CS:RIP 0x%04x:0x%016lx with RFLAGS=0x%016lx", vcpu->id,
+#else /* !__X86_64__ */
             printf("\n[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x", vcpu->id,
+#endif /* __X86_64__ */
                 (u16)exception_cs, exception_rip, exception_rflags);
+#ifdef __X86_64__
+            printf("\n[%02x]: VCPU at 0x%016lx", vcpu->id, (uintptr_t)vcpu, vcpu->id);
+            printf("\n[%02x] RAX=0x%016lx RBX=0x%016lx", vcpu->id, r->rax, r->rbx);
+            printf("\n[%02x] RCX=0x%016lx RDX=0x%016lx", vcpu->id, r->rcx, r->rdx);
+            printf("\n[%02x] RSI=0x%016lx RDI=0x%016lx", vcpu->id, r->rsi, r->rdi);
+            printf("\n[%02x] RBP=0x%016lx RSP=0x%016lx", vcpu->id, r->rbp, r->rsp);
+            printf("\n[%02x] R8 =0x%016lx R9 =0x%016lx", vcpu->id, r->r8 , r->r9 );
+            printf("\n[%02x] R10=0x%016lx R11=0x%016lx", vcpu->id, r->r10, r->r11);
+            printf("\n[%02x] R12=0x%016lx R13=0x%016lx", vcpu->id, r->r12, r->r13);
+            printf("\n[%02x] R14=0x%016lx R15=0x%016lx", vcpu->id, r->r14, r->r15);
+#else /* !__X86_64__ */
             printf("\n[%02x]: VCPU at 0x%08x", vcpu->id, (u32)vcpu, vcpu->id);
             printf("\n[%02x] EAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", vcpu->id,
                     r->eax, r->ebx, r->ecx, r->edx);
             printf("\n[%02x] ESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", vcpu->id,
                     r->esi, r->edi, r->ebp, r->rsp);
+#endif /* __X86_64__ */
             printf("\n[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
                 (u16)read_segreg_cs(), (u16)read_segreg_ds(),
                 (u16)read_segreg_es(), (u16)read_segreg_ss());
@@ -203,9 +237,22 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 uintptr_t stack_start = r->rsp;
                 printf("\n[%02x]-----stack dump-----", vcpu->id);
                 for(i=stack_start; i < vcpu->rsp; i+=sizeof(uintptr_t)){
+#ifdef __X86_64__
+                    printf("\n[%02x]  Stack(0x%016lx) -> 0x%016lx", vcpu->id, i, *(uintptr_t *)i);
+#else /* !__X86_64__ */
                     printf("\n[%02x]  Stack(0x%08x) -> 0x%08x", vcpu->id, i, *(uintptr_t *)i);
+#endif /* __X86_64__ */
                 }
                 printf("\n[%02x]-----end------------", vcpu->id);
+#ifdef __X86_64__
+            }
+
+            // Exception #BP may be caused by failed VMRESUME. Dump VMCS
+            if (vector == CPU_EXCEPTION_BP &&
+                get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
+                xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
+                xmhf_baseplatform_arch_x86vmx_dump_vcpu(vcpu);
+#endif /* __X86_64__ */
             }
             HALT();
         }
