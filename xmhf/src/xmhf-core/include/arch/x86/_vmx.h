@@ -663,11 +663,13 @@ struct _vmx_vmcsfields {
 struct _vmx_vmcsrofields_encodings	{
  unsigned int  encoding; 
  unsigned int  fieldoffset; 
+ unsigned int  membersize;
 } __attribute__((packed));
 
 struct _vmx_vmcsrwfields_encodings	{
  unsigned int  encoding; 
  unsigned int  fieldoffset; 
+ unsigned int  membersize;
 } __attribute__((packed));
 
 /* VM-Entry Interruption-Information Field */
