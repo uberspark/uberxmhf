@@ -44,14 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF base platform component 
+// EMHF base platform component
 // x86 arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #ifndef __EMHF_BASEPLATFORM_ARCH_X86_H__
 #define __EMHF_BASEPLATFORM_ARCH_X86_H__
 
-#include "_configx86_64.h"	//EMHF arch. specific configurable definitions
+#include "_configx86.h"		//EMHF arch. specific configurable definitions
 #include "_multiboot.h"  	//boot manager (multiboot)
 #include "_cmdline.h"		//GRUB command line handling functions
 #include "_error.h"      	//error handling and assertions
@@ -75,20 +75,6 @@
 
 
 #ifndef __ASSEMBLY__
-
-typedef struct {
-  u64 eip;
-  u64 cs;
-  u64 eflags;
-} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE;
-
-//---platform
-typedef struct {
-  u64 errorcode;
-  u64 eip;
-  u64 cs;
-  u64 eflags;
-} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
 
 typedef struct {
   u32 signature;
@@ -180,13 +166,17 @@ struct _guestmtrrmsrs {
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
   //common fields
-  spa_t rsp;              //used to establish stack for the CPU
+#ifdef __X86_64__
+  hva_t rsp;              //used to establish stack for the CPU
+#else /* !__X86_64__ */
+  hva_t esp;              //used to establish stack for the CPU
+#endif /* __X86_64__ */
   hva_t sipi_page_vaddr;  //SIPI page of the CPU used for SIPI handling
   u32 id;                 //LAPIC id of the core
   u32 idx;                //this vcpu's index in the g_vcpubuffers array
-  u32 sipivector;         //SIPI vector 
+  u32 sipivector;         //SIPI vector
   u32 sipireceived;       //SIPI received indicator, 1 if yes
-  //u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
+  //u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0
   u32 cpu_vendor;         //Intel or AMD
   u32 isbsp;              //1 if this core is BSP else 0
   u32 quiesced;           //1 if this core is currently quiesced
@@ -197,7 +187,7 @@ typedef struct _vcpu {
   struct _svm_vmcbfields *vmcb_vaddr_ptr;
   //u32 npt_vaddr_ptr;      //NPT base of the CPU
   hva_t npt_vaddr_ptr;      //NPT base of the CPU
-  hva_t npt_vaddr_pdts;      
+  hva_t npt_vaddr_pdts;
   u32 npt_asid;           //NPT ASID for this core
   hva_t npt_vaddr_pts;      //NPT page-tables for protection manipulation
   hva_t svm_vaddr_iobitmap; //virtual address of the I/O Bitmap area
@@ -208,12 +198,12 @@ typedef struct _vcpu {
   u64 vmx_msr_efcr;
   hva_t vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
   hva_t vmx_vmcs_vaddr;           //virtual address of the VMCS region
-  
+
   hva_t vmx_vaddr_iobitmap;       //virtual address of the I/O Bitmap area
   hva_t vmx_vaddr_msr_area_host;  //virtual address of the host MSR area
   hva_t vmx_vaddr_msr_area_guest; //virtual address of the guest MSR area
   hva_t vmx_vaddr_msrbitmaps;     //virtual address of the MSR bitmap area
-  
+
   hva_t vmx_vaddr_ept_pml4_table; //virtual address of EPT PML4 table
   hva_t vmx_vaddr_ept_pdp_table;  //virtual address of EPT PDP table
   hva_t vmx_vaddr_ept_pd_tables;  //virtual address of base of EPT PD tables
@@ -282,9 +272,15 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
+#ifdef __X86_64__
 #define 	__CS 	0x0010 	//runtime code segment selector
 #define 	__DS 	0x0018 	//runtime data segment selector
 #define 	__TRSEL 0x0020  //runtime TSS (task) selector
+#else /* !__X86_64__ */
+#define 	__CS 	0x0008 	//runtime code segment selector
+#define 	__DS 	0x0010 	//runtime data segment selector
+#define 	__TRSEL 0x0018  //runtime TSS (task) selector
+#endif /* __X86_64__ */
 
 
 #ifndef __ASSEMBLY__
@@ -330,12 +326,12 @@ uintptr_t xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
 //PCI subsystem initialization
 void xmhf_baseplatform_arch_x86_pci_initialize(void);
 
-//does a PCI type-1 write of PCI config space for a given bus, device, 
+//does a PCI type-1 write of PCI config space for a given bus, device,
 //function and index
 void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 	u32 value);
 
-//does a PCI type-1 read of PCI config space for a given bus, device, 
+//does a PCI type-1 read of PCI config space for a given bus, device,
 //function and index
 void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 			u32 *value);
@@ -559,8 +555,8 @@ static inline void VCPU_gpdpte_set(VCPU *vcpu, u64 pdptes[4]) {
 /*
  * Selector for VCPU_reg_get and VCPU_reg_set
  */
-enum CPU_Reg_Sel 
-{ 
+enum CPU_Reg_Sel
+{
     CPU_REG_AX,
     CPU_REG_BX,
     CPU_REG_CX,
@@ -570,6 +566,7 @@ enum CPU_Reg_Sel
     CPU_REG_SP,
     CPU_REG_BP,
 
+#ifdef __X86_64__
     CPU_REG_R8,
     CPU_REG_R9,
     CPU_REG_R10,
@@ -578,6 +575,7 @@ enum CPU_Reg_Sel
     CPU_REG_R13,
     CPU_REG_R14,
     CPU_REG_R15,
+#endif /* __X86_64__ */
 
     CPU_REG_FLAGS,
     CPU_REG_IP
@@ -591,44 +589,37 @@ static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
 {
     switch (sel)
     {
-        case CPU_REG_AX:
-            return r->rax;
-        case CPU_REG_BX:
-            return r->rbx;
-        case CPU_REG_CX:
-            return r->rcx;
-        case CPU_REG_DX:
-            return r->rdx;
-        case CPU_REG_SI:
-            return r->rsi;
-        case CPU_REG_DI:
-            return r->rdi;
-        case CPU_REG_SP:
-            return r->rsp;
-        case CPU_REG_BP:
-            return r->rbp;
+#ifdef __X86_64__
+        case CPU_REG_AX: return r->rax;
+        case CPU_REG_BX: return r->rbx;
+        case CPU_REG_CX: return r->rcx;
+        case CPU_REG_DX: return r->rdx;
+        case CPU_REG_SI: return r->rsi;
+        case CPU_REG_DI: return r->rdi;
+        case CPU_REG_SP: return r->rsp;
+        case CPU_REG_BP: return r->rbp;
 
-        case CPU_REG_R8:
-            return r->r8;
-        case CPU_REG_R9:
-            return r->r9;
-        case CPU_REG_R10:
-            return r->r10;
-        case CPU_REG_R11:
-            return r->r11;
-        case CPU_REG_R12:
-            return r->r12;
-        case CPU_REG_R13:
-            return r->r13;
-        case CPU_REG_R14:
-            return r->r14;
-        case CPU_REG_R15:
-            return r->r15;
+        case CPU_REG_R8: return r->r8;
+        case CPU_REG_R9: return r->r9;
+        case CPU_REG_R10: return r->r10;
+        case CPU_REG_R11: return r->r11;
+        case CPU_REG_R12: return r->r12;
+        case CPU_REG_R13: return r->r13;
+        case CPU_REG_R14: return r->r14;
+        case CPU_REG_R15: return r->r15;
+#else /* !__X86_64__ */
+        case CPU_REG_AX: return r->eax;
+        case CPU_REG_BX: return r->ebx;
+        case CPU_REG_CX: return r->ecx;
+        case CPU_REG_DX: return r->edx;
+        case CPU_REG_SI: return r->esi;
+        case CPU_REG_DI: return r->edi;
+        case CPU_REG_SP: return r->esp;
+        case CPU_REG_BP: return r->ebp;
+#endif /* __X86_64__ */
 
-        case CPU_REG_FLAGS:
-            return VCPU_grflags(vcpu);
-        case CPU_REG_IP:
-            return VCPU_grip(vcpu);
+        case CPU_REG_FLAGS: return VCPU_grflags(vcpu);
+        case CPU_REG_IP: return VCPU_grip(vcpu);
 
         default:
             printf("CPU_Reg_Read: Invalid CPU register is given (sel:%u)!\n", sel);
@@ -645,55 +636,34 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
 {
     switch (sel)
     {
-        case CPU_REG_AX:
-            r->rax = val;
-            break;
-        case CPU_REG_BX:
-            r->rbx = val;
-            break;
-        case CPU_REG_CX:
-            r->rcx = val;
-            break;
-        case CPU_REG_DX:
-            r->rdx = val;
-            break;
-        case CPU_REG_SI:
-            r->rsi = val;
-            break;
-        case CPU_REG_DI:
-            r->rdi = val;
-            break;
-        case CPU_REG_SP:
-            r->rsp = val;
-            break;
-        case CPU_REG_BP:
-            r->rbp = val;
-            break;
+#ifdef __X86_64__
+        case CPU_REG_AX: r->rax = val; break;
+        case CPU_REG_BX: r->rbx = val; break;
+        case CPU_REG_CX: r->rcx = val; break;
+        case CPU_REG_DX: r->rdx = val; break;
+        case CPU_REG_SI: r->rsi = val; break;
+        case CPU_REG_DI: r->rdi = val; break;
+        case CPU_REG_SP: r->rsp = val; break;
+        case CPU_REG_BP: r->rbp = val; break;
 
-        case CPU_REG_R8:
-            r->r8 = val;
-            break;
-        case CPU_REG_R9:
-            r->r9 = val;
-            break;
-        case CPU_REG_R10:
-            r->r10 = val;
-            break;
-        case CPU_REG_R11:
-            r->r11 = val;
-            break;
-        case CPU_REG_R12:
-            r->r12 = val;
-            break;
-        case CPU_REG_R13:
-            r->r13 = val;
-            break;
-        case CPU_REG_R14:
-            r->r14 = val;
-            break;
-        case CPU_REG_R15:
-            r->r15 = val;
-            break;
+        case CPU_REG_R8: r->r8 = val; break;
+        case CPU_REG_R9: r->r9 = val; break;
+        case CPU_REG_R10: r->r10 = val; break;
+        case CPU_REG_R11: r->r11 = val; break;
+        case CPU_REG_R12: r->r12 = val; break;
+        case CPU_REG_R13: r->r13 = val; break;
+        case CPU_REG_R14: r->r14 = val; break;
+        case CPU_REG_R15: r->r15 = val; break;
+#else /* !__X86_64__ */
+        case CPU_REG_AX: r->eax = val; break;
+        case CPU_REG_BX: r->ebx = val; break;
+        case CPU_REG_CX: r->ecx = val; break;
+        case CPU_REG_DX: r->edx = val; break;
+        case CPU_REG_SI: r->esi = val; break;
+        case CPU_REG_DI: r->edi = val; break;
+        case CPU_REG_SP: r->esp = val; break;
+        case CPU_REG_BP: r->ebp = val; break;
+#endif /* __X86_64__ */
 
         case CPU_REG_FLAGS:
             VCPU_grflags_set(vcpu, val);
@@ -754,10 +724,10 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void);
 //allocate and setup VCPU structure for all the CPUs
 void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
 
-// routine takes vcpu vmcsfields and stores it in the CPU VMCS 
+// routine takes vcpu vmcsfields and stores it in the CPU VMCS
 void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
 
-// routine takes CPU VMCS and stores it in vcpu vmcsfields  
+// routine takes CPU VMCS and stores it in vcpu vmcsfields
 void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
 
 //--debug: dumpVMCS dumps VMCS contents
@@ -777,14 +747,14 @@ void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 #define ASID_GUEST_KERNEL 2
 #endif
 
-//SVM VM_HSAVE buffers 
+//SVM VM_HSAVE buffers
 extern u8 g_svm_hsave_buffers[]__attribute__(( section(".palign_data") ));
 
-//SVM VMCB buffers 
-extern u8 g_svm_vmcb_buffers[]__attribute__(( section(".palign_data") )); 
+//SVM VMCB buffers
+extern u8 g_svm_vmcb_buffers[]__attribute__(( section(".palign_data") ));
 
 //SVM IO bitmap buffer
-extern u8 g_svm_iobitmap_buffer[]__attribute__(( section(".palign_data") )); 
+extern u8 g_svm_iobitmap_buffer[]__attribute__(( section(".palign_data") ));
 
 //SVM MSR bitmap buffer
 extern u8 g_svm_msrpm[]__attribute__(( section(".palign_data") ));
