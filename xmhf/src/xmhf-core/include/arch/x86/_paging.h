@@ -74,30 +74,22 @@
 #define PAGE_SIZE_2M (1UL << PAGE_SHIFT_2M)
 #define PAGE_SIZE_4M (1UL << PAGE_SHIFT_4M)
 #define PAGE_SIZE_1G    (1UL << PAGE_SHIFT_1G)
-#define PAGE_SIZE_512G  (1ULL << PAGE_SHIFT_512G)
-#define PAGE_SIZE_256T  (1ULL << PAGE_SHIFT_256T)
 #else   
 #define PAGE_SIZE_4K    (1 << PAGE_SHIFT_4K)
 #define PAGE_SIZE_2M    (1 << PAGE_SHIFT_2M)
 #define PAGE_SIZE_4M    (1 << PAGE_SHIFT_4M)
 #define PAGE_SIZE_1G    (1 << PAGE_SHIFT_1G)
-#define PAGE_SIZE_512G  (1 << PAGE_SHIFT_512G)
-#define PAGE_SIZE_256T  (1 << PAGE_SHIFT_256T)
 #endif
 
 #define PAGE_ALIGN_UP4K(size)	(((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_UP2M(size)	(((size) + PAGE_SIZE_2M - 1) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_UP4M(size)	(((size) + PAGE_SIZE_4M - 1) & ~(PAGE_SIZE_4M - 1))
 #define PAGE_ALIGN_UP1G(size)   (((size) + PAGE_SIZE_1G - 1) & ~(PAGE_SIZE_1G - 1))
-#define PAGE_ALIGN_UP512G(size) (((size) + PAGE_SIZE_512G - 1) & ~(PAGE_SIZE_512G - 1))
-#define PAGE_ALIGN_UP256T(size) (((size) + PAGE_SIZE_256T - 1) & ~(PAGE_SIZE_256T - 1))
 
 #define PAGE_ALIGN_4K(size)	((size) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_2M(size)	((size) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_4M(size)	((size) & ~(PAGE_SIZE_4M - 1))
 #define PAGE_ALIGN_1G(size)     ((size) & ~(PAGE_SIZE_1G - 1))
-#define PAGE_ALIGN_512G(size)   ((size) & ~(PAGE_SIZE_512G - 1))
-#define PAGE_ALIGN_256T(size)   ((size) & ~(PAGE_SIZE_256T - 1))
 
 #define PAGE_ALIGNED_4K(size) (PAGE_ALIGN_4K(size) == size)
 #define PAGE_ALIGNED_2M(size) (PAGE_ALIGN_2M(size) == size)
@@ -126,10 +118,11 @@
 #define PAE_ENTRY_SIZE     8
 
 // 4-level paging specific definitions
-#define P4L_NPLM4T  (PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
-#define P4L_NPDPT   (PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
-#define P4L_NPDT    (PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
-#define P4L_NPT     (PAGE_ALIGN_UP2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
+/* Cannot calculate using PAGE_ALIGN_UP, because PAGE_SIZE is 32-bits */
+#define P4L_NPLM4T  1
+#define P4L_NPDPT   1
+#define P4L_NPDT    4
+#define P4L_NPT     2048
 
 // various paging flags 
 #define _PAGE_BIT_PRESENT	0

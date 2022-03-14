@@ -54,7 +54,9 @@
 //DMA protection for a given physical memory limit
 u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+#ifdef __XMHF_64__
 	HALT_ON_ERRORCOND( physical_memory_limit <= PAGE_SIZE_512G ); 	//we only support 512GB physical memory currently
+#endif /* __XMHF_64__ */
 	HALT_ON_ERRORCOND( physical_memory_limit <= DMAPROT_PHY_ADDR_SPACE_SIZE ); 	//we only support <DMAPROT_PHY_ADDR_SPACE_SIZE> physical memory currently
 	
 	if(cpu_vendor == CPU_VENDOR_AMD){
