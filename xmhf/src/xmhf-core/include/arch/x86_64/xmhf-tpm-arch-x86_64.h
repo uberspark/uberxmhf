@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF TPM component 
+// EMHF TPM component
 // x86 arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
@@ -79,7 +79,7 @@ bool xmhf_tpm_arch_prepare_tpm(void);
 #define TPM_LOCALITY_BASE             0xfed40000
 #define NR_TPM_LOCALITY_PAGES         ((TPM_LOCALITY_1 - TPM_LOCALITY_0) >> \
                                        PAGE_SHIFT)
-	
+
 #define TPM_LOCALITY_0                TPM_LOCALITY_BASE
 #define TPM_LOCALITY_1                (TPM_LOCALITY_BASE | 0x1000)
 #define TPM_LOCALITY_2                (TPM_LOCALITY_BASE | 0x2000)
@@ -165,27 +165,45 @@ typedef union {
 
 #ifndef __XMHF_VERIFICATION__
 
+#ifdef __X86_64__
 	/*
 	 * NOTE: in 64-bit mode, use (VA + 256MiB) % 4GiB = PA to access physical
 	 *       memory.
 	 */
-
 	extern u32 xmhf_baseplatform_arch_flat_va_offset;
 
+#endif /* __X86_64__ */
 	static inline void writeb(u32 addr, u8 val) {
+#ifdef __X86_64__
 		u32 phys_addr = (u32)addr - (u32)xmhf_baseplatform_arch_flat_va_offset;
 		*(u8 *)(u64)phys_addr = val;
+#else /* !__X86_64__ */
+		__asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
+							 :
+							 : "b"(addr), "a"((u32)val)
+							 );
+#endif /* __X86_64__ */
 	}
 
 	static inline u8 readb(u32 addr) {
+#ifdef __X86_64__
 		u32 phys_addr = (u32)addr - (u32)xmhf_baseplatform_arch_flat_va_offset;
 		return *(u8 *)(u64)phys_addr;
+#else /* !__X86_64__ */
+		u32 ret;
+		__asm__ __volatile("xor %%eax, %%eax\r\n"
+						   "movb %%fs:(%%ebx), %%al\r\n"
+						   : "=a"(ret)
+						   : "b"(addr)
+						   );
+		return (u8)ret;
+#endif /* __X86_64__ */
 	}
 
 #else //__XMHF_VERIFICATION__
 
 	static inline void writeb(u32 addr, u8 val) {
-	 
+
 	}
 
 	static inline u8 readb(u32 addr) {
