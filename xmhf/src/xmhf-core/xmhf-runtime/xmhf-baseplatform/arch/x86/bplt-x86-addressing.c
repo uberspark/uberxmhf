@@ -44,10 +44,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//	EMHF base platform component
+//  EMHF base platform component
 //  addressing interface backends
 //  authors: amit vasudevan (amitvasudevan@acm.org) and
-// 			jonathan m. mccune
+//      jonathan m. mccune
 
 #include <xmhf.h> 
 
@@ -80,7 +80,7 @@ u32 xmhf_baseplatform_arch_flat_readu32(u32 addr){
 u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
     u32 highpart, lowpart;
     __asm__ __volatile("xor %%eax, %%eax\r\n"        
-    									 "xor %%edx, %%edx\r\n"
+                       "xor %%edx, %%edx\r\n"
                        "movl %%fs:(%%ebx), %%eax\r\n"
                        "movl %%fs:0x4(%%ebx), %%edx\r\n"
                        : "=a"(lowpart), "=d"(highpart)
@@ -103,8 +103,8 @@ void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
     lowpart = (u32)val;
     highpart = (u32)((u64)val >> 32);
     
-		__asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-												"movl %%edx, %%fs:0x4(%%ebx)\r\n"	
+    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
+                         "movl %%edx, %%fs:0x4(%%ebx)\r\n"
                          :
                          : "b"(addr), "a"(lowpart), "d"(highpart)
                          );
@@ -113,10 +113,10 @@ void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
 //memory copy from absolute physical address (src) to
 //data segment relative address (dest)
 void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size){
-	u32 i;
-	u8 val;
-	for(i=0; i < size; i++){
-		val = xmhf_baseplatform_arch_flat_readu8((uintptr_t)src + i);
-		dest[i] = val;
-	}
+    u32 i;
+    u8 val;
+    for(i=0; i < size; i++){
+        val = xmhf_baseplatform_arch_flat_readu8((uintptr_t)src + i);
+        dest[i] = val;
+    }
 }

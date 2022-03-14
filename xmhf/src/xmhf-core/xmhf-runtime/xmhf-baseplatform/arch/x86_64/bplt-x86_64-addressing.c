@@ -54,8 +54,6 @@
 //functions to read/write memory using flat selector so that they
 //can be used from both within the SL and runtime
 
-// TODO: only tested in sl
-
 u32 xmhf_baseplatform_arch_flat_va_offset = 0;
 
 // find a virtual address from physical address
