@@ -89,25 +89,17 @@ void xmhf_xcphandler_arch_initialize(void){
     pexceptionstubs = (uintptr_t *)&xmhf_xcphandler_exceptionstubs;
 
     for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-#ifdef __X86_64__
-        idtentry_t *idtentry=(idtentry_t *)((hva_t)xmhf_xcphandler_arch_get_idt_start()+ (i*16));
+        idtentry_t *idtentry=(idtentry_t *)((hva_t)xmhf_xcphandler_arch_get_idt_start()) + i;
         idtentry->isrLow16 = (u16)(pexceptionstubs[i]);
         idtentry->isrHigh16 = (u16)(pexceptionstubs[i] >> 16);
+#ifdef __X86_64__
         idtentry->isrHigh32 = (u32)(pexceptionstubs[i] >> 32);
+        idtentry->reserved_zero = 0x0;
+#endif /* __X86_64__ */
         idtentry->isrSelector = __CS;
         idtentry->count = 0x0;  // for now, set IST to 0
-        idtentry->type = 0x8E;  // 64-bit interrupt gate
+        idtentry->type = 0x8E;  // 32-bit / 64-bit interrupt gate
                                 // present=1, DPL=00b, system=0, type=1110b
-        idtentry->reserved_zero = 0x0;
-#else /* !__X86_64__ */
-        idtentry_t *idtentry=(idtentry_t *)((hva_t)xmhf_xcphandler_arch_get_idt_start()+ (i*8));
-        idtentry->isrLow= (u16)pexceptionstubs[i];
-        idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
-        idtentry->isrSelector = __CS;
-        idtentry->count=0x0;
-        idtentry->type=0x8E;    //32-bit interrupt gate
-                                //present=1, DPL=00b, system=0, type=1110b
-#endif /* __X86_64__ */
     }
 
     printf("\n%s: IDT setup done.", __FUNCTION__);

@@ -188,20 +188,14 @@ struct regs
 
 
 typedef struct {
-#ifdef __X86_64__
   u16 isrLow16;
-#else /* !__X86_64__ */
-  u16 isrLow;
-#endif /* __X86_64__ */
   u16 isrSelector;
   u8  count;
   u8  type;
-#ifdef __X86_64__
   u16 isrHigh16;
+#ifdef __X86_64__
   u32 isrHigh32;
   u32 reserved_zero;
-#else /* !__X86_64__ */
-  u16 isrHigh;
 #endif /* __X86_64__ */
 } __attribute__ ((packed)) idtentry_t;
 
