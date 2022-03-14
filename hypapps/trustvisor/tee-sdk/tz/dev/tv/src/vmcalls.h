@@ -62,7 +62,7 @@
 
 #define INTEL_STRING_DWORD1	0x756E6547
 #define INTEL_STRING_DWORD2	0x49656E69
-#define INTEL_STRING_DWORD3	0x6C65746E	
+#define INTEL_STRING_DWORD3	0x6C65746E
 
 #define cpuid(op, eax, ebx, ecx, edx)		\
 ({						\
@@ -74,7 +74,7 @@
 static inline uint32_t get_cpu_vendor(void) {
   uint32_t dummy;
   uint32_t vendor_dword1, vendor_dword2, vendor_dword3;
-    
+
   cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
   if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
      && vendor_dword3 == AMD_STRING_DWORD3)

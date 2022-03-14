@@ -140,7 +140,7 @@ int tv_pal_share(const void *entry, void **start, size_t *len, size_t count);
  */
 int tv_test(void);
 
-/** 
+/**
  * Convenience function to load the linked PAL using the TZ
  * interfaces, and initialize the tzDevice, tzPalSession, and tzSvcId.
  */
@@ -151,7 +151,7 @@ tz_return_t tv_tz_init(tz_device_t*  tzDevice,
                        size_t        param_sz,
                        size_t        stack_sz);
 
-/** 
+/**
  * Convenience function to gracefully unload the linked PAL using the
  * TZ interfaces, and tear down the tzPalSession and tzDevice.
  */

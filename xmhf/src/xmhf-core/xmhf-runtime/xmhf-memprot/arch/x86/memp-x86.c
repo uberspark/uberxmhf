@@ -44,16 +44,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF memory protection component 
+// EMHF memory protection component
 // generic x86 arch. backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 // initialize memory protection structures for a given core (vcpu)
 void xmhf_memprot_arch_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		xmhf_memprot_arch_x86svm_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
 	}else{	//CPU_VENDOR_INTEL
@@ -107,10 +107,10 @@ u64 * xmhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu){
 		return (u64*)vcpu->npt_vaddr_ptr;
 	else //CPU_VENDOR_INTEL
 		return (u64*)vcpu->vmx_vaddr_ept_pml4_table;
-} 
+}
 
 
-//flush hardware page table mappings (TLB) 
+//flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_flushmappings(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
@@ -135,18 +135,18 @@ void xmhf_memprot_arch_flushmappings_localtlb(VCPU *vcpu){
 void xmhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	assert ( (vcpu != NULL) );
-	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
-							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
+	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) ||
+							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))
 						   ) );
-	assert ( ( (prottype > 0)	&& 
-	                         (prottype <= MEMP_PROT_MAXVALUE) 
-	                       ) );						
+	assert ( ( (prottype > 0)	&&
+	                         (prottype <= MEMP_PROT_MAXVALUE)
+	                       ) );
 	assert (
 	 (prottype == MEMP_PROT_NOTPRESENT) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE))
 	);
 #endif
 

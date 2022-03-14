@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -74,7 +74,7 @@ static SSL_CipherSuite CipherSuites[]={
      {21,KEX_DH,SIG_RSA,ENC_DES,8,64,64,DIG_SHA,20,0},
      {22,KEX_DH,SIG_RSA,ENC_3DES,8,192,192,DIG_SHA,20,0},
      {23,KEX_DH,SIG_NONE,ENC_RC4,1,128,40,DIG_MD5,16,1},
-     {24,KEX_DH,SIG_NONE,ENC_RC4,1,128,128,DIG_MD5,16,0},     
+     {24,KEX_DH,SIG_NONE,ENC_RC4,1,128,128,DIG_MD5,16,0},
      {25,KEX_DH,SIG_NONE,ENC_DES,8,64,40,DIG_MD5,16,1},
      {26,KEX_DH,SIG_NONE,ENC_DES,8,64,64,DIG_MD5,16,0},
      {27,KEX_DH,SIG_NONE,ENC_3DES,8,192,192,DIG_MD5,16,0},
@@ -83,7 +83,7 @@ static SSL_CipherSuite CipherSuites[]={
      {98,KEX_RSA,SIG_RSA,ENC_DES,8,64,64,DIG_SHA,20,1},
      {99,KEX_DH,SIG_DSS,ENC_DES,8,64,64,DIG_SHA,16,1},
      {100,KEX_RSA,SIG_RSA,ENC_RC4,1,128,56,DIG_SHA,20,1},
-     {101,KEX_DH,SIG_DSS,ENC_RC4,1,128,56,DIG_SHA,20,1},     
+     {101,KEX_DH,SIG_DSS,ENC_RC4,1,128,56,DIG_SHA,20,1},
      {102,KEX_DH,SIG_DSS,ENC_RC4,1,128,128,DIG_SHA,20,0},
      {-1}
 };
@@ -103,5 +103,3 @@ int ssl_find_cipher(num,cs)
 
     ERETURN(R_NOT_FOUND);
   }
-  
-     

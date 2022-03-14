@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF partition component 
+// EMHF partition component
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
@@ -64,12 +64,12 @@
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
-//exported DATA 
+//exported DATA
 //----------------------------------------------------------------------
 
 
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//exported FUNCTIONS
 //----------------------------------------------------------------------
 
 //initialize partition monitor for a given CPU

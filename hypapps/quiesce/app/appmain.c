@@ -68,12 +68,12 @@ u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 		case QUIESCE_HYPERCALL:
 			printf("\nCPU(0x%02x): this is an ATOMIC printf :)", vcpu->id);
 			break;
-			
+
 		default:
 			printf("\nCPU(0x%02x): unhandled hypercall (0x%08x)!", vcpu->id, r->ebx);
 			break;
 	}
-	
+
 	return status;
 }
 
@@ -81,7 +81,7 @@ u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 //note: should not return
 void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 	(void)r; //unused
-	xmhf_baseplatform_reboot(vcpu);				
+	xmhf_baseplatform_reboot(vcpu);
 }
 
 //handles h/w pagetable violations
@@ -103,7 +103,7 @@ u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
   u32 portnum, u32 access_type, u32 access_size){
 	(void)vcpu; //unused
 	(void)r; //unused

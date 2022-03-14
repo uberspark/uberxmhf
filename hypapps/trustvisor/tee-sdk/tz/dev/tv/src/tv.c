@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
@@ -125,7 +125,7 @@ static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges, void* psOutB
 
   *addrs = calloc(*count, sizeof(void*));
   *lens = calloc(*count, sizeof(size_t));
-  
+
   (*addrs)[0] = psOutBuf;
   (*lens)[0] = MARSHAL_BUF_SIZE;
   (*addrs)[1] = psInBuf;
@@ -339,8 +339,8 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
   const tv_service_t *svc = (tv_service_t*) kauiData;
   int rv;
 
-  struct tv_pal_params params = 
-    { 
+  struct tv_pal_params params =
+    {
       .num_params = 4,
       .params =
       {
@@ -368,7 +368,7 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
     rv = tv_pal_register(svc->sPageInfo,
                          &params,
                          svc->pEntry);
-  
+
     if (rv != 0) {
       return TZ_ERROR_GENERIC;
     }
@@ -429,10 +429,10 @@ void TVsharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
 
 static tzi_device_cb_block_t tv_cb_block =
   { &TVDeviceOpen,
-    &TVDeviceClose, 
+    &TVDeviceClose,
     &TVManagerOpen,
     &TVManagerClose,
-    &TVManagerDownloadService, 
+    &TVManagerDownloadService,
     &TVManagerRemoveService,
     &TVOperationPrepareOpen,
     &TVOperationPrepareInvoke,

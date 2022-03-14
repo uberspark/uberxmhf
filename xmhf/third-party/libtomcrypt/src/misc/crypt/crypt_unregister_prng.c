@@ -25,7 +25,7 @@ int unregister_prng(const struct ltc_prng_descriptor *prng)
    int x;
 
    LTC_ARGCHK(prng != NULL);
- 
+
    /* is it already registered? */
    LTC_MUTEX_LOCK(&ltc_prng_mutex);
    for (x = 0; x < TAB_SIZE; x++) {

@@ -50,10 +50,10 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
-//runtime parameter block pointer 
-RPB *rpb __attribute__(( section(".data") )); 
+//runtime parameter block pointer
+RPB *rpb __attribute__(( section(".data") ));
 
 //runtime DMA protection buffer
 u8 g_rntm_dmaprot_buffer[SIZE_G_RNTM_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));

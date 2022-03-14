@@ -10,7 +10,7 @@
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   @file omac_done.c
   LTC_OMAC1 support, terminate a stream, Tom St Denis
 */
@@ -65,7 +65,7 @@ int omac_done(omac_state *omac, unsigned char *out, unsigned long *outlen)
       return err;
    }
    cipher_descriptor[omac->cipher_idx].done(&omac->key);
- 
+
    /* output it */
    for (x = 0; x < (unsigned)omac->blklen && x < *outlen; x++) {
        out[x] = omac->block[x];

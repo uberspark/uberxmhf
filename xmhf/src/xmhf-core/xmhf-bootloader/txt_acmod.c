@@ -84,7 +84,7 @@
  * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 static acm_info_table_t *get_acmod_info_table(acm_hdr_t* hdr)
 {
@@ -218,7 +218,7 @@ static void print_acm_hdr(acm_hdr_t *hdr, const char *mod_name)
     acm_info_table_t *info_table;
     acm_chipset_id_list_t *chipset_id_list;
     unsigned int i;
-    
+
     printf("AC module header dump for %s:\n",
            (mod_name == NULL) ? "?" : mod_name);
 
@@ -540,7 +540,7 @@ bool verify_acmod(acm_hdr_t *acm_hdr)
     uint32_t size;
     acm_info_table_t *info_table;
     txt_caps_t caps_mask = { 0 };
-    
+
     /* assumes this already passed is_acmod() test */
 
     size = acm_hdr->size * 4;        /* hdr size is in dwords, we want bytes */

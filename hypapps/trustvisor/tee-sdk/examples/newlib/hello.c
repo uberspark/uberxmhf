@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
@@ -88,7 +88,7 @@ static int call_pal(tz_session_t *tzPalSession)
     }
   }
   TZOperationRelease(&tzOp);
-  
+
   return rv;
 }
 
@@ -117,4 +117,4 @@ int main(void)
                               &tzSvcId));
 
   return rv;
-} 
+}

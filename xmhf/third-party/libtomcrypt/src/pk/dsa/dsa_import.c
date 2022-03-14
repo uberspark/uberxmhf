@@ -18,7 +18,7 @@
 #ifdef LTC_MDSA
 
 /**
-   Import a DSA key 
+   Import a DSA key
    @param in       The binary packet to import from
    @param inlen    The length of the binary packet
    @param key      [out] Where to store the imported key
@@ -78,7 +78,7 @@ int dsa_import(const unsigned char *in, unsigned long inlen, dsa_key *key)
    }
 
   return CRYPT_OK;
-error: 
+error:
    mp_clear_multi(key->p, key->g, key->q, key->x, key->y, NULL);
    return err;
 }

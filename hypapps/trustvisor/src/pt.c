@@ -52,7 +52,7 @@
  * EPT or NPT page table operations
  * guest page table operations
  */
-#include <xmhf.h> 
+#include <xmhf.h>
 #include <malloc.h>
 #include  "./include/scode.h"
 #include <pages.h>
@@ -163,7 +163,7 @@ int scode_clone_gdt(VCPU *vcpu,
   eu_trace("scode_clone_gdt base:%x size:%d", gdtr_base, gdt_size);
 
   /* rest of fn assumes gdt is all on one page */
-  EU_VERIFY((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
+  EU_VERIFY((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K);
 
   EU_CHK( gdt_pal_page = pagelist_get_zeroedpage(pl));
   gdt = gdt_pal_page + gdt_page_offset;
@@ -207,10 +207,10 @@ void scode_lend_section( hptw_ctx_t *reg_npm_ctx,
 
   eu_trace("Mapping from %016llx to %016llx, size %u, pal_prot %u",
            section->reg_gva, section->pal_gva, section->size, (u32)section->pal_prot);
-  
+
   /* XXX don't hard-code page size here. */
   /* XXX fail gracefully */
-  HALT_ON_ERRORCOND((section->size % PAGE_SIZE_4K) == 0); 
+  HALT_ON_ERRORCOND((section->size % PAGE_SIZE_4K) == 0);
 
   for (offset=0; offset < section->size; offset += PAGE_SIZE_4K) {
     hpt_va_t page_reg_gva = section->reg_gva + offset;

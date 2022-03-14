@@ -3,7 +3,7 @@
  * Implementation of W5300 I/O fucntions
  *
  * This file implements the basic I/O fucntions that access a register of W5300( IINCHIP_REG).
- * 
+ *
  * Revision History :
  * ----------  -------  -----------  ----------------------------
  * Date        Version  Author       Description
@@ -24,12 +24,12 @@ extern	void		delay(unsigned long d);
 
 int printf(const char *format, ...);
 
-/** 
+/**
  * TX memory size variables
  */
 uint32 TXMEM_SIZE[MAX_SOCK_NUM];
 
-/** 
+/**
  * RX memory size variables
  */
 uint32 RXMEM_SIZE[MAX_SOCK_NUM];
@@ -40,7 +40,7 @@ uint32 RXMEM_SIZE[MAX_SOCK_NUM];
  * COMMON Register Access Function *
  ***********************************/
 
-/* Interrupt */ 
+/* Interrupt */
 
 uint16   getIR(void)
 {
@@ -48,7 +48,7 @@ uint16   getIR(void)
 }
 void     setIR(uint16 val)
 {
-   IINCHIP_WRITE(IR, val);   
+   IINCHIP_WRITE(IR, val);
 }
 
 uint16   getIMR(void)
@@ -84,12 +84,12 @@ void     getGAR(uint8 * addr)
 	addr[0] = (uint8)(IINCHIP_READ(GAR)>>8);
 	addr[1] = (uint8)IINCHIP_READ(GAR);
 	addr[2] = (uint8)(IINCHIP_READ(GAR2)>>8);
-	addr[3] = (uint8)IINCHIP_READ(GAR2);   
+	addr[3] = (uint8)IINCHIP_READ(GAR2);
 }
 void     setGAR(uint8 * addr)
 {
 	IINCHIP_WRITE(GAR, ((uint16)addr[0]<<8)+(uint16)addr[1]);
-	IINCHIP_WRITE(GAR2,((uint16)addr[2]<<8)+(uint16)addr[3]);   
+	IINCHIP_WRITE(GAR2,((uint16)addr[2]<<8)+(uint16)addr[3]);
 }
 
 void     getSUBR(uint8 * addr)
@@ -97,12 +97,12 @@ void     getSUBR(uint8 * addr)
 	addr[0] = (uint8)(IINCHIP_READ(SUBR)>>8);
 	addr[1] = (uint8)IINCHIP_READ(SUBR);
 	addr[2] = (uint8)(IINCHIP_READ(SUBR2)>>8);
-	addr[3] = (uint8)IINCHIP_READ(SUBR2);   
+	addr[3] = (uint8)IINCHIP_READ(SUBR2);
 }
 void     setSUBR(uint8 * addr)
 {
 	IINCHIP_WRITE(SUBR, ((uint16)addr[0]<<8)+(uint16)addr[1]);
-	IINCHIP_WRITE(SUBR2,((uint16)addr[2]<<8)+(uint16)addr[3]);   
+	IINCHIP_WRITE(SUBR2,((uint16)addr[2]<<8)+(uint16)addr[3]);
 }
 
 void     getSIPR(uint8 * addr)
@@ -110,12 +110,12 @@ void     getSIPR(uint8 * addr)
 	addr[0] = (uint8)(IINCHIP_READ(SIPR)>>8);
 	addr[1] = (uint8)IINCHIP_READ(SIPR);
 	addr[2] = (uint8)(IINCHIP_READ(SIPR2)>>8);
-	addr[3] = (uint8)IINCHIP_READ(SIPR2);	
+	addr[3] = (uint8)IINCHIP_READ(SIPR2);
 }
 void     setSIPR(uint8 * addr)
 {
 	IINCHIP_WRITE(SIPR,((uint16)addr[0]<<8)+(uint16)addr[1]);
-	IINCHIP_WRITE(SIPR2,((uint16)addr[2]<<8)+(uint16)addr[3]);   
+	IINCHIP_WRITE(SIPR2,((uint16)addr[2]<<8)+(uint16)addr[3]);
 }
 
 
@@ -127,7 +127,7 @@ uint16   getRTR(void)
 }
 void     setRTR(uint16 timeout)
 {
-	IINCHIP_WRITE(RTR,timeout);   
+	IINCHIP_WRITE(RTR,timeout);
 }
 
 uint8    getRCR(void)
@@ -186,7 +186,7 @@ void     getUIPR(uint8* addr)
    addr[0] = (uint8)(IINCHIP_READ(UIPR) >> 8);
    addr[1] = (uint8)IINCHIP_READ(UIPR);
    addr[2] = (uint8)(IINCHIP_READ(UIPR2) >> 8);
-   addr[3] = (uint8)IINCHIP_READ(UIPR2);   
+   addr[3] = (uint8)IINCHIP_READ(UIPR2);
 }
 
 uint16   getUPORTR(void)
@@ -208,13 +208,13 @@ uint8    getPn_BRDYR(uint8 p)
 }
 void     setPn_BRDYR(uint8 p, uint8 cfg)
 {
-   IINCHIP_WRITE(Pn_BRDYR(p),cfg);   
+   IINCHIP_WRITE(Pn_BRDYR(p),cfg);
 }
 
 
 uint16   getPn_BDPTHR(uint8 p)
 {
-   return IINCHIP_READ(Pn_BDPTHR(p));   
+   return IINCHIP_READ(Pn_BDPTHR(p));
 }
 void     setPn_BDPTHR(uint8 p, uint16 depth)
 {
@@ -253,10 +253,10 @@ void     setSn_CR(SOCKET s, uint16 com)
 {
 	int cnt=0;
 	uint16 v1, v2, v3;
-	
+
 	sCRcnt++;
-	
-	
+
+
   IINCHIP_WRITE(Sn_CR(s),com);
   while(IINCHIP_READ(Sn_CR(s))) { // wait until Sn_CR is cleared.
   	cnt++;
@@ -265,12 +265,12 @@ void     setSn_CR(SOCKET s, uint16 com)
 	  	v1 = IINCHIP_READ(Sn_CR(s));
 	  	v2 = getSn_IR(s);
 	  	v3 = getSn_SSR(s);
-	  	printf("\n\r##CmdRdy Timeout CRcnt=%d cmd=%04x  S(%d)_CR=%04x  ", 
+	  	printf("\n\r##CmdRdy Timeout CRcnt=%d cmd=%04x  S(%d)_CR=%04x  ",
 	  					 sCRcnt, com, s, v1 );
 	  	printf("Sn_IR=%02x  ", v2);
 	  	printf("Sn_SSR=%02x  ", v3);
-	  	
-	  	
+
+
 	  	W53ErFlg = 1;
 	  	break;
   	}
@@ -291,13 +291,13 @@ uint8    getSn_IR(SOCKET s)
 {
 	uint8 v1;
 
-	v1 = (uint8)IINCHIP_READ(Sn_IR(s)); 
+	v1 = (uint8)IINCHIP_READ(Sn_IR(s));
 	return v1;
 }
 
 void     setSn_IR(SOCKET s, uint8 ir)
 {
-	IINCHIP_WRITE(Sn_IR(s),ir);   
+	IINCHIP_WRITE(Sn_IR(s),ir);
 }
 
 
@@ -307,15 +307,15 @@ uint8    getSn_SSR(SOCKET s)
 {
   uint8 ssr, ssr1, ssr2;
   ssr = (uint8)IINCHIP_READ(Sn_SSR(s));     // first read
-  
+
   while(1) {
 		//delay(5);
 		ssr1 = (uint8)IINCHIP_READ(Sn_SSR(s)); // second read
 		if(ssr == ssr1) break;                 // if first == sencond, Sn_SSR value is valid.
 		ssr2 = (uint8)IINCHIP_READ(Sn_SSR(s));
-		
+
 		ssr2 = (uint8)IINCHIP_READ(Sn_SSR(s));
-      
+
 		ssr = ssr1;                            // if first <> second, save second value into first.
 	}
 	if ( (ssr==SOCK_CLOSED) && (ssr != socState[s]) ) {
@@ -323,7 +323,7 @@ uint8    getSn_SSR(SOCKET s)
 		if ( ssrErr[s] < 3 ) {
 			ssr2 = (uint8)IINCHIP_READ(Sn_SSR(s));
 		}
-	} 
+	}
 	return ssr;
 }
 
@@ -359,12 +359,12 @@ void     getSn_DIPR(SOCKET s, uint8* addr)
    addr[0] = (uint8)(IINCHIP_READ(Sn_DIPR(s))>>8);
    addr[1] = (uint8)IINCHIP_READ(Sn_DIPR(s));
    addr[2] = (uint8)(IINCHIP_READ(Sn_DIPR2(s))>>8);
-   addr[3] = (uint8)IINCHIP_READ(Sn_DHAR2(s));   
+   addr[3] = (uint8)IINCHIP_READ(Sn_DHAR2(s));
 }
 void     setSn_DIPR(SOCKET s, uint8* addr)
 {
    IINCHIP_WRITE(Sn_DIPR(s),  ((uint16)(addr[0]<<8)) + addr[1]);
-   IINCHIP_WRITE(Sn_DIPR2(s), ((uint16)(addr[2]<<8)) + addr[3]);  
+   IINCHIP_WRITE(Sn_DIPR2(s), ((uint16)(addr[2]<<8)) + addr[3]);
 }
 
 uint16   getSn_MSSR(SOCKET s)
@@ -412,13 +412,13 @@ uint32   getSn_TX_FSR(SOCKET s)
    uint32 free_tx_size1=0;
    while(1)
    {
-      free_tx_size = IINCHIP_READ(Sn_TX_FSR(s));                           // read                                       
-      free_tx_size = (free_tx_size << 16) + IINCHIP_READ(Sn_TX_FSR2(s));                                                       
-      if(free_tx_size == free_tx_size1) break;                             // if first == sencond, Sn_TX_FSR value is valid.                                                          
-      free_tx_size1 = free_tx_size;                                        // save second value into firs                                                    
-   }                                                                       
-   return free_tx_size;                                                    
-}                                                                          
+      free_tx_size = IINCHIP_READ(Sn_TX_FSR(s));                           // read
+      free_tx_size = (free_tx_size << 16) + IINCHIP_READ(Sn_TX_FSR2(s));
+      if(free_tx_size == free_tx_size1) break;                             // if first == sencond, Sn_TX_FSR value is valid.
+      free_tx_size1 = free_tx_size;                                        // save second value into firs
+   }
+   return free_tx_size;
+}
 
 uint32   getSn_RX_RSR(SOCKET s)
 {
@@ -427,11 +427,11 @@ uint32   getSn_RX_RSR(SOCKET s)
    while(1)
    {
       received_rx_size = IINCHIP_READ(Sn_RX_RSR(s));
-      received_rx_size = (received_rx_size << 16) + IINCHIP_READ(Sn_RX_RSR2(s)); // read                                       
-      if(received_rx_size == received_rx_size1) break;                                                                         
+      received_rx_size = (received_rx_size << 16) + IINCHIP_READ(Sn_RX_RSR2(s)); // read
+      if(received_rx_size == received_rx_size1) break;
       received_rx_size1 = received_rx_size;                                      // if first == sencond, Sn_RX_RSR value is valid.
-   }                                                                             // save second value into firs                
-   return received_rx_size;   
+   }                                                                             // save second value into firs
+   return received_rx_size;
 }
 
 
@@ -499,13 +499,13 @@ void     setSn_FRAGR(SOCKET s, uint8 frag)
 
 
 /* Internal memory operation */
- 
+
 uint8    sysinit(uint8* tx_size, uint8* rx_size)
 {
    uint16 i;
    uint16 ssum=0,rsum=0;
    uint mem_cfg = 0;
-   
+
    for(i=0; i < MAX_SOCK_NUM; i++)
    {
       if(tx_size[i] > 64)
@@ -517,7 +517,7 @@ uint8    sysinit(uint8* tx_size, uint8* rx_size)
       }
       if(rx_size[i] > 64)
       {
-      #ifdef __DEF_IINCHIP_DBG__         
+      #ifdef __DEF_IINCHIP_DBG__
          printf("Illegal Channel(%d) RX Memory Size.\n\r",i);
       #endif
          return 0;
@@ -535,25 +535,25 @@ uint8    sysinit(uint8* tx_size, uint8* rx_size)
       return 0;
       //return 1;
    }
-   
+
    IINCHIP_WRITE(TMS01R,((uint16)tx_size[0] << 8) + (uint16)tx_size[1]);
    IINCHIP_WRITE(TMS23R,((uint16)tx_size[2] << 8) + (uint16)tx_size[3]);
    IINCHIP_WRITE(TMS45R,((uint16)tx_size[4] << 8) + (uint16)tx_size[5]);
    IINCHIP_WRITE(TMS67R,((uint16)tx_size[6] << 8) + (uint16)tx_size[7]);
-   
+
    IINCHIP_WRITE(RMS01R,((uint16)rx_size[0] << 8) + (uint16)rx_size[1]);
    IINCHIP_WRITE(RMS23R,((uint16)rx_size[2] << 8) + (uint16)rx_size[3]);
    IINCHIP_WRITE(RMS45R,((uint16)rx_size[4] << 8) + (uint16)rx_size[5]);
    IINCHIP_WRITE(RMS67R,((uint16)rx_size[6] << 8) + (uint16)rx_size[7]);
-   
+
    for(i=0; i <ssum/8 ; i++)
    {
       mem_cfg <<= 1;
       mem_cfg |= 1;
    }
-   
+
    IINCHIP_WRITE(MTYPER,mem_cfg);
-   
+
    #ifdef __DEF_IINCHIP_DBG_
    	/***
 			printf("Total TX Memory Size = %dKB\n\r",ssum);
@@ -570,7 +570,7 @@ uint8    sysinit(uint8* tx_size, uint8* rx_size)
       printf("\n\rMTYPER=%04x\n\r",IINCHIP_READ(MTYPER));
     ****/
    #endif
-   
+
    return 1;
 }
 
@@ -601,7 +601,7 @@ void  wait_1ms(uint32 ms)
    {
      wait_1us(1000);
    }
-   
+
 }
 
 void  wait_10ms(uint32 ms)

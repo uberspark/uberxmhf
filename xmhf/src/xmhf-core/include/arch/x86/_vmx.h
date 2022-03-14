@@ -47,23 +47,23 @@
 //vmx.h - Intel VMX definitions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#define VMXON_SIZE		(4096) 
-#define VMCS_SIZE			(8192) 
+#define VMXON_SIZE		(4096)
+#define VMCS_SIZE			(8192)
 
 //VM Exit Interruption-information format
-#define INTR_INFO_VECTOR_MASK           (0x000000ff)        // 7:0 
-#define INTR_INFO_INTR_TYPE_MASK        (0x00000700)        // 10:8 
-#define INTR_INFO_DELIVER_CODE_MASK     (0x00000800)        // 11 
-#define INTR_INFO_VALID_MASK            (0x80000000)      	// 31 
+#define INTR_INFO_VECTOR_MASK           (0x000000ff)        // 7:0
+#define INTR_INFO_INTR_TYPE_MASK        (0x00000700)        // 10:8
+#define INTR_INFO_DELIVER_CODE_MASK     (0x00000800)        // 11
+#define INTR_INFO_VALID_MASK            (0x80000000)      	// 31
 
 #define VECTORING_INFO_VECTOR_MASK           	INTR_INFO_VECTOR_MASK
 #define VECTORING_INFO_TYPE_MASK        			INTR_INFO_INTR_TYPE_MASK
 #define VECTORING_INFO_DELIVER_CODE_MASK    	INTR_INFO_DELIVER_CODE_MASK
 #define VECTORING_INFO_VALID_MASK       			INTR_INFO_VALID_MASK
 
-#define INTR_TYPE_HW_INTERRUPT         	 (0UL << 8) // hardware/external interrupt 
+#define INTR_TYPE_HW_INTERRUPT         	 (0UL << 8) // hardware/external interrupt
 #define INTR_TYPE_NMI										 (2UL << 8)	// NMI
-#define INTR_TYPE_HW_EXCEPTION           (3UL << 8) // processor exception 
+#define INTR_TYPE_HW_EXCEPTION           (3UL << 8) // processor exception
 #define INTR_TYPE_SW_INTERRUPT         	 (4UL << 8) // software interrupt
 #define INTR_TYPE_SW_EXCEPTION           (6UL << 8) // software exception (INTO, INT3)
 
@@ -112,7 +112,7 @@
 #define INTERCEPT_EXCEPTIONS_1E (0x1E)
 #define INTERCEPT_EXCEPTIONS_1F (0x1F)
 #define INTERCEPT_EXCEPTIONS_20 (0x20)
-        
+
 
 #define INTERCEPT_INVLPG          0x21
 #define INTERCEPT_CR3_READ        0x22
@@ -143,7 +143,7 @@
 #define VMX_VMEXIT_IOIO 30
 #define VMX_VMEXIT_VMCALL 18
 #define VMX_VMEXIT_HLT 12
-#define VMX_VMEXIT_INVLPG 14	
+#define VMX_VMEXIT_INVLPG 14
 #define VMX_VMEXIT_RDMSR	0x1f
 #define VMX_VMEXIT_WRMSR	0x20
 #define VMX_VMEXIT_CPUID	0x0a
@@ -364,7 +364,7 @@ enum {
 
 
 typedef struct {
-	u16 sel;		  
+	u16 sel;
 	u64 base;
 	u32 limit;
 	union{
@@ -661,14 +661,14 @@ struct _vmx_vmcsfields {
 
 
 struct _vmx_vmcsrofields_encodings	{
- unsigned int  encoding; 
- unsigned int  fieldoffset; 
+ unsigned int  encoding;
+ unsigned int  fieldoffset;
  unsigned int  membersize;
 } __attribute__((packed));
 
 struct _vmx_vmcsrwfields_encodings	{
- unsigned int  encoding; 
- unsigned int  fieldoffset; 
+ unsigned int  encoding;
+ unsigned int  fieldoffset;
  unsigned int  membersize;
 } __attribute__((packed));
 
@@ -681,7 +681,7 @@ struct _vmx_event_injection {
     u32 valid:       1;
 } __attribute__ ((packed));
 
-//VMX functions 
+//VMX functions
 static inline void __vmx_vmxon(u64 vmxonRegion){
   __asm__("vmxon %0\n\t"
 	  : //no outputs
@@ -725,7 +725,7 @@ static inline u32 __vmx_vmclear(u64 vmcs){
       "movl $1, %%eax \r\n"
       "jmp  2f  \r\n"
       "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n" 
+      "2: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "m"(vmcs)
     : "%eax", "cc"
@@ -740,7 +740,7 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
       "movl $1, %%eax \r\n"
       "jmp  2f  \r\n"
       "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n" 
+      "2: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "m"(vmcs)
     : "%eax", "cc"
@@ -776,7 +776,7 @@ static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddre
           "movl $1, %%eax \r\n"
 		  "ja	1f    	  \r\n"
 		  "movl $0, %%eax \r\n"
-		  "1: movl %%eax, %0 \r\n" 
+		  "1: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "a"(&invvpiddescriptor), "c"(invalidation_type)
 	: "cc", "memory");
@@ -810,12 +810,12 @@ static inline u32 __vmx_invept(int invalidation_type, u64 eptp){
           "movl $1, %%eax \r\n"
 		  "ja	1f    	  \r\n"
 		  "movl $0, %%eax \r\n"
-		  "1: movl %%eax, %0 \r\n" 
+		  "1: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "a"(&inveptdescriptor), "c"(invalidation_type)
 	: "cc", "memory");
 
-	return status;	
+	return status;
 }
 
 

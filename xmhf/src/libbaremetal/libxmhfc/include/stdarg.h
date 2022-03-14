@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//stdarg.h - variable length arguments 
+//stdarg.h - variable length arguments
 //author: amit vasudevan (amitvasudevan@acm.org)
 //based on guidelines in
 //http://pubs.opengroup.org/onlinepubs/007904875/basedefs/stdarg.h.html

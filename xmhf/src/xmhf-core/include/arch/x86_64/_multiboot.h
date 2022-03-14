@@ -55,7 +55,7 @@
 #define MULTIBOOT_HEADER_FLAGS ((1<<ALIGNED)|(1<<MEM_INFO))
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2badb002
 
-// multiboot info structure flags 
+// multiboot info structure flags
 #define MBI_MEMLIMITS  0x00
 #define MBI_DRIVES     0x01
 #define MBI_CMDLINE    0x02
@@ -63,7 +63,7 @@
 #define MBI_MEMMAP     0x06
 
 #ifndef __ASSEMBLY__
-// section header table for ELF 
+// section header table for ELF
 typedef struct{
   u32 num;
   u32 size;
@@ -71,7 +71,7 @@ typedef struct{
   u32 shndx;
 }__attribute__((packed)) elf_section_header_table_t;
 
-// multiboot information struct 
+// multiboot information struct
 typedef struct{
   u32 flags;
   u32 mem_lower;
@@ -85,7 +85,7 @@ typedef struct{
   u32 mmap_addr;
 }__attribute__((packed)) multiboot_info_t;
 
-// The module structure. 
+// The module structure.
 typedef struct {
   u32 mod_start;
   u32 mod_end;

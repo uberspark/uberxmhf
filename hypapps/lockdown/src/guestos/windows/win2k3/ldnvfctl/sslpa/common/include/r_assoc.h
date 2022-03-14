@@ -4,7 +4,7 @@
    Associative array code. This code has the advantage that different
    elements can have different create and destroy operators. Unfortunately,
    this can waste space.
-   
+
 
    Copyright (C) 1999-2000 RTFM, Inc.
    All Rights Reserved
@@ -22,7 +22,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -80,4 +80,3 @@ int r_assoc_iter PROTO_LIST((r_assoc_iterator *iter,void **key,int *keyl,
 int r_assoc_iter_delete PROTO_LIST((r_assoc_iterator *));
 
 #endif
-

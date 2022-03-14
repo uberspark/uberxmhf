@@ -13,7 +13,7 @@
 /**
   @file crypt.c
   Build strings, Tom St Denis
-*/  
+*/
 
 const char *crypt_build_settings =
    "LibTomCrypt " SCRYPT " (Tom St Denis, tomstdenis@gmail.com)\n"
@@ -193,7 +193,7 @@ const char *crypt_build_settings =
 #endif
 #if defined(LTC_F8_MODE)
     "   F8 MODE\n"
-#endif    
+#endif
 #if defined(LTC_XTS_MODE)
     "   LTC_XTS_MODE\n"
 #endif
@@ -265,7 +265,7 @@ const char *crypt_build_settings =
 #endif
 #if defined(MKAT)
     "   Katja\n"
-#endif    
+#endif
 
     "\nCompiler:\n"
 #if defined(WIN32)
@@ -291,7 +291,7 @@ const char *crypt_build_settings =
 #endif
 #if defined(LTC_PPC32)
     "   LTC_PPC32 defined \n"
-#endif    
+#endif
 
     "\nVarious others: "
 #if defined(LTC_BASE64)
@@ -356,7 +356,7 @@ const char *crypt_build_settings =
 #endif
 #if defined(LTC_EASY)
     " (easy) "
-#endif    
+#endif
 #if defined(LTC_MECC_FP)
    " LTC_MECC_FP "
 #endif

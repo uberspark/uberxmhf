@@ -47,13 +47,13 @@ int hmac_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen)
     /* allocate buffers */
     buf  = XMALLOC(LTC_HMAC_BLOCKSIZE);
     isha = XMALLOC(hashsize);
-    if (buf == NULL || isha == NULL) { 
+    if (buf == NULL || isha == NULL) {
        if (buf != NULL) {
           XFREE(buf);
-       } 
+       }
        if (isha != NULL) {
           XFREE(isha);
-       }  
+       }
        return CRYPT_MEM;
     }
 

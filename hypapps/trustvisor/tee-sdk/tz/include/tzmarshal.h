@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
@@ -84,7 +84,7 @@ typedef struct tzi_encode_buffer_t {
   uint32_t uiSize;
   uint32_t uiOffset;
   uint32_t uiSizeUsed; /* only valid when decoding */
-  tzi_encoded_t pBuf[];/* CAUTION when adding members to this struct- 
+  tzi_encoded_t pBuf[];/* CAUTION when adding members to this struct-
                           pBuf must be 8-byte aligned. */
 } tzi_encode_buffer_t;
 

@@ -46,7 +46,7 @@
 
 /* print_hex.c - hex printing function
   author(s): Amit Vasudevan (amitvasudevan@acm.org)
-			Jim Newsome 
+			Jim Newsome
 */
 
 #include <stddef.h>

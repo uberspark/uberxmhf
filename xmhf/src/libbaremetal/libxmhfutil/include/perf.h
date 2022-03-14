@@ -45,7 +45,7 @@
  */
 
 /* perf.h - profiling utility functions
- * 
+ *
  * author - Jim Newsome (jnewsome@no-fuss.com)
  *
  * Some utility functions for profiling. They are designed to be

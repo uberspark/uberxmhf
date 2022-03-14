@@ -56,7 +56,7 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	u32 vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 	asm(	"xor	%%eax, %%eax \n"
-					"cpuid \n"		
+					"cpuid \n"
 					"mov	%%ebx, %0 \n"
 					"mov	%%edx, %1 \n"
 					"mov	%%ecx, %2 \n"
@@ -74,7 +74,7 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 		printf("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
 			__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
 		HALT();
-	}   	 	
+	}
 
 	return cpu_vendor;
 }
@@ -84,7 +84,7 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 void xmhf_baseplatform_arch_initialize(void){
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
-	
+
 	//check ACPI subsystem
 	{
 		ACPI_RSDP rsdp;
@@ -109,7 +109,7 @@ void xmhf_baseplatform_arch_cpuinitialize(void){
 	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
 		u32 t_cr4;
 		t_cr4 = read_cr4();
-		t_cr4 |= CR4_OSXSAVE;	
+		t_cr4 |= CR4_OSXSAVE;
 		write_cr4(t_cr4);
 	}
 

@@ -38,15 +38,15 @@ static void _iommu_map_1GB_page(IOMMU_PT_INFO* pt_info, void* upper_level_pts, g
 
     if(old_1GB_pte)
     {
-        // We have set a PTE at this slot before, so we need to free the old 
+        // We have set a PTE at this slot before, so we need to free the old
         // page structures first.
 
-        // Step 1. 
-        
+        // Step 1.
+
     }
 
     // Now we can safely assign the new PTE.
-    ((uint64_t*)upper_level_pts)[pt_1GB_index] = (spa & PAGE_MASK_1G) | (uint64_t)flags 
+    ((uint64_t*)upper_level_pts)[pt_1GB_index] = (spa & PAGE_MASK_1G) | (uint64_t)flags
                 | (uint64_t)VTD_SUPERPAGE | (uint64_t) VTD_PRESENT;
 
     return true;
@@ -114,7 +114,7 @@ static void* __vtd_get_nextlvl_pt(IOMMU_PT_INFO* pt_info, void* pt_base, uint32_
 	}
 
 	return spa2hva(*p_pte & PAGE_MASK_4K);
-	
+
 }
 
 bool iommu_vmx_map(IOMMU_PT_INFO* pt_info, gpa_t gpa, spa_t spa, uint32_t flags)
@@ -182,9 +182,9 @@ static bool __x86vmx_bind_cet(DEVICEDESC* device, iommu_pt_t pt_id, spa_t iommu_
 	uint64_t *value;
 
 	// Update the CET
-	value = (uint64_t *)((hva_t)vtd_cet + (device->bus * PAGE_SIZE_4K) + 
+	value = (uint64_t *)((hva_t)vtd_cet + (device->bus * PAGE_SIZE_4K) +
 		(device->dev * PCI_FUNCTION_MAX + device->func) * 16);
-    
+
     if(g_vtd_cap.sagaw & 0x4)
     {
         // Preferred to use 4-level PT

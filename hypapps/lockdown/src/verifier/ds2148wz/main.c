@@ -77,9 +77,9 @@
 static const U8 abDescriptors[] = {
 
 /* Device descriptor */
-	0x12,              		
-	DESC_DEVICE,       		
-	LE_WORD(0x0200),		// bcdUSB	
+	0x12,
+	DESC_DEVICE,
+	LE_WORD(0x0200),		// bcdUSB
 	0xFF,              		// bDeviceClass
 	0x00,              		// bDeviceSubClass
 	0x00,              		// bDeviceProtocol
@@ -103,8 +103,8 @@ static const U8 abDescriptors[] = {
 	0x32,  					// bMaxPower
 
 // interface
-	0x09,   				
-	DESC_INTERFACE, 
+	0x09,
+	DESC_INTERFACE,
 	0x00,  		 			// bInterfaceNumber
 	0x00,   				// bAlternateSetting
 	0x03,   				// bNumEndPoints
@@ -114,28 +114,28 @@ static const U8 abDescriptors[] = {
 	0x00,   				// iInterface
 
 // bulk in
-	0x07,   		
-	DESC_ENDPOINT,   		
+	0x07,
+	DESC_ENDPOINT,
 	BULK_IN_EP,				// bEndpointAddress
 	0x02,   				// bmAttributes = BULK
 	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
-	0,						// bInterval   		
+	0,						// bInterval
 
 // netif SEND (bulk-out) endpoint
-	0x07,   		
-	DESC_ENDPOINT,   		
+	0x07,
+	DESC_ENDPOINT,
 	NETIF_SEND_EP,				// bEndpointAddress
 	0x02,   				// bmAttributes = BULK
 	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
-	0,						// bInterval   		
+	0,						// bInterval
 
 // netif RECV (bulk-in) endpoint
-	0x07,   		
-	DESC_ENDPOINT,   		
+	0x07,
+	DESC_ENDPOINT,
 	NETIF_RECV_EP,				// bEndpointAddress
 	0x02,   				// bmAttributes = BULK
 	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
-	0,						// bInterval   		
+	0,						// bInterval
 
 
 // string descriptors
@@ -157,7 +157,7 @@ static const U8 abDescriptors[] = {
 	0x12,
 	DESC_STRING,
 	'D', 0, 'E', 0, 'A', 0, 'D', 0, 'C', 0, '0', 0, 'D', 0, 'E', 0,
-	
+
 	// terminator
 	0
 };
@@ -218,20 +218,20 @@ Digital Shortcut Proprietary Interface: LPC2148 to WZ5300
 		P1.24-(LATCH)-----------WLD---|>o---------|11					|
 																							|___________|
 
-		P1.25-(WIZ_CS)----------------|>o----------------------------------->	WizCS_L	
-		
-  Startup Defaults: WLD=0, WIZ_ON=1, WIZ_RES=1, WIZ_CS=0; WIZ_WR=1; WIZ_RD=1;																							
+		P1.25-(WIZ_CS)----------------|>o----------------------------------->	WizCS_L
+
+  Startup Defaults: WLD=0, WIZ_ON=1, WIZ_RES=1, WIZ_CS=0; WIZ_WR=1; WIZ_RD=1;
 */
 
 //initialize LPC2148 GPIO pins
 void InitGPIO(void){
-  
+
   PINSEL0   &= 0x700600FF;		// P0.7 .. P0.0 , P0.17, P0.18 P0.28-P0.30 GPIOs
   FIO0DIR   |= 0x7000007F;		// P0.6 .. P0.0 , P0.28-P0.30 Output
   FIO0CLR    = 0x7000007F;		// "0" on P0.0.. P0.6, P0.28-P0.30
-	
+
 	P1Init();
-}    
+}
 
 //------------------------------------------------------------------------------
 //LED on/off functionality
@@ -277,7 +277,7 @@ void magnetron_amberled_off(void){
 			Event=0;
 			t_msecs++;
 		}
-		
+
 		if(t_msecs > msecs)
 			break;
 	}
@@ -315,9 +315,9 @@ void blinkledsalternate(void){
 
 int ldnverifier_getswitchstatus(void){
 	unsigned long int status;
-	
+
 	status = FIO0PIN & 0x00060000;
-	
+
 	if(status == 0x00040000)
 	 return LDN_SWITCH_INSECURE;
 	else if(status == 0x00020000)
@@ -332,13 +332,13 @@ volatile int ldnverifier_switchstate = LDN_SWITCH_INVALID;
 //returns 1 if switch was flipped else 0
 int ldnverifier_isswitchflipped(void){
   int current_switchstate;
-  
+
   //get the current switch state on the verifier and account
   //for bounce
   do{
     current_switchstate = ldnverifier_getswitchstatus();
   }while(current_switchstate == LDN_SWITCH_INVALID);
-  
+
   if(current_switchstate != ldnverifier_switchstate){
     ldnverifier_switchstate = current_switchstate;
     printf("\nswitch flipped!");
@@ -346,7 +346,7 @@ int ldnverifier_isswitchflipped(void){
   }else{
     return 0;
   }
-  
+
 }
 
 //
@@ -379,11 +379,11 @@ int state_wait_transition_flip=0;
 void handle_state_wait_transition(void){
 	//turn off green LED
 	GreenLed_Off();
-  
+
   state_wait_transition_counter++;
 	if(state_wait_transition_counter < 50000)
 		return;
-	
+
 	state_wait_transition_counter=0;
 
 	if(state_wait_transition_flip == 0){
@@ -404,16 +404,16 @@ void handle_state_wait_transition(void){
 static void _HandleBulkIn(U8 bEP, U8 bEPStatus)
 {
 	int iChunk;
-	
+
 	iChunk = MIN(MAX_PACKET_SIZE, MemoryCmd.dwLength);
 	if (iChunk == 0) {
 		DBG("done\n");
 		return;
 	}
-	
+
 	// send next part
 	USBHwEPWrite(bEP, (U8 *)MemoryCmd.dwAddress, iChunk);
-	
+
 	MemoryCmd.dwAddress += iChunk;
 	MemoryCmd.dwLength -= iChunk;
 
@@ -425,12 +425,12 @@ static void _HandleBulkIn(U8 bEP, U8 bEPStatus)
 static void _HandleBulkOut(U8 bEP, U8 bEPStatus)
 {
 	int iChunk;
-	
+
 	// get next part
 	iChunk = USBHwEPRead(bEP, NULL, 0);
-	
+
 	MemoryCmd.dwAddress += iChunk;
-	MemoryCmd.dwLength -= iChunk;	
+	MemoryCmd.dwLength -= iChunk;
 
 	if (MemoryCmd.dwLength == 0) {
 		DBG("done\n");
@@ -468,13 +468,13 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
     //TODO:xmit
     netif_sendframe(&txframe, txframesize);
 		txframesize=0;
-	} 
+	}
 
 }
 #else
 
 static uint32 tx_in_progress=0;	//1 if we are pulling TX frame from host, else 0
-static uint32 txframesize=0;	//size of the TX frame that host will offer us 
+static uint32 txframesize=0;	//size of the TX frame that host will offer us
 unsigned char txframe[ETH_PACKETSIZE]; //if above is non-zero the actual TX frame data
 static uint32 txframeoffset=0;	//since we pull in 64 byte chunks, we need to maintain the next offset
 
@@ -482,7 +482,7 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
 	int iChunk;
 	//printf("%s got control...\n", __FUNCTION__);
 
-	if(tx_in_progress){ //we only pull the TX packet if there is one 
+	if(tx_in_progress){ //we only pull the TX packet if there is one
   	if(txframesize - txframeoffset < MAX_PACKET_SIZE){
   		USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframeoffset), (txframesize-txframeoffset) );
 			txframeoffset = txframesize;
@@ -490,7 +490,7 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
 			USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframeoffset), MAX_PACKET_SIZE);
 			txframeoffset+= MAX_PACKET_SIZE;
 		}
-		
+
 		//check if we are done with the packet
 		if(txframeoffset >= txframesize){
 			//xmit the packet
@@ -498,7 +498,7 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
 			txframeoffset=0;
 		  tx_in_progress=0;
 		}
-	}  
+	}
 
 
 }
@@ -508,14 +508,14 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
 #endif
 
 static uint32 rx_in_progress=0;	//1 if host is pulling out RX frame from us, else 0
-static uint32 rxframesize=0;	//size of the RX frame that host will pull 
+static uint32 rxframesize=0;	//size of the RX frame that host will pull
 unsigned char rxframe[ETH_PACKETSIZE]; //if above is non-zero the actual RX frame data
 static uint32 rxframeoffset=0;	//since we serve in 64 byte chunks, we need to maintain the next offset
 
 static void _HandleNETIFRecv(U8 bEP, U8 bEPStatus){
 	int iChunk;
-	
-	if(rx_in_progress){ //we only serve the RX packet if there is one 
+
+	if(rx_in_progress){ //we only serve the RX packet if there is one
 	  //printf("%s got control...\n", __FUNCTION__);
 
   	if(rxframesize - rxframeoffset < MAX_PACKET_SIZE){
@@ -525,25 +525,25 @@ static void _HandleNETIFRecv(U8 bEP, U8 bEPStatus){
 			USBHwEPWrite(bEP, (unsigned char *)((uint32)&rxframe + rxframeoffset), MAX_PACKET_SIZE);
 			rxframeoffset+= MAX_PACKET_SIZE;
 		}
-		
+
 		//check if we are done with the packet
 		if(rxframeoffset >= rxframesize){
 			rxframeoffset=0;
 		  rx_in_progress=0;
 		}
-	}  
+	}
 }
 
 
 unsigned char tempbuffer[0x40];
 unsigned char bufferbuttonstatus[0x30];
 
-						
+
 /*************************************************************************
 	HandleVendorRequest
 	===================
 		Handles vendor specific requests
-		
+
 	Control transfer fields:
 	* request:	0x01 = prepare memory read
 				0x02 = prepare memory write
@@ -551,17 +551,17 @@ unsigned char bufferbuttonstatus[0x30];
 	* value:	ignored
 	* data:		U32 dwAddress
 				U32 dwLength
-		
+
 **************************************************************************/
 static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 {
 	TMemoryCmd	*pCmd;
 	U8      *pbData = *ppbData;
-	
+
 	pCmd = (TMemoryCmd *)*ppbData;
 
 	switch (pSetup->bRequest) {
-	
+
 	// prepare read
 	case 0x01:
 		MemoryCmd = *pCmd;
@@ -570,7 +570,7 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 		_HandleBulkIn(BULK_IN_EP, 0);
 		*piLen = 0;
 		break;
-		
+
 	// prepare write
 	case 0x02:
 		MemoryCmd = *pCmd;
@@ -588,10 +588,10 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 		}else{
 			devicestate=STATE_WAIT_UNTRUSTED;
 			operationstatus=OP_TRUSTED;	//on a switch we need to go to trusted
-		}	
+		}
 		*piLen=0;
 		break;
-		
+
 	case 0xA0:	//get button status
 		{
 			unsigned char buttonstatus=0;
@@ -611,8 +611,8 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
    		//*piLen = 0x40;
 			USBHwEPWrite(BULK_IN_EP, (unsigned char *)bufferbuttonstatus, 0x1);
    		*piLen =1;
-   	}   		
-   	break;   	
+   	}
+   	break;
 
 
 	case 0xF0:	//read packet command
@@ -624,12 +624,12 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 					rx_in_progress=1; // we have a RX packet to offer, host will now pull RX frame from us
 			    printf("<Packet READ, %u bytes payload\n", rxframesize);
 			   }
-   			
 
-      }	
+
+      }
 			*piLen = 0;
-   	}   		
-   	break;   	
+   	}
+   	break;
 
 
 	case 0xE0:	//send packet command
@@ -638,15 +638,15 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
   		 	txframesize = pCmd->dwLength;
    		 	if(txframesize)
 					tx_in_progress=1; // we have a TX packet to pull from host
-			 
+
    			printf(">Packet SEND, %u bytes payload\n", pCmd->dwLength);
 
-      }	
+      }
 			*piLen = 0;
-   	}   		
-   	break;   	
+   	}
+   	break;
 
-		
+
 	default:
 		printf("Unhandled request %X\n", pSetup->bRequest);
 		return FALSE;
@@ -656,44 +656,44 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 
 //---crc32 routine--------------------------------------------------------------
   /*-
-  * ============================================================= 
-  *  COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or       
-  *  code or tables extracted from it, as desired without restriction.     
-  *                                                                        
-  *  First, the polynomial itself and its table of feedback terms.  The    
-  *  polynomial is                                                         
-  *  X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X^1+X^0   
-  *                                                                        
-  *  Note that we take it "backwards" and put the highest-order term in    
-  *  the lowest-order bit.  The X^32 term is "implied"; the LSB is the     
-  *  X^31 term, etc.  The X^0 term (usually shown as "+1") results in      
-  *  the MSB being 1.                                                      
-  *                                                                        
-  *  Note that the usual hardware shift register implementation, which     
-  *  is what we're using (we're merely optimizing it by doing eight-bit    
-  *  chunks at a time) shifts bits into the lowest-order term.  In our     
-  *  implementation, that means shifting towards the right.  Why do we     
-  *  do it this way?  Because the calculated CRC must be transmitted in    
-  *  order from highest-order term to lowest-order term.  UARTs transmit   
-  *  characters in order from LSB to MSB.  By storing the CRC this way,    
-  *  we hand it to the UART in the order low-byte to high-byte; the UART   
-  *  sends each low-bit to hight-bit; and the result is transmission bit   
-  *  by bit from highest- to lowest-order term without requiring any bit   
-  *  shuffling on our part.  Reception works similarly.                    
-  *                                                                        
-  *  The feedback terms table consists of 256, 32-bit entries.  Notes:     
-  *                                                                        
-  *      The table can be generated at runtime if desired; code to do so   
-  *      is shown later.  It might not be obvious, but the feedback        
-  *      terms simply represent the results of eight shift/xor opera-      
-  *      tions for all combinations of data and CRC register values.       
-  *                                                                        
-  *      The values must be right-shifted by eight bits by the "updcrc"    
-  *      logic; the shift must be unsigned (bring in zeroes).  On some     
-  *      hardware you could probably optimize the shift in assembler by    
-  *      using byte-swap instructions.                                     
-  *      polynomial $edb88320                                              
-  *                                                                        
+  * =============================================================
+  *  COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or
+  *  code or tables extracted from it, as desired without restriction.
+  *
+  *  First, the polynomial itself and its table of feedback terms.  The
+  *  polynomial is
+  *  X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X^1+X^0
+  *
+  *  Note that we take it "backwards" and put the highest-order term in
+  *  the lowest-order bit.  The X^32 term is "implied"; the LSB is the
+  *  X^31 term, etc.  The X^0 term (usually shown as "+1") results in
+  *  the MSB being 1.
+  *
+  *  Note that the usual hardware shift register implementation, which
+  *  is what we're using (we're merely optimizing it by doing eight-bit
+  *  chunks at a time) shifts bits into the lowest-order term.  In our
+  *  implementation, that means shifting towards the right.  Why do we
+  *  do it this way?  Because the calculated CRC must be transmitted in
+  *  order from highest-order term to lowest-order term.  UARTs transmit
+  *  characters in order from LSB to MSB.  By storing the CRC this way,
+  *  we hand it to the UART in the order low-byte to high-byte; the UART
+  *  sends each low-bit to hight-bit; and the result is transmission bit
+  *  by bit from highest- to lowest-order term without requiring any bit
+  *  shuffling on our part.  Reception works similarly.
+  *
+  *  The feedback terms table consists of 256, 32-bit entries.  Notes:
+  *
+  *      The table can be generated at runtime if desired; code to do so
+  *      is shown later.  It might not be obvious, but the feedback
+  *      terms simply represent the results of eight shift/xor opera-
+  *      tions for all combinations of data and CRC register values.
+  *
+  *      The values must be right-shifted by eight bits by the "updcrc"
+  *      logic; the shift must be unsigned (bring in zeroes).  On some
+  *      hardware you could probably optimize the shift in assembler by
+  *      using byte-swap instructions.
+  *      polynomial $edb88320
+  *
   *  --------------------------------------------------------------------  */
 
 static unsigned long crc32_tab[] = {
@@ -757,7 +757,7 @@ unsigned long crc32(const unsigned char *s, unsigned int len)
 {
   unsigned int i;
   unsigned long crc32val;
-  
+
   crc32val = 0;
   for (i = 0;  i < len;  i ++)
     {
@@ -771,57 +771,57 @@ unsigned long crc32(const unsigned char *s, unsigned int len)
 
 
 //---wiznet network chipset interfaces------------------------------------------
-// the following variables are referenced by the core wiznet/ds2148 
+// the following variables are referenced by the core wiznet/ds2148
 // implementation
 int		CRdyMax=0, SpurIntCnt=0;
 int		W53ErFlg=0, sCRcnt=0, Tst1Flag=0;
 uint8					EstbPhase[MAX_SOCK_NUM];
-#define testR	0x21a //test register 
+#define testR	0x21a //test register
 
-uint8 tx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};  				// for setting TMSR, all socket TxBufs-14k 
-uint8 rx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};         // for setting RMSR, all socket RxBufs-2k  
+uint8 tx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};  				// for setting TMSR, all socket TxBufs-14k
+uint8 rx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};         // for setting RMSR, all socket RxBufs-2k
 
 uint8 ip[4] = {192,168,0,66};                  	// IP address, for setting SIP register
-uint8 gw[4] = {192,168,0,1};                     	// Gateway address, for setting GAR register 
+uint8 gw[4] = {192,168,0,1};                     	// Gateway address, for setting GAR register
 uint8 sn[4] = {255,255,255,0};                    // Subnet mask, for setting SUBR register
 uint8 mac[6] = {0x06,0x44,0x53,0x06,0x06,0x06};    			// Our MAC address
 uint8 bmac[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};    			// broadcast MAC address
 
-			
+
 void debug_checknetifsetup(void){
 	uint16 v1, v2, v3, v4, v5;
-	
+
 	v1 = getMR();							// expected value is 0x3800
   v2 = IINCHIP_READ(RTR);			// expected value is 0x07D0
   v3 = IINCHIP_READ(RCR);			// expected value is 0x..08
   v4 = IINCHIP_READ(IDR);
 
   v5 = IINCHIP_READ(testR);
-  
+
   printf("MR=%04x RTR=%04x RCR=%02x IDR=%04x M_%x=%04x\n",
        v1, v2, (v3&0xff), v4, testR, v5);
 
-	if ( (v1==1)&&(v2==0x7d0)&&((v3&0xff)==8)&&(v4==0x5300)&&(v5==0x1234) ) 
+	if ( (v1==1)&&(v2==0x7d0)&&((v3&0xff)==8)&&(v4==0x5300)&&(v5==0x1234) )
 		printf("[TEST:OK]\n");
 	else
 		printf("[TEST:FAIL!!!]\n");
 
   //show MAC, IP, gateway and subnetmask
-  { 
+  {
   	uint8	tBuf[10];
-  	
+
     Rd5300_bl(SIPR0, &tBuf[0], 4);
     printf("IP:   %d.%d.%d.%d\n",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
     Rd5300_bl(GAR0, &tBuf[0], 4);
     printf("GAR:  %d.%d.%d.%d\n",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
-    Rd5300_bl(SUBR0, &tBuf[0], 4);												 // get subnet mask address   
+    Rd5300_bl(SUBR0, &tBuf[0], 4);												 // get subnet mask address
     printf("SUBR: %d.%d.%d.%d\n",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
     Rd5300_bl(SHAR0, &tBuf[0], 6);
     printf("SHAR: %02x:%02x:%02x:%02x:%02x:%02x\n",tBuf[0],tBuf[1],tBuf[2],tBuf[3],tBuf[4],tBuf[5]);
  }
 
 
-}  
+}
 
 struct arpstruct {
   unsigned char dstmac[6];
@@ -834,7 +834,7 @@ struct arpstruct {
 char packetbuffer[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  //6-bytes dest MAC
                        0x06,0x44,0x53,0x06,0x06,0x06,  //6-bytes src MAC
                        0x08, 0x06,  //2-byte type (0x08,0x06 = ethernet ARP)
-                       
+
                        //ARP packet
                        0x00, 0x01,
                        0x08, 0x00,
@@ -843,16 +843,16 @@ char packetbuffer[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  //6-bytes dest MAC
                        0x00, 0x01,
                        0x06,0x44,0x53,0x06,0x06,0x06, //our MAC address
                        0xc0, 0xa8, 0x02, 0x42,  //our IP address
-                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  //MAC address of target 
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  //MAC address of target
                        0xc0, 0xa8, 0x02, 0x1E,   //IP addr of target (192.168.2.30 in our example)
-                       
+
                        0x00,0x00,0x00,0x00,
                        0x00,0x00,0x00,0x00,
                        0x00,0x00,0x00,0x00,
                        0x00,0x00,0x00,0x00,
                        0x00,0x00,                 //18 bytes pad to get to minimum payload of 46
-                       };                             
-                       
+                       };
+
 unsigned char recvbuffer[1518];
 
 //this sets socket 0 on the wiznet chipset to process raw ethernet
@@ -860,7 +860,7 @@ unsigned char recvbuffer[1518];
 void netif_setmacrawmode(void){
   int opened=0;
   uint16 value;
-  
+
   do{
     setSn_MR(0, Sn_MR_MACRAW); //MACraw mode for socket 0
     setSn_CR(0, Sn_CR_OPEN);    //open the port
@@ -876,31 +876,31 @@ void netif_setmacrawmode(void){
   printf("value of IMR=0x%04x\n", value);
   value=getSn_IR(0);
   printf("value of IR=0x%04x\n", value);
-  
+
 
 }
 
 //---wiznet recieve a raw ethernet frame----------------------------------------
 //note: this returns 0 if there are no frames to receive, else it returns
 //the size of the received frame in bytes. if the received size is greater
-//than length, it will return only length bytes of that frame 
+//than length, it will return only length bytes of that frame
 uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
   uint32 framesize=0;
   uint16 datapacketsize;
   int numdatapacketrecords, i;
   uint16 *databufferptr = (uint16 *)recvbuf;
-  
+
   //get the size of the next frame
   framesize = getSn_RX_RSR(0);
-  
+
   //return 0 if there are no frames to be received
   if(!framesize)
-    return 0;                                     
-  
+    return 0;
+
   //if framesize is greater than length, truncate frame to length bytes
   if( (framesize + 0x4) > (uint32)length)
     framesize = (uint32)length;
-    
+
   //the format of raw frame returned by the wiznet chipset is:
   //2 bytes of DATA packet size
   //DATA packet (dest MAC, src MAC and payload excluding FCS)
@@ -911,7 +911,7 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
 
 
 
-#if 0  
+#if 0
   //calculate number of data packet records (2 bytes each) that we need
   //to gobble up from the FIFO register of socket 0
   //if data packet size is odd wiznet would have padded it to 16-bit boundary
@@ -920,11 +920,11 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
     numdatapacketrecords = (datapacketsize + 1) / 2;
   else
     numdatapacketrecords = datapacketsize /2 ;
-    
-  //read the data packet into the buffer specified 
+
+  //read the data packet into the buffer specified
   for(i=0; i < numdatapacketrecords; i++){
     databufferptr[i] = getSn_RX_FIFOR(0);
-    databufferptr[i] =  ((uint16)databufferptr[i] << 8) | ((uint16)databufferptr[i] >> 8);  
+    databufferptr[i] =  ((uint16)databufferptr[i] << 8) | ((uint16)databufferptr[i] >> 8);
   }
 
   //adjust databufferptr to remove any wiznet padding in the previous step
@@ -935,11 +935,11 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
     databufferptr = (uint16 *) ((uint32)recvbuf + ((i*2)) );
     framesize = (i*2);
   }
-    
+
   //read in the FCS as well
   databufferptr[1] = getSn_RX_FIFOR(0);
   databufferptr[0] = getSn_RX_FIFOR(0);
-  framesize += 0x4;  
+  framesize += 0x4;
 #else
   //use DS function
   {
@@ -950,7 +950,7 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
       printf("fatal error: mismatch in resultsize and framesize!\n");
       while(1);
     }
-    
+
     //we dont want the FCS so reduce framesize by 4
     framesize -= 0x4;
   }
@@ -964,28 +964,28 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
   //}
 
   //return the frame size
-  return framesize;  
+  return framesize;
 }
 
 //---wiznet send a raw ethernet frame----------------------------------------
 //note: this returns 0 if there is no space in the send queue, else it returns
-//the size of the sent frame in bytes. length MUST be a multiple of 2! 
+//the size of the sent frame in bytes. length MUST be a multiple of 2!
 uint16 netif_sendframe(unsigned char *sendbuf, uint16 length){
   uint32 freespace;
   int numdatapacketrecords, i;
   uint16 *databufferptr = (uint16 *)sendbuf;
-  
+
   //assert length is multiple of 2
   //if(length & 0x1){
   //  printf("%s: assertion failed, length is not even. HALTING!", __FUNCTION__);
   //  while(1);
   //}
-  
+
   //get free space in TX buffer
   freespace = getSn_TX_FSR(0);
   //printf("freespace = %u bytes\n", freespace);
   //printf("length = %u bytes\n", length);
-  
+
   //return 0 if we cannot TX at this time since TX buffer is full
   if(freespace < (uint32)length)
     return 0;
@@ -993,40 +993,40 @@ uint16 netif_sendframe(unsigned char *sendbuf, uint16 length){
   //printf("dest mac: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
   //  sendbuf[0], sendbuf[1], sendbuf[2], sendbuf[3], sendbuf[4], sendbuf[5]);
 
-#if 0  
+#if 0
   //calculate number of data packet records (2 bytes each) we need to
   //write to the send FIFO register
   numdatapacketrecords = length/2;
-  
+
   //copy the frame to internal TX memory
   for(i=0; i < numdatapacketrecords; i++){
-    databufferptr[i] =  ((uint16)databufferptr[i] << 8) | ((uint16)databufferptr[i] >> 8);  
+    databufferptr[i] =  ((uint16)databufferptr[i] << 8) | ((uint16)databufferptr[i] >> 8);
     setSn_TX_FIFOR(0, databufferptr[i]);
   }
 #else
   wiz_write_buf(0, sendbuf, length);
 
 #endif
-  
+
   //debug[] get and dump the FIFOR
   /*{
     printf("Debug dump of TXFIFO:\n");
     for(i=0; i < numdatapacketrecords; i++){
      databufferptr[i] = getSn_TX_FIFOR(0);
-     databufferptr[i] =  ((uint16)databufferptr[i] << 8) | ((uint16)databufferptr[i] >> 8);  
-     printf("%04x ", databufferptr[i]); 
+     databufferptr[i] =  ((uint16)databufferptr[i] << 8) | ((uint16)databufferptr[i] >> 8);
+     printf("%04x ", databufferptr[i]);
     }
     printf("\nHalt!");
     while(1);
   }*/
-  
+
   //set the TX size
   setSn_TX_WRSR(0, length);
   //printf("write size= 0x%08x bytes\n", getSn_TX_WRSR(0));
-                       
+
   //xmit now
   setSn_CR(0, Sn_CR_SEND);
-  
+
   //wait for send to complete
   {
     uint16 s0irvalue=0;
@@ -1040,18 +1040,18 @@ uint16 netif_sendframe(unsigned char *sendbuf, uint16 length){
 }
 
 
-			
+
 void ldnverifier_netif_initialize(void){
   printf("\n%s:", __FUNCTION__);
   //power-on the network chipset and associated port
   W5300PwrOn();
   printf("NET: powered up chipset/port.\n");
-  
+
   //initialize W5300 chipset and setup interrupts
   iinchip_init();			// MR_RES & MR_IND
   W5300Init2();				// Init interrupts for 5300
   printf("NET: initialized chipset and interrupts.\n");
-  
+
   // configure internal W5300 TX/RX Memory Buffers
   if( sysinit(tx_mem_conf, rx_mem_conf)==0 ) {
     printf("FATAL: could not configure TX/RX buffers. HALTING!\n");
@@ -1059,8 +1059,8 @@ void ldnverifier_netif_initialize(void){
   }
   IINCHIP_WRITE(testR, 0x1234);
 
-  printf("NET: setup TX/RX buffers.\n");              
-  
+  printf("NET: setup TX/RX buffers.\n");
+
   //setup MAC, IP, gateway and subnet mask
   //note: we really don't need the last three since we are going to
   //be dealing with raw ethernet frames, but they are here for now
@@ -1068,10 +1068,10 @@ void ldnverifier_netif_initialize(void){
   setSIPR(ip);              // IP
   setGAR(gw);               // gateway IP
   setSUBR(sn);              // subnet mask
-  
+
   //enable IRQs
   enableIRQ();
-  
+
   //[debug: check if all was setup correctly]
   debug_checknetifsetup();
 
@@ -1079,10 +1079,10 @@ void ldnverifier_netif_initialize(void){
   printf("NET: enabling RAW MAC mode on socket 0...\n");
   netif_setmacrawmode();
   printf("NET: RAW MAC mode enabled.\n");
-  
+
 }
 
- 
+
 //---starting point-------------------------------------------------------------
 int main(void)
 {
@@ -1091,16 +1091,16 @@ int main(void)
 
 	// init console Baud Rate 115200kbd
 	ConsoleInit(60000000 / (16 * BAUD_RATE));
-	
+
 	printf("Lockdown verifier (Magnetron)...\n");
 	printf("Author: Amit Vasudevan (amitvasudevan@acm.org)\n");
-	
-	
+
+
 	//timerInit();
 	//Event=0;
-	
+
 	InitGPIO();
-	
+
   //get the current switch state on the verifier and bail out
   //if there is a h/w problem
   ldnverifier_switchstate = ldnverifier_getswitchstatus();
@@ -1111,17 +1111,17 @@ int main(void)
   }
 
 
-	
+
   ldnverifier_netif_initialize();
 	printf("NETIF initialized.\n");
   /*printf("Waiting for switch...\n");
   msec_delay(5000); //5 second wait
   printf("Done.\n");  */
-  
+
 
 #if 0
   printf("Doing network testing...\n");
-  
+
   {//send frame test code
     uint16 framesize=0;
     int i;
@@ -1132,7 +1132,7 @@ int main(void)
       }while(!framesize);
       printf("Sent %u bytes on the wire.\n", framesize);
     }
-    
+
 
   }
 
@@ -1171,16 +1171,16 @@ int main(void)
 	   printf("\nSECURE");
 	 else if(switchstatus == LDN_SWITCH_INSECURE)
 	   printf("\nINSECURE");
-	}	
-#endif	
-	
+	}
+#endif
+
 #if 1	//USB code
 
 	printf("Initialising USB stack\n");
-	
+
 	// initialise stack
 	USBInit();
-	
+
 	// register device descriptors
 	USBRegisterDescriptors(abDescriptors);
 
@@ -1195,7 +1195,7 @@ int main(void)
 
   //USBHwEPConfig(NETIF_SEND_EP, MAX_PACKET_SIZE);
 	//USBHwEPConfig(NETIF_SEND_EP, MAX_PACKET_SIZE);
-	
+
 
 	printf("Starting USB communication\n");
 
@@ -1205,8 +1205,8 @@ int main(void)
 	// call USB interrupt handler continuously
 	while (1) {
 		USBHwISR();
-		
-#if 1	
+
+#if 1
 		//lockdown verifier logic
 		switch(devicestate){
 		 	case STATE_WAIT_UNTRUSTED:
@@ -1220,14 +1220,14 @@ int main(void)
 			case STATE_WAIT_TRANSITION:
 			handle_state_wait_transition();
 			break;
-	
+
 			default:
 			break;
 		}
-#endif		
-		
+#endif
+
 	}
 #endif
-	
+
 	return 0;
 }

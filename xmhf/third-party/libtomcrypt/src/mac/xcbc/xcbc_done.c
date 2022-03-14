@@ -62,7 +62,7 @@ int xcbc_done(xcbc_state *xcbc, unsigned char *out, unsigned long *outlen)
       out[x] = xcbc->IV[x];
    }
    *outlen = x;
-  
+
 #ifdef LTC_CLEAN_STACK
    zeromem(xcbc, sizeof(*xcbc));
 #endif
@@ -74,4 +74,3 @@ int xcbc_done(xcbc_state *xcbc, unsigned char *out, unsigned long *outlen)
 /* $Source: /cvs/libtom/libtomcrypt/src/mac/xcbc/xcbc_done.c,v $ */
 /* $Revision: 1.5 $ */
 /* $Date: 2006/12/28 01:27:23 $ */
-

@@ -48,7 +48,7 @@
   authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 /*----------------------------------------------------------------------
  CODE
@@ -88,7 +88,7 @@ our C main*/
      DRTM using GETSEC[SENTER].  See 2.2.4.1 in Intel MLE
      Developer's Guide (Dec. 2009 revision).*/
     .align 4096      // remainder of first page
-    
+
     .global g_sl_protected_dmabuffer
     g_sl_protected_dmabuffer:
 	.fill 4096, 1, 0 /* second page*/
@@ -266,11 +266,11 @@ sl_startnew:
 
 #ifndef PERF_CRIT
     /* we are switching stacks so we need to save our performance
-     measurements in registers and then push them onto the new stack*/              
+     measurements in registers and then push them onto the new stack*/
     popl %eax
-    popl %edx              
+    popl %edx
 #endif
-              
+
     /* Load new segment selectors for DS, SS and ES*/
     movw $0x10, %bx // XXX TODO Get rid of magic number
     movw %bx, %ds
@@ -286,7 +286,7 @@ sl_startnew:
     movl $0x10000, %esp /* XXX TODO Get rid of magic number*/
 
 /*#ifdef __INIT_LATE__
-    //setup 115200,8n1 on ttyS0 
+    //setup 115200,8n1 on ttyS0
     call raw_serial_init
     mov $0x3fd, %edx // control register for com1
 1:  in (%dx), %al    // read status into AL
@@ -301,12 +301,12 @@ sl_startnew:
 #ifndef PERF_CRIT
     // push measurements onto the new stack
     pushl %edx
-    pushl %eax              
+    pushl %eax
 #else
     pushl $0x00000000
     pushl $0x00000000
 #endif
-              
+
     pushl %ebp			/*SL base address*/
     pushl %esi			/*cpu vendor*/
     call xmhf_sl_main	/*call SL main routine*/

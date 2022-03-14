@@ -47,7 +47,7 @@
 #ifndef PAGES_H
 #define PAGES_H
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 typedef struct {
   void *buf;

@@ -13,7 +13,7 @@
 /**
   @file crypt_argchk.c
   Perform argument checking, Tom St Denis
-*/  
+*/
 
 #if (ARGTYPE == 0)
 #include <stdlib.h>

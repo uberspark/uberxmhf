@@ -10,13 +10,13 @@
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   Source donated by Elliptic Semiconductor Inc (www.ellipticsemi.com) to the LibTom Projects
 */
 
 #ifdef LTC_XTS_MODE
 
-/** multiply by x 
+/** multiply by x
   @param I      The value to multiply by x (LFSR shift)
 */
 void xts_mult_x(unsigned char *I)
@@ -31,7 +31,7 @@ void xts_mult_x(unsigned char *I)
   }
   if (tt) {
      I[0] ^= 0x87;
-  } 
+  }
 }
 
 #endif
@@ -39,4 +39,3 @@ void xts_mult_x(unsigned char *I)
 /* $Source: /cvs/libtom/libtomcrypt/src/modes/xts/xts_mult_x.c,v $ */
 /* $Revision: 1.4 $ */
 /* $Date: 2007/03/10 23:59:09 $ */
-

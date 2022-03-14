@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -62,7 +62,7 @@
 	caller,a,__FILE__,__LINE__,__FUNCTION__)
 #else
 #define REPORT_ERROR_(caller,a)
-#endif  
+#endif
 
 #ifndef ERETURN
 #define ERETURN(a) do {int _r=a; if(!_r) _r=-1; REPORT_ERROR_("ERETURN",_r); return(_r);} while(0)
@@ -109,4 +109,4 @@ int debug(int class,char *format,...);
 #define UNIMPLEMENTED do { fprintf(stderr,"Function %s unimplemented\n",__FUNCTION__); abort(); } while(0)
 
 
-#endif 
+#endif

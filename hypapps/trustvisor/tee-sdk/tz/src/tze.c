@@ -61,8 +61,8 @@ tz_return_t TZESvcLoadAndOpen(tze_dev_svc_sess_t *sess,
   if (rv != TZ_SUCCESS)
     return rv;
 
-  /* download service */  
-  { 
+  /* download service */
+  {
     tz_session_t tzManagerSession;
 
     /* open session with device manager */

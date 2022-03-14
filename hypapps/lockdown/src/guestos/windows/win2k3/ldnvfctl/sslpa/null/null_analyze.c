@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -74,14 +74,14 @@ static int create_null_analyzer(handle,ctx,conn,objp,i_addr,i_port,r_addr,r_port
   {
     null_analyzer *obj=0;
     static int ctr;
-    
+
     if(!(obj=(null_analyzer *)calloc(sizeof(null_analyzer),1)))
       ERETURN(R_NO_MEMORY);
 
     obj->num=ctr++;
-    
+
     DBG((0,"Creating analyzer for connection %d\n",obj->num));
-    
+
     *objp=(proto_obj *)obj;
     return(0);
   }
@@ -90,13 +90,13 @@ int destroy_null_analyzer(objp)
   proto_obj **objp;
   {
     null_analyzer *obj;
-    
+
     if(!objp || !*objp)
       return(0);
 
     obj=(null_analyzer *)*objp;
     DBG((0,"Destroying analyzer for connection %d\n",obj->num));
-    
+
     free(*objp);
     *objp=0;
 
@@ -108,15 +108,15 @@ int data_null_analyzer(_obj,seg,direction)
   segment *seg;
   int direction;
   {
-#ifdef DEBUG    
+#ifdef DEBUG
     null_analyzer *obj=(null_analyzer *)_obj;
-#endif    
+#endif
     DBG((0,"Processing data for connection %d dir %d\n",obj->num,
       direction));
 
     for(;seg;seg=seg->next){
       int i;
-	
+
       for(i=0;i<MIN(seg->len,20);i++){
 	if(!isascii(seg->data[i]))
 	  break;
@@ -129,7 +129,7 @@ int data_null_analyzer(_obj,seg,direction)
       }
       printf("====\n");
     }
-    
+
     return(0);
   }
 
@@ -138,9 +138,9 @@ int fin_null_analyzer(_obj,p,direction)
   packet *p;
   int direction;
   {
-#ifdef DEBUG    
+#ifdef DEBUG
     null_analyzer *obj=(null_analyzer *)_obj;
-#endif    
+#endif
     DBG((0,"Received FIN on connection %d\n",obj->num));
     return(0);
   }

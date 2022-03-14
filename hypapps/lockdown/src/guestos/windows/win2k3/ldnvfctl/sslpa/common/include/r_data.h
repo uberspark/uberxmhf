@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -65,4 +65,3 @@ int r_data_compare PROTO_LIST((Data *d1,Data *d2));
 #define ZERO_DATA(a) (a).data=0; (a).len=0
 
 #endif
-

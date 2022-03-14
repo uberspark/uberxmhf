@@ -50,7 +50,7 @@
 //returns the number of cores/CPUs as well as their LAPIC id,
 //version, base and BSP indications
 //author: amit vasudevan (amitvasudevan@acm.org)
-#include <xmhf.h> 
+#include <xmhf.h>
 
 //forward prototypes
 static int mp_checksum(unsigned char *mp, int len);
@@ -65,7 +65,7 @@ ACPI_RSDP * ACPIGetRSDP(void);
 u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	MPFP *mpfp;
 	MPCONFTABLE *mpctable;
-	
+
 	ACPI_RSDP *rsdp;
 
 #if 0
@@ -76,8 +76,8 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	ACPI_RSDT	*rsdt;
 	u32 n_rsdt_entries;
 	u32 *rsdtentrylist;
-#endif 	
-	 
+#endif
+
   ACPI_MADT *madt;
 	u8 madt_found=0;
 	u32 i;
@@ -95,17 +95,17 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 		printf("\nSystem is not ACPI Compliant, falling through...");
 		goto fallthrough;
 	}
-	
+
 	printf("\nACPI RSDP at 0x%08x", (u32)rsdp);
 
-#if 0	
+#if 0
 	xsdt=(ACPI_XSDT *)(u32)rsdp->xsdtaddress;
 	n_xsdt_entries=(u32)((xsdt->length-sizeof(ACPI_XSDT))/8);
 
 	printf("\nACPI XSDT at 0x%08x", xsdt);
-  printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
+  printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u",
 			xsdt->length, sizeof(ACPI_XSDT), n_xsdt_entries);
-  
+
   xsdtentrylist=(u64 *) ( (u32)xsdt + sizeof(ACPI_XSDT) );
 
 	for(i=0; i< n_xsdt_entries; i++){
@@ -120,9 +120,9 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	n_rsdt_entries=(u32)((rsdt->length-sizeof(ACPI_RSDT))/4);
 
 	printf("\nACPI RSDT at 0x%08x", (u32)rsdt);
-  printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
+  printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u",
 			rsdt->length, sizeof(ACPI_RSDT), n_rsdt_entries);
-  
+
   rsdtentrylist=(u32 *) ( (u32)rsdt + sizeof(ACPI_RSDT) );
 
 	for(i=0; i< n_rsdt_entries; i++){
@@ -131,7 +131,7 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
     	madt_found=1;
     	break;
     }
-	}	
+	}
 
 #endif
 
@@ -144,7 +144,7 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	printf("\nACPI MADT at 0x%08x", (u32)madt);
 	printf("\n	len=0x%08x, record-length=%u bytes", madt->length,
 			madt->length - sizeof(ACPI_MADT));
-	
+
 	//scan through MADT APIC records to find processors
 	*num_pcpus=0;
 	{
@@ -152,16 +152,16 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 		u32 madtcurrentrecordoffset=0;
 		u32 i=0;
 		u32 foundcores=0;
-		
+
 		do{
-			ACPI_MADT_APIC *apicrecord = (ACPI_MADT_APIC *)((u32)madt + sizeof(ACPI_MADT) + madtcurrentrecordoffset);				
+			ACPI_MADT_APIC *apicrecord = (ACPI_MADT_APIC *)((u32)madt + sizeof(ACPI_MADT) + madtcurrentrecordoffset);
  		  printf("\nrec type=0x%02x, length=%u bytes, flags=0x%08x, id=0x%02x", apicrecord->type,
 			 		apicrecord->length, apicrecord->flags, apicrecord->lapicid);
 
 			if(apicrecord->type == 0x0 && (apicrecord->flags & 0x1)){ //processor record
 
 		    foundcores=1;
-				HALT_ON_ERRORCOND( *num_pcpus < MAX_PCPU_ENTRIES);		        
+				HALT_ON_ERRORCOND( *num_pcpus < MAX_PCPU_ENTRIES);
 				i = *num_pcpus;
 				pcpus[i].lapic_id = apicrecord->lapicid;
 		    pcpus[i].lapic_ver = 0;
@@ -170,18 +170,18 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 					pcpus[i].isbsp = 1;	//ACPI spec says that first processor entry MUST be BSP
 				else
 					pcpus[i].isbsp = 0;
-		
+
 				*num_pcpus = *num_pcpus + 1;
 			}
-			madtcurrentrecordoffset += apicrecord->length; 
+			madtcurrentrecordoffset += apicrecord->length;
 		}while(madtcurrentrecordoffset < madtrecordlength);
-	
+
 		if(foundcores)
 			return 1;
 	}
-	
 
-fallthrough:	
+
+fallthrough:
 	//ok, ACPI detection failed proceed with MP table scan
 	//we simply grab all the info from there as per
 	//the intel MP spec.
@@ -189,10 +189,10 @@ fallthrough:
 	//look at 1K at top of conventional mem
 	//look at 1K starting at EBDA and
 	//look at 64K starting at 0xF0000
-	
+
 	if( mp_scan_config(0x0, 0x400, &mpfp) ||
 			mp_scan_config(639 * 0x400, 0x400, &mpfp) ||
-			mp_scan_config(mp_getebda(), 0x400, &mpfp) ||					
+			mp_scan_config(mp_getebda(), 0x400, &mpfp) ||
 			mp_scan_config(0xF0000, 0x10000, &mpfp) ){
 
 	    printf("\nMP table found at: 0x%08x", (u32)mpfp);
@@ -200,11 +200,11 @@ fallthrough:
   		printf("\nMP feature info1=0x%02x", mpfp->mpfeatureinfo1);
   		printf("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
   		printf("\nMP Configuration table at 0x%08x", mpfp->paddrpointer);
-  
+
   		HALT_ON_ERRORCOND( mpfp->paddrpointer != 0 );
 			mpctable = (MPCONFTABLE *)mpfp->paddrpointer;
   		HALT_ON_ERRORCOND(mpctable->signature == MPCONFTABLE_SIGNATURE);
-  
+
 		  {//debug
 		    int i;
 		    printf("\nOEM ID: ");
@@ -214,26 +214,26 @@ fallthrough:
 		    for(i=0; i < 12; i++)
 		      printf("%c", mpctable->productid[i]);
 		  }
-  
+
 		  printf("\nEntry count=%u", mpctable->entrycount);
 		  printf("\nLAPIC base=0x%08x", mpctable->lapicaddr);
-		  
+
 		  //now step through CPU entries in the MP-table to determine
 		  //how many CPUs we have
 		  *num_pcpus=0;
-		  		  
+
 			{
 		    int i;
 		    u32 addrofnextentry= (u32)mpctable + sizeof(MPCONFTABLE);
-		    
+
 		    for(i=0; i < mpctable->entrycount; i++){
 		      MPENTRYCPU *cpu = (MPENTRYCPU *)addrofnextentry;
 		      if(cpu->entrytype != 0)
 		        break;
-		      
+
 		      if(cpu->cpuflags & 0x1){
- 		        HALT_ON_ERRORCOND( *num_pcpus < MAX_PCPU_ENTRIES);		        
-						printf("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x", 
+ 		        HALT_ON_ERRORCOND( *num_pcpus < MAX_PCPU_ENTRIES);
+						printf("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x",
 		          (u32)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
 		        pcpus[i].lapic_id = cpu->lapicid;
 		        pcpus[i].lapic_ver = cpu->lapicver;
@@ -241,15 +241,15 @@ fallthrough:
 		        pcpus[i].isbsp = cpu->cpuflags & 0x2;
 		        *num_pcpus = *num_pcpus + 1;
 		      }
-		            
+
 		      addrofnextentry += sizeof(MPENTRYCPU);
 		    }
 		  }
-			
-	
-			return 1;		
+
+
+			return 1;
 	}
-	
+
 
 	return 1;
 
@@ -258,10 +258,10 @@ fallthrough:
 
 static int mp_checksum(unsigned char *mp, int len){
 	int sum = 0;
-  
+
 	while (len--)
   	sum += *mp++;
-  
+
 	return sum & 0xFF;
 }
 
@@ -292,7 +292,7 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
      bp += 4;
      length -= 16;
   }
-  
+
   *mpfp=0;
 	return 0;
 }
@@ -315,10 +315,10 @@ u32 _ACPIGetRSDPComputeChecksum(u32 spaddr, u32 size){
   u32 i;
 
   p=(char *)spaddr;
-  
+
   for(i=0; i< size; i++)
     checksum+= (char)(*(p+i));
-  
+
   return (u32)checksum;
 }
 
@@ -329,7 +329,7 @@ ACPI_RSDP * ACPIGetRSDP(void){
   u32 ebdaphys;
   u32 i, found=0;
   ACPI_RSDP *rsdp;
-  
+
   //get EBDA segment from 040E:0000h in BIOS data area
   ebdaseg= * ((u16 *)0x0000040E);
   //convert it to its 32-bit physical address
@@ -344,10 +344,10 @@ ACPI_RSDP * ACPIGetRSDP(void){
       }
     }
   }
-  
+
   if(found)
     return rsdp;
-  
+
   //search within BIOS areas 0xE0000 to 0xFFFFF
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
     rsdp=(ACPI_RSDP *)i;
@@ -361,8 +361,7 @@ ACPI_RSDP * ACPIGetRSDP(void){
 
   if(found)
     return rsdp;
-  
-  return (ACPI_RSDP *)NULL;  
+
+  return (ACPI_RSDP *)NULL;
 }
 //------------------------------------------------------------------------------
-  

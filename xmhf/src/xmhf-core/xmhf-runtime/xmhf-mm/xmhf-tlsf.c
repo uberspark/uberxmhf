@@ -163,7 +163,7 @@ static const size_t block_start_offset =
 ** the prev_phys_block field, and no larger than the number of addressable
 ** bits for FL_INDEX.
 */
-static const size_t block_size_min = 
+static const size_t block_size_min =
 	sizeof(block_header_t) - sizeof(block_header_t*);
 static const size_t block_size_max = xmhf_tlsf_cast(size_t, 1) << FL_INDEX_MAX;
 
@@ -784,7 +784,7 @@ xmhf_tlsf_pool xmhf_tlsf_create(void* mem, size_t bytes)
 #if defined (xmhf_tlsf_64BIT)
 	rv += (xmhf_tlsf_fls_sizet(0x80000000) == 31) ? 0 : 0x100;
 	rv += (xmhf_tlsf_fls_sizet(0x100000000) == 32) ? 0 : 0x200;
-	rv += (xmhf_tlsf_fls_sizet(0xffffffffffffffff) == 63) ? 0 : 0x400; 
+	rv += (xmhf_tlsf_fls_sizet(0xffffffffffffffff) == 63) ? 0 : 0x400;
 	if (rv)
 	{
 		printf("xmhf_tlsf_create: %x ffs/fls tests failed!\n", rv);
@@ -799,7 +799,7 @@ xmhf_tlsf_pool xmhf_tlsf_create(void* mem, size_t bytes)
 		printf("xmhf_tlsf_create: Pool size must be at least %d bytes.\n",
 			(unsigned int)(pool_overhead + block_size_min));
 #else
-		printf("xmhf_tlsf_create: Pool size must be between %u and %u bytes.\n", 
+		printf("xmhf_tlsf_create: Pool size must be between %u and %u bytes.\n",
 			(unsigned int)(pool_overhead + block_size_min),
 			(unsigned int)(pool_overhead + block_size_max));
 #endif

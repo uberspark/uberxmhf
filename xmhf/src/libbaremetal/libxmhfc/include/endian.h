@@ -44,17 +44,17 @@
 typedef __uint16_t      uint16_t;
 #define _UINT16_T_DECLARED
 #endif
- 
+
 #ifndef _UINT32_T_DECLARED
 typedef __uint32_t      uint32_t;
 #define _UINT32_T_DECLARED
 #endif
- 
+
 #ifndef _UINT64_T_DECLARED
 typedef __uint64_t      uint64_t;
 #define _UINT64_T_DECLARED
 #endif
- 
+
 /*
  * General byte order swapping functions.
  */

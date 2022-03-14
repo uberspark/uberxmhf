@@ -47,7 +47,7 @@
 // init low-level support routines
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 .extern midtable_numentries
 .extern mp_cstartup
@@ -61,11 +61,11 @@
     jmp ap_bootstrap_bypassdata
     _ap_gdtdesc:
       .word _ap_gdt_end - _ap_gdt_start - 1
-      .long _ap_gdt_start - _ap_bootstrap_start + 0x10000  
+      .long _ap_gdt_start - _ap_bootstrap_start + 0x10000
     .align 16
     _ap_gdt_start:
       .quad 0x0000000000000000
-      .quad	0x00cf9a000000ffff	
+      .quad	0x00cf9a000000ffff
 	    .quad	0x00cf92000000ffff
     _ap_gdt_end:
       .word 0
@@ -76,7 +76,7 @@
     	movw $0xFFFF, %sp
     	movw $0x4000, %ax
     	movw %ax, %ss
-    	
+
     	movw $0x0002, %si
 
       lgdt (%si)
@@ -98,7 +98,7 @@
       movl $init_core_lowlevel_setup, %eax
       jmpl *%eax
       hlt
-      
+
   .global _ap_bootstrap_end
   _ap_bootstrap_end:
     nop
@@ -110,10 +110,10 @@
 .section .text
   .global init_core_lowlevel_setup
   init_core_lowlevel_setup:
-    
-	//load our gdt 
+
+	//load our gdt
   lgdt init_gdt
-    
+
   //get hold of local APIC id
   mov $(MSR_APIC_BASE), %ecx
   rdmsr
@@ -123,7 +123,7 @@
   shr $24, %eax
 
   movl midtable_numentries, %edx
-    
+
   //get vcpu virtual address of this CPU/core
     movl $(midtable), %ebx
     xorl %ecx, %ecx
@@ -142,26 +142,22 @@ gotvcpu:
    pushl %esi
    call mp_cstartup
    //we should never get here, if so just halt
-   hlt  
+   hlt
 
 
 
 //------------------------------------------------------------------------------
 .section  .data
-      		
+
 	//the GDT
 	init_gdt:
-	.word	init_gdt_end - init_gdt_start - 1	
+	.word	init_gdt_end - init_gdt_start - 1
 	.long	init_gdt_start
 
 	.align	16
 	init_gdt_start:
-	.quad	0x0000000000000000	
-	.quad	0x00cf9a000000ffff	
-	.quad	0x00cf92000000ffff	
-	.quad	0x0000000000000000	
+	.quad	0x0000000000000000
+	.quad	0x00cf9a000000ffff
+	.quad	0x00cf92000000ffff
+	.quad	0x0000000000000000
 	init_gdt_end:
-
-
-
-              

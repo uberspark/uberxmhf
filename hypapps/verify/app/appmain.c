@@ -61,7 +61,7 @@ u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 }
 
 u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
-	
+
 	//invoke setprot to set memory protections
 	//assume that gpa and prottype are passed using GPR
 	//ECX and EDX respectively (under attacker's control)
@@ -73,30 +73,30 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 			u32 gpa=nondet_u32();
 			u32 prottype=nondet_u32();
 		#endif
-		
-		if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
-		    (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) 
+
+		if( ((gpa < rpb->XtVmmRuntimePhysBase) ||
+		    (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)))
 			&&
-			( (prottype > 0) && 
-	          (prottype <= MEMP_PROT_MAXVALUE) 
+			( (prottype > 0) &&
+	          (prottype <= MEMP_PROT_MAXVALUE)
 	        )
-			&&	
+			&&
 			(	(prottype == MEMP_PROT_NOTPRESENT) ||
 				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
 				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
 				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
-				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
+				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE))
 			)
 		  ){
-			//xmhf_memprot_setprot(&vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);	   
-			xmhf_memprot_setprot(vcpu, gpa, prottype);	   
+			//xmhf_memprot_setprot(&vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
+			xmhf_memprot_setprot(vcpu, gpa, prottype);
 		}else{
 			printf("\nSecurity Exception: Trying to set protections on EMHF memory regions, Halting!");
 			HALT();
 		}
 	}
 
-	
+
 		return APP_SUCCESS;
 }
 
@@ -104,7 +104,7 @@ u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	u32 status=APP_SUCCESS;
 	u32 call_id;
-	
+
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		call_id = (u32)vmcb->rax;
 	else
@@ -112,20 +112,20 @@ u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 
 
 	switch(call_id){
-		
+
 		case V_HYPERCALL:{
 			status=v_hypercall_handler(vcpu, r);
 		}
 		break;
-		
+
 		default:
-			printf("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
+			printf("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!",
 			  vcpu->id, call_id);
 			status=APP_ERROR;
 			break;
 	}
 
-	return status;			
+	return status;
 }
 
 
@@ -133,7 +133,7 @@ u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 //note: should not return
 void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 	(void)r; //unused
-	xmhf_baseplatform_reboot(vcpu);				
+	xmhf_baseplatform_reboot(vcpu);
 }
 
 //handles h/w pagetable violations
@@ -155,7 +155,7 @@ u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
   u32 portnum, u32 access_type, u32 access_size){
 	(void)vcpu; //unused
 	(void)r; //unused
@@ -165,4 +165,3 @@ u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 
  	return APP_IOINTERCEPT_CHAIN;
 }
-

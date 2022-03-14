@@ -56,22 +56,22 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 Module Name:
 
         SendRCV.C
-        
+
 Abstract:
 
     This module contains miniport functions for handling Send & Receive
     packets and other helper routines called by these miniport functions.
 
-    In order to excercise the send and receive code path of this driver, 
-    you should install more than one instance of the miniport. If there 
+    In order to excercise the send and receive code path of this driver,
+    you should install more than one instance of the miniport. If there
     is only one instance installed, the driver throws the send packet on
-    the floor and completes the send successfully. If there are more 
+    the floor and completes the send successfully. If there are more
     instances present, it indicates the incoming send packet to the other
-    instances. For example, if there 3 instances: A, B, & C installed. 
-    Packets coming in for A instance would be indicated to B & C; packets 
-    coming into B would be indicated to C, & A; and packets coming to C 
-    would be indicated to A & B. 
-    
+    instances. For example, if there 3 instances: A, B, & C installed.
+    Packets coming in for A instance would be indicated to B & C; packets
+    coming into B would be indicated to C, & A; and packets coming to C
+    would be indicated to A & B.
+
 Revision History:
 
 Notes:
@@ -83,16 +83,16 @@ Notes:
 //returns TRUE on success, FALSE on error
 BOOLEAN	GetPacketBufferData(PMP_ADAPTER Adapter,
     PNDIS_PACKET Packet,
-		PUCHAR	buffer, 
+		PUCHAR	buffer,
 		PULONG	length){
-    INT               Equal;            
+    INT               Equal;
     UINT              PacketLength;
     PNDIS_BUFFER      FirstBuffer = NULL;
     PUCHAR            Address = NULL;
     UINT              CurrentLength;
 	  ULONG             index;
     BOOLEAN           result = FALSE;
-  	ULONG							bufferOffset=0;  
+  	ULONG							bufferOffset=0;
     PNDIS_BUFFER      CurrentBuffer = NULL;
     PNDIS_BUFFER      NextBuffer = NULL;
 
@@ -116,7 +116,7 @@ BOOLEAN	GetPacketBufferData(PMP_ADAPTER Adapter,
 	if(PacketLength == 0 || PacketLength > NIC_BUFFER_SIZE)
 		return FALSE;
 
-	//if the entire packet is in this buffer, then copy and return	
+	//if the entire packet is in this buffer, then copy and return
 	if(CurrentLength == PacketLength){
 		*length=PacketLength;
 		memcpy(buffer, 	Address, PacketLength);
@@ -127,42 +127,42 @@ BOOLEAN	GetPacketBufferData(PMP_ADAPTER Adapter,
 	memcpy(buffer, Address, CurrentLength);
 	bufferOffset+=CurrentLength;
 	CurrentBuffer = FirstBuffer;
-	
+
 	while(1){
 		//get next buffer
 		NdisGetNextBuffer(CurrentBuffer, &NextBuffer);
-		
+
 		if(NextBuffer == NULL){
 			break;
 		}
 
 		CurrentBuffer=NextBuffer;
-		
+
 		//query the buffer
 		NdisQueryBuffer(CurrentBuffer, &Address, &CurrentLength);
-		
+
 		//copy this buffer contents
 		memcpy((buffer+bufferOffset), Address, CurrentLength);
 		bufferOffset+=CurrentLength;
 	}
 
 	*length=PacketLength;
-	return TRUE;	
+	return TRUE;
 }
 /*
 
 PUCHAR	GetPacketBufferData(    PMP_ADAPTER Adapter,
-    PNDIS_PACKET Packet, 
+    PNDIS_PACKET Packet,
 		PULONG	length){
-    INT               Equal;            
+    INT               Equal;
     UINT              PacketLength;
     PNDIS_BUFFER      FirstBuffer = NULL;
     PUCHAR            Address = NULL;
     UINT              CurrentLength;
     ULONG             index;
     BOOLEAN           result = FALSE;
-    
-   
+
+
 #ifdef NDIS51_MINIPORT
        NdisGetFirstBufferFromPacketSafe(
             Packet,
@@ -179,19 +179,19 @@ PUCHAR	GetPacketBufferData(    PMP_ADAPTER Adapter,
             &CurrentLength,
             &PacketLength);
 #endif
-        
+
         if(PacketLength != CurrentLength)
-        	
+
         DEBUGP(MP_LOUD, ("BLASTED!!! Packetlength=%u, CurrentLength=%u\n",
 						PacketLength, CurrentLength));
 
         *length=(ULONG)PacketLength;
 				return (Address);
-		
+
 }
 */
 
-VOID 
+VOID
 MPSendPackets(
     IN  NDIS_HANDLE             MiniportAdapterContext,
     IN  PPNDIS_PACKET           PacketArray,
@@ -203,21 +203,21 @@ Routine Description:
     Send Packet Array handler. Called by NDIS whenever a protocol
     bound to our miniport sends one or more packets.
 
-    The input packet descriptor pointers have been ordered according 
-    to the order in which the packets should be sent over the network 
-    by the protocol driver that set up the packet array. The NDIS 
+    The input packet descriptor pointers have been ordered according
+    to the order in which the packets should be sent over the network
+    by the protocol driver that set up the packet array. The NDIS
     library preserves the protocol-determined ordering when it submits
     each packet array to MiniportSendPackets
 
-    As a deserialized driver, we are responsible for holding incoming send 
-    packets in our internal queue until they can be transmitted over the 
+    As a deserialized driver, we are responsible for holding incoming send
+    packets in our internal queue until they can be transmitted over the
     network and for preserving the protocol-determined ordering of packet
-    descriptors incoming to its MiniportSendPackets function. 
+    descriptors incoming to its MiniportSendPackets function.
     A deserialized miniport driver must complete each incoming send packet
-    with NdisMSendComplete, and it cannot call NdisMSendResourcesAvailable. 
+    with NdisMSendComplete, and it cannot call NdisMSendResourcesAvailable.
 
     Runs at IRQL <= DISPATCH_LEVEL
-    
+
 Arguments:
 
     MiniportAdapterContext    Pointer to our adapter context
@@ -227,7 +227,7 @@ Arguments:
 Return Value:
 
     None
-    
+
 --*/
 {
     PMP_ADAPTER       Adapter;
@@ -254,7 +254,7 @@ Return Value:
     return;
 }
 
-VOID 
+VOID
 MPReturnPacket(
     IN NDIS_HANDLE  MiniportAdapterContext,
     IN PNDIS_PACKET Packet)
@@ -282,13 +282,13 @@ Return Value:
     DEBUGP(MP_TRACE, ("---> MPReturnPacket\n"));
 
     //NICFreeRecvPacket(Adapter, Packet);
-    
+
     DEBUGP(MP_TRACE, ("<--- MPReturnPacket\n"));
 }
 
 
 //--- this routine is called by the OS to transmit a packet OUT-----------------
-NDIS_STATUS 
+NDIS_STATUS
 NICSendPacket(
     PMP_ADAPTER Adapter,
     PNDIS_PACKET Packet)
@@ -301,7 +301,7 @@ Routine Description:
     receive packet with the same data on one or more miniport instances
     controlled by this driver. For receive path to be active, you have
     to install more than one instance of this miniport.
-        
+
 Arguments:
 
     Adapter    - pointer to the MP_ADAPTER structure
@@ -322,64 +322,64 @@ Return Value:
 		ULONG							p_Length, i;
 		PUCHAR						p;
 		NTSTATUS					opStatus;
-		
+
     DEBUGP(MP_TRACE, ("--> NICSendPacket, Packet= %p\n", Packet));
 
 
 		//
-		//if(MP_IS_READY(Adapter) && 
+		//if(MP_IS_READY(Adapter) &&
 		//		NICIsPacketTransmittable(Adapter, Packet)){
 		if(MP_IS_READY(Adapter)){
 			if(GetPacketBufferData(Adapter, Packet, &Adapter->LdnSendPacketBufferData[0], &p_Length)){
 				p_BufferAddr = (ULONG)&Adapter->LdnSendPacketBufferData[0];
-			
+
 			  DEBUGP(MP_ERROR, ("OUT: size=%u bytes\n", p_Length));
 				opStatus = txrxfifo_txfifo_add(p_BufferAddr, p_Length);
 				if(opStatus != STATUS_SUCCESS){
 					DEBUGP(MP_ERROR, ("%s: Tx FIFO full, rejecting...\n", __FUNCTION__));
-				}		
-			
-			/*p=(PUCHAR)p_BufferAddr;	
-			
-			DEBUGP(MP_INFO, ("Send, Size=%u bytes\n", 
+				}
+
+			/*p=(PUCHAR)p_BufferAddr;
+
+			DEBUGP(MP_INFO, ("Send, Size=%u bytes\n",
                             p_Length));
 
       DEBUGP(MP_INFO, ("\nPacket Dump.\n"));
       for(i=0; i < p_Length; i++)
-				DEBUGP(MP_INFO, ("0x%02X ", 
+				DEBUGP(MP_INFO, ("0x%02X ",
                             p[i]));
-          
+
       DEBUGP(MP_INFO, ("\nDone.\n"));*/
-                              
+
 	    /*
-			//send it out to our VMM				
+			//send it out to our VMM
 			#define	__LDN_VMMCALL_PKTSEND		0xC0
-    
+
     	//vmmcall here
 			__asm {
 				push eax
 				push ebx
 				push ecx
-				
-				mov ebx, p_BufferAddr 	
+
+				mov ebx, p_BufferAddr
 				mov ecx, p_Length
 				mov eax, __LDN_VMMCALL_PKTSEND
-				
+
 				__emit 0fh
 				__emit 01h
 				__emit 0d9h
-				
+
 				pop ecx
 				pop ebx
-				pop eax		
+				pop eax
 			 }
 			 */
-      
+
       }else
 				DEBUGP(MP_ERROR, ("Could not grab data for send packet\n"));
-					
+
 		}
-		
+
 		NDIS_SET_PACKET_STATUS(Packet, Status);
 
     DEBUGP(MP_LOUD, ("Calling NdisMSendComplete \n"));
@@ -397,7 +397,7 @@ Return Value:
 
     return(Status);
 
-}  
+}
 
 
 VOID
@@ -414,7 +414,7 @@ Routine Description:
     timer DPC is not required when you are talking to a real device. In real
     miniports, this DPC is usually provided by NDIS as MPHandleInterrupt
     callback whenever the device interrupts for receive indication.
-        
+
 Arguments:
 
 FunctionContext - Pointer to our adapter
@@ -427,18 +427,18 @@ Return Value:
 {
 
 		/*#define	__LDN_VMMCALL_TIMERFIRE				0xA0
-    
+
     //vmmcall here
 		__asm {
 				push eax
 
 				mov eax, __LDN_VMMCALL_TIMERFIRE
-				
+
 				__emit 0fh
 				__emit 01h
 				__emit 0d9h
-				
-				pop eax		
+
+				pop eax
 			}*/
 
 }
@@ -459,7 +459,7 @@ Routine Description:
     timer DPC is not required when you are talking to a real device. In real
     miniports, this DPC is usually provided by NDIS as MPHandleInterrupt
     callback whenever the device interrupts for receive indication.
-        
+
 Arguments:
 
 FunctionContext - Pointer to our adapter
@@ -472,21 +472,21 @@ Return Value:
 {
 
 /*#define __LDN_VMMCALL_DOPOLL					0xA1
-    
+
     //vmmcall here
 		__asm {
 				push eax
 
 				mov eax, __LDN_VMMCALL_DOPOLL
-				
+
 				__emit 0fh
 				__emit 01h
 				__emit 0d9h
-				
-				pop eax		
+
+				pop eax
 			}
   */
-  
+
 }
 
 VOID
@@ -503,7 +503,7 @@ Routine Description:
     timer DPC is not required when you are talking to a real device. In real
     miniports, this DPC is usually provided by NDIS as MPHandleInterrupt
     callback whenever the device interrupts for receive indication.
-        
+
 Arguments:
 
 FunctionContext - Pointer to our adapter
@@ -516,18 +516,18 @@ Return Value:
 {
 
 /*#define __LDN_VMMCALL_DOPOLL_1					0xA2
-    
+
     //vmmcall here
 		__asm {
 				push eax
 
 				mov eax, __LDN_VMMCALL_DOPOLL_1
-				
+
 				__emit 0fh
 				__emit 01h
 				__emit 0d9h
-				
-				pop eax		
+
+				pop eax
 			}
   */
 }
@@ -546,7 +546,7 @@ Routine Description:
     timer DPC is not required when you are talking to a real device. In real
     miniports, this DPC is usually provided by NDIS as MPHandleInterrupt
     callback whenever the device interrupts for receive indication.
-        
+
 Arguments:
 
 FunctionContext - Pointer to our adapter
@@ -564,45 +564,45 @@ Return Value:
     ULONG p_PacketLength=0, p_BufferAddr;
   	PNDIS_PACKET PacketArray[1];
    	NTSTATUS opStatus  = STATUS_SUCCESS;
- 
+
     DEBUGP(MP_TRACE, ("--->NICIndicateReceiveTimerDpc = %p\n", Adapter));
 
     //
     // Increment the ref count on the adapter to prevent the driver from
     // unloding while the DPC is running. The Halt handler waits for the
-    // ref count to drop to zero before returning. 
+    // ref count to drop to zero before returning.
     //
-    MP_INC_REF(Adapter); 
+    MP_INC_REF(Adapter);
 
 		//the next block runs atomically, we acquire a lock
 		//invoke the vmm, determine if there
 		//is a packet and if so, indicate the packet up and release the lock
     //NdisAcquireSpinLock(&Adapter->RecvLock);
     p_BufferAddr=(ULONG)&Adapter->LdnRecvPacketBufferData[0];
-    
+
 /*		#define	__LDN_VMMCALL_PKTRECV		0xC1
-    
+
     //vmmcall here
 		__asm {
 				push eax
 				push ebx
 				push ecx
-				
+
 				mov ebx, p_BufferAddr
 				mov ecx, 0
 				mov eax, __LDN_VMMCALL_PKTRECV
-				
+
 				__emit 0fh
 				__emit 01h
 				__emit 0d9h
-				
+
 				mov p_PacketLength, ecx
 				pop ecx
 				pop ebx
-				pop eax		
+				pop eax
 			}
-	*/		
-	
+	*/
+
 		/*Adapter->LdnRecvPacketBufferData[0]=0x00;
 		Adapter->LdnRecvPacketBufferData[1]=0x15;
 		Adapter->LdnRecvPacketBufferData[2]=0x17;
@@ -617,36 +617,36 @@ Return Value:
 		Adapter->LdnRecvPacketBufferData[11]=0xF1;
 		Adapter->LdnRecvPacketBufferData[12]=0xAA;
 		Adapter->LdnRecvPacketBufferData[13]=0xBB;*/
-		
-		
+
+
 	 	opStatus = txrxfifo_rxfifo_remove(p_BufferAddr, &p_PacketLength);
-								
-		
+
+
 		if(opStatus == STATUS_SUCCESS && p_PacketLength){
 		    NdisAdjustBufferLength(Adapter->LdnRecvPacketBuffer, p_PacketLength);
 		    NdisRecalculatePacketCounts(Adapter->LdnRecvPacket);
-		    
+
 				NDIS_SET_PACKET_STATUS(Adapter->LdnRecvPacket, NDIS_STATUS_RESOURCES);
 				NDIS_SET_PACKET_HEADER_SIZE(Adapter->LdnRecvPacket, ETH_HEADER_SIZE);
-  
+
   			PacketArray[0]=Adapter->LdnRecvPacket;
 				NdisMIndicateReceivePacket(
             Adapter->AdapterHandle,
             PacketArray,
             1);
-	
+
 		    NdisAdjustBufferLength(Adapter->LdnRecvPacketBuffer, NIC_BUFFER_SIZE);
 		}
-		
+
     //NdisReleaseSpinLock(&Adapter->RecvLock);
 
-    
+
     MP_DEC_REF(Adapter);
-    DEBUGP(MP_TRACE, ("<---NICIndicateReceiveTimerDpc\n"));    
+    DEBUGP(MP_TRACE, ("<---NICIndicateReceiveTimerDpc\n"));
 }
 
 
-VOID 
+VOID
 NICFreeRecvPacket(
     PMP_ADAPTER Adapter,
     PNDIS_PACKET Packet)
@@ -656,14 +656,14 @@ Routine Description:
 
     Adapter    - pointer to the adapter structure
     Packet      - pointer to the receive packet
-        
+
 Arguments:
 
     This is called by MPReturnPacket to free the Receive packet
-    indicated above. Since we have used the send-side TCB, we 
-    will also carefully complete the pending SendPacket if we are 
+    indicated above. Since we have used the send-side TCB, we
+    will also carefully complete the pending SendPacket if we are
     the last one to use the TCB buffers.
-    
+
 Return Value:
 
     VOID
@@ -673,11 +673,11 @@ Return Value:
 
     PTCB pTCB = *(PTCB *)Packet->MiniportReserved;
     PMP_ADAPTER SendAdapter = (PMP_ADAPTER)pTCB->Adapter;
-    PNDIS_PACKET SendPacket = pTCB->OrgSendPacket;    
+    PNDIS_PACKET SendPacket = pTCB->OrgSendPacket;
     PLIST_ENTRY pEntry;
-    
+
     DEBUGP(MP_TRACE, ("--> NICFreeRecvPacket\n"));
-    DEBUGP(MP_INFO, ("Adapter= %p FreePkt= %p Ref=%d\n", 
+    DEBUGP(MP_INFO, ("Adapter= %p FreePkt= %p Ref=%d\n",
                             SendAdapter, SendPacket, pTCB->Ref));
 
     HALT_ON_ERRORCOND(pTCB->Ref > 0);
@@ -687,22 +687,22 @@ Return Value:
 /*    //
     // Put the packet back in the free list for reuse.
     //
-    NdisAcquireSpinLock(&Adapter->RecvLock);    
+    NdisAcquireSpinLock(&Adapter->RecvLock);
 
     InsertTailList(
-        &Adapter->RecvFreeList, 
+        &Adapter->RecvFreeList,
         (PLIST_ENTRY)&Packet->MiniportReserved[0]);
-    
-    Adapter->nBusyRecv--;     
+
+    Adapter->nBusyRecv--;
     HALT_ON_ERRORCOND(Adapter->nBusyRecv >= 0);
-    
-    NdisReleaseSpinLock(&Adapter->RecvLock);    
+
+    NdisReleaseSpinLock(&Adapter->RecvLock);
 
     //
     // Check to see whether we are the last one to use the TCB
     // by decrementing the refcount. If so, complete the pending
     // Send packet and free the TCB block for reuse.
-    // 
+    //
     if(NdisInterlockedDecrement(&pTCB->Ref) == 0)
     {
         Adapter->GoodTransmits++;
@@ -711,21 +711,21 @@ Return Value:
             SendAdapter->AdapterHandle,
             SendPacket,
             NDIS_STATUS_SUCCESS);
-    
+
         NICFreeSendTCB(SendAdapter, pTCB);
         //
-        // Before we exit, since we have the control, let use see if there any 
+        // Before we exit, since we have the control, let use see if there any
         // more packets waiting in the queue to be sent.
         //
         if(MP_IS_READY(SendAdapter))
         {
             pEntry = (PLIST_ENTRY) NdisInterlockedRemoveHeadList(
-                            &SendAdapter->SendWaitList, 
+                            &SendAdapter->SendWaitList,
                             &SendAdapter->SendLock);
             if(pEntry)
             {
                 SendPacket = CONTAINING_RECORD(pEntry, NDIS_PACKET, MiniportReserved);
-                NICSendPacket(SendAdapter, SendPacket);             
+                NICSendPacket(SendAdapter, SendPacket);
             }
         }
     }*/
@@ -747,9 +747,9 @@ NICIsPacketTransmittable(
 Routine Description:
 
     This routines checks to see whether the packet can be accepted
-    for transmission based on the currently programmed filter type 
+    for transmission based on the currently programmed filter type
     of the NIC and the mac address of the packet.
-    
+
 Arguments:
 
     Adapter    - pointer to the adapter structure
@@ -762,20 +762,20 @@ Return Value:
 
 --*/
 {
-    INT               Equal;            
+    INT               Equal;
     UINT              PacketLength;
     PNDIS_BUFFER      FirstBuffer = NULL;
     PUCHAR            Address = NULL;
     UINT              CurrentLength;
     ULONG             index;
     BOOLEAN           result = FALSE;
-    
-    DEBUGP(MP_LOUD, 
-        ("DestAdapter=%p, PacketFilter = 0x%08x\n", 
+
+    DEBUGP(MP_LOUD,
+        ("DestAdapter=%p, PacketFilter = 0x%08x\n",
         Adapter,
         Adapter->PacketFilter));
 
-    
+
     do {
 
 #ifdef NDIS51_MINIPORT
@@ -797,12 +797,12 @@ Return Value:
         if(!Address){
             break;
         }
-        
 
-        DEBUGP(MP_LOUD, ("Dest Address = %02x-%02x-%02x-%02x-%02x-%02x\n", 
+
+        DEBUGP(MP_LOUD, ("Dest Address = %02x-%02x-%02x-%02x-%02x-%02x\n",
                     Address[0], Address[1], Address[2],
                     Address[3], Address[4], Address[5]));
-        
+
         //
         // If the NIC is in promiscuous mode, we will transmit anything
         // and everything.
@@ -810,7 +810,7 @@ Return Value:
         if(Adapter->PacketFilter & NDIS_PACKET_TYPE_PROMISCUOUS) {
             result = TRUE;
             break;
-        } 
+        }
         else if(ETH_IS_BROADCAST(Address)) {
             //
             // If it's a broadcast packet, check our filter settings to see
@@ -838,7 +838,7 @@ Return Value:
                 for(index=0; index <  Adapter->ulMCListSize; index++) {
                     ETH_COMPARE_NETWORK_ADDRESSES_EQ(
                         Address,
-                        Adapter->MCList[index], 
+                        Adapter->MCList[index],
                         &Equal);
                     if(Equal == 0){ // 0 Implies equality
                         result = TRUE;
@@ -853,12 +853,12 @@ Return Value:
         }
         else if(Adapter->PacketFilter & NDIS_PACKET_TYPE_DIRECTED) {
             //
-            // This has to be a directed packet. If so, does packet source 
+            // This has to be a directed packet. If so, does packet source
             // address match with the mac address of the NIC.
-            // 
+            //
             ETH_COMPARE_NETWORK_ADDRESSES_EQ(
                 Address,
-                Adapter->CurrentAddress, 
+                Adapter->CurrentAddress,
                 &Equal);
             if(Equal == 0){
                 result = TRUE;
@@ -869,9 +869,8 @@ Return Value:
         // This is a junk packet. We can't transmit this.
         //
         result = FALSE;
-        
+
     }while(FALSE);
-    
+
     return result;
 }
-

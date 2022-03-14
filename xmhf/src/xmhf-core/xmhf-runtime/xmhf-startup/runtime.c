@@ -48,7 +48,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
-#include <xmhf.h> 
+#include <xmhf.h>
 
 
 //---runtime main---------------------------------------------------------------
@@ -62,7 +62,7 @@ void xmhf_runtime_entry(void){
 	//initialize Runtime Parameter Block (rpb)
 	rpb = (RPB *)&arch_rpb;
 
-	//setup debugging	
+	//setup debugging
 	xmhf_debug_init((char *)&rpb->RtmUartConfig);
 	printf("\nruntime initializing...");
 
@@ -75,7 +75,7 @@ void xmhf_runtime_entry(void){
 	{
 		int i;
 		for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
-		printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+		printf("\n0x%08x%08x, size=0x%08x%08x (%u)",
           g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
           g_e820map[i].length_high, g_e820map[i].length_low,
           g_e820map[i].type);
@@ -102,12 +102,12 @@ void xmhf_runtime_entry(void){
 				u64 protectedbuffer_paddr;
 				hva_t protectedbuffer_vaddr;
 				u32 protectedbuffer_size;
-				
+
 				protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
 				protectedbuffer_vaddr = (hva_t)&g_rntm_dmaprot_buffer;
 				protectedbuffer_size = xmhf_dmaprot_getbuffersize(DMAPROT_PHY_ADDR_SPACE_SIZE); // ADDR_512GB
 				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
-				
+
 				printf("\nRuntime: Re-initializing DMA protection (physical address space size:0x%llX)...", DMAPROT_PHY_ADDR_SPACE_SIZE);
 				if(!xmhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
 					printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
@@ -120,7 +120,7 @@ void xmhf_runtime_entry(void){
 		}
 
 #else //!__DMAP__
-	
+
 	#if defined (__DRT__)
 	//if __DRT__ is enabled without DMA protections, zap DMAR device
 	//from ACPI tables
@@ -129,17 +129,17 @@ void xmhf_runtime_entry(void){
 		vmx_eap_zap();
 	}
 	#endif	//__DRT__
-	
+
 #endif
 
-	//initialize base platform with SMP 
+	//initialize base platform with SMP
 	xmhf_baseplatform_smpinitialize();
 
 	printf("\nRuntime: We should NEVER get here!");
 	HALT_ON_ERRORCOND(0);
 }
 
-//we get control here in the context of *each* physical CPU core 
+//we get control here in the context of *each* physical CPU core
 //vcpu->isbsp = 1 if the core is a BSP or 0 if its an AP
 //isEarlyInit = 1 if we were boot-strapped by the BIOS and is 0
 //in the event we were launched from a running OS
@@ -184,18 +184,18 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   spin_lock(&g_lock_appmain_success_counter);
   g_appmain_success_counter++;
   spin_unlock(&g_lock_appmain_success_counter);
-	
+
   //if BSP, wait for all cores to go through app main successfully
   //TODO: conceal g_midtable_numentries behind interface
   //xmhf_baseplatform_getnumberofcpus
   if(vcpu->isbsp && (g_midtable_numentries > 1)){
 		printf("\nCPU(0x%02x): Waiting for all cores to cycle through appmain...", vcpu->id);
-		while(g_appmain_success_counter < g_midtable_numentries);	
+		while(g_appmain_success_counter < g_midtable_numentries);
 		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
   }
 #endif
 
-  //late initialization is still WiP and we can get only this far 
+  //late initialization is still WiP and we can get only this far
   //currently
 	if(!isEarlyInit){
 		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);

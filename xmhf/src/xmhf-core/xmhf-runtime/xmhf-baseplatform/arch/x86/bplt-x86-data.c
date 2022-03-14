@@ -45,7 +45,7 @@
  */
 
 /*
- * EMHF base platform component 
+ * EMHF base platform component
  * x86 arch. specific data definitions
  * author: amit vasudevan (amitvasudevan@acm.org)
  */

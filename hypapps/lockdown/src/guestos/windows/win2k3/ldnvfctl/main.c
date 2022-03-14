@@ -97,11 +97,11 @@ int ldn_trusted_environment= 0;
 static struct usb_device * find_device(int iVendor, int iProduct)
 {
 	struct usb_bus	*usb_bus;
-	struct usb_device *dev;	
-	
+	struct usb_device *dev;
+
 	for (usb_bus = usb_get_busses(); usb_bus; usb_bus = usb_bus->next) {
 		for (dev = usb_bus->devices; dev; dev = dev->next) {
-			if ((dev->descriptor.idVendor == iVendor) && 
+			if ((dev->descriptor.idVendor == iVendor) &&
 				(dev->descriptor.idProduct == iProduct)) {
 				return dev;
 			}
@@ -120,9 +120,9 @@ int usbdevice_setdevicestate(struct usb_dev_handle *hdl, int state){
 	TMemoryCmd MemCmd;
 
 	// send a vendor request to check button status
-	MemCmd.dwAddress = state; 
+	MemCmd.dwAddress = state;
 	MemCmd.dwLength = 0x0;
-		
+
 	i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xB0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
 
 	if(i < 0)
@@ -137,16 +137,16 @@ int usbdevice_setdevicestate(struct usb_dev_handle *hdl, int state){
 void ldn_verifier_setstate(int state){
 	struct usb_dev_handle *hdl;
 	int status=0;
-	
+
 	do{
 		while( (hdl = ldn_find_verifier()) == NULL)
 			Sleep(100);	//discover our verifier
 
 		status = usbdevice_setdevicestate(hdl, state);
-			
+
 		usb_release_interface(hdl, 0);
 		usb_close(hdl);
-		
+
 	}while(!status);
 }
 
@@ -155,7 +155,7 @@ void ldn_verifier_setstate(int state){
 //return 1 if the button was pressed, else 0
 int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	int i;
-	char buttonstatus;	
+	char buttonstatus;
 	TMemoryCmd MemCmd;
 
 	// send a vendor request to check button status
@@ -164,7 +164,7 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xA0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
 	if (i < 0){
 		//fprintf(stderr, "usb_control_msg failed %d\n", i);
-		return -1;		
+		return -1;
 	}
 
 	//fprintf(stderr, "request success!\n");
@@ -191,29 +191,29 @@ int ldn_verifier_checkbuttonstatus(void){
 	struct usb_dev_handle *hdl;
 	int status=-1;
 	int verifier_was_unplugged=0;
-	
+
 	do{
 		while( (hdl = ldn_find_verifier()) == NULL){
 			verifier_was_unplugged=1;
 			Sleep(100);	//discover our verifier
 		}
-		
+
 		if(verifier_was_unplugged){
 			verifier_was_unplugged=0;
-			
+
 			if(ldn_trusted_environment)
-				usbdevice_setdevicestate(hdl, GREEN_LED); 
+				usbdevice_setdevicestate(hdl, GREEN_LED);
 			else
-				usbdevice_setdevicestate(hdl, RED_LED); 
+				usbdevice_setdevicestate(hdl, RED_LED);
 		}
-		
+
 		status = usbdevice_checkbuttonstatus(hdl);
-			
+
 		usb_release_interface(hdl, 0);
 		usb_close(hdl);
-		
+
 	}while(status < 0);
-	
+
 	return status;
 }
 
@@ -221,7 +221,7 @@ int ldn_verifier_checkbuttonstatus(void){
 
 	UCHAR packetbuffer[1514];
 	UCHAR rxpacketbuffer[1514];
-	
+
   #define NETIF_SEND_EP     0x05
   #define NETIF_RECV_EP   0x84
 
@@ -229,14 +229,14 @@ int ldn_verifier_checkbuttonstatus(void){
 	 int i;
 	 TMemoryCmd MemCmd;
 	 unsigned int rxframesize;
-	 
+
 	 // send a vendor request to check if packet is available
 	 MemCmd.dwAddress = 0x0;
 	 MemCmd.dwLength = 0x0;
 	 i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xF0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
 	 if (i < 0){
 		  printf("%s: usb_control_msg failed %d\n", __FUNCTION__, i);
-		  return 0;		
+		  return 0;
 	 }
 
    i = usb_bulk_read(hdl, NETIF_RECV_EP, (char *)&rxframesize, sizeof(rxframesize), 2000);
@@ -244,7 +244,7 @@ int ldn_verifier_checkbuttonstatus(void){
   		printf("%s:usb_bulk_read failed %d\n", __FUNCTION__, i);
   		return 0;
    }
- 
+
    //if there is a packet we read it via the bulk
    if(rxframesize){
       	 i = usb_bulk_read(hdl, NETIF_RECV_EP, (char *)buffer, rxframesize, 2000);
@@ -253,47 +253,47 @@ int ldn_verifier_checkbuttonstatus(void){
 	 	       return 0;
 	       }
    }
- 
- 
+
+
    return rxframesize;
   }
 
 //----------------------------------------------------------------------
 struct usb_dev_handle * ldn_find_verifier(void){
-	struct usb_device *dev;	
+	struct usb_device *dev;
 	struct usb_dev_handle *hdl;
 	int i;
-	
+
 	//[USB initialization]
     //printf("\ninitializing USB communication...");
 	usb_init();
-	usb_find_busses();                            
+	usb_find_busses();
     usb_find_devices();
     //printf("[SUCCESS].");
-	
-			
+
+
 	dev = find_device(VENDOR_ID, PRODUCT_ID);
-	if (dev == NULL) 
+	if (dev == NULL)
 		return NULL;  //lockdown verifier not found!
 
     //printf("\nlockdown verifier found.");
-	
+
 	hdl = usb_open(dev);
-	
+
 	i = usb_set_configuration(hdl, 1);
 	if (i < 0){
 		usb_close(hdl);
 		return NULL; //usb_set_configuration failed;
 	}
-    
+
     //printf("\nlockdown verifier configuration selected.");
-  
+
   	i = usb_claim_interface(hdl, 0);
 	if (i < 0) {
 		usb_close(hdl);
 		return NULL; //usb_claim_interface failed
-	}                                       
-    
+	}
+
     //printf("\nclaimed lockdown USB interface.");
 
 	return hdl;
@@ -318,12 +318,12 @@ int main(int argc, char *argv[]){
 		ldn_trusted_environment=1;
 	else
 		ldn_trusted_environment=0;
-	
-	
+
+
 	if(ldn_trusted_environment){
-		#if defined (LDNVNET)	
+		#if defined (LDNVNET)
 			printf("\nOpening device...");
-			drvh = CreateFile ( "\\\\.\\LDNVNET", 
+			drvh = CreateFile ( "\\\\.\\LDNVNET",
 								GENERIC_READ | GENERIC_WRITE,
 								FILE_SHARE_READ,
 								NULL,
@@ -333,20 +333,20 @@ int main(int argc, char *argv[]){
 			if(drvh == INVALID_HANDLE_VALUE){
 				printf("\nFATAL: could not open handle to virtual ethernet driver!");
 				return -1;
-			}	
-			
+			}
+
 			printf("\nOpened ldnvnet successfully.");
 		#endif
 	}
 
-    
+
 	if(ldn_trusted_environment){
 		#if defined(LDNVNET)
 			#if defined(SSLPA)
 			//initialize sslpa
 			ssl_pa_init();
 			#endif
-		#endif  
+		#endif
 	}
 
     //printf("\npress any key to quit...");
@@ -355,9 +355,9 @@ int main(int argc, char *argv[]){
 
 		//set the LED for this environment
 		if(ldn_trusted_environment)
-			ldn_verifier_setstate(GREEN_LED); 
+			ldn_verifier_setstate(GREEN_LED);
 		else
-			ldn_verifier_setstate(RED_LED); 
+			ldn_verifier_setstate(RED_LED);
 
 
 		while(!ldn_verifier_checkbuttonstatus()){
@@ -386,14 +386,14 @@ int main(int argc, char *argv[]){
 						i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xE0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
 						if (i < 0){
 							  printf("%s: usb_control_msg failed %d\n", __FUNCTION__, i);
-							  return -1;		
+							  return -1;
 						 }
 
 						//pass packet through analyzer
 						#if defined(SSLPA)
 						ssl_pa_analyze((unsigned char *)&packetbuffer, bytes);
 						#endif
-						 
+
 						//now write out the TX packet
 						i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&packetbuffer, bytes, 2000);
 						if (i < 0) {
@@ -427,8 +427,8 @@ int main(int argc, char *argv[]){
 					}
 				#endif // LDNVNET
 			}
-		}	
-			
+		}
+
 		printf("\ngot button press");
 
 		if(ldn_trusted_environment){
@@ -442,21 +442,19 @@ int main(int argc, char *argv[]){
 				exit(1);
 			}
 		}
-			
+
       	SetSuspendState(TRUE, FALSE,FALSE);
-      	
+
       	printf("\ngot awake...");
 	}
 
 
 	if(ldn_trusted_environment){
-		#if defined (LDNVNET)		
-		CloseHandle(drvh);	
+		#if defined (LDNVNET)
+		CloseHandle(drvh);
 		#endif
 	}
 
-	
+
 	return 0;
 }
-	
-

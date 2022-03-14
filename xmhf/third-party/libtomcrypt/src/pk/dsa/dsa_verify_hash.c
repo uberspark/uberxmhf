@@ -29,7 +29,7 @@
   @return CRYPT_OK if successful (even if the signature is invalid)
 */
 int dsa_verify_hash_raw(         void   *r,          void   *s,
-                    const unsigned char *hash, unsigned long hashlen, 
+                    const unsigned char *hash, unsigned long hashlen,
                                     int *stat,      dsa_key *key)
 {
    void          *w, *v, *u1, *u2;
@@ -53,7 +53,7 @@ int dsa_verify_hash_raw(         void   *r,          void   *s,
       err = CRYPT_INVALID_PACKET;
       goto error;
    }
-   
+
    /* w = 1/s mod q */
    if ((err = mp_invmod(s, key->q, w)) != CRYPT_OK)                                       { goto error; }
 
@@ -62,7 +62,7 @@ int dsa_verify_hash_raw(         void   *r,          void   *s,
    if ((err = mp_mulmod(u1, w, key->q, u1)) != CRYPT_OK)                                  { goto error; }
 
    /* u2 = r*w mod q */
-   if ((err = mp_mulmod(r, w, key->q, u2)) != CRYPT_OK)                                   { goto error; } 
+   if ((err = mp_mulmod(r, w, key->q, u2)) != CRYPT_OK)                                   { goto error; }
 
    /* v = g^u1 * y^u2 mod p mod q */
    if ((err = mp_exptmod(key->g, u1, key->p, u1)) != CRYPT_OK)                            { goto error; }
@@ -92,7 +92,7 @@ error:
   @return CRYPT_OK if successful (even if the signature is invalid)
 */
 int dsa_verify_hash(const unsigned char *sig, unsigned long siglen,
-                    const unsigned char *hash, unsigned long hashlen, 
+                    const unsigned char *hash, unsigned long hashlen,
                     int *stat, dsa_key *key)
 {
    int    err;
@@ -104,8 +104,8 @@ int dsa_verify_hash(const unsigned char *sig, unsigned long siglen,
 
    /* decode the sequence */
    if ((err = der_decode_sequence_multi(sig, siglen,
-                                  LTC_ASN1_INTEGER, 1UL, r, 
-                                  LTC_ASN1_INTEGER, 1UL, s, 
+                                  LTC_ASN1_INTEGER, 1UL, r,
+                                  LTC_ASN1_INTEGER, 1UL, s,
                                   LTC_ASN1_EOL,     0UL, NULL)) != CRYPT_OK) {
       goto LBL_ERR;
    }

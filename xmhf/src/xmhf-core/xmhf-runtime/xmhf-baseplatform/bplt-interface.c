@@ -58,7 +58,7 @@ u32 xmhf_baseplatform_getcpuvendor(void){
 
 //initialize basic platform elements
 void xmhf_baseplatform_initialize(void){
-	xmhf_baseplatform_arch_initialize();	
+	xmhf_baseplatform_arch_initialize();
 }
 
 //initialize CPU state

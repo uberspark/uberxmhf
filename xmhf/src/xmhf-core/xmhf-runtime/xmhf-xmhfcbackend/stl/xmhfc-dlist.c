@@ -16,9 +16,9 @@ void xmhfstl_list_destroy(XMHFList *list)
 	XMHFListNode *iter = NULL, *cur = NULL, *next = NULL;
 	if(!list)
 		return;
-	
+
     iter = xmhfstl_list_first(list);
-	
+
 	while((iter != NULL))
 	{
 		cur = iter;
@@ -42,7 +42,7 @@ void xmhfstl_list_clear(XMHFList *list)
 		return;
 
 	{ // due to the "mixed declarations and code" warning
-	    XMHFLIST_FOREACH(list, first, next, cur) 
+	    XMHFLIST_FOREACH(list, first, next, cur)
 		{
 			if(cur->value)
 	       		xmhf_mm_free(cur->value);
@@ -59,14 +59,14 @@ void xmhfstl_list_clear_destroy(XMHFList *list)
 XMHFListNode* xmhfstl_list_push(XMHFList *list, void *value)
 {
     XMHFListNode* node = NULL;
-	
+
 	if(!list)
 		return NULL;
-	
+
 	node = (XMHFListNode*)xmhf_mm_malloc(sizeof(XMHFListNode));
 	if(!node)
 		return NULL;
-	
+
 	node->next = NULL;
     node->value = value;
 
@@ -88,10 +88,10 @@ XMHFListNode* xmhfstl_list_push(XMHFList *list, void *value)
 void* xmhfstl_list_pop(XMHFList *list)
 {
 	XMHFListNode *node;
-	
+
 	if(!list)
 		return NULL;
-	
+
     node = list->last;
     return node != NULL ? xmhfstl_list_remove(list, node) : NULL;
 }
@@ -99,10 +99,10 @@ void* xmhfstl_list_pop(XMHFList *list)
 void* xmhfstl_list_dequeue(XMHFList *list)
 {
 	XMHFListNode *node;
-	
+
 	if(!list)
 		return NULL;
-	
+
     node = list->first;
     return node != NULL ? xmhfstl_list_remove(list, node) : NULL;
 }
@@ -111,10 +111,10 @@ void* xmhfstl_list_dequeue(XMHFList *list)
 XMHFListNode* xmhfstl_list_last(XMHFList *list)
 {
 	XMHFListNode *node;
-	
+
 	if(!list)
 		return NULL;
-	
+
     node = list->last;
     return node;
 }
@@ -122,10 +122,10 @@ XMHFListNode* xmhfstl_list_last(XMHFList *list)
 XMHFListNode* xmhfstl_list_first(XMHFList *list)
 {
 	XMHFListNode *node;
-	
+
 	if(!list)
 		return NULL;
-	
+
     node = list->first;
     return node;
 }

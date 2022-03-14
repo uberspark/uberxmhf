@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -115,13 +115,13 @@ int tcp_create_conn(connp,i_addr,i_port,r_addr,r_port)
 
     if(!(conn=(conn_struct *)malloc(sizeof(conn_struct))))
       return(R_NO_MEMORY);
-    
+
     conn->prev=0;
 
     zero_conn(&conn->conn);
     conn->conn.backptr=conn;
     conn->conn.conn_number=conn_number++;
-    
+
     memcpy(&conn->conn.i_addr,i_addr,sizeof(struct in_addr));
     conn->conn.i_port=i_port;
     memcpy(&conn->conn.r_addr,r_addr,sizeof(struct in_addr));
@@ -134,7 +134,7 @@ int tcp_create_conn(connp,i_addr,i_port,r_addr,r_port)
       first_conn->prev=conn;
     first_conn=conn;
 
-    
+
     return(0);
   }
 
@@ -153,7 +153,7 @@ int tcp_destroy_conn(conn)
     else {
       first_conn=c->next;
     }
-    
+
     destroy_proto_handler(&conn->analyzer);
     free_tcp_segment_queue(conn->i2r.oo_queue);
     free_tcp_segment_queue(conn->r2i.oo_queue);
@@ -161,7 +161,7 @@ int tcp_destroy_conn(conn)
 
     return(0);
   }
-    
+
 int free_tcp_segment_queue(seg)
   segment *seg;
   {
@@ -183,7 +183,7 @@ int copy_tcp_segment_queue(out,in)
   {
     int r,_status;
     segment *base=0;
-    
+
     for(;in;in=in->next){
       if(!(*out=(segment *)calloc(sizeof(segment),1)))
 	ABORT(R_NO_MEMORY);

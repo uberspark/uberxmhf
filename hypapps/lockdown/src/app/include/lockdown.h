@@ -58,7 +58,7 @@
 //#define LDN_IDE_BUS   0xC000
 //#define LDN_ALLOWED_SECTORS 0xFFFFFFFFUL
 //#define LDN_MACHINE_NETWORKDEVICES {1,0,0},{2,0,0}
-//#define LDN_OUTOFBOUNDS_CHECK	(((u64)lbaaddr >= (u64)LDN_ENV_TRUSTED_STARTSECTOR) && ((u64)lbaaddr <= (u64)LDN_ENV_TRUSTED_ENDSECTOR)) || ((u64)lbaaddr < 63ULL) 
+//#define LDN_OUTOFBOUNDS_CHECK	(((u64)lbaaddr >= (u64)LDN_ENV_TRUSTED_STARTSECTOR) && ((u64)lbaaddr <= (u64)LDN_ENV_TRUSTED_ENDSECTOR)) || ((u64)lbaaddr < 63ULL)
 
 /*//hyper-partitioning configuration (specific to the platform/installation)
 //hp6555b

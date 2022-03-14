@@ -10,9 +10,9 @@
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   @file pkcs_1_i2osp.c
-  Integer to Octet I2OSP, Tom St Denis 
+  Integer to Octet I2OSP, Tom St Denis
 */
 
 #ifdef LTC_PKCS_1

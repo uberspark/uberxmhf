@@ -45,7 +45,7 @@
  */
 
 /*
- * EMHF base platform component 
+ * EMHF base platform component
  * arch. independent data definitions
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -67,7 +67,7 @@ VCPU g_vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
 //master id table, contains core lapic id to VCPU mapping information
 MIDTAB g_midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
 
-//number of entries in the master id table, in essence the number of 
+//number of entries in the master id table, in essence the number of
 //physical cores in the system
 u32 g_midtable_numentries __attribute__(( section(".data") )) = 0;
 
@@ -78,9 +78,9 @@ u32 g_cpus_active __attribute__(( section(".data") )) = 0;
 
 //SMP lock for the above variable
 u32 g_lock_cpus_active __attribute__(( section(".data") )) = 1;
-    
+
 //variable that is set to 1 by the BSP after rallying all the other cores.
-//this is used by the application cores to enter the "wait-for-SIPI" state    
+//this is used by the application cores to enter the "wait-for-SIPI" state
 u32 g_ap_go_signal __attribute__(( section(".data") )) = 0;
 
 //SMP lock for the above variable

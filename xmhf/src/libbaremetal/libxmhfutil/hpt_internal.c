@@ -161,9 +161,9 @@ hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int 
      types. For convenience and simplicity we map those to\from bits 2-0.
 
      If we need more unused bits, for some page table types and levels other
-     bits are available. 
+     bits are available.
   */
-     
+
   if(t == HPT_TYPE_NORM
      || t == HPT_TYPE_PAE
      || t == HPT_TYPE_LONG
@@ -451,7 +451,7 @@ static bool hpt_pme_get_pcd(hpt_type_t t, int __attribute__((unused)) lvl, hpt_p
   } else {
     assert(0);
   }
-  assert(0); return false; /* unreachable; appeases compiler */  
+  assert(0); return false; /* unreachable; appeases compiler */
 }
 
 /* "internal". use hpt_pme_set_pmt instead */
@@ -466,7 +466,7 @@ static hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int __attribute__((unused)) lvl, 
   } else {
     assert(0);
   }
-  assert(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */  
+  assert(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */
 }
 
 /* "internal". use hpt_pme_get_pmt instead */
@@ -481,7 +481,7 @@ static bool hpt_pme_get_pwt(hpt_type_t t, int __attribute__((unused)) lvl, hpt_p
   } else {
     assert(0);
   }
-  assert(0); return false; /* unreachable; appeases compiler */  
+  assert(0); return false; /* unreachable; appeases compiler */
 }
 
 /* "internal". use hpt_pme_set_pmt instead */
@@ -496,7 +496,7 @@ static hpt_pme_t hpt_pme_set_pwt(hpt_type_t t, int __attribute__((unused)) lvl, 
   } else {
     assert(0);
   }
-  assert(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */  
+  assert(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */
 }
 
 /* Assumes PAT register has default values */

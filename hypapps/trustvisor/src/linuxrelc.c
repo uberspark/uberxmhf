@@ -48,7 +48,7 @@
 // linux kernel/initrd relocate and bootstrap
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 /*
 	grub_debug
@@ -66,11 +66,11 @@
 
 */
 
-// setup header for the Linux/i386 boot protocol version 2.04  
-// requires kernel version 2.6.14 or later. starts at offset 0x1f1 
-// in the kernel image. 
+// setup header for the Linux/i386 boot protocol version 2.04
+// requires kernel version 2.6.14 or later. starts at offset 0x1f1
+// in the kernel image.
 
-#define OFFSET 							0x1f1 			//offset of setup header in setup code 
+#define OFFSET 							0x1f1 			//offset of setup header in setup code
 #define SECTOR_SIZE 				512					//size of a disk sector
 #define HEADER 							0x53726448  //linux kernel magic header
 #define MIN_BOOTPROTO_VER 	0x0204			//minimum boot-protocol version we support is 2.04
@@ -80,17 +80,17 @@
 //we assume guest to be allocated 1GB (1024M) of physical memory
 //we further assume that initrd/initramfs does not exceed 48M in size
 //#define INITRD_RELOCATE 		0x372d1000 	//1GB - 48M
-#define INITRD_RELOCATE 		0x4000000 	
-//#define INITRD_MAXADDR			0x37ffffff	
-#define INITRD_MAXADDR			0x4FFFFFF	
+#define INITRD_RELOCATE 		0x4000000
+//#define INITRD_MAXADDR			0x37ffffff
+#define INITRD_MAXADDR			0x4FFFFFF
 
 #define NORMAL 							0xffff 			//vga mode
 #define OTHER 							0xff 				//bootloader type
 #define CAN_USE_HEAP 				0x81 				//loadflag to indicate that heap is usable
 
 //kernel command line to be passed
-//char linux_kernel_cmdline[] = "ro root=/dev/sda8 resume=/dev/sda10 maxcpus=1 mem=1024M no_console_suspend earlyprintk=1"; 
-char linux_kernel_cmdline[] = "ro root=/dev/sda2 maxcpus=1 mem=1024M"; 
+//char linux_kernel_cmdline[] = "ro root=/dev/sda8 resume=/dev/sda10 maxcpus=1 mem=1024M no_console_suspend earlyprintk=1";
+char linux_kernel_cmdline[] = "ro root=/dev/sda2 maxcpus=1 mem=1024M";
 
 struct linux_setup_header {
   u8 setup_sects;
@@ -125,22 +125,22 @@ void linux_store_setupandinitrd(u32 setupbase, u32 setupsize, u32 initrdbase,
 		u32 initrdsize, char *cmdline_untrusted, char *cmdline_trusted){
 	extern u32 __linux_setup_image[], __linux_initrd_image[];
 	extern u32 __linux_kernel_cmdline_untrusted[], __linux_kernel_cmdline_trusted[];
-	
+
 	HALT_ON_ERRORCOND(setupsize < __LINUX_OS_SETUP_SIZE);
 	HALT_ON_ERRORCOND(initrdsize < __LINUX_OS_INITRD_SIZE);
-	
+
 	memcpy((void *)__linux_setup_image, setupbase, setupsize);
 	memcpy((void *)__linux_initrd_image, initrdbase, initrdsize);
 	strncpy((char *)__linux_kernel_cmdline_untrusted, cmdline_untrusted, (u32)256);
 	strncpy((char *)__linux_kernel_cmdline_trusted, cmdline_trusted, (u32)256);
-		
+
 }*/
 
-//---relocate linux kernel 
+//---relocate linux kernel
 //void relocate_kernel(u32 setupbase, u32 setupsize, u32 initrdbase, u32 initrdsize){
-void relocate_kernel(uintptr_t vmlinuz_base, uintptr_t vmlinuz_size, 
+void relocate_kernel(uintptr_t vmlinuz_base, uintptr_t vmlinuz_size,
 			uintptr_t initrd_base, uintptr_t initrd_size){
-  
+
   struct linux_setup_header *h;
   uintptr_t setup_size, setup_base= SETUP_RELOCATE;
   uintptr_t system_size, system_base = SYSTEM_RELOCATE;
@@ -158,13 +158,13 @@ void relocate_kernel(uintptr_t vmlinuz_base, uintptr_t vmlinuz_size,
     HALT();
   }
 
-  //determine "setup" size  
+  //determine "setup" size
   //the "setup" code executes in real mode. all of the setup (code,
   //header, command line, heap, and stack) is designed to occupy one
-  //segment (64K). 
-  //offset 0x0000 - 0x7fff: setup code and header 
-  //offset 0x8000 - 0x8fff: stack and heap 
-  //offset 0x9000 - 0x90ff: command line 
+  //segment (64K).
+  //offset 0x0000 - 0x7fff: setup code and header
+  //offset 0x8000 - 0x8fff: stack and heap
+  //offset 0x9000 - 0x90ff: command line
 
   if ( h->setup_sects == 0 )
     setup_size = 4;
@@ -192,7 +192,7 @@ void relocate_kernel(uintptr_t vmlinuz_base, uintptr_t vmlinuz_size,
   memcpy((void*)INITRD_RELOCATE, (void*)initrd_base,  initrd_size);
 
   //copy the kernel command line to offset 0x9000. max size of command line is
-  //255 bytes, excluding the trailing '\0' 
+  //255 bytes, excluding the trailing '\0'
   memset((void *)(setup_base+0x9000), 0, 256);
   memcpy((void *)(setup_base+0x9000), &linux_kernel_cmdline, sizeof(linux_kernel_cmdline));
   printf("\n	cmdline at 0x%08x, size=%u bytes", (setup_base+0x9000), sizeof(linux_kernel_cmdline));
@@ -206,20 +206,20 @@ void relocate_kernel(uintptr_t vmlinuz_base, uintptr_t vmlinuz_size,
   //setup relocates itself to 0x90000
   h->cmd_line_ptr = (u32)(setup_base + 0x9000);
 
-  //write location and size of initrd in setup header 
+  //write location and size of initrd in setup header
   h->ramdisk_image = INITRD_RELOCATE;
   h->ramdisk_size = initrd_size;
   h->initrd_addr_max = INITRD_MAXADDR;
 
-  // initialize other required fields of the setup header 
+  // initialize other required fields of the setup header
   // see Documentation/x86/boot.txt for details
   h->vid_mode = (u16)NORMAL;
   h->type_of_loader = (u8)OTHER;
 
-  //offset limit of heap in real mode segment. leave space for a 
-  //512 byte stack at the end of heap, as recommended by 
+  //offset limit of heap in real mode segment. leave space for a
+  //512 byte stack at the end of heap, as recommended by
   //Documentation/x86/boot.txt.
-  h->heap_end_ptr = (u16)(0x9000 - 0x200); 
+  h->heap_end_ptr = (u16)(0x9000 - 0x200);
   h->loadflags = (u8)CAN_USE_HEAP;
 
   if( h->setup_sects == 0)
@@ -229,7 +229,7 @@ void relocate_kernel(uintptr_t vmlinuz_base, uintptr_t vmlinuz_size,
 }
 
 //---setuplinuxboot
-void setuplinuxboot(VCPU *vcpu, uintptr_t vmlinuz_base, uintptr_t vmlinuz_size, 
+void setuplinuxboot(VCPU *vcpu, uintptr_t vmlinuz_base, uintptr_t vmlinuz_size,
 		uintptr_t initrd_base, uintptr_t initrd_size){
 
 

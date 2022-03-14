@@ -19,14 +19,14 @@
 /**
   @file ecc_verify_hash.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
 #ifdef LTC_MECC
 
-/* verify 
+/* verify
  *
  * w  = s^-1 mod n
- * u1 = xw 
+ * u1 = xw
  * u2 = rw
  * X = u1*G + u2*Q
  * v = X_x1 mod n
@@ -44,7 +44,7 @@
    @return CRYPT_OK if successful (even if the signature is not valid)
 */
 int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
-                    const unsigned char *hash, unsigned long hashlen, 
+                    const unsigned char *hash, unsigned long hashlen,
                     int *stat, ecc_key *key)
 {
    ecc_point    *mG, *mQ;
@@ -124,13 +124,13 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    if (ltc_mp.ecc_mul2add == NULL) {
       if ((err = ltc_mp.ecc_ptmul(u1, mG, mG, m, 0)) != CRYPT_OK)                                       { goto error; }
       if ((err = ltc_mp.ecc_ptmul(u2, mQ, mQ, m, 0)) != CRYPT_OK)                                       { goto error; }
-  
+
       /* find the montgomery mp */
       if ((err = mp_montgomery_setup(m, &mp)) != CRYPT_OK)                                              { goto error; }
 
       /* add them */
       if ((err = ltc_mp.ecc_ptadd(mQ, mG, mG, m, mp)) != CRYPT_OK)                                      { goto error; }
-   
+
       /* reduce */
       if ((err = ltc_mp.ecc_map(mG, m, mp)) != CRYPT_OK)                                                { goto error; }
    } else {
@@ -152,7 +152,7 @@ error:
    ltc_ecc_del_point(mG);
    ltc_ecc_del_point(mQ);
    mp_clear_multi(r, s, v, w, u1, u2, p, e, m, NULL);
-   if (mp != NULL) { 
+   if (mp != NULL) {
       mp_montgomery_free(mp);
    }
    return err;
@@ -162,4 +162,3 @@ error:
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_verify_hash.c,v $ */
 /* $Revision: 1.14 $ */
 /* $Date: 2007/05/12 14:32:35 $ */
-

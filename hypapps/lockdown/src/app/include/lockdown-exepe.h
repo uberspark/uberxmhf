@@ -54,26 +54,26 @@
 #define IMAGE_NT_SIGNATURE                  0x00004550  // PE00
 
 //legacy DOS .EXE header format
-typedef struct  {    
-    u16   e_magic;                    
-    u16   e_cblp;                     
-    u16   e_cp;                       
-    u16   e_crlc;                     
-    u16   e_cparhdr;                  
-    u16   e_minalloc;                 
-    u16   e_maxalloc;                 
-    u16   e_ss;                       
-    u16   e_sp;                       
-    u16   e_csum;                     
-    u16   e_ip;                       
-    u16   e_cs;                       
-    u16   e_lfarlc;                   
-    u16   e_ovno;                     
-    u16   e_res[4];                   
-    u16   e_oemid;                    
-    u16   e_oeminfo;                  
-    u16   e_res2[10];                 
-    u32   e_lfanew;                   
+typedef struct  {
+    u16   e_magic;
+    u16   e_cblp;
+    u16   e_cp;
+    u16   e_crlc;
+    u16   e_cparhdr;
+    u16   e_minalloc;
+    u16   e_maxalloc;
+    u16   e_ss;
+    u16   e_sp;
+    u16   e_csum;
+    u16   e_ip;
+    u16   e_cs;
+    u16   e_lfarlc;
+    u16   e_ovno;
+    u16   e_res[4];
+    u16   e_oemid;
+    u16   e_oeminfo;
+    u16   e_res2[10];
+    u32   e_lfanew;
 } __attribute__((packed)) image_dos_header_t ;
 
 // NT file header format.

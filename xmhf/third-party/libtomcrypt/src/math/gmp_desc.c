@@ -18,7 +18,7 @@
 #include <gmp.h>
 
 static int init(void **a)
-{ 
+{
    LTC_ARGCHK(a != NULL);
 
    *a = XCALLOC(1, sizeof(__mpz_struct));
@@ -85,7 +85,7 @@ static int get_digit_count(void *a)
    LTC_ARGCHK(a != NULL);
    return mpz_size(a);
 }
-   
+
 static int compare(void *a, void *b)
 {
    int ret;
@@ -193,7 +193,7 @@ static int add(void *a, void *b, void *c)
    mpz_add(c, a, b);
    return CRYPT_OK;
 }
-  
+
 static int addi(void *a, unsigned long b, void *c)
 {
    LTC_ARGCHK(a != NULL);
@@ -280,10 +280,10 @@ static int modi(void *a, unsigned long b, unsigned long *c)
 {
    LTC_ARGCHK(a != NULL);
    LTC_ARGCHK(c != NULL);
-   
+
    *c = mpz_fdiv_ui(a, b);
    return CRYPT_OK;
-}  
+}
 
 /* gcd */
 static int gcd(void *a, void *b, void *c)
@@ -377,7 +377,7 @@ static int exptmod(void *a, void *b, void *c, void *d)
    LTC_ARGCHK(d != NULL);
    mpz_powm(d, a, b, c);
    return CRYPT_OK;
-}   
+}
 
 static int isprime(void *a, int *b)
 {
@@ -467,7 +467,7 @@ const ltc_math_descriptor gmp_desc = {
 #else
    NULL, NULL
 #endif
-   
+
 };
 
 

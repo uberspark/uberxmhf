@@ -23,4 +23,3 @@ int r_bitfield_create PROTO_LIST((r_bitfield **setp,UINT4 size));
 int r_bitfield_destroy PROTO_LIST((r_bitfield **setp));
 
 #endif
-

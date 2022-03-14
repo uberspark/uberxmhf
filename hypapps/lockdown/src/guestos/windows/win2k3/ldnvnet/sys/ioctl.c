@@ -171,16 +171,16 @@ Return Value:
     NIC_ACQUIRE_MUTEX(&ControlDeviceMutex);
 
     ++MiniportCount;
-    
+
     if (1 == MiniportCount)
     {
         NdisZeroMemory(DispatchTable, (IRP_MJ_MAXIMUM_FUNCTION+1) * sizeof(PDRIVER_DISPATCH));
-        
+
         DispatchTable[IRP_MJ_CREATE] = NICDispatch;
         DispatchTable[IRP_MJ_CLEANUP] = NICDispatch;
         DispatchTable[IRP_MJ_CLOSE] = NICDispatch;
         DispatchTable[IRP_MJ_DEVICE_CONTROL] = NICDispatch;
-        
+
 
         NdisInitUnicodeString(&DeviceName, NTDEVICE_STRING);
         NdisInitUnicodeString(&DeviceLinkUnicodeString, LINKNAME_STRING);
@@ -189,7 +189,7 @@ Return Value:
         // Create a device object and register our dispatch handlers
         //
         Status = NdisMRegisterDevice(
-                    NdisWrapperHandle, 
+                    NdisWrapperHandle,
                     &DeviceName,
                     &DeviceLinkUnicodeString,
                     &DispatchTable[0],
@@ -234,34 +234,34 @@ Return Value:
     PVOID               buffer;
 
     PAGED_CODE();
-    
+
     irpStack = IoGetCurrentIrpStackLocation(Irp);
     DEBUGP(MP_TRACE, ("==>NICDispatch %d\n", irpStack->MajorFunction));
-      
+
     switch (irpStack->MajorFunction)
     {
         case IRP_MJ_CREATE:
     Irp->IoStatus.Information = 0;
- 
+
             break;
-        
+
         case IRP_MJ_CLEANUP:
     Irp->IoStatus.Information = 0;
- 
+
             break;
-        
+
         case IRP_MJ_CLOSE:
     Irp->IoStatus.Information = 0;
- 
-            break;        
-        
-        case IRP_MJ_DEVICE_CONTROL: 
+
+            break;
+
+        case IRP_MJ_DEVICE_CONTROL:
         {
 
-          buffer = Irp->AssociatedIrp.SystemBuffer;  
+          buffer = Irp->AssociatedIrp.SystemBuffer;
           inlen = irpStack->Parameters.DeviceIoControl.InputBufferLength;
-          
-          switch (irpStack->Parameters.DeviceIoControl.IoControlCode) 
+
+          switch (irpStack->Parameters.DeviceIoControl.IoControlCode)
           {
 
             //
@@ -278,9 +278,9 @@ Return Value:
 										Irp->IoStatus.Information = length;
 									else
 										Irp->IoStatus.Information = 0;
-									
+
 									if(Irp->IoStatus.Information)
-										DEBUGP(MP_ERROR, ("IOCTL(READ): returned %u bytes\n", 
+										DEBUGP(MP_ERROR, ("IOCTL(READ): returned %u bytes\n",
 														Irp->IoStatus.Information));
 								}
                 break;
@@ -290,16 +290,16 @@ Return Value:
                 NTSTATUS opStatus = STATUS_SUCCESS;
                 buffer = Irp->AssociatedIrp.SystemBuffer;
                 length = irpStack->Parameters.DeviceIoControl.InputBufferLength;
-                
+
                 opStatus = txrxfifo_rxfifo_add(buffer, length);
 								if(opStatus == STATUS_SUCCESS)
 									Irp->IoStatus.Information = length;
 								else
 									Irp->IoStatus.Information = 0;
-								
-                
+
+
                 	if(Irp->IoStatus.Information)
-										DEBUGP(MP_ERROR, ("IOCTL(WRITE): returned %u bytes\n", 
+										DEBUGP(MP_ERROR, ("IOCTL(WRITE): returned %u bytes\n",
 														Irp->IoStatus.Information));
  								}
                 break;
@@ -308,12 +308,12 @@ Return Value:
  						    status = STATUS_UNSUCCESSFUL;
                 break;
           }
-          break;  
+          break;
         }
         default:
             break;
     }
- 
+
     Irp->IoStatus.Status = status;
     IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
@@ -321,7 +321,7 @@ Return Value:
 
     return status;
 
-} 
+}
 
 
 NDIS_STATUS
@@ -357,7 +357,7 @@ Return Value:
     HALT_ON_ERRORCOND(MiniportCount > 0);
 
     --MiniportCount;
-    
+
     if (0 == MiniportCount)
     {
         //
@@ -376,10 +376,7 @@ Return Value:
 
     DEBUGP(MP_TRACE, ("<== NICDeregisterDevice: %x\n", Status));
     return Status;
-    
+
 }
 
 #endif
-
-
-

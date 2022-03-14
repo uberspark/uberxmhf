@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -73,9 +73,9 @@ int xdump(name,data,len)
       printf("%s[%d]=\n",name,len);
     }
     for(i=0;i<len;i++){
-      
+
       if((len>8) && i && !(i%12)){
-        printf("\n"); 
+        printf("\n");
       }
       printf("%.2x ",data[i]&255);
     }
@@ -83,9 +83,3 @@ int xdump(name,data,len)
       printf("\n");
     return(0);
   }
-      
-
-
-  
-  
-  

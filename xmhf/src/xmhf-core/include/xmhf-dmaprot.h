@@ -64,7 +64,7 @@ typedef uint32_t iommu_pt_t;
 
 /// @brief The descriptor to locate a Device
 // [TODO] We only support PCI/PCIe devices at current.
-typedef union 
+typedef union
 {
 	struct {
 		unsigned short	func:3,
@@ -76,12 +76,12 @@ typedef union
 } DEVICEDESC;
 
 //----------------------------------------------------------------------
-//exported DATA 
+//exported DATA
 //----------------------------------------------------------------------
 
 
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//exported FUNCTIONS
 //----------------------------------------------------------------------
 
 typedef enum
@@ -94,7 +94,7 @@ typedef enum
     IOMMU_PT_TYPE_S_EXCLUSIVE = 1,
 
     /// @brief Support DMA accesses to both secure domain's memory and non-secure domain's memory.
-    /// [NOTE] This type of IOMMU PT requires that DMA destinations must be spaddrs instead of paddrs of 
+    /// [NOTE] This type of IOMMU PT requires that DMA destinations must be spaddrs instead of paddrs of
     /// secure/non-secure domains.
     IOMMU_PT_TYPE_S_NS_SHARED = 2
 } IOMMU_PT_TYPE;
@@ -128,10 +128,10 @@ extern bool xmhf_iommu_bind_device(iommu_pt_t pt_handle, DEVICEDESC* device);
 extern bool xmhf_iommu_unbind_device(DEVICEDESC* device);
 
 /// @brief Map <spa> with <gpa> in all IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs.
-/// [NOTE] This function is needed when moving memory between S and NS domains. Otherwise, a shared IOMMU PT created 
+/// [NOTE] This function is needed when moving memory between S and NS domains. Otherwise, a shared IOMMU PT created
 /// by a SecProcess ealier may map isolated memory given to other SecProcesses later. This violates memory separation
 /// between SecProcesses.
-/// [TODO][Issue 60] SecBase needs to prove: All IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs map NS domain's memory and given 
+/// [TODO][Issue 60] SecBase needs to prove: All IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs map NS domain's memory and given
 /// S domain's memory, but not any other S domain's memory.
 extern bool xmhf_iommu_all_shared_pts_map(gpa_t gpa, uint32_t flags);
 
@@ -211,16 +211,16 @@ u32 xmhf_dmaprot_arch_x86_svm_initialize(u64 protectedbuffer_paddr,
 void xmhf_dmaprot_arch_x86_svm_protect(u32 start_paddr, u32 size);
 extern void xmhf_dmaprot_arch_x86_svm_invalidate_cache(void);
 
-//VMX VT-d page table buffers; we support a 3 level page-table walk, 
+//VMX VT-d page table buffers; we support a 3 level page-table walk,
 //4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
-//extern u8 g_vmx_vtd_pdp_table[] __attribute__(( section(".palign_data") )); 
+//extern u8 g_vmx_vtd_pdp_table[] __attribute__(( section(".palign_data") ));
 //extern u8 g_vmx_vtd_pd_tables[] __attribute__(( section(".palign_data") ));
 //extern u8 g_vmx_vtd_p_tables[] __attribute__(( section(".palign_data") ));
 
 //VMX VT-d Root Entry Table (RET)
 //the RET is 4kb, each root entry (RE) is 128-bits
 //this gives us 256 entries in the RET, each corresponding to a PCI bus num. (0-255)
-extern u8 g_vmx_vtd_ret[] __attribute__(( section(".palign_data") )); 
+extern u8 g_vmx_vtd_ret[] __attribute__(( section(".palign_data") ));
 
 //VMX VT-d Context Entry Table (CET)
 //each RE points to a context entry table (CET) of 4kb, each context entry (CE)

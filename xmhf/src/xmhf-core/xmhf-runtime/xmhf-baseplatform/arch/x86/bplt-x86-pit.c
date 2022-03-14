@@ -46,28 +46,28 @@
 
 // delay.c
 // implements micro/milli second delay based on 8254 Programmable
-// interval timer. 
+// interval timer.
 // author: amit vasudevan (amitvasudevan@acm.org)
 // note: due to 8254 PIT usage, the routines in this module should not
 // be called when a guest OS has been booted up on the physical PIT without
 // saving/restoring the PIT registers
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 //---microsecond delay----------------------------------------------------------
 void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   u8 val;
-  u32 latchregval;  
+  u32 latchregval;
 
   //enable 8254 ch-2 counter
   val = inb(0x61);
   val &= 0x0d; //turn PC speaker off
   val |= 0x01; //turn on ch-2
   outb(val, 0x61);
-  
+
   //program ch-2 as one-shot
   outb(0xB0, 0x43);
-  
+
   //compute appropriate latch register value depending on usecs
   latchregval = ((u64)1193182 * usecs) / 1000000;
 
@@ -78,13 +78,13 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   outb(val, 0x42);
   val = (u8)((u32)latchregval >> (u32)8);
   outb(val , 0x42);
-  
+
   #ifndef __XMHF_VERIFICATION__
 	//TODO: plug in a 8254 programmable interval timer h/w model
 	//wait for countdown
 	while(!(inb(0x61) & 0x20));
   #endif //__XMHF_VERIFICATION__
-  
+
   //disable ch-2 counter
   val = inb(0x61);
   val &= 0x0c;

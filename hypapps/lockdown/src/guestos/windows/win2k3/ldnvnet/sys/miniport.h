@@ -43,7 +43,7 @@ Notes:
 
 #define ETH_IS_LOCALLY_ADMINISTERED(Address) \
     (BOOLEAN)(((PUCHAR)(Address))[0] & ((UCHAR)0x02))
-    
+
 
 #define NIC_TAG                             ((ULONG)'NIMV')
 
@@ -51,17 +51,17 @@ Notes:
 #define NIC_MEDIA_TYPE                    NdisMedium802_3
 
 // we use Internal, change to Pci, Isa, etc. properly
-#define NIC_INTERFACE_TYPE                NdisInterfaceInternal     
+#define NIC_INTERFACE_TYPE                NdisInterfaceInternal
 
 // change to your company name instead of using Microsoft
 #define NIC_VENDOR_DESC                 "Microsoft"
 
-// Highest byte is the NIC byte plus three vendor bytes, they are normally  
-// obtained from the NIC 
-#define NIC_VENDOR_ID                    0x00FFFFFF   
+// Highest byte is the NIC byte plus three vendor bytes, they are normally
+// obtained from the NIC
+#define NIC_VENDOR_ID                    0x00FFFFFF
 
 // Update the driver version number every time you release a new driver
-// The high word is the major version. The low word is the minor version. 
+// The high word is the major version. The low word is the minor version.
 // Also make sure that VER_FILEVERSION specified in the .RC file also
 // matches with the driver version because NDISTESTER checks for that.
 //
@@ -73,7 +73,7 @@ Notes:
 #define NIC_MAX_BUSY_RECVS              20
 #define NIC_MAX_LOOKAHEAD               ETH_MAX_DATA_SIZE
 #define NIC_BUFFER_SIZE                 ETH_MAX_PACKET_SIZE
-#define NIC_LINK_SPEED                  1000000    // in 100 bps 
+#define NIC_LINK_SPEED                  1000000    // in 100 bps
 
 
 #define NIC_SUPPORTED_FILTERS ( \
@@ -84,15 +84,15 @@ Notes:
                 NDIS_PACKET_TYPE_ALL_MULTICAST)
 
 #define fMP_RESET_IN_PROGRESS               0x00000001
-#define fMP_DISCONNECTED                    0x00000002 
+#define fMP_DISCONNECTED                    0x00000002
 #define fMP_ADAPTER_HALT_IN_PROGRESS        0x00000004
 #define fMP_ADAPTER_SURPRISE_REMOVED         0x00000008
 #define fMP_ADAPTER_RECV_LOOKASIDE          0x00000010
 
 //
-// Buffer size passed in NdisMQueryAdapterResources                            
+// Buffer size passed in NdisMQueryAdapterResources
 // We should only need three adapter resources (IO, interrupt and memory),
-// Some devices get extra resources, so have room for 10 resources 
+// Some devices get extra resources, so have room for 10 resources
 //
 #define NIC_RESOURCE_BUF_SIZE           (sizeof(NDIS_RESOURCE_LIST) + \
                                         (10*sizeof(CM_PARTIAL_RESOURCE_DESCRIPTOR)))
@@ -106,7 +106,7 @@ Notes:
 #define MP_WARNING 1
 #define MP_ERROR   0
 
-extern INT MPDebugLevel;    
+extern INT MPDebugLevel;
 
 #if DBG
 #define DEBUGP(Level, Fmt) \
@@ -117,7 +117,7 @@ extern INT MPDebugLevel;
         DbgPrint Fmt; \
     } \
 }
-#else 
+#else
 #define DEBUGP(Level, Fmt)
 #endif
 
@@ -131,7 +131,7 @@ extern INT MPDebugLevel;
 #endif
 
 //--------------------------------------
-// Utility macros        
+// Utility macros
 //--------------------------------------
 
 #define MP_SET_FLAG(_M, _F)             ((_M)->Flags |= (_F))
@@ -140,7 +140,7 @@ extern INT MPDebugLevel;
 #define MP_TEST_FLAGS(_M, _F)            (((_M)->Flags & (_F)) == (_F))
 
 #define MP_IS_READY(_M)        (((_M)->Flags & \
-                                 (fMP_DISCONNECTED | fMP_RESET_IN_PROGRESS | fMP_ADAPTER_HALT_IN_PROGRESS)) == 0) 
+                                 (fMP_DISCONNECTED | fMP_RESET_IN_PROGRESS | fMP_ADAPTER_HALT_IN_PROGRESS)) == 0)
 
 #define MP_INC_REF(_A)              NdisInterlockedIncrement(&(_A)->RefCount)
 
@@ -170,7 +170,7 @@ typedef struct _TCB
     PVOID                   Adapter;
     PNDIS_BUFFER            Buffer;
     PNDIS_PACKET            OrgSendPacket;
-    PUCHAR                  pData;        
+    PUCHAR                  pData;
     ULONG                   ulSize;
     UCHAR                   Data[NIC_BUFFER_SIZE];
 } TCB, *PTCB;
@@ -187,17 +187,17 @@ typedef struct _MP_ADAPTER
 {
     LIST_ENTRY              List;
     LONG                    RefCount;
-    NDIS_EVENT              RemoveEvent;    
+    NDIS_EVENT              RemoveEvent;
     //
     // Keep track of various device objects.
     //
 #if defined(NDIS_WDM)
 
-    PDEVICE_OBJECT          Pdo; 
-    PDEVICE_OBJECT          Fdo; 
-    PDEVICE_OBJECT          NextDeviceObject; 
+    PDEVICE_OBJECT          Pdo;
+    PDEVICE_OBJECT          Fdo;
+    PDEVICE_OBJECT          NextDeviceObject;
 #endif
-    NDIS_HANDLE             AdapterHandle;    
+    NDIS_HANDLE             AdapterHandle;
     ULONG                   Flags;
     UCHAR                   PermanentAddress[ETH_LENGTH_OF_ADDRESS];
     UCHAR                   CurrentAddress[ETH_LENGTH_OF_ADDRESS];
@@ -210,12 +210,12 @@ typedef struct _MP_ADAPTER
     PUCHAR                  TCBMem;
     LONG                    nBusySend;
     UINT                    RegNumTcb;// number of transmit control blocks the registry says
-    NDIS_SPIN_LOCK          SendLock;      
+    NDIS_SPIN_LOCK          SendLock;
     //
     // Variables to track resources for the Reset operation
     //
     NDIS_TIMER              ResetTimer;
-    LONG                    nResetTimerCount;    
+    LONG                    nResetTimerCount;
     //
     // Variables to track resources for the Receive operation
     //
@@ -225,10 +225,10 @@ typedef struct _MP_ADAPTER
     NDIS_SPIN_LOCK          RecvLock;
     LONG                    nBusyRecv;
     NDIS_HANDLE             RecvPacketPoolHandle;
-    NDIS_HANDLE             RecvPacketPool; // not used 
-    NDIS_HANDLE             RecvBufferPool; // not used 
+    NDIS_HANDLE             RecvPacketPool; // not used
+    NDIS_HANDLE             RecvBufferPool; // not used
     NDIS_TIMER              RecvTimer;
-    
+
     //
     // Packet Filter and look ahead size.
     //
@@ -241,7 +241,7 @@ typedef struct _MP_ADAPTER
     // multicast list
     ULONG                   ulMCListSize;
     UCHAR                   MCList[NIC_MAX_MCAST_LIST][ETH_LENGTH_OF_ADDRESS];
-    
+
     // Packet counts
     ULONG64                 GoodTransmits;
     ULONG64                 GoodReceives;
@@ -265,14 +265,14 @@ typedef struct _MP_ADAPTER
     ULONG                   RcvDmaOverrunErrors;
     ULONG                   RcvCdtFrames;
     ULONG                   RcvRuntErrors;
-    
+
     //
     NDIS_MINIPORT_TIMER              PeriodicTimer;
     NDIS_MINIPORT_TIMER              PollTimer;
     NDIS_MINIPORT_TIMER              PollTimer_1;
-    
+
 		NDIS_HANDLE             LdnRecvPacketPoolHandle;
-    NDIS_HANDLE             LdnRecvBufferPoolHandle; 
+    NDIS_HANDLE             LdnRecvBufferPoolHandle;
     PNDIS_PACKET 						LdnRecvPacket;
     PNDIS_BUFFER 						LdnRecvPacketBuffer;
     UCHAR                   LdnRecvPacketBufferData[NIC_BUFFER_SIZE];
@@ -285,12 +285,12 @@ typedef struct _MP_ADAPTER
 // Miniport routines
 //--------------------------------------
 
-NDIS_STATUS 
+NDIS_STATUS
 DriverEntry(
     IN PVOID DriverObject,
     IN PVOID RegistryPath);
 
-NDIS_STATUS 
+NDIS_STATUS
 MPInitialize(
     OUT PNDIS_STATUS OpenErrorStatus,
     OUT PUINT SelectedMediumIndex,
@@ -299,7 +299,7 @@ MPInitialize(
     IN NDIS_HANDLE MiniportAdapterHandle,
     IN NDIS_HANDLE WrapperConfigurationContext);
 
-VOID 
+VOID
 MPAllocateComplete(
     NDIS_HANDLE MiniportAdapterContext,
     IN PVOID VirtualAddress,
@@ -307,40 +307,40 @@ MPAllocateComplete(
     IN ULONG Length,
     IN PVOID Context);
 
-BOOLEAN 
+BOOLEAN
 MPCheckForHang(
     IN NDIS_HANDLE MiniportAdapterContext);
 
-VOID 
+VOID
 MPHalt(
     IN  NDIS_HANDLE MiniportAdapterContext);
 
-VOID 
+VOID
 MPHandleInterrupt(
     IN NDIS_HANDLE MiniportAdapterContext);
 
 DRIVER_UNLOAD MPUnload;
 
-VOID 
+VOID
 MPUnload(
     IN  PDRIVER_OBJECT  DriverObject
     );
 
-VOID 
+VOID
 MPDisableInterrupt(
     IN PVOID Adapter);
 
-VOID 
+VOID
 MPEnableInterrupt(
     IN PVOID Adapter);
-                              
-VOID 
+
+VOID
 MPIsr(
     OUT PBOOLEAN InterruptRecognized,
     OUT PBOOLEAN QueueMiniportHandleInterrupt,
     IN NDIS_HANDLE MiniportAdapterContext);
 
-NDIS_STATUS 
+NDIS_STATUS
 MPQueryInformation(
     IN NDIS_HANDLE MiniportAdapterContext,
     IN NDIS_OID Oid,
@@ -349,17 +349,17 @@ MPQueryInformation(
     OUT PULONG BytesWritten,
     OUT PULONG BytesNeeded);
 
-NDIS_STATUS 
+NDIS_STATUS
 MPReset(
     OUT PBOOLEAN AddressingReset,
     IN  NDIS_HANDLE MiniportAdapterContext);
 
-VOID 
+VOID
 MPReturnPacket(
     IN NDIS_HANDLE  MiniportAdapterContext,
     IN PNDIS_PACKET Packet);
 
-VOID 
+VOID
 MPSendPackets(
     IN  NDIS_HANDLE             MiniportAdapterContext,
     IN  PPNDIS_PACKET           PacketArray,
@@ -374,87 +374,87 @@ MPSetInformation(
     OUT PULONG                                      BytesRead,
     OUT PULONG                                      BytesNeeded);
 
-VOID 
+VOID
 MPShutdown(
     IN  NDIS_HANDLE MiniportAdapterContext);
 
-                                                      
-NDIS_STATUS 
+
+NDIS_STATUS
 NICSendPacket(
     PMP_ADAPTER Adapter,
     PNDIS_PACKET Pakcet);
-    
-BOOLEAN 
+
+BOOLEAN
 NICCopyPacket(
     PMP_ADAPTER Adapter,
-    PTCB pTCB, 
+    PTCB pTCB,
     PNDIS_PACKET Packet);
-    
-VOID 
+
+VOID
 NICQueuePacketForRecvIndication(
     PMP_ADAPTER Adapter,
     PTCB pTCB);
-                  
-VOID 
+
+VOID
 NICFreeRecvPacket(
     PMP_ADAPTER Adapter,
     PNDIS_PACKET Packet);
-    
-VOID 
+
+VOID
 NICFreeSendTCB(
     IN PMP_ADAPTER Adapter,
     IN PTCB pTCB);
 
-VOID 
+VOID
 NICResetCompleteTimerDpc(
     IN    PVOID                    SystemSpecific1,
     IN    PVOID                    FunctionContext,
     IN    PVOID                    SystemSpecific2,
     IN    PVOID                    SystemSpecific3);
-    
-VOID 
+
+VOID
 NICFreeQueuedSendPackets(
     PMP_ADAPTER Adapter
     );
-    
-  
-NDIS_STATUS 
+
+
+NDIS_STATUS
 NICInitializeAdapter(
-    IN PMP_ADAPTER Adapter, 
+    IN PMP_ADAPTER Adapter,
     IN  NDIS_HANDLE  WrapperConfigurationContext
 );
-                                
-NDIS_STATUS 
+
+NDIS_STATUS
 NICAllocAdapter(
     PMP_ADAPTER *Adapter
     );
 
-void 
+void
 NICFreeAdapter(
     PMP_ADAPTER Adapter
     );
-                                                          
-void 
+
+void
 NICAttachAdapter(
     PMP_ADAPTER Adapter
     );
 
-void 
+void
 NICDetachAdapter(
     PMP_ADAPTER Adapter
     );
-                   
-NDIS_STATUS 
+
+NDIS_STATUS
 NICReadRegParameters(
     PMP_ADAPTER Adapter,
     NDIS_HANDLE ConfigurationHandle);
 
-NDIS_STATUS 
+NDIS_STATUS
 NICGetStatsCounters(
-    PMP_ADAPTER Adapter, 
+    PMP_ADAPTER Adapter,
     NDIS_OID Oid,
     PULONG pCounter);
-    
+
 NDIS_STATUS
 NICSetPacketFilter(
     IN PMP_ADAPTER Adapter,
@@ -467,14 +467,14 @@ NDIS_STATUS NICSetMulticastList(
     OUT PULONG                                      pBytesRead,
     OUT PULONG                                      pBytesNeeded
     );
-    
+
 ULONG
 NICGetMediaConnectStatus(
     PMP_ADAPTER Adapter);
 
 #ifdef NDIS51_MINIPORT
 
-VOID 
+VOID
 MPCancelSendPackets(
     IN  NDIS_HANDLE     MiniportAdapterContext,
     IN  PVOID           CancelId
@@ -522,15 +522,15 @@ NICIsPacketTransmittable(
     PNDIS_PACKET Packet
     );
 
-VOID 
+VOID
 NICFreeQueuedRecvPackets(
     PMP_ADAPTER Adapter
     );
 
-PUCHAR 
+PUCHAR
 DbgGetOidName
     (ULONG oid
-    );             
+    );
 
 
 #if defined(IOCTL_INTERFACE)
@@ -562,6 +562,3 @@ NICDispatch(
 
 
 #endif    // _MINIPORT_H
-
-
-

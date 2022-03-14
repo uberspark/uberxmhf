@@ -45,8 +45,8 @@
  */
 
 //----------------------------------------------------------------------
-//xmhf-verification.h 
-//XMHF verification primitives header file 
+//xmhf-verification.h
+//XMHF verification primitives header file
 //author: amit vasudevan (amitvasudevan@acm.org)
 //----------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 // author: Miao Yu
 
-#include <xmhf.h> 
+#include <xmhf.h>
 #include "xmhf-tlsf.h"
 
 static u8 g_xmhf_heap[XMHF_HEAP_SIZE] __attribute__(( section(".palign_data") ));
@@ -54,7 +54,7 @@ void* xmhf_mm_alloc_align_with_record(XMHFList* mm_alloc_infolist, uint32_t alig
 {
 	void* p = NULL;
 	struct xmhf_mm_alloc_info* record = NULL;
-	
+
 	if(!mm_alloc_infolist)
 		return NULL;
 
@@ -95,12 +95,12 @@ void xmhf_mm_free_from_record(XMHFList* mm_alloc_infolist, void* ptr)
 	// void* p = NULL;
 	struct xmhf_mm_alloc_info* record = NULL;
 	XMHFListNode* node = NULL;
-	
+
 	if(!mm_alloc_infolist || !ptr)
 		return;
 
 	{
-		XMHFLIST_FOREACH(mm_alloc_infolist, first, next, cur) 
+		XMHFLIST_FOREACH(mm_alloc_infolist, first, next, cur)
 		{
 			record = (struct xmhf_mm_alloc_info*)cur->value;
 
@@ -122,12 +122,12 @@ void xmhf_mm_free_from_record(XMHFList* mm_alloc_infolist, void* ptr)
 void xmhf_mm_free_all_records(XMHFList* mm_alloc_infolist)
 {
 	struct xmhf_mm_alloc_info* record = NULL;
-	
+
 	if(!mm_alloc_infolist)
 		return;
 
 	{
-		XMHFLIST_FOREACH(mm_alloc_infolist, first, next, cur) 
+		XMHFLIST_FOREACH(mm_alloc_infolist, first, next, cur)
 		{
 			record = (struct xmhf_mm_alloc_info*)cur->value;
 
@@ -137,5 +137,3 @@ void xmhf_mm_free_all_records(XMHFList* mm_alloc_infolist)
 
 	xmhfstl_list_clear_destroy(mm_alloc_infolist);
 }
-
-

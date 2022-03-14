@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -163,7 +163,7 @@ int parse_ssl_flag(flag)
   int flag;
   {
     flag_struct *fl;
-    
+
     for(fl=flags;fl->name;fl++){
       if(fl->ch==flag){
         if(fl->flag & NEGATE){
@@ -177,19 +177,19 @@ int parse_ssl_flag(flag)
 
     return(0);
   }
-     
+
 static int parse_ssl_flags(str)
   char *str;
   {
     char *x,*y;
     flag_struct *fl;
     int bang;
-    
+
     y=str;
-    
+
     while(x=strtok(y,",")){
       y=0;
-      
+
       if(*x=='!'){
 	bang=1;
 	x++;
@@ -210,14 +210,14 @@ static int parse_ssl_flags(str)
 
     return(0);
   }
-            
+
 static int create_ssl_ctx(handle,ctxp)
   void *handle;
   proto_ctx **ctxp;
   {
     ssl_decode_ctx *ctx=0;
     int r,_status;
-    
+
     if(r=ssl_decode_ctx_create(&ctx,SSL_keyfile,SSL_password))
       ABORT(r);
 
@@ -240,13 +240,13 @@ static int create_ssl_analyzer(handle,ctx,conn,objp,i_addr,i_port,r_addr,r_port,
   {
     int r,_status;
     ssl_obj *obj=0;
-    
+
     if(!(obj=(ssl_obj *)calloc(sizeof(ssl_obj),1)))
       ABORT(R_NO_MEMORY);
-    
+
     obj->ssl_ctx=(ssl_decode_ctx *)ctx;
     obj->conn=conn;
-    
+
     if(r=create_r_queue(&obj->r2i_queue))
       ABORT(r);
     if(r=create_r_queue(&obj->i2r_queue))
@@ -254,18 +254,18 @@ static int create_ssl_analyzer(handle,ctx,conn,objp,i_addr,i_port,r_addr,r_port,
 
     lookuphostname(i_addr,&obj->client_name);
     obj->client_port=i_port;
-    lookuphostname(r_addr,&obj->server_name);    
+    lookuphostname(r_addr,&obj->server_name);
     obj->server_port=r_port;
-    
+
     obj->i_state=SSL_ST_SENT_NOTHING;
     obj->r_state=SSL_ST_HANDSHAKE;
-    
+
     memcpy(&obj->time_start,base_time,sizeof(struct timeval));
-    memcpy(&obj->time_last,base_time,sizeof(struct timeval));    
+    memcpy(&obj->time_last,base_time,sizeof(struct timeval));
 
     if(r=ssl_decoder_create(&obj->decoder,obj->ssl_ctx))
       ABORT(r);
-    
+
     *objp=(proto_obj *)obj;
 
     _status=0;
@@ -280,7 +280,7 @@ static int destroy_ssl_analyzer(objp)
   proto_obj **objp;
   {
     ssl_obj *obj;
-    
+
     if(!objp || !*objp)
       return(0);
 
@@ -291,7 +291,7 @@ static int destroy_ssl_analyzer(objp)
     free_r_queue(obj->r2i_queue);
     ssl_decoder_destroy(&obj->decoder);
     free(obj->client_name);
-    free(obj->server_name);    
+    free(obj->server_name);
     free(*objp);
     *objp=0;
 
@@ -322,7 +322,7 @@ static int create_r_queue(qp)
     q->ptr=q->data;
     q->_allocated=SSL_HEADER_SIZE;
     q->len=0;
-    
+
     q->state=SSL_READ_NONE;
     *qp=q;
     _status=0;
@@ -340,7 +340,7 @@ static int read_ssl_record(obj,q,seg,offset,lastp,offsetp)
   int offset;
   segment **lastp;
   int *offsetp;
-  
+
   {
     segment *last=seg;
     int rec_len,r,_status;
@@ -350,7 +350,7 @@ static int read_ssl_record(obj,q,seg,offset,lastp,offsetp)
 	q->read_left=SSL_HEADER_SIZE;
 	if(r=read_data(q,seg,offset,&last,&offset))
 	  ABORT(r);
-        
+
         q->state=SSL_READ_HEADER;
         switch(q->data[0]){
           case 20:
@@ -362,7 +362,7 @@ static int read_ssl_record(obj,q,seg,offset,lastp,offsetp)
             printf("Unknown SSL content type %d\n",q->data[0] & 255);
             ABORT(R_INTERNAL);
         }
-        
+
 	rec_len=COMBINE(q->data[3],q->data[4]);
 
 	/*Expand the buffer*/
@@ -374,7 +374,7 @@ static int read_ssl_record(obj,q,seg,offset,lastp,offsetp)
 
 	q->ptr=q->data+SSL_HEADER_SIZE;
 	q->read_left=rec_len;
-	
+
       case SSL_READ_HEADER:
 	if(r=read_data(q,last,offset,&last,&offset))
 	  ABORT(r);
@@ -392,10 +392,10 @@ static int read_ssl_record(obj,q,seg,offset,lastp,offsetp)
   abort:
     return(_status);
   }
-	
-  
+
+
 static int read_data(q,seg,offset,lastp,offsetp)
-  r_queue *q;	
+  r_queue *q;
   segment *seg;
   int offset;
   segment **lastp;
@@ -405,9 +405,9 @@ static int read_data(q,seg,offset,lastp,offsetp)
 #ifdef DEBUG
     int bread=0;
 #endif
-    
+
     DBG((0,"read_data %d bytes requested",q->read_left));
-    
+
     for(;seg;seg=seg->next,offset=0){
       int left;
 
@@ -424,7 +424,7 @@ static int read_data(q,seg,offset,lastp,offsetp)
       if(!q->read_left)
 	break;
     };
-    
+
     if(q->read_left){
       if(r=copy_tcp_segment_queue(&q->q,seg))
 	ABORT(r);
@@ -441,14 +441,14 @@ static int read_data(q,seg,offset,lastp,offsetp)
     }
 
     if(q->read_left<0) abort();
-    
+
     DBG((0,"read_data %d bytes read",bread));
-    
+
     _status=0;
   abort:
     return(_status);
   }
-      
+
 static int data_ssl_analyzer(_obj,seg,direction)
   proto_obj *_obj;
   segment *seg;
@@ -459,7 +459,7 @@ static int data_ssl_analyzer(_obj,seg,direction)
     segment *last,*q_next,*assembled;
     ssl_obj *ssl=(ssl_obj *)_obj;
     int offset=0;
-    
+
     q=direction==DIR_R2I?ssl->r2i_queue:ssl->i2r_queue;
 
     /* Handle SSLv2 backwards compat client hello
@@ -472,21 +472,21 @@ static int data_ssl_analyzer(_obj,seg,direction)
 
       if(r==SSL_NO_DATA)
         return(0);
-      
+
       if(r==0)
         return(0);
     }
 
     if(ssl->i_state==SSL_ST_SENT_NOTHING){
-        
+
         r=process_beginning_plaintext(ssl,seg,direction);
         if(r==SSL_NO_DATA)
           return(0);
-      
+
         if(r==0)
           return(0);
     }
-        
+
     while(!(r=read_ssl_record(ssl,q,seg,offset,&last,&offset))){
       if(ssl->i_state==SSL_ST_SENT_NOTHING)
         ssl->i_state=SSL_ST_HANDSHAKE;
@@ -502,10 +502,10 @@ static int data_ssl_analyzer(_obj,seg,direction)
 	assembled=seg;
 
       ssl->direction=direction;
-      
+
       if(r=print_ssl_record(ssl,direction,assembled,q->data,q->len))
 	ABORT(r);
-      
+
       /*Now reset things, so we can read another record*/
       if(q){
 	if(q->q_last) q->q_last->next=0;
@@ -553,7 +553,7 @@ static int print_ssl_header(obj,direction,q,data,len)
     }
 
     ssl_print_direction_indicator(obj,direction);
-    
+
     return(0);
   }
 
@@ -565,10 +565,10 @@ static int print_ssl_record(obj,direction,q,data,len)
   int len;
   {
     int r;
-    
+
     if(r=print_ssl_header(obj,direction,q,data,len))
       ERETURN(r);
-    
+
     ssl_expand_record(obj,q,direction,data,len);
     if(SSL_print_flags & SSL_PRINT_HEXDUMP){
       Data d;
@@ -577,7 +577,7 @@ static int print_ssl_record(obj,direction,q,data,len)
       exdump(obj,"Packet data",&d);
       printf("\n\n");
     }
-    
+
     return(0);
   }
 
@@ -588,7 +588,7 @@ int close_ssl_analyzer(_obj,p,dir)
   {
     ssl_obj *ssl=(ssl_obj *)_obj;
     char *what;
-    
+
     if(p->tcp->th_flags & TH_RST)
       what="RST";
     else
@@ -599,7 +599,7 @@ int close_ssl_analyzer(_obj,p,dir)
     ssl_print_direction_indicator(ssl,dir);
     explain(ssl,"  TCP %s",what);
     printf("\n");
-    
+
     return(0);
   }
 
@@ -618,7 +618,3 @@ struct proto_mod_ ssl_mod = {
      0,
      &ssl_vtbl
 };
-    
-
-    
-    

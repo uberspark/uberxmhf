@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * EMHF exception handler component interface
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
- 
+
 #include <xmhf.h>
 
 

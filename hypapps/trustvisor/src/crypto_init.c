@@ -50,13 +50,13 @@
  * Author: Jonathan McCune
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #include <stdbool.h>
 
 #include <tv_utpm.h>
 #include <nist_ctr_drbg.h>
-#include <random.h> 
+#include <random.h>
 
 #include <crypto_init.h>
 #include <nv.h>
@@ -77,13 +77,13 @@
 /* extern */ uint8_t g_nvpalpcr0[20];
 
 /* XXX FIXME: needs spinlock protection in MP mode */
-/* extern */ NIST_CTR_DRBG g_drbg; 
+/* extern */ NIST_CTR_DRBG g_drbg;
 
 /* Don't want to get optimized out. */
-void zeroize(uint8_t* _p, unsigned int len) {    
+void zeroize(uint8_t* _p, unsigned int len) {
   volatile uint8_t *p = _p;
   unsigned int i;
-    
+
   for(i=0; i<len; i++) {
     ((volatile uint8_t *)p)[i] = 0;
   }
@@ -173,7 +173,7 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey( void ) {
    * 2. Hash serialized RSA key.
    */
   EU_CHKN( sha1_buffer( serial_pubkey, serial_pubkey_len, digest.digest));
-		
+
   /**
    * 3. Extend PCR with hash.
    */
@@ -208,7 +208,7 @@ static int trustvisor_long_term_secret_init(void) {
                                    0x67,	0x68, 0x6d, 0x61, 0x63};
   rsa_key rsakey;
   int hash_id = register_hash( &sha1_desc);
-  
+
   EU_VERIFY( g_master_prng_init_completed);
 
   rv = trustvisor_nv_get_mss(CRYPTO_INIT_LOCALITY,
@@ -241,7 +241,7 @@ static int trustvisor_long_term_secret_init(void) {
                            hmackey_temp, &hmackey_temp_len));
 
   EU_VERIFY( TPM_AES_KEY_LEN_BYTES <= HW_TPM_MASTER_SEALING_SECRET_SIZE);
-	
+
   eu_trace( "Sealing AES key derived from MSS.");
   eu_trace( "Sealing HMAC key derived from MSS.");
 
@@ -249,7 +249,7 @@ static int trustvisor_long_term_secret_init(void) {
   /* print_hex("XXX mss:       ", mss, 20); */
   /* print_hex("XXX g_aeskey:  ", g_aeskey, (TPM_AES_KEY_LEN>>3)); */
   /* print_hex("XXX g_hmackey: ", g_hmackey, 20); */
-    
+
   /* Initialize RSA key required in uTPM Quote */
   /* FIXME: Having a single key here is a privacy-invading,
    * session-linkable, PAL-linkable hack to get things off the
@@ -296,15 +296,15 @@ int trustvisor_master_crypto_init(void) {
   EU_CHKN( rv = xmhf_tpm_open_locality(CRYPTO_INIT_LOCALITY),
            eu_err_e( "FATAL ERROR: Could not access HW TPM."));
   opened_tpm=true;
-		
+
   /* PRNG */
   EU_CHKN( rv = master_prng_init(),
            eu_err_e( "AES-256 CTR_DRBG PRNG init FAILED with rv %d!!!!\n", rv));
-		
+
   g_master_prng_init_completed = true;
-		
+
   eu_trace( "AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.");
-        
+
   /* NV space used to support Micro-TPM Long-Term sealing */
   EU_CHKN( rv = trustvisor_long_term_secret_init());
 
@@ -326,7 +326,7 @@ int trustvisor_master_crypto_init(void) {
 
   eu_trace( "NvMuxPal anti-rollback NV Region: "
             "Access Controls validated successfully.");
-		
+
   g_master_crypto_init_completed = true;
 
   /* We're now done with the TPM for a while. Make sure it is
@@ -336,7 +336,7 @@ int trustvisor_master_crypto_init(void) {
   if (opened_tpm) {
     xmhf_tpm_deactivate_all_localities();
   }
-		
+
   return rv;
 }
 

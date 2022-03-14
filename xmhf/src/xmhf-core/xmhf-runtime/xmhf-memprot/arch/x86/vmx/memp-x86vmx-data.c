@@ -54,12 +54,12 @@
 
 //VMX EPT PML4 table buffers
 //memprot
-u8 g_vmx_ept_pml4_table_buffers[PAGE_SIZE_4K * P4L_NPLM4T * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));		
+u8 g_vmx_ept_pml4_table_buffers[PAGE_SIZE_4K * P4L_NPLM4T * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX EPT PDP table buffers
 //memprot
 u8 g_vmx_ept_pdp_table_buffers[PAGE_SIZE_4K * P4L_NPDPT * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
-		
+
 //VMX EPT PD table buffers
 //memprot
 u8 g_vmx_ept_pd_table_buffers[PAGE_SIZE_4K * P4L_NPDT * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));

@@ -48,7 +48,7 @@
 // AMD SVM arch. backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 //----------------------------------------------------------------------
 // local (static) support function forward declarations
@@ -60,9 +60,9 @@ static void _svm_nptinitialize(hva_t npt_pdpt_base, hva_t npt_pdts_base, hva_t n
 // initialize memory protection structures for a given core (vcpu)
 void xmhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
-	
+
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
-	
+
 #ifndef __XMHF_VERIFICATION__
 	_svm_nptinitialize(vcpu->npt_vaddr_ptr, vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
 #endif
@@ -91,16 +91,16 @@ static void _svm_nptinitialize(hva_t npt_pdpt_base, hva_t npt_pdts_base, hva_t n
 		flags = (u64)(_PAGE_PRESENT);
 		pdpt[i] = pae_make_pdpe(y, flags);
 		pdt=(pdt_t)(npt_pdts_base + (i << PAGE_SHIFT_4K));
-			
+
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			z=hva2spa((void*)(npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K))));
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 			pdt[j] = pae_make_pde(z, flags);
 			pt=(pt_t)(npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
-			
+
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
 				//the XMHF memory region includes the secure loader +
-				//the runtime (core + app). this runs from 
+				//the runtime (core + app). this runs from
 				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
 				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
 				//make XMHF physical pages inaccessible
@@ -114,12 +114,12 @@ static void _svm_nptinitialize(hva_t npt_pdpt_base, hva_t npt_pdts_base, hva_t n
 			}
 		}
 	}
-	
+
 }
 
-//flush hardware page table mappings (TLB) 
+//flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
-	((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->tlb_control=VMCB_TLB_CONTROL_FLUSHALL;	
+	((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->tlb_control=VMCB_TLB_CONTROL_FLUSHALL;
 }
 
 //set protection for a given physical memory address
@@ -130,57 +130,57 @@ void xmhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
    	assert ( (vcpu != NULL) );
-	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
-							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
+	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) ||
+							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))
 						   ) );
-	assert ( ( (prottype > 0)	&& 
-	                         (prottype <= MEMP_PROT_MAXVALUE) 
-	                       ) );						
+	assert ( ( (prottype > 0)	&&
+	                         (prottype <= MEMP_PROT_MAXVALUE)
+	                       ) );
 	assert (
 	 (prottype == MEMP_PROT_NOTPRESENT) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE))
 	);
 #endif
-  
+
   pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   pt = (u64 *)vcpu->npt_vaddr_pts;
- 
-  //default is not-present, read-only, no-execute	
+
+  //default is not-present, read-only, no-execute
   flags = (u64)0x8000000000000000ULL;
 
   //map high level protection type to NPT protection bits
   if(prottype & MEMP_PROT_PRESENT){
-	flags |= 0x1;	//present 
-	
+	flags |= 0x1;	//present
+
 	if(prottype & MEMP_PROT_READWRITE)
 		flags |= 0x2; //read-write
-		
+
 	if(prottype & MEMP_PROT_EXECUTE)
 		flags &= ~(u64)0x8000000000000000ULL; //execute
   }
-  	
+
   pt[pfn] &= ~(u64)0x8000000000000003ULL; //clear all previous flags
   pt[pfn] |= flags; 					  //set new flags
 }
-	
+
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   u64 *pt = (u64 *)vcpu->npt_vaddr_pts;
-  
+
   u64 entry = pt[pfn];
   u32 prottype;
-  
+
   if(! (entry & 0x1) ){
 	prottype = MEMP_PROT_NOTPRESENT;
 	return prottype;
   }
- 
+
   prottype = MEMP_PROT_PRESENT;
-  
+
   if( entry & 0x2 )
 	prottype |= MEMP_PROT_READWRITE;
   else
@@ -197,7 +197,7 @@ u32 xmhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
 u64 xmhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
-  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->n_cr3; 
+  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->n_cr3;
 }
 void xmhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 n_cr3)
 {

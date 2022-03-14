@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF base platform component 
+// XMHF base platform component
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
@@ -78,7 +78,7 @@ typedef struct _grube820 {
   u32 baseaddr_high;
   u32 length_low;
   u32 length_high;
-  u32 type;  
+  u32 type;
 } __attribute__((packed)) GRUBE820;
 
 #define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
@@ -94,7 +94,7 @@ typedef struct _pcpu {
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
 
 //----------------------------------------------------------------------
-//exported DATA 
+//exported DATA
 //----------------------------------------------------------------------
 //system e820 map
 	extern GRUBE820 g_e820map[] __attribute__(( section(".data") ));
@@ -111,7 +111,7 @@ extern VCPU g_vcpubuffers[] __attribute__(( section(".data") ));
 //master id table, contains core lapic id to VCPU mapping information
 extern MIDTAB g_midtable[] __attribute__(( section(".data") ));
 
-//number of entries in the master id table, in essence the number of 
+//number of entries in the master id table, in essence the number of
 //physical cores in the system
 extern u32 g_midtable_numentries __attribute__(( section(".data") ));
 
@@ -122,16 +122,16 @@ extern u32 g_cpus_active __attribute__(( section(".data") ));
 
 //SMP lock for the above variable
 extern u32 g_lock_cpus_active __attribute__(( section(".data") ));
-    
+
 //variable that is set to 1 by the BSP after rallying all the other cores.
-//this is used by the application cores to enter the "wait-for-SIPI" state    
+//this is used by the application cores to enter the "wait-for-SIPI" state
 extern u32 g_ap_go_signal __attribute__(( section(".data") ));
 
 //SMP lock for the above variable
 extern u32 g_lock_ap_go_signal __attribute__(( section(".data") ));
 
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//exported FUNCTIONS
 //----------------------------------------------------------------------
 
 //get CPU vendor
@@ -161,27 +161,27 @@ extern bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, u64*
 	//note: secure loader runs in a DS relative addressing mode and
 	//rest of hypervisor runtime is at secure loader base address + 2MB
 	static inline void * hva2sla(void *hva){
-		return (void*)((hva_t)hva - rpb->XtVmmRuntimePhysBase + PAGE_SIZE_2M);	
+		return (void*)((hva_t)hva - rpb->XtVmmRuntimePhysBase + PAGE_SIZE_2M);
 	}
-	
+
 	//secure loader address to system physical address
-	//note: secure loader runs in a DS relative addressing mode 
+	//note: secure loader runs in a DS relative addressing mode
 	//(relative to secure loader base address)
 	static inline spa_t sla2spa(void *sla){
 		return (spa_t) ((sla_t)sla + (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M));
 	}
-	
+
 	// XMHF runtime virtual-address to system-physical-address and vice-versa
 	// Note: since we are unity mapped, runtime VA = system PA
 	static inline spa_t hva2spa(void *hva){
 		hva_t hva_ui = (hva_t)hva;
 		return hva_ui;
 	}
-	  
+
 	static inline void * spa2hva(spa_t spa){
 		return (void *)(hva_t)spa;
 	}
-	
+
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }

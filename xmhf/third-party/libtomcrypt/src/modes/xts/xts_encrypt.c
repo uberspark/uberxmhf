@@ -10,7 +10,7 @@
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   Source donated by Elliptic Semiconductor Inc (www.ellipticsemi.com) to the LibTom Projects
 */
 
@@ -31,7 +31,7 @@ static int tweak_crypt(const unsigned char *P, unsigned char *C, unsigned char *
       C[x] = P[x] ^ T[x];
    }
 #endif
-     
+
    if ((err = cipher_descriptor[xts->cipher].ecb_encrypt(C, C, &xts->key1)) != CRYPT_OK) {
       return err;
    }
@@ -50,7 +50,7 @@ static int tweak_crypt(const unsigned char *P, unsigned char *C, unsigned char *
    xts_mult_x(T);
 
    return CRYPT_OK;
-}   
+}
 
 /** XTS Encryption
   @param pt     [in]  Plaintext
@@ -107,7 +107,7 @@ int xts_encrypt(
       ct += 16;
       pt += 16;
    }
-   
+
    /* if ptlen not divide 16 then */
    if (mo > 0) {
       /* CC = tweak encrypt block m-1 */
@@ -139,4 +139,3 @@ int xts_encrypt(
 /* $Source: /cvs/libtom/libtomcrypt/src/modes/xts/xts_encrypt.c,v $ */
 /* $Revision: 1.5 $ */
 /* $Date: 2007/05/12 14:05:56 $ */
-

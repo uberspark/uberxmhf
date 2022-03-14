@@ -57,7 +57,7 @@ u32 xmhf_verify_cpu_vendor;
 VCPU vcpu;
 struct _svm_vmcbfields _xvmcb;
 RPB *rpb; 	//runtime parameter block pointer
-RPB _xrpb;	
+RPB _xrpb;
 
 void runtime_main(){
 		/* xmhf_runtime_main */
@@ -79,9 +79,9 @@ void runtime_main(){
 		vcpu.esp = 0xC6000000;											//give a stack
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
-		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
+		vcpu.cpu_vendor = CPU_VENDOR_INTEL;
 		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
-		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
+		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table
 		vcpu.vmx_guest_unrestricted = 1;								//VMX unrestricted guest support
 		vcpu.vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
 #else
@@ -89,13 +89,13 @@ void runtime_main(){
 		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
 		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
-#endif		
-				
+#endif
+
 		xmhf_runtime_main(&vcpu, 0);									//call "init" function
 
 }
 
-	
+
 void runtime_entry_main(){
 		/* xmhf_runtime_entry */
 		extern void xmhf_runtime_entry(void);
@@ -112,6 +112,6 @@ void main(){
 #endif
 
 		runtime_entry_main();
-		
+
 		runtime_main();
 }

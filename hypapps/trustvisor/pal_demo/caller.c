@@ -63,7 +63,7 @@ extern void *linux2windows_end();
  * Between plt_call and plt_call_end, there should be a movabs function.
  * For example:
  *  48 b8 10 32 54 76 98    movabs $0xfedcba9876543210,%rax
- *  ba dc fe 
+ *  ba dc fe
  *
  * plt: start of template function
  * plt_call: before call instruction
@@ -240,4 +240,3 @@ void unregister_pal(void *user_entry) {
 #endif /* TRANSLATE */
 	pal_record->user_entry = NULL;
 }
-

@@ -59,7 +59,7 @@
  * author: Jon McCune, July 2011
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #include <crypto_init.h>
 #include <tv_utpm.h> /* formerly utpm.h */
@@ -83,13 +83,13 @@ extern whitelist_entry_t *whitelist;
 
 uint32_t hc_utpm_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t tpmPcrInfo_addr, uint32_t output_addr, uint32_t output_len_addr)
 {
-	uint8_t indata[MAX_SEALDATA_LEN];  
-	uint8_t output[MAX_SEALDATA_LEN]; 
+	uint8_t indata[MAX_SEALDATA_LEN];
+	uint8_t output[MAX_SEALDATA_LEN];
 	uint32_t outlen;
 	uint32_t rv=1;
 
 	TPM_PCR_INFO tpmPcrInfo;
-	
+
 	eu_trace("********** uTPM seal **********");
 	eu_trace("input_addr: %x, input_len %d, tpmPcrInfo_addr: %x, output_addr: %x!", input_addr, input_len, tpmPcrInfo_addr, output_addr);
 
@@ -145,7 +145,7 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 			uint32_t output_addr, uint32_t output_len_addr,
 			uint32_t digestAtCreation_addr)
 {
-	uint8_t indata[MAX_SEALDATA_LEN]; 
+	uint8_t indata[MAX_SEALDATA_LEN];
 	uint8_t outdata[MAX_SEALDATA_LEN];
 	uint32_t outlen;
 	uint32_t ret=1;
@@ -158,7 +158,7 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	EU_CHK( output_addr);
 	EU_CHK( output_len_addr);
 	EU_CHK( digestAtCreation_addr);
-	
+
 	eu_trace("input addr: %x, len %d, output addr: %x!",
 		 input_addr, input_len, output_addr);
 	/* check input data length */
@@ -172,13 +172,13 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	/* copy input data from guest */
 	EU_CHKN( copy_from_current_guest( vcpu, indata, input_addr, input_len));
 
-	eu_trace("input data: %*D", input_len, indata, " ");	
+	eu_trace("input data: %*D", input_len, indata, " ");
 
 	/* unseal */
 	EU_CHKN( ret = utpm_unseal(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len,
 				   outdata, &outlen, &digestAtCreation));
 
-	eu_trace("output (unsealed) data: %*D", outlen, outdata, " ");	
+	eu_trace("output (unsealed) data: %*D", outlen, outdata, " ");
 
 	/* check output data length */
 	EU_CHK( outlen <= MAX_SEALDATA_LEN,
@@ -187,7 +187,7 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	/* copy output to guest */
 	EU_CHKN( copy_to_current_guest(vcpu, output_addr, outdata, outlen));
 	EU_CHKN( copy_to_current_guest(vcpu, digestAtCreation_addr, (uint8_t*)&digestAtCreation, TPM_HASH_SIZE));
-	
+
 	/* copy out length to guest */
 	EU_CHKN( copy_to_current_guest( vcpu, output_len_addr, &outlen, sizeof(outlen)));
 
@@ -202,7 +202,7 @@ u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrA
 	unsigned int i;
 	u32 outlen;
 	u8 pcr[TPM_PCR_SIZE];
-	u8 indata[MAX_SEALDATA_LEN];  
+	u8 indata[MAX_SEALDATA_LEN];
 	u8 output[MAX_SEALDATA_LEN];
 	u32 rv = 1;
 
@@ -280,7 +280,7 @@ u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrA
 u32 hc_utpm_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr)
 {
 	unsigned int i;
-	u8 indata[MAX_SEALDATA_LEN]; 
+	u8 indata[MAX_SEALDATA_LEN];
 	u8 outdata[MAX_SEALDATA_LEN];
 	u32 outlen;
 	u32 ret=1;
@@ -391,11 +391,11 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 
 	/* copy output to guest */
 	EU_CHKN( copy_to_current_guest(vcpu, out_addr, outdata, outlen));
-    
+
 	EU_CHKN( utpm_id_getpub(rsaModulus, &rsaLen));
 
 	EU_CHK( rsaLen <= TPM_RSA_KEY_LEN);
-    
+
 	/* copy public key to guest */
 	EU_CHKN( copy_to_current_guest(vcpu, out_addr + outlen, rsaModulus, TPM_RSA_KEY_LEN));
 	outlen += TPM_RSA_KEY_LEN;
@@ -444,7 +444,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 	/* Get size of guest's pcrComp buffer */
 	EU_CHKN( copy_from_current_guest(vcpu, &pcrCompLen, pcrCompLen_addr, sizeof(gva_t)));
 	eu_trace("Guest provided pcrComp buffer of %ld bytes", pcrCompLen);
-    
+
 	/**
 	 * Allocate space to do internal processing
 	 */
@@ -463,7 +463,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 		siglen = TPM_QUOTE_SIZE; /* FIXME: We should return some kind of error code */
 		/* return 1; */ /* Don't return from here; it causes some kind of crash in the PAL */
 	}
-	
+
 	eu_trace("quote sigdata len = %d!", siglen);
 	//print_hex("  QD: ", sigdata, siglen);
 
@@ -473,7 +473,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 
 	/* copy pcrComp to guest */
 	EU_CHKN( copy_to_current_guest(vcpu, pcrComp_addr, pcrComp, pcrCompLen));
-	
+
 	/* copy quote sig length to guest */
 	EU_CHKN( copy_to_current_guest( vcpu, sig_len_addr, &siglen, sizeof(siglen)));
 	eu_trace("hc_utpm_quote: Survived put_32bit_aligned_value_to_current_guest");
@@ -482,7 +482,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
  out:
 	free(sigdata); sigdata = NULL;
 	free(pcrComp); pcrComp = NULL;
-	
+
 	return ret;
 }
 
@@ -561,7 +561,7 @@ u32 hc_utpm_pcrextend(VCPU * vcpu, u32 idx, u32 meas_gvaddr)
 	EU_CHKN( copy_from_current_guest(vcpu, (u8 *)measurement.value, meas_gvaddr, TPM_HASH_SIZE));
 
 	/* extend pcr */
-    //print_hex("PCRExtend data from guest: ", measurement.value, TPM_HASH_SIZE);    
+    //print_hex("PCRExtend data from guest: ", measurement.value, TPM_HASH_SIZE);
 	EU_CHKN( rv = utpm_extend(&measurement, &whitelist[scode_curr[vcpu->id]].utpm, idx));
 
 	rv = 0;
@@ -572,7 +572,7 @@ u32 hc_utpm_pcrextend(VCPU * vcpu, u32 idx, u32 meas_gvaddr)
 u32 hc_utpm_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 {
 	u32 ret = 1;
-	u8 buffer[MAX_TPM_RAND_DATA_LEN]; 
+	u8 buffer[MAX_TPM_RAND_DATA_LEN];
 	u32 numbytes;
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */

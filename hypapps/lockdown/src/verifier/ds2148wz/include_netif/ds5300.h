@@ -5,11 +5,11 @@
  *    Customized W5300 I/O functions.
  *
  * This file defines the memory map and values of W5300 register.\n
- * Also, it defines the basic I/O function to access register of W5300. 
+ * Also, it defines the basic I/O function to access register of W5300.
  *
  *
  */
- 
+
 #include "types.h"
 
 void 		P1Init(void);

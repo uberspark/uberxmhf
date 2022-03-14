@@ -18,7 +18,7 @@
 
 #ifdef LTC_BASE64
 
-static const char *codes = 
+static const char *codes =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /**
@@ -29,7 +29,7 @@ static const char *codes =
    @param outlen  [in/out] The max size and resulting size
    @return CRYPT_OK if successful
 */
-int base64_encode(const unsigned char *in,  unsigned long inlen, 
+int base64_encode(const unsigned char *in,  unsigned long inlen,
                         unsigned char *out, unsigned long *outlen)
 {
    unsigned long i, len2, leven;

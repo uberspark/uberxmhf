@@ -62,15 +62,15 @@
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
-//exported DATA 
+//exported DATA
 //----------------------------------------------------------------------
 
-//runtime parameter block data area 
+//runtime parameter block data area
 //extern u8 arch_rpb[];
 extern RPB arch_rpb;
 
-//runtime parameter block pointer 
-extern RPB *rpb __attribute__(( section(".data") )); 
+//runtime parameter block pointer
+extern RPB *rpb __attribute__(( section(".data") ));
 
 //runtime DMA protection buffer
 extern u8 g_rntm_dmaprot_buffer[] __attribute__(( section(".palign_data") ));
@@ -85,7 +85,7 @@ extern u32 g_appmain_success_counter __attribute__(( section(".data") ));
 extern u32 g_lock_appmain_success_counter __attribute__(( section(".data") ));
 
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//exported FUNCTIONS
 //----------------------------------------------------------------------
 
 //entry point of EMHF runtime; this is where we get control from the SL

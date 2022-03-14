@@ -49,8 +49,8 @@
  * EMHF SMP guest component x86 (SVM) backend data
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
- 
-#include <xmhf.h> 
+
+#include <xmhf.h>
 
 //the BSP LAPIC base address - smpguest x86svm
 u32 g_svm_lapic_base __attribute__(( section(".data") )) = 0;
@@ -62,7 +62,7 @@ u32 g_svm_quiesce_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86svm
-u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
+u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
 
 //resume counter to rally all CPUs after resumption from quiesce
 //smpguest x86svm
@@ -70,23 +70,23 @@ u32 g_svm_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86svm
-u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
-    
+u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1;
+
 //the "quiesce" variable, if 1, then we have a quiesce in process
 //smpguest x86svm
-u32 g_svm_quiesce __attribute__(( section(".data") )) = 0;;      
+u32 g_svm_quiesce __attribute__(( section(".data") )) = 0;;
 
 //SMP lock to access the above variable
 //smpguest x86svm
-u32 g_svm_lock_quiesce __attribute__(( section(".data") )) = 1; 
-    
+u32 g_svm_lock_quiesce __attribute__(( section(".data") )) = 1;
+
 //resume signal, becomes 1 to signal resume after quiescing
 //smpguest x86svm
-u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
+u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86svm
-u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
+u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
 
 
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to

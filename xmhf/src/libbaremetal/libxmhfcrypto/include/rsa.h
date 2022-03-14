@@ -307,9 +307,9 @@ void rsa_free( rsa_context *ctx );
 
 
 /**
- * add by yanlin at March 7 
+ * add by yanlin at March 7
  * \todo            sign the pcr in tpm_quote
- * \input           see rsa_pkcs1_sign   
+ * \input           see rsa_pkcs1_sign
  * \note            the key is constant and defined in rsa.c file
  */
 
@@ -317,7 +317,7 @@ int tpm_pkcs1_sign(rsa_context *ctx,
                    int datalen,
 		   unsigned char *data_addr,
 		   unsigned char *sig );
-  
+
 
 #ifdef __cplusplus
 }

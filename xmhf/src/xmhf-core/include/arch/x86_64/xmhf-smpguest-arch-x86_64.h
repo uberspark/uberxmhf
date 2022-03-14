@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF smpguest component 
+// EMHF smpguest component
 // x86 arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
@@ -83,7 +83,7 @@ u8 * xmhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr);
 void xmhf_smpguest_arch_x86_postCPUwakeup(VCPU *vcpu);
 
 //handle LAPIC access #DB (single-step) exception event
-void xmhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
+void xmhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu,
 	struct regs *r);
 
 //handle LAPIC access #NPF (nested page fault) event
@@ -98,7 +98,7 @@ void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r
 //----------------------------------------------------------------------
 
 void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu, u32 unmaplapic);
-void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, 
+void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu,
 	struct regs *r);
 void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest);
 u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
@@ -124,29 +124,29 @@ extern u8 g_vmx_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
 extern u32 g_vmx_quiesce_counter __attribute__(( section(".data") ));
 
 //SMP lock to access the above variable
-extern u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )); 
+extern u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") ));
 
 //resume counter to rally all CPUs after resumption from quiesce
 extern u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") ));
 
 //SMP lock to access the above variable
-extern u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )); 
-    
+extern u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") ));
+
 //the "quiesce" variable, if 1, then we have a quiesce in process
-extern u32 g_vmx_quiesce __attribute__(( section(".data") ));      
+extern u32 g_vmx_quiesce __attribute__(( section(".data") ));
 
 //SMP lock to access the above variable
-extern u32 g_vmx_lock_quiesce __attribute__(( section(".data") )); 
-    
+extern u32 g_vmx_lock_quiesce __attribute__(( section(".data") ));
+
 //resume signal, becomes 1 to signal resume after quiescing
-extern u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") ));  
+extern u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") ));
 
 //SMP lock to access the above variable
-extern u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )); 
+extern u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") ));
 
 //Flush all EPT TLB on all cores
 //smpguest x86vmx
-extern u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )); 
+extern u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") ));
 
 
 //----------------------------------------------------------------------
@@ -154,7 +154,7 @@ extern u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") ));
 //----------------------------------------------------------------------
 
 void xmhf_smpguest_arch_x86svm_initialize(VCPU *vcpu);
-void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, 
+void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 	struct regs *r);
 void xmhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
 u32 xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
@@ -176,25 +176,25 @@ extern u32 g_svm_lapic_base __attribute__(( section(".data") ));
 extern u32 g_svm_quiesce_counter __attribute__(( section(".data") ));
 
 //SMP lock to access the above variable
-extern u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") )); 
+extern u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") ));
 
 //resume counter to rally all CPUs after resumption from quiesce
 extern u32 g_svm_quiesce_resume_counter __attribute__(( section(".data") ));
 
 //SMP lock to access the above variable
-extern u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") )); 
-    
+extern u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") ));
+
 //the "quiesce" variable, if 1, then we have a quiesce in process
-extern u32 g_svm_quiesce __attribute__(( section(".data") ));      
+extern u32 g_svm_quiesce __attribute__(( section(".data") ));
 
 //SMP lock to access the above variable
-extern u32 g_svm_lock_quiesce __attribute__(( section(".data") )); 
-    
+extern u32 g_svm_lock_quiesce __attribute__(( section(".data") ));
+
 //resume signal, becomes 1 to signal resume after quiescing
-extern u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") ));  
+extern u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") ));
 
 //SMP lock to access the above variable
-extern u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )); 
+extern u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") ));
 
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
 //during INIT-SIPI-SIPI emulation

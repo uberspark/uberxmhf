@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF SMP guest component 
+// EMHF SMP guest component
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
@@ -58,12 +58,12 @@
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
-//exported DATA 
+//exported DATA
 //----------------------------------------------------------------------
 
 
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//exported FUNCTIONS
 //----------------------------------------------------------------------
 
 //initialize SMP guest logic

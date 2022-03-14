@@ -47,7 +47,7 @@ static IOMMU_PT_INFO* _pt_manager_unregister_pt(iommu_pt_t pt_handle)
 
 	if (pt_handle == IOMMU_PT_INVALID)
 		return NULL;
-	
+
     // the handle should not be larger than <max_num_pts>
     if ((uint32_t)pt_handle >= max_num_pts)
         return NULL;
@@ -62,7 +62,7 @@ static IOMMU_PT_INFO* _pt_manager_get_pt(iommu_pt_t pt_handle)
 {
 	if (pt_handle == IOMMU_PT_INVALID)
 		return NULL;
-	
+
     // the handle should not be larger than <max_num_pts>
     if ((uint32_t)pt_handle >= max_num_pts)
         return NULL;
@@ -79,7 +79,7 @@ static bool _iommu_pt_create_root(IOMMU_PT_INFO* pt_info)
         return false;
 
     // Force allocation of the IOMMU PT root page structure.
-    // [NOTE] Because IOMMU PT page structures are allocated on-demand, we can allocate the root page structure by 
+    // [NOTE] Because IOMMU PT page structures are allocated on-demand, we can allocate the root page structure by
     // creating a dummy mapping.
     status = iommu_vmx_map(pt_info, 0, 0, DMA_DENY_ACCESS);
     return status;
@@ -182,7 +182,7 @@ bool xmhf_iommu_pt_destroy(iommu_pt_t pt_handle)
 
 	if(pt_handle == IOMMU_PT_INVALID)
 		return true;
-	
+
     // Step 1. Search the corresponding <pt_info>
     pt_info = _pt_manager_unregister_pt(pt_handle);
     if (!pt_info)
@@ -267,8 +267,8 @@ bool xmhf_iommu_bind_device(iommu_pt_t pt_handle, DEVICEDESC* device)
     status = iommu_vmx_bind_device(pt_info, device);
 
 	// Flush the IOMMU PT to the main memory
-	wbinvd(); 
-		
+	wbinvd();
+
     xmhf_dmaprot_invalidate_cache();
     return status;
 }
@@ -281,18 +281,18 @@ bool xmhf_iommu_unbind_device(DEVICEDESC* device)
     status = iommu_vmx_unbind_device(device);
 
 	// Flush the IOMMU PT to the main memory
-	wbinvd(); 
-		
+	wbinvd();
+
     xmhf_dmaprot_invalidate_cache();
     return status;
 }
 
 // [TODO-Important] Do we need this function?
 /// @brief Map <spa> with <gpa> in all IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs.
-/// [NOTE] This function is needed when moving memory between S and NS domains. Otherwise, a shared IOMMU PT created 
+/// [NOTE] This function is needed when moving memory between S and NS domains. Otherwise, a shared IOMMU PT created
 /// by a SecProcess ealier may map isolated memory given to other SecProcesses later. This violates memory separation
 /// between SecProcesses.
-/// [TODO][Issue 60] SecBase needs to prove: All IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs map NS domain's memory and given 
+/// [TODO][Issue 60] SecBase needs to prove: All IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs map NS domain's memory and given
 /// S domain's memory, but not any other S domain's memory.
 bool xmhf_iommu_all_shared_pts_map(gpa_t gpa, uint32_t flags)
 {

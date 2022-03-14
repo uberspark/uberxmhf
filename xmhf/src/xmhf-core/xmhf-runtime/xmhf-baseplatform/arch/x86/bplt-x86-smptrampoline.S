@@ -48,14 +48,14 @@
  * EMHF base platform component; x86 backend
  * SMP initialization low-level trampoline
  */
- 
+
 #include <xmhf.h>
 
 	.extern g_midtable
 	.extern g_midtable_numentries
 	.extern x_gdt
 	.extern xmhf_baseplatform_arch_x86_smpinitialize_commonstart
-	.extern xmhf_xcphandler_idt	
+	.extern xmhf_xcphandler_idt
 
 /*------------------------------------------------------------------------------
 CODE
@@ -70,17 +70,17 @@ CODE
     jmp ap_bootstrap_bypassdata
     _ap_gdtdesc:
       .word _ap_gdt_end - _ap_gdt_start - 1
-      .long _ap_gdt_start - _ap_bootstrap_start + 0x10000  
+      .long _ap_gdt_start - _ap_bootstrap_start + 0x10000
     .global _ap_cr3_value
     _ap_cr3_value:
       .long 0
     .global _ap_cr4_value
-    _ap_cr4_value: 
+    _ap_cr4_value:
       .long 0
     .align 16
     _ap_gdt_start:
       .quad 0x0000000000000000
-      .quad 0x00cf9a000000ffff	
+      .quad 0x00cf9a000000ffff
       .quad 0x00cf92000000ffff
     _ap_gdt_end:
       .word 0
@@ -100,7 +100,7 @@ CODE
     	movw $0xFFFF, %sp
     	movw $0x4000, %ax
     	movw %ax, %ss
-    	
+
     	movw $0x0002, %si
 
       lgdt (%si)
@@ -119,22 +119,22 @@ CODE
       movw %ax, %fs
       movw %ax, %gs
 
-             
+
       movl $(_ap_cr3_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
       movl (%esi), %ebx
       movl %ebx, %cr3
       movl $(_ap_cr4_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
       movl (%esi), %ebx
       movl %ebx, %cr4
-      
+
       movl %cr0, %eax
-      orl $0x80000000, %eax	
+      orl $0x80000000, %eax
       movl %eax, %cr0
 
       movl $_ap_pmode_entry_with_paging, %eax
       jmpl *%eax
       hlt
-      
+
   .global _ap_bootstrap_end
   _ap_bootstrap_end:
     nop
@@ -148,9 +148,9 @@ CODE
     /*load our gdt and idt*/
     lgdt x_gdt
     lidt xmhf_xcphandler_idt
-    
 
-    
+
+
     /*get hold of local APIC id*/
     mov $(MSR_APIC_BASE), %ecx
     rdmsr
@@ -161,8 +161,8 @@ CODE
 
     movl g_midtable_numentries, %edx
     /*movl g_runtime, %edx*/
-    
-    
+
+
     /*get vcpu virtual address of this CPU/core*/
     /*movl $(__midtable), %ebx*/
     movl $(g_midtable), %ebx
@@ -182,8 +182,4 @@ gotvcpu:
    pushl %esi
    call xmhf_baseplatform_arch_x86_smpinitialize_commonstart
    /*we should never get here, if so just halt*/
-   hlt  
-
-
-
-      		
+   hlt

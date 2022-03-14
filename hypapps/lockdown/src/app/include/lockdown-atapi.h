@@ -58,11 +58,11 @@
 
 // the default sector size
 #define ATA_SECTOR_SIZE  512
- 
-// default IRQ numbers of the ATA controllers 
+
+// default IRQ numbers of the ATA controllers
 #define ATA_IRQ_PRIMARY     0x0E
 #define ATA_IRQ_SECONDARY   0x0F
- 
+
 // ATA I/O ports, indexed by "bus"
 #define ATA_DATA(x)         (x)
 #define ATA_FEATURES(x)     (x+1)
@@ -72,15 +72,15 @@
 #define ATA_LBAHIGH(x)     	(x+5)
 #define ATA_DRIVE_SELECT(x) (x+6)
 #define ATA_COMMAND(x)      (x+7)
-#define ATA_DCR(x)          (x+0x206)   // device control register 
- 
-// valid values for "bus" 
+#define ATA_DCR(x)          (x+0x206)   // device control register
+
+// valid values for "bus"
 //#define ATA_BUS_PRIMARY     0x1F0   //generic
 //#define ATA_BUS_PRIMARY			0xC000
 //#define ATA_BUS_SECONDARY   0x170
 #define ATA_BUS_PRIMARY      (LDN_IDE_BUS)
 
-// valid values for "drive" 
+// valid values for "drive"
 #define ATA_DRIVE_MASTER    0xA0
 #define ATA_DRIVE_SLAVE     0xB0
 

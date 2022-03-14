@@ -19,7 +19,7 @@
 /**
   @file ecc_sign_hash.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
 #ifdef LTC_MECC
 
@@ -34,8 +34,8 @@
   @param key       A private ECC key
   @return CRYPT_OK if successful
 */
-int ecc_sign_hash(const unsigned char *in,  unsigned long inlen, 
-                        unsigned char *out, unsigned long *outlen, 
+int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
+                        unsigned char *out, unsigned long *outlen,
                         prng_state *prng, int wprng, ecc_key *key)
 {
    ecc_key       pubkey;
@@ -51,19 +51,19 @@ int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
    if (key->type != PK_PRIVATE) {
       return CRYPT_PK_NOT_PRIVATE;
    }
-   
+
    /* is the IDX valid ?  */
    if (ltc_ecc_is_valid_idx(key->idx) != 1) {
       return CRYPT_PK_INVALID_TYPE;
    }
-   
+
    if ((err = prng_is_valid(wprng)) != CRYPT_OK) {
       return err;
    }
 
    /* get the hash and load it as a bignum into 'e' */
    /* init the bignums */
-   if ((err = mp_init_multi(&r, &s, &p, &e, NULL)) != CRYPT_OK) { 
+   if ((err = mp_init_multi(&r, &s, &p, &e, NULL)) != CRYPT_OK) {
       return err;
    }
    if ((err = mp_read_radix(p, (char *)key->dp->order, 16)) != CRYPT_OK)                      { goto errnokey; }
@@ -80,7 +80,7 @@ int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
 
       if (mp_iszero(r) == LTC_MP_YES) {
          ecc_free(&pubkey);
-      } else { 
+      } else {
         /* find s = (e + xr)/k */
         if ((err = mp_invmod(pubkey.k, p, pubkey.k)) != CRYPT_OK)            { goto error; } /* k = 1/k */
         if ((err = mp_mulmod(key->k, r, p, s)) != CRYPT_OK)                  { goto error; } /* s = xr */
@@ -104,11 +104,10 @@ error:
    ecc_free(&pubkey);
 errnokey:
    mp_clear_multi(r, s, p, e, NULL);
-   return err;   
+   return err;
 }
 
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_sign_hash.c,v $ */
 /* $Revision: 1.11 $ */
 /* $Date: 2007/05/12 14:32:35 $ */
-

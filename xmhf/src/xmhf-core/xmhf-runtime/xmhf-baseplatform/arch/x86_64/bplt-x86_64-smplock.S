@@ -67,4 +67,3 @@
   spin_unlock:
     btsl $0, (%rdi)
     ret
-

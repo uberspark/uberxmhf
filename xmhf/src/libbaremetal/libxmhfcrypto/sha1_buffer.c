@@ -45,7 +45,7 @@
  */
 
 #include <tomcrypt.h>
-#include <sha1.h> 
+#include <sha1.h>
 
 #include <euchk.h>
 
@@ -54,7 +54,7 @@ int sha1_buffer(const unsigned char *buffer, size_t len,
 {
   int rv=0;
   hash_state hs;
-  
+
   EU_CHKN( rv = sha1_init( &hs));
   EU_CHKN( rv = sha1_process( &hs, buffer, len));
   EU_CHKN( rv = sha1_done( &hs, md));

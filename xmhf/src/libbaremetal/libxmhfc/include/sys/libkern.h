@@ -146,7 +146,7 @@ crc32(const void *buf, size_t size)
 }
 
 uint32_t
-calculate_crc32c(uint32_t crc32c, const unsigned char *buffer, 
+calculate_crc32c(uint32_t crc32c, const unsigned char *buffer,
         unsigned int length);
 
 

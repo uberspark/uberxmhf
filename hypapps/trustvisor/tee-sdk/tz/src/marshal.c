@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
@@ -66,7 +66,7 @@
 
 #define ALIGN_UP(uiX, uiAlign) ((((uiAlign) - (((uintptr_t)uiX) % (uiAlign))) % (uiAlign)) + ((uintptr_t)uiX));
 
-/* use our own implementation of memcpy so that 
+/* use our own implementation of memcpy so that
    it's available to PALs.
    XXX better solution?
 */
@@ -93,13 +93,13 @@ void
 TZIEncodeUint32(INOUT tzi_encode_buffer_t* psBuffer,
                 uint32_t uiData)
 {
-  uint32_t sz = 
-    sizeof(psBuffer->pBuf->uiType) 
+  uint32_t sz =
+    sizeof(psBuffer->pBuf->uiType)
     + sizeof(psBuffer->pBuf->sUint32);
 
   if (psBuffer->uiRetVal != TZ_SUCCESS) {
     return;
-  } 
+  }
 
   if ((psBuffer->uiOffset + sz) > psBuffer->uiSize) {
     psBuffer->uiRetVal = TZ_ERROR_ENCODE_MEMORY;
@@ -116,8 +116,8 @@ uint32_t
 TZIDecodeUint32(INOUT tzi_encode_buffer_t* psBuffer)
 {
   uint32_t rv;
-  uint32_t sz = 
-    sizeof(psBuffer->pBuf->uiType) 
+  uint32_t sz =
+    sizeof(psBuffer->pBuf->uiType)
     + sizeof(psBuffer->pBuf->sUint32);
 
   if (psBuffer->uiRetVal != TZ_SUCCESS) {
@@ -146,8 +146,8 @@ static void*
 _TZIEncodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
                      uint32_t uiLength)
 {
-  uint32_t sz = 
-    sizeof(psBuffer->pBuf->uiType) 
+  uint32_t sz =
+    sizeof(psBuffer->pBuf->uiType)
     + sizeof(psBuffer->pBuf->sArray)
     + uiLength;
   uint32_t paddingBefore;
@@ -167,7 +167,7 @@ _TZIEncodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
     + sizeof(psBuffer->pBuf->uiType)
     + sizeof(psBuffer->pBuf->sArray);
   arrayStartOffset = ALIGN_UP(arrayUnalignedStartOffset, 8);
-                              
+
   paddingBefore = arrayStartOffset - arrayUnalignedStartOffset;
   sz += paddingBefore;
   if ((psBuffer->uiOffset + sz) > psBuffer->uiSize) {
@@ -252,8 +252,8 @@ void *
 TZIDecodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
                     OUT uint32_t* puiLength)
 {
-  uint32_t sz = 
-    sizeof(psBuffer->pBuf->uiType) 
+  uint32_t sz =
+    sizeof(psBuffer->pBuf->uiType)
     + sizeof(psBuffer->pBuf->sArray);
   uint32_t paddingBefore;
   uint32_t arrayStartOffset;
@@ -293,7 +293,7 @@ TZIDecodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
     *puiLength = 0;
     return NULL;
   }
-  
+
   psBuffer->uiOffset += ALIGN_UP(sz, 4);
 
   return &((uint8_t*)(psBuffer->pBuf))[arrayStartOffset];

@@ -76,7 +76,7 @@ int svc_utpm_unseal(void *in,
 {
   unsigned int inbuf2[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf2[2]= {(unsigned int)out, (unsigned int)out_len};
-  
+
   return vmcall(TV_HC_UTPM_UNSEAL, /* eax */
                 (uint32_t)inbuf2,  /* ecx */
                 (uint32_t)outbuf2, /* edx */
@@ -90,7 +90,7 @@ int svc_utpm_quote(TPM_NONCE *nonce,
                    size_t *sigLen,
                    uint8_t *pcrComposite,
                    size_t *pcrCompositeLen)
-                   
+
 {
     unsigned int sigbuf[2]= {(unsigned int)sig, (unsigned int)sigLen};
     unsigned int pcrCompBuf[2] = {(unsigned int)pcrComposite, (unsigned int)pcrCompositeLen};
@@ -147,7 +147,7 @@ int svc_tpmnvram_getsize(size_t *size) { /* out */
                 (uint32_t)size, /* ecx */
                 0,
                 0,
-                0);                  
+                0);
 }
 
 int svc_tpmnvram_readall(uint8_t *out) { /* out */
@@ -155,7 +155,7 @@ int svc_tpmnvram_readall(uint8_t *out) { /* out */
                 (uint32_t)out, /* ecx */
                 0,
                 0,
-                0);                  
+                0);
 }
 
 int svc_tpmnvram_writeall(uint8_t *in) { /* in */
@@ -163,5 +163,5 @@ int svc_tpmnvram_writeall(uint8_t *in) { /* in */
                 (uint32_t)in, /* ecx */
                 0,
                 0,
-                0);                  
+                0);
 }

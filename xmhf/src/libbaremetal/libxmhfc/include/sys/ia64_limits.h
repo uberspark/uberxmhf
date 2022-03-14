@@ -94,4 +94,3 @@
 #define __MINSIGSTKSZ   (3072 * 4)
 
 #endif /* !_MACHINE__LIMITS_H_ */
-

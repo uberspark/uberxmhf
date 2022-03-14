@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #include <malloc.h>
 #include <pages.h>
@@ -62,7 +62,7 @@ void pagelist_init(pagelist_t *pl)
     (pl->page_base == pl->buf)
     ? pages
     : pages-1;
- 
+
   pl->num_used = 0;
 }
 

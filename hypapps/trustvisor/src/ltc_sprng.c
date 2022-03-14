@@ -54,11 +54,11 @@
   Start the PRNG
   @param prng     [out] The PRNG state to initialize
   @return CRYPT_OK if successful
-*/  
+*/
 static int tv_sprng_start(prng_state *prng)
 {
    (void)prng;
-   return CRYPT_OK;  
+   return CRYPT_OK;
 }
 
 /**
@@ -67,7 +67,7 @@ static int tv_sprng_start(prng_state *prng)
   @param inlen    Length of the data to add
   @param prng     PRNG state to update
   @return CRYPT_OK if successful
-*/  
+*/
 static int tv_sprng_add_entropy(const unsigned char *in, unsigned long inlen, prng_state *prng)
 {
    (void)prng;
@@ -80,7 +80,7 @@ static int tv_sprng_add_entropy(const unsigned char *in, unsigned long inlen, pr
   Make the PRNG ready to read from
   @param prng   The PRNG to make active
   @return CRYPT_OK if successful
-*/  
+*/
 static int tv_sprng_ready(prng_state *prng)
 {
    (void)prng;
@@ -93,7 +93,7 @@ static int tv_sprng_ready(prng_state *prng)
   @param outlen   Length of output
   @param prng     The active PRNG to read from
   @return Number of octets read
-*/  
+*/
 static unsigned long tv_sprng_read(unsigned char *out, unsigned long outlen, prng_state *prng)
 {
    (void)prng;
@@ -108,7 +108,7 @@ static unsigned long tv_sprng_read(unsigned char *out, unsigned long outlen, prn
   Terminate the PRNG
   @param prng   The PRNG to terminate
   @return CRYPT_OK if successful
-*/  
+*/
 static int tv_sprng_done(prng_state *prng)
 {
    (void)prng;
@@ -121,7 +121,7 @@ static int tv_sprng_done(prng_state *prng)
   @param outlen    [in/out] Max size and resulting size of the state
   @param prng      The PRNG to export
   @return CRYPT_OK if successful
-*/  
+*/
 static int tv_sprng_export(unsigned char *out, unsigned long *outlen, prng_state *prng)
 {
    (void)prng;
@@ -131,14 +131,14 @@ static int tv_sprng_export(unsigned char *out, unsigned long *outlen, prng_state
    *outlen = 0;
    return CRYPT_OK;
 }
- 
+
 /**
   Import a PRNG state
   @param in       The PRNG state
   @param inlen    Size of the state
   @param prng     The PRNG to import
   @return CRYPT_OK if successful
-*/  
+*/
 static int tv_sprng_import(const unsigned char *in, unsigned long inlen, prng_state *prng)
 {
   (void)in;
@@ -151,7 +151,7 @@ static int tv_sprng_import(const unsigned char *in, unsigned long inlen, prng_st
 /**
   PRNG self-test
   @return CRYPT_OK if successful, CRYPT_NOP if self-testing has been disabled
-*/  
+*/
 static int tv_sprng_test(void)
 {
    return CRYPT_OK;

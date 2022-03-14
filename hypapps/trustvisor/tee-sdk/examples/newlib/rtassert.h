@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 

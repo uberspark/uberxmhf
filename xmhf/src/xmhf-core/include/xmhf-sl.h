@@ -54,13 +54,13 @@
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
-//exported DATA 
+//exported DATA
 //----------------------------------------------------------------------
-extern u32 sl_baseaddr;	
+extern u32 sl_baseaddr;
 
 
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//exported FUNCTIONS
 //----------------------------------------------------------------------
 
 
@@ -97,10 +97,10 @@ void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------
-extern u32 g_sl_protected_dmabuffer[]; //protected DMA-protection buffer 
-									   //for early DMA protection 
+extern u32 g_sl_protected_dmabuffer[]; //protected DMA-protection buffer
+									   //for early DMA protection
 									   //(only used for x86svm)
-									   
+
 
 #endif	//__ASSEMBLY__
 

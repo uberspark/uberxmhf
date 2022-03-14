@@ -153,7 +153,7 @@ int hptw_checked_memset_va( hptw_ctx_t *ctx,
 
 
 // [New MM API] memset the destination gpaddr
-// [NOTE] We should use nmm_* as much as possible, because 
+// [NOTE] We should use nmm_* as much as possible, because
 // the original mm code in XMHF assume gpaddr = spaddr, which is not
 // always true.
 extern void nmm_memset_gpaddr(hptw_ctx_t *ctx,
@@ -164,5 +164,5 @@ extern void nmm_memset_gpaddr(hptw_ctx_t *ctx,
 extern void* nmm_access_gpaddr(hptw_ctx_t *ctx,
                      hpt_pa_t pa,
                      size_t requested_sz,
-                     size_t *avail_sz);  
+                     size_t *avail_sz);
 #endif

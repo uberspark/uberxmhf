@@ -83,7 +83,7 @@
  * Modified for XMHF by jonmccune@cmu.edu, 2011.01.05
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #define MTRR_TYPE_MIXED         -1
 #define MMIO_APIC_BASE          0xFEE00000
@@ -161,7 +161,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
 void print_mtrrs(const mtrr_state_t *saved_state)
 {
     u64 i;
-    
+
     printf("mtrr_def_type: e = %d, fe = %d, type = %x\n",
            saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
            saved_state->mtrr_def_type.type );
@@ -205,7 +205,7 @@ void save_mtrrs(mtrr_state_t *saved_state)
     }
 
     print_mtrrs(saved_state);
-    
+
     g_saved_mtrrs = saved_state;
 }
 
@@ -259,7 +259,7 @@ static int get_region_type(const mtrr_state_t *saved_state,
     if ( saved_state->mtrr_def_type.e == 0 )
         return MTRR_TYPE_UNCACHABLE;
 
-    /* align to 4k page boundary */    
+    /* align to 4k page boundary */
     base = PAGE_ALIGN_4K(base); //base &= PAGE_MASK;
     end = base + (pages << PAGE_SHIFT_4K);
 
@@ -479,7 +479,7 @@ void restore_mtrrs(mtrr_state_t *saved_state)
     }
 
     //print_mtrrs(saved_state);
-        
+
     /* called by apply_policy() so use saved ptr */
     if ( saved_state == NULL )
         saved_state = g_saved_mtrrs;

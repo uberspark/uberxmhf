@@ -103,17 +103,17 @@
 
 /* TODO: create an enum with meaningful errors that can be passed back
  * to PAL authors. */
-typedef uint32_t TPM_RESULT; 
+typedef uint32_t TPM_RESULT;
 
 #define TPM_PCR_NUM                    8
 
-struct tdTPM_PCR_SELECTION { 
+struct tdTPM_PCR_SELECTION {
     uint16_t sizeOfSelect;            /* The size in bytes of the pcrSelect structure */
     uint8_t pcrSelect[TPM_PCR_NUM/8]; /* This SHALL be a bit map that indicates if a PCR
                                             is active or not */
 } __attribute__((packed));
 
-typedef struct tdTPM_PCR_SELECTION TPM_PCR_SELECTION; 
+typedef struct tdTPM_PCR_SELECTION TPM_PCR_SELECTION;
 
 #define TPM_MAX_QUOTE_LEN ( \
     sizeof(TPM_PCR_SELECTION) + sizeof(uint32_t) \
@@ -125,7 +125,7 @@ typedef struct tdTPM_PCR_SELECTION TPM_PCR_SELECTION;
 static inline void utpm_pcr_select_i(TPM_PCR_SELECTION *tpmsel, uint32_t i) {
     /* TODO: fail loudly if any of these conditions do not hold */
     if(NULL == tpmsel) return;
-    if(i >= TPM_PCR_NUM) return;    
+    if(i >= TPM_PCR_NUM) return;
     /*if(i/8 >= tpmsel->sizeOfSelect) return; */ /* deprecated in favor of
                                                   * auto-growing, as in the
                                                   * next line. */
@@ -150,7 +150,7 @@ typedef struct tdTPM_DIGEST{
 
 typedef TPM_DIGEST TPM_COMPOSITE_HASH;
 
-typedef struct tdTPM_PCR_INFO { 
+typedef struct tdTPM_PCR_INFO {
     TPM_PCR_SELECTION pcrSelection;      /* This SHALL be the selection of PCRs to which the
                                             data or key is bound. */
     TPM_COMPOSITE_HASH digestAtRelease;  /* This SHALL be the digest of the PCR indices and
@@ -163,7 +163,7 @@ typedef struct tdTPM_PCR_INFO {
                                             performed. NOTE: This is generated at key
                                             creation, but is just informative to the host,
                                             not used for authorization */
-} TPM_PCR_INFO; 
+} TPM_PCR_INFO;
 
 /**
  * Return the amount of space overhead (in bytes) expected when
@@ -171,7 +171,7 @@ typedef struct tdTPM_PCR_INFO {
  * 'tpmsel'.
  *
  * NOTE: This _must_ remain consistent with the logic in utpm_seal().
- * 
+ *
  * TODO: Refactor utpm_seal() to have a size-only operating mode
  * (i.e., when certain input parameters are NULL).  It will be
  * reasonable to change this function into a wrapper to call
@@ -204,7 +204,7 @@ static inline unsigned int utpm_seal_output_size(unsigned int inlen,
     /* 4 */
     pad = ALIGN_UP(size, TPM_AES_KEY_LEN_BYTES) - size;
     size += pad;
-    /* 5 */    
+    /* 5 */
     size += TPM_HASH_SIZE;
 
     return size;
@@ -218,7 +218,7 @@ typedef struct tdTPM_NONCE{
 /* structure for storage */ /* XXX inconsistent with hardware TPM */
 typedef struct tdTPM_SEALED_DATA{
   /*TPM_HMAC hmac;*/ /* NOT SURE HMAC */
-  uint32_t dataSize;        
+  uint32_t dataSize;
   uint8_t* data;        /*data to be sealed*/
 } TPM_SEALED_DATA;
 
@@ -232,7 +232,7 @@ typedef struct tdTPM_STRUCT_VER{
 typedef struct tdTPM_QUOTE_INFO{
   TPM_STRUCT_VER version;  /* must be 1.1.0.0 based on TPM part2 structure */
   uint8_t fixed[4];           /* this always be the string 'QUOT'*/
-  TPM_COMPOSITE_HASH digestValue; 
+  TPM_COMPOSITE_HASH digestValue;
   TPM_NONCE externalData;
 } TPM_QUOTE_INFO;
 

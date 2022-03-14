@@ -48,7 +48,7 @@
 // Author(s): Amit Vasudevan (amitvasudevan@acm.org)
 //			  James Newsome
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 uint8_t g_log_targets=LOG_TARGET_NONE;
 uint8_t g_log_level=LOG_LEVEL_NONE;
@@ -65,7 +65,7 @@ void dvprintf(u32 log_type, const char *fmt, va_list args)
 }
 
 
-#endif 
+#endif
 
 void xmhf_debug_init(char *params){
 	xmhf_debug_arch_init(params);

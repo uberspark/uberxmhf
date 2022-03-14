@@ -44,12 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//	acpi.c 
-//  advanced configuration and power-management interface subsystem 
+//	acpi.c
+//  advanced configuration and power-management interface subsystem
 //	glue code
 //  author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 
 
@@ -61,10 +61,10 @@ static u32 _acpi_computetablechecksum(uintptr_t spaddr, uintptr_t size){
   u32 i;
 
   p=(char *)spaddr;
-  
+
   for(i=0; i< size; i++)
     checksum+= (char)(*(p+i));
-  
+
   return (u32)checksum;
 }
 
@@ -78,7 +78,7 @@ uintptr_t xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp){
   uintptr_t ebdaphys;
   uintptr_t i;
   u32 found=0;
-  
+
   //get EBDA segment from 040E:0000h in BIOS data area
   xmhf_baseplatform_arch_flat_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
 
@@ -96,10 +96,10 @@ uintptr_t xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp){
     }
   }
 
-	//found RSDP?  
+	//found RSDP?
   if(found)
     return (ebdaphys+i);
-  
+
   //nope, search within BIOS areas 0xE0000 to 0xFFFFF
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
     xmhf_baseplatform_arch_flat_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
@@ -114,8 +114,8 @@ uintptr_t xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp){
   //found RSDP?
   if(found)
     return i;
-  
+
   //no RSDP, system is not ACPI compliant!
-  return 0;  
+  return 0;
 }
 //------------------------------------------------------------------------------

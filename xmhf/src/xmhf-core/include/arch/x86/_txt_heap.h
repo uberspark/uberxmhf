@@ -251,7 +251,7 @@ static inline uint64_t get_os_sinit_data_size(txt_heap_t *heap)
                          get_os_mle_data_size(heap));
     //return xmhf_arch_baseplatform_flat_readu64((u32)(heap + get_bios_data_size(heap) +
     //                     get_os_mle_data_size(heap)));
-    
+
 }
 
 static inline os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap)

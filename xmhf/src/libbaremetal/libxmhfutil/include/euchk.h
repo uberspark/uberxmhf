@@ -62,7 +62,7 @@
  * Optionally, include additional expressions that will be evaluated
  * iff the condition doesn't hold.  This can be used, e.g., to set a
  * return value or error flag.  examples:
- * 
+ *
  * EU_CHK((buf = malloc(20)));
  *
  * EU_CHK(buf = malloc(20),
@@ -82,7 +82,7 @@
  * if fn_that_may_fail returns non-zero, the check will fail and the
  * return value will be logged.
  *
- */ 
+ */
 
 #define EU_CHKN_PRI(cond, priority, args...)                            \
   do {                                                                  \

@@ -49,8 +49,8 @@
  * EMHF SMP guest component x86 (VMX) backend data
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
- 
-#include <xmhf.h> 
+
+#include <xmhf.h>
 
 //the BSP LAPIC base address
 //smpguest x86vmx
@@ -68,7 +68,7 @@ u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86vmx
-u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
+u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
 
 //resume counter to rally all CPUs after resumption from quiesce
 //smpguest x86vmx
@@ -76,24 +76,24 @@ u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86vmx
-u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
-    
+u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1;
+
 //the "quiesce" variable, if 1, then we have a quiesce in process
 //smpguest x86vmx
-u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;      
+u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
 
 //SMP lock to access the above variable
 //smpguest x86vmx
-u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1; 
-    
+u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
+
 //resume signal, becomes 1 to signal resume after quiescing
 //smpguest x86vmx
-u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
+u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86vmx
-u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
+u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
 
 //Flush all EPT TLB on all cores
 //smpguest x86vmx
-u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )) = 0; 
+u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )) = 0;

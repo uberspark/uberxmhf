@@ -16,7 +16,7 @@
 */
 
 /**
-  Hash multiple (non-adjacent) blocks of memory at once.  
+  Hash multiple (non-adjacent) blocks of memory at once.
   @param hash   The index of the hash you wish to use
   @param out    [out] Where to store the digest
   @param outlen [in/out] Max size and resulting size of the digest
@@ -24,7 +24,7 @@
   @param inlen  The length of the data to hash (octets)
   @param ...    tuples of (data,len) pairs to hash, terminated with a (NULL,x) (x=don't care)
   @return CRYPT_OK if successful
-*/  
+*/
 int hash_memory_multi(int hash, unsigned char *out, unsigned long *outlen,
                       const unsigned char *in, unsigned long inlen, ...)
 {
@@ -57,7 +57,7 @@ int hash_memory_multi(int hash, unsigned char *out, unsigned long *outlen,
     }
 
     va_start(args, inlen);
-    curptr = in; 
+    curptr = in;
     curlen = inlen;
     for (;;) {
        /* process buf */

@@ -6,4 +6,3 @@ static inline uintptr_t vmcall(uintptr_t eax, uintptr_t ecx, uintptr_t edx,
 					"S"(esi), "D"(edi));
 	return eax;
 }
-

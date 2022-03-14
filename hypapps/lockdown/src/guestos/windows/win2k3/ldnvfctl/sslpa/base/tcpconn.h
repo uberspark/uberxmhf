@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -72,16 +72,16 @@ typedef struct tcp_conn_ {
 #define TCP_STATE_FIN1	5
 #define TCP_STATE_CLOSED 6
      /*The address which sent the first SYN*/
-     struct in_addr i_addr;   
+     struct in_addr i_addr;
      u_short i_port;
 
      /*The address which sent the second SYN*/
-     struct in_addr r_addr;   
+     struct in_addr r_addr;
      u_short r_port;
 
      stream_data i2r;   /*The stream from initiator to responder*/
      stream_data r2i;   /*The stream from responder to initiator*/
-     
+
      struct timeval start_time;
      proto_handler *analyzer;    /*The analyzer to call with new data*/
      struct conn_struct_ *backptr;
@@ -99,6 +99,5 @@ int tcp_create_conn PROTO_LIST((tcp_conn **connp,
 int tcp_destroy_conn PROTO_LIST((tcp_conn *conn));
 int free_tcp_segment_queue PROTO_LIST((segment *seg));
 int copy_tcp_segment_queue PROTO_LIST((segment **out,segment *in));
-    
-#endif
 
+#endif

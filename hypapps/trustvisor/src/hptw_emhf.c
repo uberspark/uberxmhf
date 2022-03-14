@@ -128,7 +128,7 @@ int hptw_emhf_checked_guest_ctx_init(hptw_emhf_checked_guest_ctx_t *ctx,
       .ptr2pa = hptw_emhf_checked_guest_ctx_ptr2pa,
       .pa2ptr = hptw_emhf_checked_guest_ctx_pa2ptr,
       .gzp = hptw_emhf_checked_guest_ctx_gzp,
-      
+
       .root_pa = root_pa,
       .t = t,
     },
@@ -144,7 +144,7 @@ int hptw_emhf_host_ctx_init_of_vcpu(hptw_emhf_host_ctx_t *rv, VCPU *vcpu)
 {
   hpt_pa_t root_pa;
   hpt_type_t t;
-  
+
   t = hpt_emhf_get_hpt_type( vcpu);
   root_pa = hva2spa( hpt_emhf_get_root_pm( vcpu));
 

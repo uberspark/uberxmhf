@@ -91,7 +91,7 @@
  * wheel when the time comes.
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 extern SL_PARAMETER_BLOCK *slpb; /* Ugh; ugly global from init.c */
 
@@ -164,10 +164,10 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     /* place ptab_base below MLE */
     ptab_size = 3 * PAGE_SIZE_4K;      /* pgdir ptr + pgdir + ptab = 3 */
     ptab_base = (void *)(mle_start - ptab_size);
-    
+
     /* NB: This memset will clobber the AMD-specific SL header.  That
      * is okay, as we are launching on an Intel TXT system. */
-    memset(ptab_base, 0, ptab_size); 
+    memset(ptab_base, 0, ptab_size);
     printf("ptab_size=%x, ptab_base=%p\n", ptab_size, ptab_base);
 
     pg_dir_ptr_tab = ptab_base;
@@ -185,7 +185,7 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     printf("*(uint64_t *)pg_dir = 0x%16llx\n",
            *(uint64_t *)pg_dir);
 
-    
+
     pte = pg_tab;
     mle_off = 0;
     do {
@@ -208,7 +208,7 @@ static bool check_sinit_module(void *base, size_t size)
 {
     txt_didvid_t didvid;
     txt_ver_fsbif_emif_t ver;
-    
+
     if ( base == NULL )
         return false;
 
@@ -246,7 +246,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /* uint64_t min_lo_ram, max_lo_ram, min_hi_ram, max_hi_ram; */
     txt_caps_t sinit_caps;
     txt_caps_t caps_mask;
-    
+
     txt_heap = get_txt_heap();
 
     /*
@@ -301,7 +301,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     os_sinit_data->vtd_pmr_hi_size = 0;
 
     /* LCP owner policy data -- DELETED */
-    
+
     /* capabilities : choose monitor wake mechanism first */
     ///XXX I don't really understand this
     sinit_caps._raw = get_sinit_capabilities(sinit);
@@ -335,7 +335,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 void delay(u64 cycles)
 {
     uint64_t start = rdtsc64();
-    
+
     while ( rdtsc64()-start < cycles ) ;
 }
 
@@ -396,7 +396,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
         slpb->rdtsc_before_drtm = rdtsc64();
     }
 #endif
-    
+
     __getsec_senter((uint32_t)sinit, (sinit->size)*4);
     printf("ERROR--we should not get here!\n");
     return TB_ERR_FATAL;

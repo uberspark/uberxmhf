@@ -13,7 +13,7 @@
 
 #define VPBDIV		*(volatile unsigned int *)0xE01FC100
 
-#define SCS_REG     *(volatile unsigned int *)0xE01FC1A0   
+#define SCS_REG     *(volatile unsigned int *)0xE01FC1A0
 
 void IRQ_Routine (void)   __attribute__ ((interrupt("IRQ")));
 void FIQ_Routine (void)   __attribute__ ((interrupt("FIQ")));
@@ -22,27 +22,27 @@ void UNDEF_Routine (void) __attribute__ ((interrupt("UNDEF")));
 
 
 // Forward Prototypes
-void Init2148(void);  
+void Init2148(void);
 
 
 /*  Stubs for various interrupts  */
 
 void IRQ_Routine (void) {
-	while (1) ;	
+	while (1) ;
 }
 
 void FIQ_Routine (void)  {
-	while (1) ;	
-}		
-		
-		
+	while (1) ;
+}
+
+
 void SWI_Routine (void)  {
-	while (1) ;	
+	while (1) ;
 }
 
 
 void UNDEF_Routine (void) {
-	while (1) ;	
+	while (1) ;
 }
 
 
@@ -59,29 +59,29 @@ static void feed(void)
 }
 
 
-void Init2148(void)  
+void Init2148(void)
 {
-	
- 
+
+
 	// 				Setting the Phased Lock Loop (PLL)
 	//               ----------------------------------
 	//
 	// Olimex LPC-P2148 has a 12.0000 mhz crystal
 	//
 	// We'd like the LPC2148 to run at 60 mhz (has to be an even multiple of crystal)
-	// 
+	//
 	// According to the Philips LPC2148 manual:   M = cclk / Fosc	where:	M    = PLL multiplier (bits 0-4 of PLLCFG)
 	//																		cclk = 60000000 hz
 	//																		Fosc = 12000000 hz
 	//
-	// Solving:	M = 60000000 / 12000000 = 5           
+	// Solving:	M = 60000000 / 12000000 = 5
 	//
 	//			Note: M - 1 must be entered into bits 0-4 of PLLCFG (assign 4 to these bits)
 	//
 	//
 	// The Current Controlled Oscilator (CCO) must operate in the range 156 mhz to 320 mhz
 	//
-	// According to the Philips LPC2148 manual:	Fcco = cclk * 2 * P    where:	Fcco = CCO frequency 
+	// According to the Philips LPC2148 manual:	Fcco = cclk * 2 * P    where:	Fcco = CCO frequency
 	//																			cclk = 60000000 hz
 	//																			P = PLL divisor (bits 5-6 of PLLCFG)
 	//
@@ -97,30 +97,29 @@ void Init2148(void)
 	// Final note: to load PLLCFG register, we must use the 0xAA followed 0x55 write sequence to the PLLFEED register
 	//             this is done in the short function feed() below
 	//
-   
+
 	// Setting Multiplier and Divider values
   PLLCFG = 0x24;
   feed();
-  
-	// Enabling the PLL */	
+
+	// Enabling the PLL */
 	PLLCON = 0x1;
 	feed();
-  
+
 	// Wait for the PLL to lock to set frequency
 	while(!(PLLSTAT & PLOCK)) ;
-  
+
 	// Connect the PLL as the clock source
 	PLLCON = 0x3;
 	feed();
-  
+
 	// Enabling MAM and setting number of clocks used for Flash memory fetch
 	MAMTIM = 0x3;
 	MAMCR = 0x2;
-  
+
 	// Setting peripheral Clock (pclk) to System Clock (cclk)
 	VPBDIV = 0x1;  //pclk == cclk
-	
+
 	// Initialize Port0 & Port1 as Fast
 	SCS_REG = 0x3;
 }
-

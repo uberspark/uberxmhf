@@ -129,4 +129,3 @@ linux2windows_call_end:
 	addq	$80, %rsp
 	ret
 linux2windows_end:
-

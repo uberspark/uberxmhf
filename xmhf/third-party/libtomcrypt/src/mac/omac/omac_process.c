@@ -10,7 +10,7 @@
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   @file omac_process.c
   LTC_OMAC1 support, process data, Tom St Denis
 */
@@ -18,7 +18,7 @@
 
 #ifdef LTC_OMAC
 
-/** 
+/**
    Process data through LTC_OMAC
    @param omac     The LTC_OMAC state
    @param in       The input data to send through LTC_OMAC
@@ -58,7 +58,7 @@ int omac_process(omac_state *omac, const unsigned char *in, unsigned long inlen)
     }
 #endif
 
-   while (inlen != 0) { 
+   while (inlen != 0) {
        /* ok if the block is full we xor in prev, encrypt and replace prev */
        if (omac->buflen == omac->blklen) {
           for (x = 0; x < (unsigned long)omac->blklen; x++) {

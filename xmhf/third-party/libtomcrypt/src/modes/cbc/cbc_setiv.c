@@ -36,7 +36,7 @@ int cbc_setiv(const unsigned char *IV, unsigned long len, symmetric_CBC *cbc)
    return CRYPT_OK;
 }
 
-#endif 
+#endif
 
 
 /* $Source: /cvs/libtom/libtomcrypt/src/modes/cbc/cbc_setiv.c,v $ */

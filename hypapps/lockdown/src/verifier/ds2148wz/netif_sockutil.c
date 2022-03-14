@@ -20,7 +20,7 @@ uint16 swaps(u_int i)
 	u_short ret=0;
 	ret = (i & 0xFF) << 8;
 	ret |= ((i >> 8)& 0xFF);
-	return ret;	
+	return ret;
 }
 
 uint32 swapl(uint32 l)
@@ -36,8 +36,8 @@ uint32 swapl(uint32 l)
 
 /**
 @brief	Convert 32bit Address(Host Ordering) into Dotted Decimal Format
-@return 	a char pointer to a static buffer containing the text address in standard ".'' notation. Otherwise, it returns NULL. 
-*/  
+@return 	a char pointer to a static buffer containing the text address in standard ".'' notation. Otherwise, it returns NULL.
+*/
 char* inet_ntoa(
 	unsigned long addr	/**< Pointer variable to store converted value(INPUT) */
 	)
@@ -58,9 +58,9 @@ char* inet_ntoa_pad(unsigned long addr)
 }
 
 /**
-@brief	Converts a string containing an (Ipv4) Internet Protocol decimal dotted address into a 32bit address 
+@brief	Converts a string containing an (Ipv4) Internet Protocol decimal dotted address into a 32bit address
 @return 	32bit address (Host Odering)
-*/  
+*/
 uint32 inet_addr(
 	unsigned char* addr	/**< dotted notation address string.  */
 	)
@@ -71,25 +71,25 @@ uint32 inet_addr(
 	char * nexttok;
 	int num;
 	strcpy(taddr,addr);
-	
+
 	nexttok = taddr;
 	for(i = 0; i < 4 ; i++)
 	{
 		nexttok = strtok(nexttok,".");
 		if(nexttok[0] == '0' && nexttok[1] == 'x') num = ATOI(nexttok+2,0x10);
 		else num = ATOI(nexttok,10);
-		inetaddr = inetaddr << 8;		
+		inetaddr = inetaddr << 8;
 		inetaddr |= (num & 0xFF);
 		nexttok = NULL;
 	}
-	return inetaddr;	
-}	
+	return inetaddr;
+}
 
 
 /**
 @brief	Verify dotted notation IP address string
 @return 	success - 1, fail - 0
-*/ 
+*/
 char VerifyIPAddress(
 	char* src	/**< pointer to IP address string */
 	)
@@ -98,9 +98,9 @@ char VerifyIPAddress(
 	int tnum;
 	char tsrc[50];
 	char* tok = tsrc;
-	
+
 	strcpy(tsrc,src);
-	
+
 	for(i = 0; i < 4; i++)
 	{
 		tok = strtok(tok,".");
@@ -110,18 +110,18 @@ char VerifyIPAddress(
 			if(!ValidATOI(tok+2,0x10,&tnum)) return 0;
 		}
 		else if(!ValidATOI(tok,10,&tnum)) return 0;
-		
+
 		if(tnum < 0 || tnum > 255) return 0;
 		tok = NULL;
 	}
-	return 1;	
+	return 1;
 }
 
 
 /**
 @brief	Output destination IP address of appropriate channel
 @return 	32bit destination address (Host Ordering)
-*/ 
+*/
 uint32 GetDestAddr(
 	SOCKET s	/**< Channel number which try to get destination IP Address */
 	)
@@ -139,7 +139,7 @@ uint32 GetDestAddr(
 /**
 @brief	Output destination port number of appropriate channel
 @return 	16bit destination port number
-*/ 
+*/
 unsigned int GetDestPort(
 	SOCKET s	/**< Channel number which try to get destination port */
 	)
@@ -155,7 +155,7 @@ unsigned int GetDestPort(
 /**
 @brief	htons function converts a unsigned short from host to TCP/IP network byte order (which is big-endian).
 @return 	the value in TCP/IP network byte order
-*/ 
+*/
 uint16 htons( uint16 hostshort )	/**< A 16-bit number in host byte order.  */
 {
 	return swaps(hostshort);
@@ -165,7 +165,7 @@ uint16 htons( uint16 hostshort )	/**< A 16-bit number in host byte order.  */
 /**
 @brief	htonl function converts a unsigned long from host to TCP/IP network byte order (which is big-endian).
 @return 	the value in TCP/IP network byte order
-*/ 
+*/
 uint32 htonl( uint32 hostlong )		/**< hostshort  - A 32-bit number in host byte order.  */
 {
 	return swapl(hostlong);
@@ -175,7 +175,7 @@ uint32 htonl( uint32 hostlong )		/**< hostshort  - A 32-bit number in host byte 
 /**
 @brief	ntohs function converts a unsigned short from TCP/IP network byte order to host byte order (which is little-endian on Intel processors).
 @return 	a 16-bit number in host byte order
-*/ 
+*/
 unsigned long ntohs( 	unsigned short netshort )	/**< netshort - network odering 16bit value */
 {
 	return htons(netshort);
@@ -185,7 +185,7 @@ unsigned long ntohs( 	unsigned short netshort )	/**< netshort - network odering 
 /**
 @brief	converts a unsigned long from TCP/IP network byte order to host byte order (which is little-endian on Intel processors).
 @return 	a 16-bit number in host byte order
-*/ 
+*/
 unsigned long ntohl(unsigned long netlong)
 {
 	return htonl(netlong);
@@ -209,7 +209,7 @@ u_char CheckDestInLocal(u_long destip)
 /**
 @brief	Get handle of socket which status is same to 'status'
 @return 	socket number
-*/ 
+*/
 SOCKET getSocket(
 	unsigned char status, 	/**< socket's status to be found */
 	SOCKET start			/**< base of socket to be found */
@@ -219,14 +219,14 @@ SOCKET getSocket(
 	if(start > 3) start = 0;
 
 	for(i = start; i < MAX_SOCK_NUM ; i++) if( getSn_SR(i)==status ) return i;
-	return MAX_SOCK_NUM;	
+	return MAX_SOCK_NUM;
 }
 
 
 /**
 @brief	Calculate checksum of a stream
 @return 	checksum
-*/ 
+*/
 unsigned short checksum(
 	unsigned char * src, 	/**< pointer to stream  */
 	unsigned int len		/**< size of stream */
@@ -239,7 +239,7 @@ unsigned short checksum(
 
 	lsum = 0;
 
-	for (i = 0; i < j; i++) 
+	for (i = 0; i < j; i++)
 	{
 		tsum = src[i * 2];
 		tsum = tsum << 8;
@@ -247,7 +247,7 @@ unsigned short checksum(
 		lsum += tsum;
 	}
 
-	if (len % 2) 
+	if (len % 2)
 	{
 		tsum = src[i * 2];
 		lsum += (tsum << 8);
@@ -256,7 +256,7 @@ unsigned short checksum(
 
 	sum = lsum;
 	sum = ~(sum + (lsum >> 16));
-	return (u_short) sum;	
+	return (u_short) sum;
 }
 
 
@@ -265,7 +265,7 @@ unsigned short checksum(
 /**
 @brief	Get Source IP Address of iinChip.
 @return 	Source IP Address(32bit Address-Host Ordering)
-*/ 
+*/
 u_long GetIPAddress(void)
 {
 	u_long ip=0;
@@ -282,7 +282,7 @@ u_long GetIPAddress(void)
 /**
 @brief	Get Gateway IP Address of iinChip.
 @return 	Gateway IP Address(32bit Address-Host Ordering)
-*/ 
+*/
 u_long GetGWAddress(void)
 {
 	u_long ip=0;
@@ -292,14 +292,14 @@ u_long GetGWAddress(void)
 		ip <<= 8;
 		ip += (char)IINCHIP_READ(GAR0+i);
 	}
-	return ip;	
+	return ip;
 }
 
 
 /**
 @brief	Get Subnet mask of iinChip.
 @return 	Subnet Mask(32bit Address-Host Ordering)
-*/ 
+*/
 u_long GetSubMask(void)
 {
 	u_long ip=0;
@@ -309,14 +309,14 @@ u_long GetSubMask(void)
 		ip <<= 8;
 		ip += (char)IINCHIP_READ(SUBR0+i);
 	}
-	return ip;	
+	return ip;
 }
 
 
 /**
 @brief	Get Mac Address of iinChip.
 @return 	Subnet Mask(32bit Address-Host Ordering)
-*/ 
+*/
 void GetMacAddress(
 	unsigned char* mac	/**< Pointer to store Mac Address(48bit Address)(INPUT, OUTPUT) */
 	)
@@ -335,7 +335,7 @@ void GetDestMacAddr(SOCKET s, u_char* mac)
 /**
 @brief	Read established network information(G/W, IP, S/N, Mac) of iinChip and Output that through Serial.
 		Mac Address is output into format of Dotted HexaDecimal.Others are output into format of Dotted Decimal Format.
-*/ 
+*/
 void GetNetConfig(void)
 {
 	u_char addr[6];
@@ -345,7 +345,7 @@ void GetNetConfig(void)
 	printf("================================================\r\n");
 	GetMacAddress(addr);
 	printf("MAC ADDRESS      : 0x%02X.0x%02X.0x%02X.0x%02X.0x%02X.0x%02X\r\n",addr[0],addr[1],addr[2],addr[3],addr[4],addr[5]);
-	
+
 	iaddr = GetSubMask();
 	printf("SUBNET MASK      : %s\r\n",inet_ntoa(iaddr));
 
@@ -354,7 +354,7 @@ void GetNetConfig(void)
 
 	iaddr = GetIPAddress();
 	printf("LOCAL IP ADDRESS : %s\r\n",inet_ntoa(iaddr));
-	printf("================================================\r\n");		
+	printf("================================================\r\n");
 }
 
 #endif

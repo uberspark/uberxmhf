@@ -58,43 +58,43 @@ u32 acpi_control_portnum=0;
 
 u32 LDN_ENV_PHYSICALMEMORYLIMIT=0; //max physical memory address permissible
 								   //for the guest environment
- 
+
 u32 currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE; //default to untrusted env.
 
 //----------------------------------------------------------------------
-//hyperapp main                            
+//hyperapp main
 //----------------------------------------------------------------------
 u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	LDNPB *pldnPb;
 
-	#if defined(__LDN_TV_INTEGRATION__)  
-	{	
+	#if defined(__LDN_TV_INTEGRATION__)
+	{
 		extern u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
 		tv_app_main(vcpu, apb);
 	}
 	#endif
-	
+
 	//we only perform setup on the BSP
-	if(!vcpu->isbsp){	
+	if(!vcpu->isbsp){
 		printf("\nCPU(0x%02x): Lockdown initiaizing. Skipping init on AP.", vcpu->id);
 		return APP_INIT_SUCCESS;
 	}
 
 	printf("\nCPU(0x%02x): BSP. Lockdown initiaizing...", vcpu->id);
-	
+
 	//setup guest environment physical memory size
-	LDN_ENV_PHYSICALMEMORYLIMIT = (apb->runtimephysmembase - PAGE_SIZE_2M); 
+	LDN_ENV_PHYSICALMEMORYLIMIT = (apb->runtimephysmembase - PAGE_SIZE_2M);
 
 
-#if defined(__LDN_HYPERSWITCHING__)  
+#if defined(__LDN_HYPERSWITCHING__)
 	//ACPI initialization
 	ACPIInitializeRegisters();
 
 	acpi_control_portnum = (u32)PM1_CNTa;
-	  
+
 	printf("\nCPU(0x%02x): Lockdown; ACPI control port=0x%08x",
 		vcpu->id, acpi_control_portnum);
-	  
+
 	//set I/O port intercept for ACPI control port
 	xmhf_partition_legacyIO_setprot(vcpu, acpi_control_portnum, 2, PART_LEGACYIO_NOACCESS); //16-bit port
 #endif
@@ -121,14 +121,14 @@ u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE;
 		printf("\nCPU(0x%02x): booting UNTRUSTED environment...", vcpu->id);
 	}else{
-		//an optional module was specified, so load the trusted 
+		//an optional module was specified, so load the trusted
 		//environment
 		pldnPb = (LDNPB *) apb->optionalmodule_ptr;
 		currentenvironment = LDN_ENV_TRUSTED_SIGNATURE;
-		
+
 		//sanity check we have a good TE parameter block
 		if(pldnPb->signature != LDN_ENV_TRUSTED_SIGNATURE){
-			printf("\nCPU(0x%02x): unknown destination environment signature (0x%08x), halting!", 
+			printf("\nCPU(0x%02x): unknown destination environment signature (0x%08x), halting!",
 				vcpu->id, pldnPb->signature);
 			HALT();
 		}
@@ -151,7 +151,7 @@ u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		#endif
 	}else{	//we are going to run the untrusted environment
 		HALT_ON_ERRORCOND( currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
-	
+
 		/*//TODO:make EPT entries such that they map 2M pages for the untrusted
 		//environment in order to achieve greatest speedup during EPT
 		//translation
@@ -159,7 +159,7 @@ u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		xmhf_hwpgtbl_flushall(vcpu);
 		printf("\nCPU(0x%02x): setup 2M EPT pages");*/
 	}
-  
+
   return APP_INIT_SUCCESS;  //successful
 }
 
@@ -168,30 +168,30 @@ u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
 //----------------------------------------------------------------------
 u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
-	#if defined(__LDN_TV_INTEGRATION__)  
+	#if defined(__LDN_TV_INTEGRATION__)
 	extern u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r);
 	return tv_app_handlehypercall(vcpu, r);
 	#else
 	u32 status=APP_SUCCESS;
-			
+
 	(void)r;
 	(void)vcpu;
 
 	return status;
 	#endif //__LDN_TV_INTEGRATION__
-}      
+}
 
 
 //----------------------------------------------------------------------
-// hyperapp nested (extended) page fault handler 
+// hyperapp nested (extended) page fault handler
 // used to implement approved execution
 //----------------------------------------------------------------------
 u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	struct regs *r,
 	u64 gpa, u64 gva, u64 violationcode){
 	(void)r;
-	
-	#if defined(__LDN_TV_INTEGRATION__)  
+
+	#if defined(__LDN_TV_INTEGRATION__)
 	{
 		extern u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu, struct regs *r, u64 gpa, u64 gva, u64 violationcode);
 		u32 status;
@@ -202,7 +202,7 @@ u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 		return status;
 	}
 	#endif //__LDN_TV_INTEGRATION__
-	
+
 
 	#if defined(__LDN_APPROVEDEXEC__)
 	if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE)
@@ -211,13 +211,13 @@ u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 
 	//we never handle nested (extended) page faults in the untrusted
 	//environment
-	printf("\nCPU(0x%02x): Unhandled HW page-fault!", 
+	printf("\nCPU(0x%02x): Unhandled HW page-fault!",
 		vcpu->id);
-	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, errorcode=0x%08x", 
+	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, errorcode=0x%08x",
 		vcpu->id, (u32)gva, (u32)gpa, (u32)violationcode);
-	printf("\nCPU(0x%02x): current gpa protection is: 0x%08x", 
+	printf("\nCPU(0x%02x): current gpa protection is: 0x%08x",
 		xmhf_memprot_getprot(vcpu, gpa));
-	printf("\nCPU(0x%02x): Halting!"); 
+	printf("\nCPU(0x%02x): Halting!");
 	HALT();
 	return APP_ERROR;	//we never get here
 }
@@ -242,7 +242,7 @@ u32 sslpa_isnetworkdevice(u32 bus, u32 device, u32 function){
     machine_networkdevices[i].function == function)
     return 1;
  }
-  
+
  return 0;
 }
 
@@ -251,10 +251,10 @@ u32 sslpa_isnetworkdevice(u32 bus, u32 device, u32 function){
 //----------------------------------------------------------------------
 //hyperapp I/O port intercept handler
 //----------------------------------------------------------------------
-u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
   u32 portnum, u32 access_type, u32 access_size){
 
-	#if defined(__LDN_HYPERSWITCHING__)  
+	#if defined(__LDN_HYPERSWITCHING__)
 	u32 acpi_sleep_en;
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
@@ -262,21 +262,21 @@ u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 	else
 		acpi_sleep_en = ((u16)r->eax & (u16)(1 << 13));
 
-	//printf("\nCPU(0x%02x): Lockdown type=%u, portnum=0x%08x, size=%u, sleep_en=%u", 
+	//printf("\nCPU(0x%02x): Lockdown type=%u, portnum=0x%08x, size=%u, sleep_en=%u",
 	//	vcpu->id, access_type, portnum, access_size, acpi_sleep_en);
 
-	if(access_type == IO_TYPE_OUT && portnum == acpi_control_portnum && 
+	if(access_type == IO_TYPE_OUT && portnum == acpi_control_portnum &&
 	  access_size == IO_SIZE_WORD && acpi_sleep_en ){
 		printf("\nCPU(0x%02x): Lockdown; ACPI SLEEP_EN signal caught. resetting firmware...",
 		  vcpu->id);
-		
+
 		//reset platform
 		xmhf_baseplatform_reboot(vcpu);
 
 		//we should never get here
-		HALT();  
+		HALT();
 	}
-	#else //__LDN_HYPERSWITCHING__ 
+	#else //__LDN_HYPERSWITCHING__
 	(void)vcpu;
 	(void)r;
 	(void)portnum;
@@ -284,7 +284,7 @@ u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 	(void)access_size;
 	#endif //__LDN_HYPERSWITCHING__
 
-	#if defined(__LDN_HYPERPARTITIONING__)  
+	#if defined(__LDN_HYPERPARTITIONING__)
 	if( portnum == ATA_COMMAND(ATA_BUS_PRIMARY) ||
 		portnum == ATA_SECTOR_COUNT(ATA_BUS_PRIMARY) ||
 		portnum == ATA_LBALOW(ATA_BUS_PRIMARY) ||
@@ -300,16 +300,16 @@ u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 
 	#if defined(__LDN_SSLPA__)
 	if(portnum == PCI_CONFIG_DATA_PORT){
-		//printf("\nCPU(0x%02x): PCI DATA acc, size=%u, type=%u", 
-		//  vcpu->id, access_size, access_type);  
+		//printf("\nCPU(0x%02x): PCI DATA acc, size=%u, type=%u",
+		//  vcpu->id, access_size, access_type);
 		pci_config_reg_addr_t pci_addr;
 		pci_addr.bytes = inl((u32)PCI_CONFIG_ADDR_PORT);
 
-		if(sslpa_isnetworkdevice(pci_addr.fields.bus, pci_addr.fields.device, 
+		if(sslpa_isnetworkdevice(pci_addr.fields.bus, pci_addr.fields.device,
 			pci_addr.fields.function)) {
 			if(access_type == IO_TYPE_IN){
 				u32 retval;
-				printf("\nCPU(0x%02x): N/W device accessed, denying... (t=%u, s=%u, offset=0x%08x)", 
+				printf("\nCPU(0x%02x): N/W device accessed, denying... (t=%u, s=%u, offset=0x%08x)",
 				  vcpu->id, access_type, access_size, pci_addr.fields.offset);
 
 				if(pci_addr.fields.offset == 0)
@@ -327,22 +327,22 @@ u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 
 				return APP_IOINTERCEPT_SKIP;
 			}else{
-				printf("\nCPU(0x%02x): N/W device forced write? HALT! (t=%u, s=%u, offset=0x%08x)", 
+				printf("\nCPU(0x%02x): N/W device forced write? HALT! (t=%u, s=%u, offset=0x%08x)",
 				  vcpu->id, access_type, access_size, pci_addr.fields.offset);
 				HALT();
 			}
 		}
 	}
 	#endif
-  
-	return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
+
+	return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O
 }
 
 //----------------------------------------------------------------------
 //hyperapp platform shutdown handler
 //----------------------------------------------------------------------
 void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
-	#if defined(__LDN_TV_INTEGRATION__)  
+	#if defined(__LDN_TV_INTEGRATION__)
 	extern void tv_app_handleshutdown(VCPU *vcpu, struct regs *r);
 	tv_app_handleshutdown(vcpu, r);
 	#else

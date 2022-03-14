@@ -57,18 +57,18 @@ void xmhf_baseplatform_arch_x86_reboot(void){
 	unsigned char flush = 0x02;
 
 #ifndef __XMHF_VERIFICATION__
-	
+
 	while ((flush & 0x02) != 0)
 		flush = inb(0x64);
 	outb(0xFE, 0x64);
-	
+
 	//never get here
 	printf("\n%s: should never get here. halt!", __FUNCTION__);
 	HALT();
 
 #else   //__XMHF_VERIFICATION__
 	//TODO: plug in a 8042 controller/reset h/w model
-	
+
 #endif	//__XMHF_VERIFICATION__
 
 }
@@ -77,7 +77,7 @@ void xmhf_baseplatform_arch_x86_reboot(void){
 //reboot platform
 void xmhf_baseplatform_arch_reboot(VCPU *vcpu){
 	HALT_ON_ERRORCOND (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
+
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		xmhf_baseplatform_arch_x86svm_reboot(vcpu);
 	else //CPU_VENDOR_INTEL

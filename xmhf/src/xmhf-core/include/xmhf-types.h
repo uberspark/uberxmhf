@@ -58,14 +58,14 @@
 // TODO: bootloader for 64 bit XMHF will have incorrect size
 // Ideally, should change __X86_64__ to __XMHF_X86_64__
 #ifdef __X86__
-    typedef u32 hva_t;  // hypervisor virtual address 
+    typedef u32 hva_t;  // hypervisor virtual address
     typedef u64 spa_t;  // system physical address
     typedef u64	spfn_t; // pfn of system physical address
     typedef u32 gva_t;  // guest virtual address
     typedef u64 gpa_t;  // guest physical address. can be 64-bit with PAE
     typedef u32 sla_t;  // secure loader address
 #elif defined(__X86_64__)
-    typedef u64 hva_t;  // hypervisor virtual address 
+    typedef u64 hva_t;  // hypervisor virtual address
     typedef u64 spa_t;  // system physical address
     typedef u64	spfn_t; // pfn of system physical address
     typedef u64 gva_t;  // guest virtual address
@@ -103,7 +103,7 @@ typedef struct _integrity_measurement_values {
 } INTEGRITY_MEASUREMENT_VALUES;
 
 
-//"runtime" parameter block structure; arch_rpb (in startup component) 
+//"runtime" parameter block structure; arch_rpb (in startup component)
 //is the default definition
 typedef struct {
     u32     magic;
@@ -138,7 +138,7 @@ typedef struct {
 } RPB, *PRPB;
 
 
-//"sl" parameter block structure 
+//"sl" parameter block structure
 typedef struct _sl_parameter_block {
     u32     magic;                      // magic identifier
     u32     errorHandler;               // error handler (currently unused)

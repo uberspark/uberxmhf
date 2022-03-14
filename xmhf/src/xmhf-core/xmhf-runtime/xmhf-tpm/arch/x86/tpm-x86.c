@@ -70,7 +70,7 @@ static void _read_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
 
 static void _write_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
 {
-    size_t i;    
+    size_t i;
     for ( i = 0; i < size; i++ )
         writeb((TPM_LOCALITY_BASE_N(locality) | reg) + i, _raw[i]);
 }
@@ -111,7 +111,7 @@ static void dump_locality_access_regs(void) {
     uint32_t locality;
 
     printf("\n%s():\n", __FUNCTION__);
-    for(locality=0; locality <= 3; locality++) {    
+    for(locality=0; locality <= 3; locality++) {
         read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
         printf("  TPM: Locality %d Access reg content: 0x%02x\n",
                locality, (uint32_t)reg_acc._raw[0]);
@@ -319,7 +319,7 @@ void xmhf_tpm_arch_deactivate_all_localities(void) {
     uint32_t locality;
 
     printf("\nTPM: %s()\n", __FUNCTION__);
-    for(locality=0; locality <= 3; locality++) {    
+    for(locality=0; locality <= 3; locality++) {
         reg_acc._raw[0] = 0;
         reg_acc.active_locality = 1;
         write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
@@ -339,8 +339,8 @@ int xmhf_tpm_arch_open_locality(int locality){
 
     if(cpu_vendor == CPU_VENDOR_INTEL) {
         return xmhf_tpm_arch_x86vmx_open_locality(locality);
-       
-    } else { /* AMD */        
+
+    } else { /* AMD */
 		return xmhf_tpm_arch_x86svm_open_locality(locality);
     }
 }

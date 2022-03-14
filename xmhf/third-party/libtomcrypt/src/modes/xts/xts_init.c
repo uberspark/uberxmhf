@@ -10,7 +10,7 @@
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   Source donated by Elliptic Semiconductor Inc (www.ellipticsemi.com) to the LibTom Projects
 */
 
@@ -27,10 +27,10 @@
    Returns CRYPT_OK upon success.
 */
 int xts_start(                int  cipher,
-              const unsigned char *key1, 
-              const unsigned char *key2, 
+              const unsigned char *key1,
+              const unsigned char *key2,
                     unsigned long  keylen,
-                              int  num_rounds, 
+                              int  num_rounds,
                     symmetric_xts *xts)
 {
    int err;
@@ -66,4 +66,3 @@ int xts_start(                int  cipher,
 /* $Source: /cvs/libtom/libtomcrypt/src/modes/xts/xts_init.c,v $ */
 /* $Revision: 1.4 $ */
 /* $Date: 2007/03/10 23:59:09 $ */
-

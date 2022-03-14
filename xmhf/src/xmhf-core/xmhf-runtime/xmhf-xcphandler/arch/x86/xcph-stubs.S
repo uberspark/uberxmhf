@@ -47,15 +47,15 @@
 /*
  * EMHF exception handler component low-level stubs
  */
- 
+
 #include <xmhf.h>
 #include <xmhf-xcphandler.h>
 
 .altmacro
 .macro XtRtmEmitIdtStub vector skip_err_code
 	.section .text
-	
-	//notes: 
+
+	//notes:
 	//1. we only handle exceptions (0-31) and nothing else
 	//2. descriptor type for all exception handlers are 0x8E
 	//   i.e., they are all interrupt gates, so when we get called
@@ -67,10 +67,10 @@
 	//   CS		(32-bits)
 	//	 EIP	(32-bits)
 	//	 error-code (32-bits, depends on the exception)
-	
+
 	XtRtmIdtStub&vector&:
-		
-		//push GPR values on stack to construct a 
+
+		//push GPR values on stack to construct a
 		//struct regs *r
 		pushal
 
@@ -93,7 +93,7 @@
 
 		//return from exception
 		iretl
-	
+
 .endm
 
 XtRtmEmitIdtStub 0  0

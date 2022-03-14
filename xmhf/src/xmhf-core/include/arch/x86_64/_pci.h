@@ -81,12 +81,12 @@
 //maximum PCI bus, device and function numbers
 #define PCI_BUS_MAX					256
 #define PCI_DEVICE_MAX			32
-#define	PCI_FUNCTION_MAX		8	
+#define	PCI_FUNCTION_MAX		8
 
 //AMD PCI configuration space constants
 #define	PCI_VENDOR_ID_AMD										0x1022	//Vendor ID for AMD
 
-#define	PCI_DEVICE_ID_AMD_HT_CONFIGURATION	0x1200	//Device ID for AMD Hypertransport Configuration 
+#define	PCI_DEVICE_ID_AMD_HT_CONFIGURATION	0x1200	//Device ID for AMD Hypertransport Configuration
 #define	PCI_DEVICE_ID_AMD_ADDRESSMAP				0x1201	//Device ID for AMD Address Map
 #define PCI_DEVICE_ID_AMD_DRAMCONTROL				0x1202	//Device ID for AMD DRAM Controller
 #define PCI_DEVICE_ID_AMD_MISCCONTROL				0x1203	//Device ID for AMD Miscellaneous Control

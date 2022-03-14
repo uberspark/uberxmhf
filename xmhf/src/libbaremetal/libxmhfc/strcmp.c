@@ -37,7 +37,7 @@
  */
 
 #include <stdint.h>
-#include <string.h> 
+#include <string.h>
 /*
  * Compare strings.
  */

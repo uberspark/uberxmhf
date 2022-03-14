@@ -205,8 +205,8 @@ int svc_tpmnvram_writeall(uint8_t *in) { /* in */
   }
 
   memcpy(g_fake_nvram, in, FAKE_NVRAM_SIZE);
-  
-  return 0;                  
+
+  return 0;
 }
 
 /* Local Variables: */

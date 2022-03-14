@@ -57,8 +57,8 @@
     spin:	btl	$0, (%esi)		//mutex is available?
       	jnc	spin			      //wait till it is
 
-      	lock				        //lock the bus (exclusive access)	
-        btrl	$0, (%esi)		    //and try to grab the mutex	
+      	lock				        //lock the bus (exclusive access)
+        btrl	$0, (%esi)		    //and try to grab the mutex
         jnc	spin			      //spin until successful --> spinlock :p
     popl %esi
     ret
@@ -70,4 +70,3 @@
       btsl	$0, (%esi)		       //release the spinlock
       popl %esi
       ret
-

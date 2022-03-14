@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -70,7 +70,7 @@ int process_beginning_plaintext(ssl,seg,direction)
     struct timeval dt;
     if(seg->len==0)
       return(SSL_NO_DATA);
-    
+
     d.data=seg->data;
     d.len=seg->len;
 
@@ -80,13 +80,13 @@ int process_beginning_plaintext(ssl,seg,direction)
 
     P_(P_AD){
       ssl_print_timestamp(ssl,&seg->p->ts);
-      
+
       ssl_print_direction_indicator(ssl,direction);
-      
+
       print_data(ssl,&d);
       printf("\n");
     }
-      
+
     return(0);
   }
 
@@ -104,10 +104,10 @@ int process_v2_hello(ssl,seg)
     Data chall;
     char random[32];
     struct timeval dt;
-    
+
     if(seg->len==0)
       return(SSL_NO_DATA);
-    
+
     d.data=seg->data;
     d.len=seg->len;
 
@@ -119,7 +119,7 @@ int process_v2_hello(ssl,seg)
 
     if(d.len!=rec_len) /* Whatever this is it isn't valid SSLv2*/
       return(SSL_BAD_CONTENT_TYPE);
-    
+
     /* If msg_type==1 then we've got a v2 message (or trash)*/
     if(*d.data++!=1)
       return(SSL_BAD_CONTENT_TYPE);
@@ -136,7 +136,7 @@ int process_v2_hello(ssl,seg)
     ssl_print_timestamp(ssl,&seg->p->ts);
     ssl_print_direction_indicator(ssl,DIR_I2R);
     explain(ssl," SSLv2 compatible client hello\n");
-    
+
     INDENT_INCR;
 
     P_(P_HL) {
@@ -155,7 +155,7 @@ int process_v2_hello(ssl,seg)
     P_(P_HL){
       explain(ssl,"cipher suites\n");
     }
-    
+
     for(;cs_len;cs_len-=3){
       UINT4 val;
       char *str;
@@ -166,17 +166,17 @@ int process_v2_hello(ssl,seg)
         explain(ssl,"\n");
       }
     }
-    
+
     if(sid_len!=0){
       fprintf(stderr,"Session ID field should be zero length\n");
       return(SSL_BAD_DATA);
     }
-    
+
     if(chall_len<16 || chall_len>32){
       fprintf(stderr,"Invalid challenge length %d\n",chall_len);
       return(SSL_BAD_DATA);
     }
-      
+
     SSL_DECODE_OPAQUE_ARRAY(ssl,0,chall_len,
       0,&d,&chall);
     P_(P_DC){
@@ -196,7 +196,7 @@ int process_v2_hello(ssl,seg)
       exdump(ssl,"Packet data",&d);
       printf("\n\n");
     }
-    
+
     INDENT_POP;
     return(0);
   }
@@ -223,7 +223,7 @@ int ssl_decode_switch(ssl,dtable,value,dir,seg,data)
       }
       dtable++;
     }
-    
+
     ERETURN(R_NOT_FOUND);
   }
 
@@ -244,21 +244,21 @@ int ssl_expand_record(ssl,q,direction,data,len)
     /*This should be mapped to an enum*/
     SSL_DECODE_UINT8(ssl,0,0,&d,&ct);
     SSL_DECODE_UINT8(ssl,0,0,&d,&vermaj);
-    SSL_DECODE_UINT8(ssl,0,0,&d,&vermin);    
+    SSL_DECODE_UINT8(ssl,0,0,&d,&vermin);
     SSL_DECODE_UINT16(ssl,0,0,&d,&length);
 
     if(d.len!=length){
       explain(ssl,"Short record\n");
       return(0);
     }
-   
+
     P_(P_RH){
       explain(ssl,"V%d.%d(%d)",vermaj,vermin,length);
     }
 
-      
+
     version=vermaj*256+vermin;
-    
+
     r=ssl_decode_record(ssl,ssl->decoder,direction,ct,version,&d);
 
     if(r==SSL_BAD_MAC){
@@ -276,7 +276,7 @@ int ssl_expand_record(ssl,q,direction,data,len)
         &d))
         ERETURN(r);
     }
- 
+
     return(0);
   }
 
@@ -298,7 +298,7 @@ int ssl_decode_uintX(ssl,name,size,p,data,x)
         data->len,size);
       ERETURN(R_EOD);
     }
-    
+
     while(size--){
       v<<=8;
       v|=*(data->data)++;
@@ -326,7 +326,7 @@ int ssl_decode_opaque_array(ssl,name,size,p,data,x)
     Data _x;
 
     if(!x) x=&_x;
-    
+
     sprintf(n,"%s (length)",name?name:"<unknown>");
     if(size<0){
       size*=-1;
@@ -351,7 +351,7 @@ int ssl_decode_opaque_array(ssl,name,size,p,data,x)
     P_(p){
       exdump(ssl,name,x);
     }
-    
+
     return(0);
   }
 
@@ -371,12 +371,12 @@ int ssl_lookup_enum(ssl,dtable,val,ptr)
 
     return(-1);
   }
-  
+
 int ssl_decode_enum(ssl,name,size,dtable,p,data,x)
   ssl_obj *ssl;
   char *name;
   int size;
-  decoder *dtable;  
+  decoder *dtable;
   UINT4 p;
   Data *data;
   UINT4 *x;
@@ -385,7 +385,7 @@ int ssl_decode_enum(ssl,name,size,dtable,p,data,x)
     UINT4 _x;
 
     if(!x) x=&_x;
-    
+
     if(r=ssl_decode_uintX(ssl,name,size,0,data,x))
       ERETURN(r);
 
@@ -403,9 +403,9 @@ int ssl_print_enum(ssl,name,dtable,value)
   decoder *dtable;
   UINT4 value;
   {
-    if(name) explain(ssl,"%s ",name);    
+    if(name) explain(ssl,"%s ",name);
     INDENT;
-    
+
     while(dtable && dtable->type!=-1){
       if(dtable->type == value){
         INDENT_INCR;
@@ -454,11 +454,11 @@ int exdump(ssl,name,data)
       printf("\\f(CB");
     }
     for(i=0;i<data->len;i++){
-      
+
       if(!i) INDENT;
-      
+
       if((data->len>8) && i && !(i%16)){
-        printf("\n"); INDENT; 
+        printf("\n"); INDENT;
       }
       printf("%.2x ",data->data[i]&255);
     }
@@ -469,14 +469,14 @@ int exdump(ssl,name,data)
     printf("\n");
     return(0);
   }
-      
+
 int combodump(ssl,name,data)
   ssl_obj *ssl;
   char *name;
   Data *data;
   {
     char *ptr=data->data;
-    int len=data->len;    
+    int len=data->len;
 
     if(name){
       explain(ssl,"%s[%d]=\n",name,data->len);
@@ -487,14 +487,14 @@ int combodump(ssl,name,data)
       int bytes=MIN(len,16);
 
       INDENT;
-      
+
       P_(P_NR){
         if(ssl->record_encryption==REC_DECRYPTED_CIPHERTEXT)
           printf("\\f[CBI]");
         else
           printf("\\f(CB");
       }
-      
+
       for(i=0;i<bytes;i++)
         printf("%.2x ",ptr[i]&255);
       /* Fill */
@@ -508,7 +508,7 @@ int combodump(ssl,name,data)
         else
           printf("\\f(C");
       }
-            
+
       for(i=0;i<bytes;i++){
         if(isprint(ptr[i]))
           printf("%c",ptr[i]);
@@ -516,7 +516,7 @@ int combodump(ssl,name,data)
           printf(".");
       }
       printf("\n");
-        
+
       len-=bytes;
       ptr+=bytes;
     }
@@ -533,7 +533,7 @@ int print_data(ssl,d)
   {
     int i,bit8=0;
 
-    printf("\n");    
+    printf("\n");
     for(i=0;i<d->len;i++){
       if(!isprint(d->data[i]) && !strchr("\r\n\t",d->data[i])){
 	bit8=1;
@@ -552,7 +552,7 @@ int print_data(ssl,d)
       }
       INDENT;
       printf("---------------------------------------------------------------\n");
-      
+
     }
     else{
       int nl=1;
@@ -570,7 +570,7 @@ int print_data(ssl,d)
         if(nl==1 && (SSL_print_flags & SSL_PRINT_NROFF) && (d->data[i]=='.'))
           printf("\\&");
         nl=0;
-        
+
         putchar(d->data[i]);
         if(d->data[i]=='\n') {nl=1;INDENT;}
       }
@@ -579,14 +579,14 @@ int print_data(ssl,d)
         printf("\\f(R");
       }
     }
-    
+
     return(0);
   }
 int ssl_print_direction_indicator(ssl,dir)
   ssl_obj *ssl;
   int dir;
   {
-#if 0    
+#if 0
     if(dir==DIR_I2R){
       explain(ssl,"%s(%d) > %s>%d",
         ssl->client_name,ssl->client_port,ssl->server_name,ssl->server_port);
@@ -603,7 +603,7 @@ int ssl_print_direction_indicator(ssl,dir)
       explain(ssl,"S>C");
     }
 #endif
-    
+
     return(0);
   }
 
@@ -613,7 +613,7 @@ int ssl_print_timestamp(ssl,ts)
   {
     struct timeval dt;
     int r;
-    
+
     if(SSL_print_flags & SSL_PRINT_TIMESTAMP_ABSOLUTE) {
       explain(ssl,"%d%c%4.4d ",ts->tv_sec,'.',ts->tv_usec/100);
     }
@@ -622,14 +622,14 @@ int ssl_print_timestamp(ssl,ts)
         ERETURN(r);
       explain(ssl,"%d%c%4.4d ",dt.tv_sec,'.',dt.tv_usec/100);
     }
-    
+
     if(r=timestamp_diff(ts,&ssl->time_last,&dt)){
       ERETURN(r);
     }
     explain(ssl,"(%d%c%4.4d)  ",dt.tv_sec,'.',dt.tv_usec/100);
 
-    memcpy(&ssl->time_last,ts,sizeof(struct timeval));                
-    
+    memcpy(&ssl->time_last,ts,sizeof(struct timeval));
+
     return(0);
   }
 
@@ -660,7 +660,7 @@ int ssl_print_cipher_suite(ssl,version,p,val)
     char *str;
     char *prefix=version<=0x300?"SSL_":"TLS_";
     int r;
-    
+
     P_(p){
       if(r=ssl_lookup_enum(ssl,cipher_suite_decoder,val,&str)){
         explain(ssl,"Unknown value 0x%x",val);
@@ -678,9 +678,3 @@ int ssl_print_cipher_suite(ssl,version,p,val)
     }
     return(0);
   }
-
-
-
-      
-  
-  

@@ -98,4 +98,3 @@ typedef struct
 #define VIC_BIT(chan)   (1 << (chan))
 
 #endif
-

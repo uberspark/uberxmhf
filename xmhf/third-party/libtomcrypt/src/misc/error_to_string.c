@@ -65,7 +65,7 @@ const char *error_to_string(int err)
       return "Invalid error code.";
    } else {
       return err_2_str[err];
-   }   
+   }
 }
 
 

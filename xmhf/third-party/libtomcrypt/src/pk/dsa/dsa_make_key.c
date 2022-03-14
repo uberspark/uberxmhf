@@ -41,7 +41,7 @@ int dsa_make_key(prng_state *prng, int wprng, int group_size, int modulus_size, 
    }
 
    /* check size */
-   if (group_size >= LTC_MDSA_MAX_GROUP || group_size <= 15 || 
+   if (group_size >= LTC_MDSA_MAX_GROUP || group_size <= 15 ||
        group_size >= modulus_size || (modulus_size - group_size) >= LTC_MDSA_DELTA) {
       return CRYPT_INVALID_ARG;
    }
@@ -101,8 +101,8 @@ int dsa_make_key(prng_state *prng, int wprng, int group_size, int modulus_size, 
    /* at this point tmp generates a group of order q mod p */
    mp_exch(tmp, key->g);
 
-   /* so now we have our DH structure, generator g, order q, modulus p 
-      Now we need a random exponent [mod q] and it's power g^x mod p 
+   /* so now we have our DH structure, generator g, order q, modulus p
+      Now we need a random exponent [mod q] and it's power g^x mod p
     */
    do {
       if (prng_descriptor[wprng].read(buf, group_size, prng) != (unsigned long)group_size) {
@@ -112,7 +112,7 @@ int dsa_make_key(prng_state *prng, int wprng, int group_size, int modulus_size, 
       if ((err = mp_read_unsigned_bin(key->x, buf, group_size)) != CRYPT_OK)           { goto error; }
    } while (mp_cmp_d(key->x, 1) != LTC_MP_GT);
    if ((err = mp_exptmod(key->g, key->x, key->p, key->y)) != CRYPT_OK)                 { goto error; }
-  
+
    key->type = PK_PRIVATE;
    key->qord = group_size;
 
@@ -122,9 +122,9 @@ int dsa_make_key(prng_state *prng, int wprng, int group_size, int modulus_size, 
 
    err = CRYPT_OK;
    goto done;
-error: 
+error:
     mp_clear_multi(key->g, key->q, key->p, key->x, key->y, NULL);
-done: 
+done:
     mp_clear_multi(tmp, tmp2, NULL);
     XFREE(buf);
     return err;

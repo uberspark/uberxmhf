@@ -492,4 +492,3 @@ int rmd320_test(void)
 }
 
 #endif
-

@@ -52,7 +52,7 @@
 #ifndef __SCODE_H_
 #define __SCODE_H_
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #include <pages.h>
 
@@ -60,7 +60,7 @@
 #include <crypto_init.h>
 #include <tv_utpm.h> /* formerly utpm.h */
 
-#include <perf.h>	
+#include <perf.h>
 
 #include <hpt.h>
 #include <hptw.h>
@@ -71,8 +71,8 @@
 #define CHK(x) HALT_ON_ERRORCOND(x)
 #define CHK_RV(x) HALT_ON_ERRORCOND(!(x))
 
-/* 
- * definition for scode whitelist 
+/*
+ * definition for scode whitelist
  * */
 /* in order to support 4GB memory */
 #define  PFN_BITMAP_LIMIT 512*1024
@@ -102,7 +102,7 @@ typedef struct {
 
 /* scode state struct */
 typedef struct whitelist_entry{
-  u64       gcr3; 
+  u64       gcr3;
   u32       id;
   u32       g64;        /* whether running in 64-bit mode */
   uintptr_t grsp;       /* guest reguar stack */

@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhf.h - main XMHF core header file 
+//xmhf.h - main XMHF core header file
 // this orchestrates the inclusion of other core component specific
 // headers
 //author: amit vasudevan (amitvasudevan@acm.org)
@@ -56,7 +56,7 @@
 //pull in required C99 compatible C-library interfaces
 //libXMHFc
 #ifndef __ASSEMBLY__
-	
+
 	#include <stdint.h>
 	#include <stdbool.h>
 	#include <stddef.h>
@@ -83,7 +83,7 @@
 	#include <tpm.h>
 #endif /* __ASSEMBLY__ */
 
-#include <xmhf-debug.h>			//XMHF debug component 
+#include <xmhf-debug.h>			//XMHF debug component
 #include <xmhf-types.h>			//XMHF specific base types
 #include <xmhf-var.h>
 
@@ -94,7 +94,7 @@
 
 //forward declaration of runtime parameter block
 #ifndef __ASSEMBLY__
-extern RPB *rpb;	
+extern RPB *rpb;
 #endif	//__ASSEMBLY__
 
 // STL for XMHF

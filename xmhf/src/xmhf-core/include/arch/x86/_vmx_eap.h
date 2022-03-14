@@ -51,16 +51,16 @@
 #define __VMX_EAP_H__
 
 #define VTD_DMAR_SIGNATURE  (0x52414D44) //"DMAR"
-#define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units   
+#define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units
 
 //VT-d register offsets (sec. 10.4, Intel_VT_for_Direct_IO)
 #define VTD_VER_REG_OFF 		0x000				//arch. version (32-bit)
-#define VTD_CAP_REG_OFF 		0x008				//h/w capabilities (64-bit)				
+#define VTD_CAP_REG_OFF 		0x008				//h/w capabilities (64-bit)
 #define VTD_ECAP_REG_OFF  	0x010				//h/w extended capabilities (64-bit)
 #define VTD_GCMD_REG_OFF  	0x018				//global command (32-bit)
 #define VTD_GSTS_REG_OFF  	0x01C				//global status (32-bit)
 #define VTD_RTADDR_REG_OFF  0x020				//root-entry table address (64-bit)
-#define VTD_CCMD_REG_OFF  	0x028				//manage context-entry cache (64-bit) 
+#define VTD_CCMD_REG_OFF  	0x028				//manage context-entry cache (64-bit)
 #define VTD_FSTS_REG_OFF  	0x034				//report fault/error status (32-bit)
 #define VTD_FECTL_REG_OFF 	0x038				//interrupt control (32-bit)
 #define VTD_PMEN_REG_OFF  	0x064				//enable DMA protected memory regions (32-bits)
@@ -101,7 +101,7 @@ typedef struct{
 	u32 creatorrevision;
   u8 hostaddresswidth;
   u8 flags;
-  u8 rsvdz[10];    
+  u8 rsvdz[10];
 }__attribute__ ((packed)) VTD_DMAR;
 
 //VT-d DRHD structure
@@ -168,7 +168,7 @@ typedef union {
     u32 ir:1;					//interrupt remapping support
     u32 eim:1;				//extended interrupt mode
     u32 ch:1;					//caching hints
-    u32 pt:1;					//pass through 
+    u32 pt:1;					//pass through
     u32 sc:1;					//snoop control
     u32 iro:10;				//IOTLB register offset
     u32 rsvdz0: 2;		//reserved
@@ -209,7 +209,7 @@ typedef union {
     u32 afls:1;				//advanced fault logging status
     u32 fls:1;				//fault log status
     u32 rtps:1;				//root table pointer status
-    u32 tes:1;				//translation enable status 
+    u32 tes:1;				//translation enable status
   } bits;
 } __attribute__ ((packed)) VTD_GSTS_REG;
 
@@ -234,7 +234,7 @@ typedef union {
     u32 rsvdz0: 25;		//reserved
     u32 caig:2;				//context invalidation actual granularity
     u32 cirg:2;				//context invalidation request granularity
-    u32 icc:1;				//invalidate context-cache 
+    u32 icc:1;				//invalidate context-cache
   } bits;
 } __attribute__ ((packed)) VTD_CCMD_REG;
 
@@ -250,7 +250,7 @@ typedef union {
     u32 rsvdz1: 7;		//reserved
     u32 iaig: 3;			//IOTLB actual invalidation granularity
     u32 iirg: 3;			//IOTLB request invalidation granularity
-    u32 ivt: 1;				//invalidate IOTLB 
+    u32 ivt: 1;				//invalidate IOTLB
   } bits;
 } __attribute__ ((packed)) VTD_IOTLB_REG;
 
@@ -276,7 +276,7 @@ typedef union {
     u32 ppf:1;				//primary pending fault
     u32 afo:1;				//advanced fault overflow
     u32 apf:1;				//advanced pending fault
-    u32 iqe:1;				//invalidation queue error				
+    u32 iqe:1;				//invalidation queue error
     u32 ice:1;				//invalidation completion error
     u32 ite:1;				//invalidation time-out error
     u32 rsvdz0: 1;		//reserved
@@ -307,7 +307,7 @@ typedef union {
   } bits;
 } __attribute__ ((packed)) VTD_PMEN_REG;
 
-		
+
 #endif //__ASSEMBLY__
 
 #endif //__VMX_EAP_H__

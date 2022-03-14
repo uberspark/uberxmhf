@@ -45,7 +45,7 @@
  */
 
 /* hpt.h - hypervisor page table abstraction
- * 
+ *
  * author - Jim Newsome (jnewsome@no-fuss.com)
  *
  * note: the HPT abstraction requires certain target interfaces to

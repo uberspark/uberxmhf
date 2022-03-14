@@ -65,7 +65,7 @@ xmhf_parteventhub_arch_x86vmx_entry:
 
 	//step-2: grab VCPU *
 	movl 32(%esp), %esi
-	      
+
    	//step-4: get hold of pointer to saved GPR on stack
    	movl %esp, %eax
 
@@ -81,9 +81,7 @@ xmhf_parteventhub_arch_x86vmx_entry:
 
     //resume partition
     vmresume
-              
-    //if we get here then vm resume failed, just bail out with a BP exception 
+
+    //if we get here then vm resume failed, just bail out with a BP exception
     int $0x03
     hlt
-  
-  

@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -59,7 +59,7 @@ int r_list_destroy PROTO_LIST((r_list **listp));
 int r_list_copy PROTO_LIST((r_list **out,r_list *in));
 int r_list_insert PROTO_LIST((r_list *list,void *value,
   int (*copy)(void **new,void *old),
-  int (*destroy)(void **ptr)));  
+  int (*destroy)(void **ptr)));
 int r_list_append PROTO_LIST((r_list *list,void *value,
   int (*copy)(void **new,void *old),
   int (*destroy)(void **ptr)));

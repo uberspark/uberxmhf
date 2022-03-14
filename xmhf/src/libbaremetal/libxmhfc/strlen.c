@@ -34,7 +34,7 @@
  */
 
 #include <stdint.h>
-#include <string.h> 
+#include <string.h>
 
 size_t strlen(str)
 	const char *str;

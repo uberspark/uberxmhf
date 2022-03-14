@@ -113,4 +113,3 @@ xmhf_parteventhub_arch_x86vmx_entry:
     //if we get here then vm resume failed, just bail out with a BP exception
     int $0x03
     hlt
-

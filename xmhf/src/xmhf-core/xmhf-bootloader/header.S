@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 	.section .multiboot_header
 
@@ -53,7 +53,7 @@
 multiboot_header:
 	.long 0x1BADB002
 	.long 0x10003
-	.long	-(0x1BAEB005) 
+	.long	-(0x1BAEB005)
 	.long multiboot_header
 	.long multiboot_header
 	.long 0
@@ -63,26 +63,25 @@ multiboot_header:
 	.long 0
 	.long 0
 	.long 0
-	
+
 	.extern cstartup
 	.section .text
 	.global init_start
 init_start:
-	
+
 	movl    $(init_stack + INIT_STACK_SIZE), %esp
-     
+
   pushl   $0
   popf
-     
+
   pushl   %ebx
   //pushl   %eax
 	call cstartup
-	
+
 halt:
 	hlt
 	jmp halt
-	
+
 	.section .stack
 init_stack:
 	.fill	INIT_STACK_SIZE, 1, 0
-	

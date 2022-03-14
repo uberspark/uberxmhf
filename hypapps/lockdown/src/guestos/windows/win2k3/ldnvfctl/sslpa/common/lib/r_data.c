@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -56,7 +56,7 @@ int r_data_create(dp,d,l)
   {
     Data *d_=0;
     int _status;
-    
+
     if(!(d_=(Data *)calloc(sizeof(Data),1)))
       ABORT(R_NO_MEMORY);
     if(!(d_->data=(UCHAR *)malloc(l)))
@@ -81,14 +81,14 @@ int r_data_alloc(dp,l)
   {
     Data *d_=0;
     int _status;
-    
+
     if(!(d_=(Data *)calloc(sizeof(Data),1)))
       ABORT(R_NO_MEMORY);
     if(!(d_->data=(UCHAR *)calloc(l,1)))
       ABORT(R_NO_MEMORY);
 
     d_->len=l;
-    
+
     *dp=d_;
     _status=0;
   abort:
@@ -111,7 +111,7 @@ int r_data_make(dp,d,l)
 
     return(0);
   }
-  
+
 int r_data_destroy(dp)
   Data **dp;
   {
@@ -126,7 +126,7 @@ int r_data_destroy(dp)
 
     return(0);
   }
-    
+
 int r_data_copy(dst,src)
   Data *dst;
   Data *src;
@@ -159,4 +159,3 @@ int r_data_compare(d1,d2)
       return(-1);
     return(memcmp(d1->data,d2->data,d1->len));
   }
-  

@@ -83,7 +83,7 @@
  * Modified for XMHF.
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 #include <cmdline.h>
 
 /*
@@ -174,7 +174,7 @@ void get_tboot_log_targets(void)
             g_log_targets |= LOG_TARGET_VGA;
             targets += 3;
         }
-        else 
+        else
             break; /* unrecognized, end loop */
 
         if ( *targets == ',' )
@@ -246,7 +246,7 @@ static bool parse_com_fmt(const char **fmt)
     /* parity */
     if ( **fmt == 'n' || **fmt == 'o' || **fmt == 'e' || **fmt == 'm' ||
          **fmt == 's' )
-        g_uart_config.parity = 
+        g_uart_config.parity =
             (**fmt == 'n')
             ? PARITY_NONE
             : (**fmt == 'o')

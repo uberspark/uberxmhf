@@ -83,7 +83,7 @@
  * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 /*
  * are_hashes_equal

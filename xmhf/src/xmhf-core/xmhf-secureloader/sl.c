@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//sl.c 
+//sl.c
 //secure loader implementation
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 RPB * rpb;
 u32 sl_baseaddr=0;
@@ -75,28 +75,28 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #endif /* __X86_64__ */
 
 	//linker relocates sl image starting from 0, so
-    //parameter block must be at offset 0x10000    
-	HALT_ON_ERRORCOND( (sla_t)&slpb == 0x10000 ); 
+    //parameter block must be at offset 0x10000
+	HALT_ON_ERRORCOND( (sla_t)&slpb == 0x10000 );
 
 	//do we have the required MAGIC?
 	HALT_ON_ERRORCOND( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
-	
+
 	//we currently only support x86 (AMD and Intel)
 	HALT_ON_ERRORCOND (cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
-	
+
 	//initialize debugging early on
 	xmhf_debug_init((char *)&slpb.uart_config);
 
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
-	
-	//is our launch before the OS has been loaded (early) is loaded or 
+
+	//is our launch before the OS has been loaded (early) is loaded or
 	//is it after the OS has been loaded (late)
 	if(slpb.isEarlyInit)
-		printf("\nSL(early-init): at 0x%08x, starting...", sl_baseaddr);    
+		printf("\nSL(early-init): at 0x%08x, starting...", sl_baseaddr);
     else
 		printf("\nSL(late-init): at 0x%08x, starting...", sl_baseaddr);
-		
+
 	//debug: dump SL parameter block
 	printf("\nSL: slpb at = 0x%08lx", (sla_t)&slpb);
 	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
@@ -106,7 +106,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	numCPUEntries=%u", slpb.numCPUEntries);
 	printf("\n	cpuinfo buffer at 0x%08lx", (sla_t)&slpb.cpuinfobuffer);
 	printf("\n	runtime size= %u bytes", slpb.runtime_size);
-	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
+	printf("\n	OS bootmodule at 0x%08x, size=%u bytes",
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
     printf("\n  OS boot_drive is 0x%02x", (u32)slpb.runtime_osbootdrive);
     printf("\n\tcmdline = \"%s\"", slpb.cmdline);
@@ -117,14 +117,14 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
            slpb.rdtsc_before_drtm, slpb.rdtsc_after_drtm);
     printf("\nSL: [PERF] RDTSC DRTM elapsed cycles: 0x%llx",
            slpb.rdtsc_after_drtm - slpb.rdtsc_before_drtm);
-    
+
 	//get runtime physical base
 	runtime_physical_base = sl_baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
-	
+
 	//compute 2M aligned runtime size
 	runtime_size_2Maligned = PAGE_ALIGN_UP2M(slpb.runtime_size);
 
-	printf("\nSL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)", 
+	printf("\nSL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)",
 			runtime_physical_base, slpb.runtime_size, runtime_size_2Maligned);
 
 	//setup runtime parameter block with required parameters
@@ -135,18 +135,18 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	#else
 		//setup runtime parameter block pointer
 		//actual definitions
-		extern RPB _xrpb;	
+		extern RPB _xrpb;
 		rpb = (RPB *)&_xrpb;
 	#endif
 
 		printf("\nSL: RPB, magic=0x%08x", rpb->magic);
 		HALT_ON_ERRORCOND(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
-			
+
 		//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
-		
+
 		//store runtime physical and virtual base addresses along with size
-		rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
+		rpb->XtVmmRuntimePhysBase = runtime_physical_base;
 		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
 		rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
@@ -154,15 +154,15 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		#ifndef __XMHF_VERIFICATION__
 		memcpy(hva2sla((void *)rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
 		#endif
-		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
+		rpb->XtVmmE820NumEntries = slpb.numE820Entries;
 
 		//store CPU table and number of CPUs
 		#ifndef __XMHF_VERIFICATION__
 		memcpy(hva2sla((void *)rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(PCPU) * slpb.numCPUEntries) );
 		#endif
-		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
+		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries;
 
-		//setup guest OS boot module info in LPB	
+		//setup guest OS boot module info in LPB
 		rpb->XtGuestOSBootModuleBase=(hva_t)(slpb.runtime_osbootmodule_base);
 		rpb->XtGuestOSBootModuleSize=(hva_t)(slpb.runtime_osbootmodule_size);
 
@@ -177,28 +177,28 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->RtmUartConfig = slpb.uart_config;
 	#endif
 
-		//pass command line configuration forward 
+		//pass command line configuration forward
 		COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
 	#ifndef __XMHF_VERIFICATION__
 		strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
 	#endif
-		
+
 	}
-	
+
 	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
-	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
+	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs
 	//do not contain weird mappings)
 #if defined (__DRT__)
     xmhf_sl_arch_sanitize_post_launch();
 #endif	//__DRT__
 
-#if defined (__DMAP__)    
+#if defined (__DMAP__)
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	xmhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
 #endif
-	
+
 	//transfer control to runtime
 	xmhf_sl_arch_xfer_control_to_runtime(rpb);
 
@@ -209,5 +209,4 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #else
 	return;
 #endif
-} 
-
+}

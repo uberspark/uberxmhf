@@ -45,7 +45,7 @@
  */
 
 
-/* 
+/*
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
@@ -63,8 +63,8 @@
  * [TZS] 5.5.1
  */
 #define TZ_BUILD_RUNTIME_SERVICE_CONTROL
-#undef TZ_BUILD_ASYNCHRONOUS 
-#undef TZ_BUILD_MULTITHREADS 
+#undef TZ_BUILD_ASYNCHRONOUS
+#undef TZ_BUILD_MULTITHREADS
 
 /* 5.3.1 */
 typedef uint32_t tz_return_t;
@@ -533,7 +533,7 @@ TZManagerGetServiceProperty(INOUT tz_session_t* psSession,
  */
 tz_return_t
 TZManagerDownloadService(INOUT tz_session_t* psSession,
-                         IN void const * kauiData, 
+                         IN void const * kauiData,
                          uint32_t uiLength,
                          OUT tz_uuid_t* psService);
 

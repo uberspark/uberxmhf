@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -74,7 +74,7 @@ int r_list_create(listp)
     list->first=0;
     list->last=0;
     *listp=list;
-    
+
     _status=0;
   abort:
     return(_status);
@@ -85,16 +85,16 @@ int r_list_destroy(listp)
   {
     r_list *list;
     r_list_el *el;
-    
+
     if(!listp || !*listp)
       return(0);
     list=*listp;
 
     el=list->first;
-    
+
     while(el){
       r_list_el *el_t;
-      
+
       if(el->destroy && el->data)
         el->destroy(&el->data);
       el_t=el;
@@ -104,10 +104,10 @@ int r_list_destroy(listp)
 
     free(list);
     *listp=0;
-      
+
     return(0);
   }
-    
+
 int r_list_copy(outp,in)
   r_list**outp;
   r_list *in;
@@ -115,7 +115,7 @@ int r_list_copy(outp,in)
     r_list *out=0;
     r_list_el *el,*el2,*last=0;
     int r, _status;
-    
+
     if(r=r_list_create(&out))
       ABORT(r);
 
@@ -142,7 +142,7 @@ int r_list_copy(outp,in)
     out->last=last;
 
     *outp=out;
-    
+
     _status=0;
   abort:
     if(_status)
@@ -158,7 +158,7 @@ int r_list_insert(list,value,copy,destroy)
   {
     r_list_el *el=0;
     int _status;
-    
+
     if(!(el=(r_list_el *)calloc(sizeof(r_list_el),1)))
       ABORT(R_NO_MEMORY);
     el->data=value;
@@ -185,7 +185,7 @@ int r_list_append(list,value,copy,destroy)
   {
     r_list_el *el=0;
     int _status;
-    
+
     if(!(el=(r_list_el *)calloc(sizeof(r_list_el),1)))
       ABORT(R_NO_MEMORY);
     el->data=value;
@@ -194,10 +194,10 @@ int r_list_append(list,value,copy,destroy)
 
     el->prev=list->last;
     el->next=0;
-    
+
     if(list->last) list->last->next=el;
     else list->first=el;
-    
+
     list->last=el;
 
     _status=0;
@@ -224,11 +224,6 @@ int r_list_iter(iter,val)
 
     *val=iter->ptr->data;
     iter->ptr=iter->ptr->next;
-    
+
     return(0);
   }
-
-    
-      
-    
-    

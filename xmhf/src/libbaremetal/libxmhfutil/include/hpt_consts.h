@@ -58,7 +58,7 @@
  * valid for is intended to help write error-free code below. e.g., it
  * is clear when using an 'L32_M' macro that one must first ensure that
  * the PTE being dealt with maps a map\table and is of level 3 or 2.
- * 
+ *
  */
 #define HPT_NORM_ADDR_L2_M_HI 31
 #define HPT_NORM_ADDR_L2_M_LO 12
@@ -71,7 +71,7 @@
 #define HPT_NORM_ADDR_L1_P_HI 31
 #define HPT_NORM_ADDR_L1_P_LO 12
 #define HPT_NORM_AVL11_L21_MP_HI 11 /* available */
-#define HPT_NORM_AVL11_L21_MP_LO 9 
+#define HPT_NORM_AVL11_L21_MP_LO 9
 #define HPT_NORM_G_L21_P_BIT 8 /* global */
 #define HPT_NORM_IGN8_L2_M_BIT 8
 #define HPT_NORM_PS_L2_MP_BIT 7 /* page size */

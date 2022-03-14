@@ -55,7 +55,7 @@
 //initialize partition monitor for a given CPU
 void xmhf_partition_arch_initializemonitor(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
+
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		xmhf_partition_arch_x86svm_initializemonitor(vcpu);
 	}else{ //CPU_VENDOR_INTEL
@@ -67,7 +67,7 @@ void xmhf_partition_arch_initializemonitor(VCPU *vcpu){
 //setup guest OS state for the partition
 void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
+
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		xmhf_partition_arch_x86svm_setupguestOSstate(vcpu);
 	}else{ //CPU_VENDOR_INTEL
@@ -78,13 +78,13 @@ void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu){
 //start executing the partition and guest OS
 void xmhf_partition_arch_start(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
+
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		xmhf_partition_arch_x86svm_start(vcpu);
 	}else{ //CPU_VENDOR_INTEL
 		xmhf_partition_arch_x86vmx_start(vcpu);
 	}
-	
+
 }
 
 //set legacy I/O protection for the partition
@@ -94,5 +94,5 @@ void xmhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 pr
 	}else{ //CPU_VENDOR_INTEL
 		xmhf_partition_arch_x86vmx_legacyIO_setprot(vcpu, port, size, prottype);
 	}
-	
+
 }

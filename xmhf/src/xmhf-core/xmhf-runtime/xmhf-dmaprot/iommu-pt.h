@@ -7,11 +7,11 @@
 #ifndef __ASSEMBLY__
 
 /// IOMMU PageTable information structure
-typedef struct 
+typedef struct
 {
 	iommu_pt_t			iommu_pt_id;
 	IOMMU_PT_TYPE 		type;
-	
+
 	/// @brief Record the allocated memory (pages)
 	XMHFList* 			used_mem;
 
@@ -26,7 +26,7 @@ typedef struct
 /// Invalidate the IOMMU PageTable corresponding to <pt_info>
 extern void iommu_vmx_invalidate_pt(IOMMU_PT_INFO* pt_info);
 
-/// 
+///
 extern bool iommu_vmx_map(IOMMU_PT_INFO* pt_info, gpa_t gpa, spa_t spa, uint32_t flags);
 
 /// Bind an IOMMU PT to a device

@@ -56,7 +56,7 @@
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
-//exported DATA 
+//exported DATA
 extern uint8_t g_log_targets;
 extern uint8_t g_log_level;
 //extern unsigned char g_dbg_ctype[];
@@ -128,7 +128,7 @@ static inline unsigned char __toupper(unsigned char c)
 
 
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//exported FUNCTIONS
 void xmhf_debug_init(char *params);
 
 #include <stdio.h>

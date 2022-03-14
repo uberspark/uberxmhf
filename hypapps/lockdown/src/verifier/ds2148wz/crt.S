@@ -1,6 +1,6 @@
 /* ***************************************************************************************************************
 
-	crt.s						STARTUP  ASSEMBLY  CODE 
+	crt.s						STARTUP  ASSEMBLY  CODE
 								-----------------------
 
 
@@ -46,7 +46,7 @@ _startup:
 
 # Exception Vectors
 
-_vectors:       ldr     PC, Reset_Addr         
+_vectors:       ldr     PC, Reset_Addr
                 ldr     PC, Undef_Addr
                 ldr     PC, SWI_Addr
                 ldr     PC, PAbt_Addr
@@ -55,12 +55,12 @@ _vectors:       ldr     PC, Reset_Addr
                 ldr     PC, [PC,#-0xFF0]	/* see page 71 of "Insiders Guide to the Philips ARM7-Based Microcontrollers" by Trevor Martin  */
 
                 ldr		PC, FIQ_Addr
-                
+
 /* Fast Interrupt Service
                 mov     r8, #0x1
                 ldr     r9, =T1IR
                 str     r8, [r9]
-                
+
                 mov     r8, #0x10
                 ldr     r9, =IO0SET
                 str     r8, [r9]
@@ -89,11 +89,11 @@ FIQ_Addr:       .word   FIQ_Routine     	/* defined in main.c  */
 
 # Reset Handler
 
-Reset_Handler:  
+Reset_Handler:
 
 				/* Setup a stack for each mode - note that this only sets up a usable stack
 				for User mode.   Also each mode is setup with interrupts initially disabled. */
-    			  
+
     			ldr   r0, =_stack_end
     			msr   CPSR_c, #MODE_UND|I_BIT|F_BIT 	/* Undefined Instruction Mode  */
     			mov   sp, r0
@@ -102,7 +102,7 @@ Reset_Handler:
     			mov   sp, r0
     			sub   r0, r0, #ABT_STACK_SIZE
     			msr   CPSR_c, #MODE_FIQ|I_BIT|F_BIT 	/* FIQ Mode */
-    			mov   sp, r0	
+    			mov   sp, r0
    				sub   r0, r0, #FIQ_STACK_SIZE
     			msr   CPSR_c, #MODE_IRQ|I_BIT|F_BIT 	/* IRQ Mode */
     			mov   sp, r0
@@ -132,8 +132,7 @@ Reset_Handler:
 
 				/* Enter the C code  */
                 b       main
- 
-				
-.endfunc				
-.end    
 
+
+.endfunc
+.end

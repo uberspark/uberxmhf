@@ -219,7 +219,7 @@ void test_uninstantiate_actually_zeros(void) {
 
     /* First give us a reference struct set to 0 ourselves, to compare against. */
     memset(&drbg0, 0x00, sizeof(NIST_CTR_DRBG));
-    
+
     /* Second set the DRBG struct to have all bits set. */
     memset(&drbg, 0xff, sizeof(NIST_CTR_DRBG));
 

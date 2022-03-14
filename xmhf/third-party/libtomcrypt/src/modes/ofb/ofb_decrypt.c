@@ -36,7 +36,7 @@ int ofb_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, s
 
 #endif
 
- 
+
 
 /* $Source: /cvs/libtom/libtomcrypt/src/modes/ofb/ofb_decrypt.c,v $ */
 /* $Revision: 1.6 $ */

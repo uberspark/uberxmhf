@@ -100,6 +100,6 @@ bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, u64* machin
 
 	*machine_base_spa = base_spa;
 	*machine_limit_spa = limit_spa;
-				
+
 	return true;
 }

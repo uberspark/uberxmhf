@@ -233,4 +233,3 @@ gotvcpu:
    call xmhf_baseplatform_arch_x86_smpinitialize_commonstart
    /*we should never get here, if so just halt*/
    hlt
-

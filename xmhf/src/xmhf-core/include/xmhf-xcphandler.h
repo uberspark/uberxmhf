@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF exception handler component 
+// EMHF exception handler component
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
@@ -57,19 +57,19 @@
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
-//exported DATA 
+//exported DATA
 
 //array of exception handler stubs
-extern u8 xmhf_xcphandler_exceptionstubs[]; 
+extern u8 xmhf_xcphandler_exceptionstubs[];
 
 //IDT descriptor
 extern u8 xmhf_xcphandler_idt[];
 
-//start of interrupt descriptor table 
+//start of interrupt descriptor table
 extern u8 xmhf_xcphandler_idt_start[];
 
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//exported FUNCTIONS
 
 //initialize EMHF core exception handlers
 void xmhf_xcphandler_initialize(void);

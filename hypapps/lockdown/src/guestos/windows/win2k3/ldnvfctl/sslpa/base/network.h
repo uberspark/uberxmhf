@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -86,7 +86,7 @@ struct packet_ {
      int _len;
      UCHAR *data;	/*The data ptr appropriate to this layer*/
      int len;		/*The length of the data segment*/
-     
+
      /*These just save us the effort of doing casts to the data
        segments*/
      struct ip *ip;	/*The IP header*/
@@ -103,4 +103,3 @@ extern UINT4 NET_print_flags;
 #define NET_PRINT_ACKS	    4
 #define NET_PRINT_NO_RESOLVE  8
 #endif
-

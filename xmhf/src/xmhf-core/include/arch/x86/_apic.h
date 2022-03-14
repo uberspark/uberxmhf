@@ -60,4 +60,4 @@
 #define LAPIC_OP_WRITE  (1)
 
 
-#endif // __APIC_H__ 
+#endif // __APIC_H__

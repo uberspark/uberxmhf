@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -98,7 +98,7 @@ int r_timeval_diff(t1,t0,diff)
     /*Easy case*/
     if(t0->tv_usec <= t1->tv_usec){
       diff->tv_sec=t1->tv_sec - t0->tv_sec;
-      diff->tv_usec=t1->tv_usec - t0->tv_usec;      
+      diff->tv_usec=t1->tv_usec - t0->tv_usec;
       return(0);
     }
 
@@ -132,7 +132,7 @@ int r_timeval_add(t1,t2,sum)
 
     sum->tv_sec=tv_sec;
     sum->tv_usec=tv_usec;
-    
+
     return(0);
   }
 
@@ -140,11 +140,11 @@ UINT8 r_timeval2int(tv)
   struct timeval *tv;
   {
     UINT8 r=0;
-    
+
     r=(tv->tv_sec);
     r*=1000000;
     r+=tv->tv_usec;
-        
+
     return r;
   }
 

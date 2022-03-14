@@ -54,7 +54,7 @@ void *calloc(size_t nmemb, size_t size);
 void *realloc(void *ptr, size_t size);
 void free(void *);
 
-void mem_init(void); 
+void mem_init(void);
 size_t heapmem_get_used_size(void);
 
 #endif

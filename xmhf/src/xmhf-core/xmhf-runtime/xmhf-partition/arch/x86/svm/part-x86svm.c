@@ -56,36 +56,36 @@ static void _svm_initSVM(VCPU *vcpu){
   u32 eax, edx, ecx, ebx;
   u64 hsave_pa;
 
-  //check if CPU supports SVM extensions 
+  //check if CPU supports SVM extensions
   cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
   if( !(ecx & (1<<ECX_SVM)) ){
    printf("\nCPU(0x%02x): no SVM extensions. HALT!", vcpu->id);
    HALT();
   }
-  
-  //check if SVM extensions are disabled by the BIOS 
+
+  //check if SVM extensions are disabled by the BIOS
   rdmsr(VM_CR_MSR, &eax, &edx);
   if( eax & (1<<VM_CR_SVME_DISABLE) ){
     printf("\nCPU(0x%02x): SVM extensions disabled in the BIOS. HALT!", vcpu->id);
     HALT();
   }
 
-  // check for nested paging support and number of ASIDs 
+  // check for nested paging support and number of ASIDs
 	cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
   if(!(edx & 0x1)){
       printf("\nCPU(0x%02x): No support for Nested Paging, HALTING!", vcpu->id);
 		HALT();
 	}
-	
+
   printf("\nCPU(0x%02x): Nested paging support present", vcpu->id);
 	if( (ebx-1) < 2 ){
 		printf("\nCPU(0x%02x): Total number of ASID is too low, HALTING!", vcpu->id);
 		HALT();
 	}
-	
+
 	printf("\nCPU(0x%02x): Total ASID is valid", vcpu->id);
 
-  // enable SVM and debugging support (if required)   
+  // enable SVM and debugging support (if required)
   rdmsr((u32)VM_CR_MSR, &eax, &edx);
   eax &= (~(1<<VM_CR_DPD));
   wrmsr((u32)VM_CR_MSR, eax, edx);
@@ -96,7 +96,7 @@ static void _svm_initSVM(VCPU *vcpu){
   wrmsr((u32)MSR_EFER, eax, edx);
   printf("\nCPU(0x%02x): SVM extensions enabled", vcpu->id);
 
-  // Initialize the HSA 
+  // Initialize the HSA
   //printf("\nHSAVE area=0x%08X", vcpu->hsave_vaddr_ptr);
   hsave_pa = hva2spa((void*)vcpu->hsave_vaddr_ptr);
   //printf("\nHSAVE physaddr=0x%08x", hsave_pa);
@@ -105,7 +105,7 @@ static void _svm_initSVM(VCPU *vcpu){
   wrmsr((u32)VM_HSAVE_PA, eax, edx);
   printf("\nCPU(0x%02x): SVM HSAVE initialized", vcpu->id);
 
-  // enable NX protections 
+  // enable NX protections
   rdmsr(MSR_EFER, &eax, &edx);
   eax |= (1 << EFER_NXE);
   wrmsr(MSR_EFER, eax, edx);
@@ -119,95 +119,95 @@ static void _svm_initSVM(VCPU *vcpu){
 static void	_svm_int15_initializehook(VCPU *vcpu){
 	//we should only be called from the BSP
 	HALT_ON_ERRORCOND(vcpu->isbsp);
-	
+
 	{
 		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
-		
+
 		u16 *ivt_int15 = (u16 *)(0x54);			//32-bit CS:IP for IVT INT 15 handler
-		
+
 		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
 			ivt_int15[1], ivt_int15[0]);
 
-		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original 
+		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original
 		//IVT INT 15h handler address, zero them to start off
-		memset(bdamemory, 0x0, 8);		
+		memset(bdamemory, 0x0, 8);
 
 		//implant VMMCALL followed by IRET at 0040:04AC
-		bdamemory[0]= 0x0f;	//VMMCALL						
+		bdamemory[0]= 0x0f;	//VMMCALL
 		bdamemory[1]= 0x01;
-		bdamemory[2]= 0xd9;																	
+		bdamemory[2]= 0xd9;
 		bdamemory[3]= 0xcf;	//IRET
-		
+
 		//store original INT 15h handler CS:IP following VMCALL and IRET
 		*((u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
 		*((u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
 
 		//point IVT INT15 handler to the VMCALL instruction
 		ivt_int15[0]=0x00AC;
-		ivt_int15[1]=0x0040;					
+		ivt_int15[1]=0x0040;
 	}
 }
 
 
 //---setup VMCB-----------------------------------------------------------------
 static void _svm_initVMCB(VCPU *vcpu){
-  
+
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
-  
+
   printf("\nCPU(0x%02x): VMCB at 0x%08x", vcpu->id, (hva_t)vmcb);
   #ifndef __XMHF_VERIFICATION__
   memset(vmcb, 0, sizeof(struct _svm_vmcbfields));
   #endif
-  
-  // set up CS descr 
+
+  // set up CS descr
   vmcb->cs.selector = 0x0;
   vmcb->cs.base = 0x0;
-  vmcb->cs.limit = 0x0ffff; // 64K limit since g=0 
+  vmcb->cs.limit = 0x0ffff; // 64K limit since g=0
   vmcb->cs.attrib = 0x009b;
-  
-  // set up DS descr 
+
+  // set up DS descr
   vmcb->ds.selector = 0x0;
   vmcb->ds.base = 0x0;
-  vmcb->ds.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->ds.attrib = 0x0093; // read/write 
-  
-  // set up ES descr 
+  vmcb->ds.limit = 0x0ffff; // 64K limit since g=0
+  vmcb->ds.attrib = 0x0093; // read/write
+
+  // set up ES descr
   vmcb->es.selector = 0x0;
   vmcb->es.base = 0x0;
-  vmcb->es.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->es.attrib = 0x0093; // read/write 
+  vmcb->es.limit = 0x0ffff; // 64K limit since g=0
+  vmcb->es.attrib = 0x0093; // read/write
 
-  // set up FS descr 
+  // set up FS descr
   vmcb->fs.selector = 0x0;
   vmcb->fs.base = 0x0;
-  vmcb->fs.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->fs.attrib = 0x0093; // read/write 
+  vmcb->fs.limit = 0x0ffff; // 64K limit since g=0
+  vmcb->fs.attrib = 0x0093; // read/write
 
-  // set up GS descr 
+  // set up GS descr
   vmcb->gs.selector = 0x0;
   vmcb->gs.base = 0x0;
-  vmcb->gs.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->gs.attrib = 0x0093; // read/write 
+  vmcb->gs.limit = 0x0ffff; // 64K limit since g=0
+  vmcb->gs.attrib = 0x0093; // read/write
 
-  // set up SS descr 
+  // set up SS descr
   vmcb->ss.selector = 0x0;
   vmcb->ss.base = 0x0;
-  vmcb->ss.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->ss.attrib = 0x0093; // read/write 
+  vmcb->ss.limit = 0x0ffff; // 64K limit since g=0
+  vmcb->ss.attrib = 0x0093; // read/write
 
   vmcb->idtr.limit = 0x03ff;
 
-  // SVME needs to be set in EFER for vmrun to execute 
+  // SVME needs to be set in EFER for vmrun to execute
   vmcb->efer |= (1 << EFER_SVME);
-   
-  // set guest PAT to state at reset. 
+
+  // set guest PAT to state at reset.
   vmcb->g_pat = 0x0007040600070406ULL;
 
-  // other-non general purpose registers/state 
-  vmcb->guest_asid = 1; // ASID 0 reserved for host 
-  vmcb->cpl = 0; // set cpl to 0 for real mode 
+  // other-non general purpose registers/state
+  vmcb->guest_asid = 1; // ASID 0 reserved for host
+  vmcb->cpl = 0; // set cpl to 0 for real mode
 
-  // general purpose registers 
+  // general purpose registers
   vmcb->rax= 0x0ULL;
   vmcb->rsp= 0x0ULL;
 
@@ -227,17 +227,17 @@ static void _svm_initVMCB(VCPU *vcpu){
 
   }
   vmcb->rflags = 0x0ULL;
-  
+
   vmcb->cr0 = 0x00000010ULL;
   vmcb->cr2 = 0ULL;
   vmcb->cr3 = 0x0ULL;
   vmcb->cr4 = 0ULL;
-  
+
   vmcb->dr6 = 0xffff0ff0ULL;
   vmcb->dr7 = 0x00000400ULL;
- 
- 
-  // intercept all SVM instructions 
+
+
+  // intercept all SVM instructions
   vmcb->class2_intercepts_bitmask |= (u32)(SVM_CLASS2_INTERCEPT_VMRUN |
 					  SVM_CLASS2_INTERCEPT_VMMCALL |
 					  SVM_CLASS2_INTERCEPT_VMLOAD |
@@ -286,7 +286,7 @@ void xmhf_partition_arch_x86svm_initializemonitor(VCPU *vcpu){
 void xmhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu){
 	//setup VMCB
 	_svm_initVMCB(vcpu);
-	
+
 }
 
 //start executing the partition and guest OS
@@ -307,10 +307,10 @@ void xmhf_partition_arch_x86svm_start(VCPU *vcpu){
     __svm_start_hvm(vcpu, hva2spa((void*)vcpu->vmcb_vaddr_ptr));
 	//we never get here, if we do, we just return and our caller is responsible
 	//for halting the core as something really bad happened!
-#endif	
+#endif
 
 }
-	
+
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
 	u8 *bit_vector = (u8 *)vcpu->svm_vaddr_iobitmap;
@@ -321,10 +321,10 @@ void xmhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size,
 		byte_offset = (port+i) / 8;
 		bit_offset = (port+i) % 8;
 		if(prottype & PART_LEGACYIO_NOACCESS){
-			bit_vector[byte_offset] |= (1 << bit_offset);	
+			bit_vector[byte_offset] |= (1 << bit_offset);
 		}else{
 			prottype = PART_LEGACYIO_READWRITE;
-			bit_vector[byte_offset] &= ~((1 << bit_offset));	
+			bit_vector[byte_offset] &= ~((1 << bit_offset));
 		}
 	}
 }

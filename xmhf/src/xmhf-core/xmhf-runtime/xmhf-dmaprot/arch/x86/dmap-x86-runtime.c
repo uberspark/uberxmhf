@@ -48,7 +48,7 @@
 // x86 backends
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 //return size (in bytes) of the memory buffer required for
 //DMA protection for a given physical memory limit
@@ -56,7 +56,7 @@ u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 	HALT_ON_ERRORCOND( physical_memory_limit <= PAGE_SIZE_512G_LL ); 	//we only support 512GB physical memory currently
 	HALT_ON_ERRORCOND( physical_memory_limit <= DMAPROT_PHY_ADDR_SPACE_SIZE ); 	//we only support <DMAPROT_PHY_ADDR_SPACE_SIZE> physical memory currently
-	
+
 	if(cpu_vendor == CPU_VENDOR_AMD){
 		return ((physical_memory_limit / PAGE_SIZE_4K) / 8); //each page takes up 1-bit with AMD DEV
 	}else{	//CPU_VENDOR_INTEL
@@ -89,7 +89,7 @@ void xmhf_dmaprot_arch_protect(spa_t start_paddr, size_t size){
 	}else{	//CPU_VENDOR_INTEL
 		return xmhf_dmaprot_arch_x86_vmx_protect(start_paddr, size);
 	//   return; //we use Vtd PMRs to protect the SL + runtime during SL launch
-	} 
+	}
 }
 
 //DMA unprotect a given region of memory, start_paddr is
@@ -100,8 +100,8 @@ void xmhf_dmaprot_arch_unprotect(spa_t start_paddr, size_t size){
 	if(cpu_vendor == CPU_VENDOR_AMD){
 	  return;
 	}else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86_vmx_unprotect(start_paddr, size);	
-	} 
+	  return xmhf_dmaprot_arch_x86_vmx_unprotect(start_paddr, size);
+	}
 }
 
 void xmhf_dmaprot_arch_invalidate_cache(void)
@@ -111,6 +111,6 @@ void xmhf_dmaprot_arch_invalidate_cache(void)
 	if(cpu_vendor == CPU_VENDOR_AMD){
 	  return xmhf_dmaprot_arch_x86_svm_invalidate_cache();
 	}else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86_vmx_invalidate_cache();	
-	} 
+	  return xmhf_dmaprot_arch_x86_vmx_invalidate_cache();
+	}
 }

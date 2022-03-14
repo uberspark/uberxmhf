@@ -149,7 +149,7 @@ void test_BR64_SET_BIT(void)
 
 void test_hpt_setprot(void)
 {
-  
+
 }
 
 void test_hpt_getprot_intel(void)

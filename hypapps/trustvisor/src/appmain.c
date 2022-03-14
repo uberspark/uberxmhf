@@ -54,7 +54,7 @@
  * jnewsome@cmu.edu, jonmccune@cmu.edu
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #include <malloc.h>
 #include <scode.h>
@@ -264,8 +264,8 @@ static u32 do_TV_HC_UTPM_SEAL_DEPRECATED(VCPU *vcpu, struct regs *r)
 
   plainbuf_s_gva = r->ecx;
   sealedbuf_s_gva = r->esi;
-  pcr_gva = r->edx;        
-        
+  pcr_gva = r->edx;
+
   EU_CHKN( copy_from_current_guest( vcpu,
                                     &plainbuf_s,
                                     plainbuf_s_gva,
@@ -299,7 +299,7 @@ static u32 do_TV_HC_UTPM_UNSEAL(VCPU *vcpu, struct regs *r)
 
   sealedbuf_s_gva = r->ecx;
   plainbuf_s_gva = r->edx;
-  digestAtCreation_gva = r->esi;				
+  digestAtCreation_gva = r->esi;
 
   EU_CHKN( copy_from_current_guest( vcpu,
                                     &sealedbuf_s,
@@ -309,7 +309,7 @@ static u32 do_TV_HC_UTPM_UNSEAL(VCPU *vcpu, struct regs *r)
                                     &plainbuf_s,
                                     plainbuf_s_gva,
                                     sizeof(plainbuf_s)));
-				
+
   ret = hc_utpm_unseal( vcpu,
                         sealedbuf_s.gva, sealedbuf_s.len,
                         plainbuf_s.gva, plainbuf_s.len_gva,
@@ -395,7 +395,7 @@ static u32 do_TV_HC_UTPM_QUOTE(VCPU *vcpu, struct regs *r)
   u32 ret = 1;
 
   eu_trace("TV_HC_UTPM_QUOTE hypercall received.");
-        
+
 #ifdef __XMHF_X86_64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
 #endif /* __XMHF_X86_64__ */
@@ -409,12 +409,12 @@ static u32 do_TV_HC_UTPM_QUOTE(VCPU *vcpu, struct regs *r)
                                     &sigbuf_s,
                                     sigbuf_s_gva,
                                     sizeof(sigbuf_s)));
-        
+
   EU_CHKN( copy_from_current_guest( vcpu,
                                     &pcr_comp_buf_s,
                                     pcr_comp_buf_s_gva,
                                     sizeof(sigbuf_s)));
-				
+
   ret = hc_utpm_quote( vcpu,
                        nonce_gva,
                        tpmsel_gva,
@@ -569,7 +569,7 @@ static u32 do_TV_HC_TPMNVRAM_WRITEALL(VCPU *vcpu, struct regs *r)
 }
 
 u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
-{	
+{
   struct _svm_vmcbfields * linux_vmcb;
   u32 cmd;
 
@@ -650,7 +650,7 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
                                             struct regs *r, u64 gpa, u64 gva, u64 violationcode)
 {
   u32 ret;
-#if defined(__LDN_TV_INTEGRATION__)  
+#if defined(__LDN_TV_INTEGRATION__)
   (void)gva;
 #endif //__LDN_TV_INTEGRATION__
 
@@ -658,7 +658,7 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 //  xmhf_smpguest_quiesce(vcpu);
 //#endif
 
-#if !defined(__LDN_TV_INTEGRATION__)  
+#if !defined(__LDN_TV_INTEGRATION__)
   eu_trace("CPU(0x%02x): gva=%#llx, gpa=%#llx, code=%#llx", (int)vcpu->id,
           gva, gpa, violationcode);
   if ((ret = hpt_scode_npf(vcpu, gpa, violationcode, r)) != 0) {
@@ -676,7 +676,7 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
   return ret;
 }
 
-u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
+u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r,
                                       u32 portnum, u32 access_type, u32 access_size)
 {
 //#ifdef __MP_VERSION__
@@ -688,7 +688,7 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
            (u32)portnum, (u32)access_type, (u32)access_size);
   HALT();
   //return APP_IOINTERCEPT_SKIP;
-  //return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
+  //return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O
 
 //#ifdef __MP_VERSION__
 //  xmhf_smpguest_endquiesce(vcpu);

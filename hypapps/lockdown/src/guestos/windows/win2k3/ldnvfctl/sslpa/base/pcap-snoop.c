@@ -64,7 +64,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -154,9 +154,9 @@ int print_version()
     printf("ssldump 0.9b3\n");
     printf("Copyright (C) 1998-2001 RTFM, Inc.\n");
     printf("All rights reserved.\n");
-#ifdef OPENSSL    
+#ifdef OPENSSL
     printf("Compiled with OpenSSL: decryption enabled\n");
-#endif    
+#endif
     exit(0);
   }
 
@@ -165,7 +165,7 @@ RETSIGTYPE sig_handler()
     fflush(stdout);
     exit(0);
   }
-    
+
 void pcap_cb(ptr,hdr,data)
   u_char *ptr;
   struct pcap_pkthdr *hdr;
@@ -175,12 +175,12 @@ void pcap_cb(ptr,hdr,data)
     int len;
     struct ether_header *e_hdr=(struct ether_header *)data;
     int type;
-    
+
     n=(n_handler *)ptr;
     if(hdr->caplen!=hdr->len) err_exit("Length mismatch",-1);
 
     len=hdr->len;
-    
+
     switch(pcap_if_type){
       case DLT_NULL:
         data+=4;
@@ -202,7 +202,7 @@ void pcap_cb(ptr,hdr,data)
 
         if(type!=ETHERTYPE_IP)
           return;
-        
+
         break;
     }
     network_process_packet(n,&hdr->ts,data,len);
@@ -333,11 +333,11 @@ int main(argc,argv)
     int c;
     module_def *m=0;
     int no_promiscuous=0;
-    
+
     char errbuf[PCAP_ERRBUF_SIZE];
 
     signal(SIGINT,sig_handler);
-    
+
     while((c=getopt(argc,argv,"vr:f:S:Ttai:k:p:nsAxXhHVNdqem:P"))!=EOF){
       switch(c){
         case 'v':
@@ -409,7 +409,7 @@ int main(argc,argv)
 
     argv+=optind;
     argc-=optind;
-    
+
     if(!file){
       if(!interface_name){
         interface_name=pcap_lookupdev(errbuf);
@@ -425,14 +425,14 @@ int main(argc,argv)
 
       if (pcap_lookupnet(interface_name, &localnet, &netmask, errbuf) < 0)
         verr_exit("PCAP: %s\n",errbuf);
-      
+
     }
     else{
       if(!(p=pcap_open_offline(file,errbuf))){
 	fprintf(stderr,"PCAP: %s\n",errbuf);
 	err_exit("Aborting",-1);
       }
-      
+
       netmask=0;
       localnet=0;
     }
@@ -451,32 +451,32 @@ int main(argc,argv)
     }
 
     pcap_if_type=pcap_datalink(p);
-    
+
     if(NET_print_flags & NET_PRINT_TYPESET)
       printf("\n.nf\n.ps -2\n");
-    
+
     if(r=network_handler_create(mod,&n))
       err_exit("Couldn't create network handler",r);
 
 		//print interface we are listening on (interface_name is always unicode)
 		printf("\nSSLDump on interface : %ws", interface_name);
-		
+
     pcap_loop(p,-1,pcap_cb,(u_char *)n);
 
     if(NET_print_flags & NET_PRINT_TYPESET)
       printf("\n.ps\n.fi\n");
-    
+
     exit(0);
   }
-#endif      
+#endif
 
 char *collapse_args(argc,argv)
   int argc;
-  char **argv;                
+  char **argv;
   {
     int i,len=0;
     char *ret;
-    
+
     if(!argc)
       return(0);
 
@@ -498,7 +498,7 @@ char *collapse_args(argc,argv)
 
     return(ret);
   }
-  
+
 //---this is the main ssl protocol analyzer interface---------------------------
 n_handler *n;
 
@@ -518,7 +518,7 @@ int ssl_pa_init(){
 }
 
 //------------------------------------------------------------------------------
-//high level pa function to analyze a particular packet. it expects a 
+//high level pa function to analyze a particular packet. it expects a
 //packet and its length
 void ssl_pa_analyze(unsigned char *packet, unsigned int packet_len){
     int len;
@@ -526,7 +526,7 @@ void ssl_pa_analyze(unsigned char *packet, unsigned int packet_len){
     int type;
 		struct timeval ts;
     len=packet_len;
-    
+
     type=ntohs(e_hdr->ether_type);
 
     packet+=sizeof(struct ether_header);
@@ -540,14 +540,14 @@ void ssl_pa_analyze(unsigned char *packet, unsigned int packet_len){
       len+=4;
     }
 
-    if(type!=ETHERTYPE_IP)	
+    if(type!=ETHERTYPE_IP)
       return;								//TODO: check for DNS udp packet and if not DROP!
-        
+
     //setup a dummy timestamp
     ts.tv_sec = 0;
     ts.tv_usec= 0;
- 
- 		//hand the packet off for analysis   
+
+ 		//hand the packet off for analysis
     network_process_packet(n, &ts , packet ,len);
 }
 //------------------------------------------------------------------------------
@@ -560,8 +560,8 @@ void sslpafeed(u_char *ptr, struct pcap_pkthdr *hdr, u_char *data){
     printf("\nfatal error: packet length mismatch cap=%u, hdr=%u",
       hdr->caplen, hdr->len);
     exit(0);
-  } 
-  
+  }
+
   //analyze it
   ssl_pa_analyze((unsigned char *)data, hdr->len);
 }
@@ -574,10 +574,10 @@ int main(void){
   char errbuf[PCAP_ERRBUF_SIZE];
   pcap_t *p;
   int no_promiscuous=0;
-  
+
   struct pcap_pkthdr hdr;
   const u_char *packet;
-    
+
   //lookup default libpcap interface
   interface_name=pcap_lookupdev(errbuf);
   if(!interface_name){
@@ -585,20 +585,20 @@ int main(void){
     exit(0);
   }
   printf("\nlookup=%ws", interface_name);
-  
+
   //open it
   if(!(p=pcap_open_live(interface_name,5000,!no_promiscuous,1000,errbuf))){
 	 printf("\nfatal error: %s", errbuf);
    exit(0);
   }
-  printf("\ninterface opened successfully.");  
-  
+  printf("\ninterface opened successfully.");
+
   //initialize sslpa
   ssl_pa_init();
 
   //initialize internal parameters controlling debug output
-  
-  
+
+
   //analyze every packet captured
   //pcap_loop(p,-1,sslpafeed,(u_char *)n);
   printf("\nAnalyzing stream...");
@@ -610,16 +610,13 @@ int main(void){
         printf("\nfatal error: packet length mismatch cap=%u, hdr=%u",
          hdr.caplen, hdr.len);
        exit(0);
-      }  
-    
+      }
+
       //analyze it
       printf("\nProcessing packet size=%u bytes", hdr.len);
       ssl_pa_analyze((unsigned char *)packet, hdr.len);
     }
-  
+
   }
 }
 */
-
-
-  

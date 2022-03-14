@@ -89,7 +89,7 @@ typedef struct {
 int
 nist_ctr_initialize(void);
 
-int 
+int
 nist_ctr_drbg_generate(NIST_CTR_DRBG* drbg,
 	void* output_string, int output_string_length,
 	const void* additional_input, int additional_input_length);
@@ -132,7 +132,7 @@ nist_dump_block_ctx(const NIST_Key* ctx);
 #endif
 
 /*
- * The test vectors will indicate failure if the 
+ * The test vectors will indicate failure if the
  * byte ordering is set incorrectly.
  * Pretending to be little endian will improve performance
  * slightly but should not have an impact on
@@ -144,7 +144,7 @@ nist_dump_block_ctx(const NIST_Key* ctx);
 #define NIST_HTONL(x) nist_htonl(x)
 static __inline unsigned int nist_htonl(unsigned int x)
 {
-	return 
+	return
 		((((x) & 0xff000000) >> 24) |
 		 (((x) & 0x00ff0000) >>  8) |
 		 (((x) & 0x0000ff00) <<  8) |

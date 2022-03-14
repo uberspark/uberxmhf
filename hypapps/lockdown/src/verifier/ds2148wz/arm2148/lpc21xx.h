@@ -4,7 +4,7 @@
  * $RCSfile: $
  * $Revision: $
  *
- * Header file for Philips LPC21xx ARM Processors 
+ * Header file for Philips LPC21xx ARM Processors
  * Copyright 2004 R O SoftWare
  *
  * No guarantees, warrantees, or promises, implied or otherwise.

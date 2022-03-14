@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -75,7 +75,7 @@ int network_handler_create(mod,handlerp)
   {
     int r,_status;
     n_handler *handler=0;
-    
+
     if(!(handler=(n_handler *)malloc(sizeof(n_handler))))
       ABORT(R_NO_MEMORY);
     if(mod->vtbl->create_ctx){
@@ -113,7 +113,7 @@ int network_process_packet(handler,timestamp,data,length)
     int hlen;
     packet p;
     u_short off;
-    
+
     /*We can pretty much ignore all the options*/
     memcpy(&p.ts,timestamp,sizeof(struct timeval));
     p.base=data;
@@ -124,7 +124,7 @@ int network_process_packet(handler,timestamp,data,length)
 
     /*Handle, or rather mishandle, fragmentation*/
     off=ntohs(p.ip->ip_off);
-    
+
     if((off & 0x1fff) ||  /*Later fragment*/
        (off & 0x2000)){	  /*More fragments*/
 /*      fprintf(stderr,"Fragmented packet! rejecting\n"); */
@@ -134,8 +134,8 @@ int network_process_packet(handler,timestamp,data,length)
     hlen=p.ip->ip_hl * 4;
     p.data += hlen;
     p.len =ntohs(p.ip->ip_len)-hlen;
-    
-    
+
+
     switch(p.ip->ip_p){
       case IPPROTO_TCP:
 	if(r=process_tcp_packet(handler->mod,handler->ctx,&p))
@@ -150,9 +150,9 @@ int packet_copy(in,out)
   packet **out;
   {
     int _status;
-    
+
     packet *p=0;
-    
+
     if(!(p=(packet *)calloc(sizeof(packet),1)))
       ABORT(R_NO_MEMORY);
 
@@ -168,7 +168,7 @@ int packet_copy(in,out)
     p->tcp=(struct tcphdr *)(p->base + ((UCHAR *)in->tcp - in->base));
 
     *out=p;
-    
+
     _status=0;
   abort:
     if(_status){
@@ -186,7 +186,7 @@ int packet_destroy(p)
     FREE(p->base);
     return(0);
   }
-    
+
 int timestamp_diff(t1,t0,diff)
   struct timeval *t1;
   struct timeval *t0;
@@ -200,7 +200,7 @@ int timestamp_diff(t1,t0,diff)
     /*Easy case*/
     if(t0->tv_usec <= t1->tv_usec){
       diff->tv_sec=t1->tv_sec - t0->tv_sec;
-      diff->tv_usec=t1->tv_usec - t0->tv_usec;      
+      diff->tv_usec=t1->tv_usec - t0->tv_usec;
       return(0);
     }
 
@@ -214,7 +214,7 @@ int timestamp_diff(t1,t0,diff)
     return(0);
   }
 
-      
+
 
 int lookuphostname(addr,namep)
   struct in_addr *addr;
@@ -235,7 +235,3 @@ int lookuphostname(addr,namep)
 
     return(0);
   }
-        
-    
-    
-  

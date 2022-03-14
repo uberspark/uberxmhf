@@ -53,7 +53,7 @@
 
 #ifndef EU_LOG_PREFIX
 #define EU_LOG_PREFIX "TV"
-#endif 
+#endif
 
 #include <eulog.h>
 #include <euchk.h>

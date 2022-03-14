@@ -73,7 +73,7 @@ enum HCcmd {
   TV_HC_TPMNVRAM_GETSIZE = 21,
   TV_HC_TPMNVRAM_READALL = 22,
   TV_HC_TPMNVRAM_WRITEALL = 23,
-  
+
   /* misc */
   TV_HC_TEST =255,
 };

@@ -137,7 +137,7 @@ tz_return_t tv_tz_init(tz_device_t *tzDevice,
 {
   struct tv_pal_sections scode_info;
   tz_return_t rv = TZ_SUCCESS;
-  tv_service_t pal = 
+  tv_service_t pal =
     {
       .sPageInfo = &scode_info,
       .sParams = NULL, /* soon to be deprecated? */
@@ -148,8 +148,8 @@ tz_return_t tv_tz_init(tz_device_t *tzDevice,
   if (rv != TZ_SUCCESS)
     return rv;
 
-  /* download pal 'service' */  
-  { 
+  /* download pal 'service' */
+  {
     tz_session_t tzManagerSession;
 
     /* open session with device manager */

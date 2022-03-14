@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #include <stdbool.h>
 
@@ -68,7 +68,7 @@ extern whitelist_entry_t *whitelist;
  */
 static inline bool pcr_is_selected(tpm_pcr_selection_t *tpmsel, uint32_t i) {
   HALT_ON_ERRORCOND(NULL != tpmsel);
-		
+
   if(i/8 >= tpmsel->size_of_select) return false;
 
   return (tpmsel->pcr_select[i/8] & (1 << (i%8)));
@@ -82,7 +82,7 @@ static void dump_pcr_info_short(tpm_pcr_info_short_t *info) {
   eu_trace("selected PCRs:");
   for(i=0; i<24; i++) {
     if(pcr_is_selected(&info->pcr_selection, i)) {
-      eu_trace("pcr %d, ", i);						
+      eu_trace("pcr %d, ", i);
     }
   }
 
@@ -145,7 +145,7 @@ static int validate_nv_access_controls(unsigned int locality,
   EU_CHKN( rv = tpm_get_nv_data_public(locality, idx, &pub));
 
   dump_nv_data_public(&pub);
-		
+
   /* Confirm a single EXCLUSIVE locality for both reading and writing. */
   EU_CHK((1<<locality == pub.pcr_info_read.locality_at_release)
          && (1<<locality == pub.pcr_info_write.locality_at_release),
@@ -255,7 +255,7 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
   } else {
     eu_trace("MSS successfully read from TPM NVRAM");
   }
-    
+
   rv = 0;
  out:
   return rv;
@@ -295,11 +295,11 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
     eu_err("MasterSealingSeed initialization FAILED!\n"
            "Continuing to operate in degraded mode. EPHEMERAL SEALING ONLY!");
     rand_bytes_or_die(mss, mss_size);
-  
+
     /* XXX TODO: Eliminate degraded mode once we are sufficiently robust
        to support development and testing without it. */
   }
-  return 0;  
+  return 0;
 }
 
 
@@ -438,7 +438,7 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
                    HW_TPM_ROLLBACK_PROT_SIZE, data_size));
 
   EU_CHKN( copy_to_current_guest(vcpu, out_addr, data, HW_TPM_ROLLBACK_PROT_SIZE));
-  
+
   rv = 0;
  out:
   /* Close TPM */
@@ -453,7 +453,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
   uint32_t rv = 1;
   uint8_t data[HW_TPM_ROLLBACK_PROT_SIZE];
   bool opened_tpm = false;
-		
+
   eu_pulse();
 
   /* Make sure the asking PAL is authorized */
@@ -466,7 +466,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
 
   /* copy input data to host */
   EU_CHKN( copy_from_current_guest(vcpu, data, in_addr, HW_TPM_ROLLBACK_PROT_SIZE));
-		
+
   /* Make the actual TPM call */
   EU_CHKN( rv = tpm_nv_write_value(TRUSTVISOR_HWTPM_NV_LOCALITY,
                                    HW_TPM_ROLLBACK_PROT_INDEX, 0,
@@ -479,7 +479,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
   if (opened_tpm) {
     xmhf_tpm_deactivate_all_localities();
   }
-		
+
   return rv;
 }
 

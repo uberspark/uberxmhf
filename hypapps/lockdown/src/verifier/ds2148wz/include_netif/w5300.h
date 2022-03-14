@@ -5,7 +5,7 @@
  *    Definition register of W5300 and basic I/O functions.
  *
  * This file defines the memory map and values of W5300 register.\n
- * Also, it defines the basic I/O function to access register of W5300. 
+ * Also, it defines the basic I/O function to access register of W5300.
  *
  * \author MidnightCow
  * \date 24/03/2008
@@ -14,14 +14,14 @@
  * Release with W5300 launching
  *
  */
- 
+
 #include "iinchip_conf.h"
 #include "types.h"
 
 
- 
-/** 
- *  Mode register. 
+
+/**
+ *  Mode register.
  */
 #define MR              (__DEF_IINCHIP_MAP_BASE__)
 #define MR0             MR
@@ -29,14 +29,14 @@
 
 /**
   *  Indirect mode address register.
- */ 
+ */
 #define IDM_AR          (__DEF_IINCHIP_MAP_BASE__ + 0x02)
 #define IDM_AR0         IDM_AR
 #define IDM_AR1         (IDM_AR + 1)
 
 /**
   *  Indirect mode data register.
- */ 
+ */
 #define IDM_DR          (__DEF_IINCHIP_MAP_BASE__ + 0x04)
 #define IDM_DR0         (__DEF_IINCHIP_MAP_BASE__ + 0x04)
 #define IDM_DR1         (IDM_DR + 1)
@@ -100,7 +100,7 @@
 #define SIPR3           (SIPR + 3)
 
 /**
- *  Retransmittion timeout-period register 
+ *  Retransmittion timeout-period register
  */
 #define RTR             (COMMON_REG_BASE + 0x1C)
 #define RTR0            RTR
@@ -205,12 +205,12 @@
 #define PDHAR5          (PDHAR + 5)
 
 /**
- *  Unreachable IP address register 
+ *  Unreachable IP address register
  *
- * RESET : 0.0.0.0 \n 
- * When trying to transmit UDP data to destination port number which is not open, 
+ * RESET : 0.0.0.0 \n
+ * When trying to transmit UDP data to destination port number which is not open,
  * W5300 can receive ICMP (Destination port unreachable) packet. \n
- * In this case, IR(IR_DPUR) becomes '1'. 
+ * In this case, IR(IR_DPUR) becomes '1'.
  * And destination IP address and unreachable port number of ICMP packet
  * can be acquired through UIPR and UPORTR.
  */
@@ -270,10 +270,10 @@
 
 /**
  *  SOCKETn command register
- */                        
+ */
 #define Sn_CR(n)        (SOCKET_REG_BASE + n * SOCKET_REG_SIZE + 0x02)
 #define Sn_CR0(n)       Sn_CR(n)
-#define Sn_CR1(n)       (Sn_CR(n) + 1)   
+#define Sn_CR1(n)       (Sn_CR(n) + 1)
 
 /**
  *  SOCKETn interrupt mask register
@@ -457,27 +457,27 @@
 #define MR_IND             (1 << 0)             /**< Indirect mode bit of MR. */
 
 
-/************************************/ 
-/* The bit of IR regsiter defintion */ 
-/************************************/ 
+/************************************/
+/* The bit of IR regsiter defintion */
+/************************************/
 #define IR_IPCF            (1 << 7)             /**< IP conflict bit of IR. */
 #define IR_DPUR            (1 << 6)             /**< Destination port unreachable bit of IR. */
 #define IR_PPPT            (1 << 5)             /**< PPPoE terminate bit of IR. */
 #define IR_FMTU            (1 << 4)             /**< Fragment MTU bit of IR. */
 #define IR_SnINT(n)        (0x01 << n)          /**< SOCKETn interrupt occurrence bit of IR. */
 
-/*****************************************/ 
-/* The bit of Pn_BRDYR regsiter defintion*/ 
-/*****************************************/ 
+/*****************************************/
+/* The bit of Pn_BRDYR regsiter defintion*/
+/*****************************************/
 #define Pn_PEN             (1 << 7)             /**< PIN 'BRDYn' enable bit of Pn_BRDYR. */
 #define Pn_MT              (1 << 6)             /**< PIN memory type bit of Pn_BRDYR. */
 #define Pn_PPL             (1 << 5)             /**< PIN Polarity bit of Pn_BRDYR. */
 #define Pn_SN(n)           ((n & 0x07) << 0)    /**< PIN Polarity bit of Pn_BRDYR. */
 
 
-/***************************************/ 
-/* The bit of Sn_MR regsiter defintion */ 
-/***************************************/ 
+/***************************************/
+/* The bit of Sn_MR regsiter defintion */
+/***************************************/
 #define Sn_MR_ALIGN        (1 << 8)             /**< Alignment bit of Sn_MR. */
 #define Sn_MR_MULTI        (1 << 7)             /**< Multicasting bit of Sn_MR. */
 #define Sn_MR_MF           (1 << 6)             /**< MAC filter bit of Sn_MR. */
@@ -491,8 +491,8 @@
 #define Sn_MR_PPPoE        0x05                 /**< Protocol bits of Sn_MR. */
 
 
-/******************************/ 
-/* The values of CR defintion */ 
+/******************************/
+/* The values of CR defintion */
 /******************************/
 #define Sn_CR_OPEN         0x01                 /**< OPEN command value of Sn_CR. */
 #define Sn_CR_LISTEN       0x02                 /**< LISTEN command value of Sn_CR. */
@@ -500,18 +500,18 @@
 #define Sn_CR_DISCON       0x08                 /**< DISCONNECT command value of Sn_CR. */
 #define Sn_CR_CLOSE        0x10                 /**< CLOSE command value of Sn_CR. */
 #define Sn_CR_SEND         0x20                 /**< SEND command value of Sn_CR. */
-#define Sn_CR_SEND_MAC     0x21                 /**< SEND_MAC command value of Sn_CR. */ 
+#define Sn_CR_SEND_MAC     0x21                 /**< SEND_MAC command value of Sn_CR. */
 #define Sn_CR_SEND_KEEP    0x22                 /**< SEND_KEEP command value of Sn_CR */
 #define Sn_CR_RECV         0x40                 /**< RECV command value of Sn_CR */
 #define Sn_CR_PCON         0x23                 /**< PCON command value of Sn_CR */
-#define Sn_CR_PDISCON      0x24                 /**< PDISCON command value of Sn_CR */ 
+#define Sn_CR_PDISCON      0x24                 /**< PDISCON command value of Sn_CR */
 #define Sn_CR_PCR          0x25                 /**< PCR command value of Sn_CR */
 #define Sn_CR_PCN          0x26                 /**< PCN command value of Sn_CR */
 #define Sn_CR_PCJ          0x27                 /**< PCJ command value of Sn_CR */
 
 
-/*********************************/ 
-/* The values of Sn_IR defintion */ 
+/*********************************/
+/* The values of Sn_IR defintion */
 /*********************************/
 #define Sn_IR_PRECV        0x80                 /**< PPP receive bit of Sn_IR */
 #define Sn_IR_PFAIL        0x40                 /**< PPP fail bit of Sn_IR */
@@ -522,8 +522,8 @@
 #define Sn_IR_DISCON       0x02                 /**< Disconnect bit of Sn_IR */
 #define Sn_IR_CON          0x01                 /**< Connect bit of Sn_IR */
 
-/**********************************/ 
-/* The values of Sn_SSR defintion */ 
+/**********************************/
+/* The values of Sn_SSR defintion */
 /**********************************/
 #define SOCK_CLOSED        0x00                 /**< SOCKETn is released */
 #define SOCK_ARP           0x01                 /**< ARP-request is transmitted in order to acquire destination hardware address. */
@@ -567,7 +567,7 @@ uint16   IINCHIP_READ_o(uint32 addr);
  */
 void     IINCHIP_WRITE_o(uint32 addr,uint16 data);
 
-/** 
+/**
  * It gets MR value.
  */
 uint16   getMR_o(void);
@@ -645,7 +645,7 @@ void     setSIPR(uint8 * addr); // set local IP address
 /**
  * It gets RTR value
  */
-uint16   getRTR(void); 
+uint16   getRTR(void);
 
 /**
  * It sets RTR value
@@ -659,7 +659,7 @@ uint8    getRCR(void);
 /**
  * It sets RCR value
  */
-void     setRCR(uint8 retry); 
+void     setRCR(uint8 retry);
 
 /**
  * It gets PATR value
@@ -750,7 +750,7 @@ uint16   getSn_MR(SOCKET s);
 /**
  *  It sets Sn_MR value.
  */
-void     setSn_MR(SOCKET s, uint16 mode); 
+void     setSn_MR(SOCKET s, uint16 mode);
 
 /**
  *  It gets Sn_CR value.
@@ -916,7 +916,7 @@ void     setSn_FRAGR(SOCKET s, uint8 frag);
 /**
  *  It initializes W5300.
  */
-void     iinchip_init_o(void); 
+void     iinchip_init_o(void);
 
 /**
  *  It handles the interrupt of W5300.

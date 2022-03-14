@@ -44,14 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* scode.c routines to handle all scode loading and unloading, also 
- * whitelist, hash value verification for both shadow paging and nested 
+/* scode.c routines to handle all scode loading and unloading, also
+ * whitelist, hash value verification for both shadow paging and nested
  * paging.
  * Written for TrustVisor by Ning Qu, Zongwei Zhou, and Yanlin Li
  * Edited for TrustVisor on EMHF by Zongwei Zhou
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #include <scode.h>
 #include <malloc.h>
@@ -125,7 +125,7 @@ int scode_in_list(u64 gcr3, uintptr_t gvaddr, u32 g64)
         }
       }
     }
-#if !defined(__LDN_TV_INTEGRATION__)  
+#if !defined(__LDN_TV_INTEGRATION__)
   eu_trace("no matching scode found for gvaddr %#lx!", gvaddr);
 #endif //__LDN_TV_INTEGRATION__
   return -1;
@@ -193,7 +193,7 @@ int scode_measure_section(utpm_master_state_t *utpm,
     while(measured < section->size) {
       size_t to_measure;
       uint8_t *ptr=NULL;
-      
+
       /* we just constructed these page tables, so in principle the
        * additional checks here should be unnecessary. leaving them in
        * to avoid potential future TOCTTOU vulnerabilities.
@@ -267,7 +267,7 @@ void init_scode(VCPU * vcpu)
   scode_pfn_bitmap_2M = (unsigned short *)malloc(PFN_BITMAP_2M_LIMIT);
   eu_trace("alloc %dKB mem for pfn_bitmap_2M at %lx!", (PFN_BITMAP_LIMIT/1024), (unsigned long)scode_pfn_bitmap_2M);
 
-  memset(whitelist, 0, WHITELIST_LIMIT); 
+  memset(whitelist, 0, WHITELIST_LIMIT);
   memset(scode_pfn_bitmap, 0, PFN_BITMAP_LIMIT);
   memset(scode_pfn_bitmap_2M, 0, PFN_BITMAP_2M_LIMIT);
 
@@ -412,7 +412,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
 
 
 /* register scode in whitelist */
-u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry) 
+u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
 {
   size_t i;
   whitelist_entry_t whitelist_new;
@@ -586,7 +586,7 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
   }
 
   /* Clear lower bits for CR3 */
-  whitelist_new.gcr3 = hpt_cr3_get_address( whitelist_new.hptw_pal_checked_guest_ctx.super.t, 
+  whitelist_new.gcr3 = hpt_cr3_get_address( whitelist_new.hptw_pal_checked_guest_ctx.super.t,
                                             whitelist_new.gcr3);
 
   whitelist_new.pal_gcr3 = hpt_cr3_set_address( whitelist_new.hptw_pal_checked_guest_ctx.super.t,
@@ -615,7 +615,7 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
   whitelist_size ++;
   memcpy(whitelist + i, &whitelist_new, sizeof(whitelist_entry_t));
 
-  /* 
+  /*
    * reset performance counters
    */
   {
@@ -632,7 +632,7 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
 }
 
 /* unregister scode in whitelist */
-u64 scode_unregister(VCPU * vcpu, u64 gvaddr) 
+u64 scode_unregister(VCPU * vcpu, u64 gvaddr)
 {
   size_t i, j;
   u64 rv=1;
@@ -1239,7 +1239,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   scode_release_all_shared_pages(vcpu, &whitelist[curr]);
 
   /* clear the NPT permission setting in switching into scode */
-  eu_trace("change NPT permission to exit PAL!"); 
+  eu_trace("change NPT permission to exit PAL!");
   hpt_emhf_set_root_pm(vcpu, g_reg_npmo_root.pm);
   VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
   xmhf_memprot_flushmappings(vcpu); /* XXX */
@@ -1275,14 +1275,14 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   return rv;
 }
 
-#if !defined(__LDN_TV_INTEGRATION__)  
+#if !defined(__LDN_TV_INTEGRATION__)
 static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return (errorcode & EPT_ERRORCODE_EXEC);
   } else if (vcpu->cpu_vendor != CPU_VENDOR_AMD) {
     HALT_ON_ERRORCOND(0);
-  }	
+  }
   return (errorcode & VMCB_NPT_ERRORCODE_ID);
 }
 #endif //__LDN_TV_INTEGRATION__
@@ -1298,13 +1298,13 @@ u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode, struct regs *r)
   u32 g64;
   u32 err=1;
 
-#if defined(__LDN_TV_INTEGRATION__)  
+#if defined(__LDN_TV_INTEGRATION__)
 	(void)errorcode;
 #endif //__LDN_TV_INTEGRATION__
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 
-#if !defined(__LDN_TV_INTEGRATION__)  
+#if !defined(__LDN_TV_INTEGRATION__)
   eu_trace("CPU(%02x): nested page fault!(rip %#lx, gcr3 %#llx, gpaddr %#lx, errorcode %llx)",
           vcpu->id, rip, gcr3, gpaddr, errorcode);
 
@@ -1340,12 +1340,12 @@ u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode, struct regs *r)
     if (*curr == index)
       eu_err("SECURITY: incorrect scode EPT configuration!");
     else
-      eu_err("SECURITY: invalid access to scode mem region from other scodes!"); 
-    goto out;	
+      eu_err("SECURITY: invalid access to scode mem region from other scodes!");
+    goto out;
   } else {
-#if !defined(__LDN_TV_INTEGRATION__)  
+#if !defined(__LDN_TV_INTEGRATION__)
     /* regular code to regular code */
-    eu_err("incorrect regular code EPT configuration!"); 
+    eu_err("incorrect regular code EPT configuration!");
 #endif //__LDN_TV_INTEGRATION__
     goto out;
   }
@@ -1442,7 +1442,7 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 
   /* flush TLB for page table modifications to take effect */
   xmhf_memprot_flushmappings(vcpu);
-  
+
   err=0;
 out:
   if (err && entry) {

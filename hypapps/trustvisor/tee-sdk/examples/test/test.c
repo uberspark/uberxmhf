@@ -149,7 +149,7 @@ int test_withoutparam(tz_session_t *tzPalSession)
     }
   }
   TZOperationRelease(&tzOp);
-  
+
   return rv;
 }
 
@@ -197,9 +197,9 @@ int test_param(tz_session_t *tzPalSession)
       rv=1;
     }
 
-    TZOperationRelease(&tzOp);    
+    TZOperationRelease(&tzOp);
   }
-  
+
   return rv;
 }
 
@@ -215,7 +215,7 @@ int test_param(tz_session_t *tzPalSession)
  * 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 // 20 bytes of zeros
  *
  * TPM_COMPOSITE_HASH (i.e., compute sha-1 over the above data):
- * c6 08 a1 e6 eb 7d 0f 88 6b 15 75 6b 29 83 be d2 e5 86 19 cb 
+ * c6 08 a1 e6 eb 7d 0f 88 6b 15 75 6b 29 83 be d2 e5 86 19 cb
  */
 const uint8_t digestAtRelease[] = {0xc6, 0x08, 0xa1, 0xe6, 0xeb, 0x7d, 0x0f, 0x88, 0x6b, 0x15,
                                   0x75, 0x6b, 0x29, 0x83, 0xbe, 0xd2, 0xe5, 0x86, 0x19, 0xcb};
@@ -257,7 +257,7 @@ int test_seal2(tz_session_t *tzPalSession)
     rv=1;
     goto out;
   }
-                  
+
   memset(pcrInfo, 0, sizeof(TPM_PCR_INFO));
   /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 0); */
   /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 1); */
@@ -296,13 +296,13 @@ int test_seal2(tz_session_t *tzPalSession)
   }
 
   print_hex("  sealed data: ", sealOut, sealOutLen);
-  
+
   TZEncodeArray(&tz_unsealOp, sealOut, sealOutLen);
   tzRet = TZOperationPerform(&tz_unsealOp, &serviceReturn);
   unsealOut = TZDecodeArraySpace(&tz_unsealOp, &unsealOutLen);
   digestAtCreationOut = TZDecodeArraySpace(&tz_unsealOp, &digestAtCreationLen);
-  unsealOutLen = TZDecodeUint32(&tz_unsealOp);  
-  
+  unsealOutLen = TZDecodeUint32(&tz_unsealOp);
+
   if (tzRet != TZ_SUCCESS) {
     if (tzRet == TZ_ERROR_SERVICE) {
       printf("UNSEAL pal returned error %d\n",
@@ -322,7 +322,7 @@ int test_seal2(tz_session_t *tzPalSession)
     goto out;
   }
 
-  if(inLen != unsealOutLen 
+  if(inLen != unsealOutLen
      || memcmp(in, unsealOut, inLen) != 0) {
     printf("error- unsealed data doesn't match\n");
     printf("in (%d): %s\n", inLen, in);
@@ -427,7 +427,7 @@ int test_seal(tz_session_t *tzPalSession)
     goto out;
   }
 
-  if(inLen != unsealOutLen 
+  if(inLen != unsealOutLen
      || memcmp(in, unsealOut, inLen) != 0) {
     printf("error- unsealed data doesn't match\n");
     printf("in (%d): %s\n", inLen, in);
@@ -452,11 +452,11 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaPubDER, uint32_t *rsa
   tz_operation_t tzOp;
   uint8_t *buf;
   uint32_t rv = 0;
-  
+
   printf("ID_GETPUB\n");
 
   assert(NULL != rsaPubDER);
-  
+
   /* prep operation */
   tzRet = TZOperationPrepareInvoke(tzPalSession,
                                    PAL_ID_GETPUB,
@@ -468,7 +468,7 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaPubDER, uint32_t *rsa
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
     printf("tzRet 0x%08x\n", tzRet);
     goto out;
   }
@@ -484,12 +484,12 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaPubDER, uint32_t *rsa
   memcpy( rsaPubDER, buf, *rsaPubDER_sz);
 
   print_hex("  rsaMod: ", rsaPubDER, *rsaPubDER_sz);
-  
+
  out:
   TZOperationRelease(&tzOp);
 
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
-  return rv;  
+  return rv;
 }
 
 
@@ -519,7 +519,7 @@ static long slurp_file(const char *filename, unsigned char **buf) {
 
     printf("  slurp_file successfully read %ld bytes from %s\n",
            s, filename);
-    
+
     return s;
 }
 
@@ -538,7 +538,7 @@ static long puke_file(const char *filename, const unsigned char
 
     printf("  puke_file successfully wrote %ld bytes to %s\n",
            len, filename);
-    
+
     return len;
 }
 
@@ -628,7 +628,7 @@ int just_unseal(tz_session_t *tzPalSession) {
       rv = 1;
       goto out;
   }
-  
+
   print_hex("  sealed data: ", sealOut, sealOutLen);
 
   assert(!TZIEncodeF(&tz_unsealOp, "%"TZI_EARR, sealOut, (uint32_t)sealOutLen));
@@ -687,7 +687,7 @@ int test_longterm_seal(tz_session_t *tzPalSession)
         return just_unseal(tzPalSession);
     }
 
-    return just_seal(tzPalSession);      
+    return just_seal(tzPalSession);
 }
 
 int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
@@ -697,25 +697,25 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     int rv=0;
 
     /* 1) 1.1.0.0 for consistency w/ TPM 1.2 spec */
-    *((uint32_t*)&quote_info.version) = 0x00000101; 
+    *((uint32_t*)&quote_info.version) = 0x00000101;
     /* 2) 'QUOT' */
-    *((uint32_t*)quote_info.fixed) = 0x544f5551; 
+    *((uint32_t*)quote_info.fixed) = 0x544f5551;
 
     /* 3) SHA-1 hash of TPM_PCR_COMPOSITE */
     SHA1(tpm_pcr_composite, tpc_len, quote_info.digestValue.value);
 
     print_hex("  tpm_pcr_composite: ", tpm_pcr_composite, tpc_len);
-    
+
     print_hex("  COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
-    
+
     /* 4) external nonce */
     memcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
 
-    print_hex("  quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));    
+    print_hex("  quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));
 
     /**
      * Import the public key used to check the quote.
-     */    
+     */
     if (NULL == d2i_RSAPublicKey( &rsa, (const unsigned char**)&rsaPubDER, rsaPubDER_sz)) {
       printf("ERROR: d2i_RSAPublicKey failed\n");
       rv = 1;
@@ -725,7 +725,7 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     /**
      * Verify the signature!
      */
-    
+
     uint8_t valData[TPM_HASH_SIZE];
     SHA1((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), valData);
     print_hex("  valData: ", valData, TPM_HASH_SIZE);
@@ -739,12 +739,12 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
         printf("  RSA_verify: SUCCESSfully verified quote\n");
         rv = 0;
     }
-    
+
   out:
     /* RSA_free() frees the RSA structure and its components. The key
      * is erased before the memory is returned to the system. */
     if(rsa) { RSA_free(rsa); rsa = NULL; }
-    
+
     return rv;
 }
 
@@ -760,24 +760,24 @@ int test_quote(tz_session_t *tzPalSession)
 
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tz_quoteOp;
-  
+
   unsigned int i;
   int rv = 0;
-  
+
   uint32_t rsaPubDER_sz = TPM_RSA_KEY_LEN + 100;
   uint8_t *rsaPubDER = NULL;
 
   /**
    * First get the public key that will eventually be used to verify the quote.
    */
-  
+
   rsaPubDER = malloc(rsaPubDER_sz);
   assert(rsaPubDER);
   if(0 != test_id_getpub(tzPalSession, rsaPubDER, &rsaPubDER_sz)) {
       printf("test_id_getpub FAILED!\n");
       goto out;
   }
-  
+
   printf("\nQUOTE\n");
 
   /* prep operation */
@@ -792,7 +792,7 @@ int test_quote(tz_session_t *tzPalSession)
                       "%"TZI_EARRSPC "%"TZI_EARRSPC,
                       &nonce, sizeof(TPM_NONCE),
                       &tpmsel, sizeof(TPM_PCR_SELECTION))));
-  
+
   /* setup nonce */
   for(i=0; i<sizeof(TPM_NONCE); i++) {
     nonce->nonce[i] = (uint8_t)i;
@@ -804,15 +804,15 @@ int test_quote(tz_session_t *tzPalSession)
   tpmsel->sizeOfSelect = 1; /* 1 byte to select 8 PCRs */
   for(i=0; i<8; i++) {
       utpm_pcr_select_i(tpmsel, i);
-  }  
-  
+  }
+
   /* call pal */
   tzRet = TZOperationPerform(&tz_quoteOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
     rv = 1;
     goto out;
   }
-  
+
   /* get quote */
   if((tzRet = TZIDecodeF(&tz_quoteOp,
                          "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32,
@@ -826,11 +826,11 @@ int test_quote(tz_session_t *tzPalSession)
   printf("  actual quoteLen = %d\n", quoteLen);
 
   printf("  pcrCompLen = %d\n", pcrCompLen);
-  print_hex("  pcrComp: ", pcrComp, pcrCompLen);  
+  print_hex("  pcrComp: ", pcrComp, pcrCompLen);
 
   /* Verify the signature in the Quote */
   print_hex("  sig: ", quote, quoteLen);
-  
+
   if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaPubDER, rsaPubDER_sz)) != 0) {
       printf("verify_quote FAILED\n");
   }
@@ -838,7 +838,7 @@ int test_quote(tz_session_t *tzPalSession)
   out:
   free(rsaPubDER);
   TZOperationRelease(&tz_quoteOp);
-  
+
   return rv;
 }
 
@@ -870,20 +870,20 @@ int test_pcr_extend(tz_session_t *tzPalSession)
   for(i=0; i<TPM_HASH_SIZE; i++) {
     meas_ptr[i] = (uint8_t)i;
   }
-  
+
   /* Call PAL */
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
     printf("tzRet 0x%08x\n", tzRet);
     goto out;
 
   }
-  
+
   if (TZDecodeGetError(&tzOp) != TZ_SUCCESS) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
     printf("tzRet 0x%08x\n", tzRet);
     goto out;
 
@@ -893,7 +893,7 @@ int test_pcr_extend(tz_session_t *tzPalSession)
   TZOperationRelease(&tzOp);
 
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
-  return rv;  
+  return rv;
 }
 
 int test_pcr_read_i(tz_session_t *tzPalSession, uint32_t pcr_idx)
@@ -913,12 +913,12 @@ int test_pcr_read_i(tz_session_t *tzPalSession, uint32_t pcr_idx)
 
   /* encode PCR index */
   assert(!(TZIEncodeF(&tzOp, "%"TZI_EU32, pcr_idx)));
-  
+
   /* Call PAL */
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
     printf("tzRet 0x%08x\n", tzRet);
     goto out;
 
@@ -928,7 +928,7 @@ int test_pcr_read_i(tz_session_t *tzPalSession, uint32_t pcr_idx)
                           &meas, &measLen))
       || measLen != TPM_HASH_SIZE) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
     printf("tzRet 0x%08x\n", tzRet);
     goto out;
   }
@@ -939,20 +939,20 @@ int test_pcr_read_i(tz_session_t *tzPalSession, uint32_t pcr_idx)
          meas[0], meas[1], meas[2], meas[3], meas[4],
          meas[5], meas[6], meas[7], meas[8], meas[9],
          meas[10], meas[11], meas[12], meas[13], meas[14],
-         meas[15], meas[16], meas[17], meas[18], meas[19]);         
-  
+         meas[15], meas[16], meas[17], meas[18], meas[19]);
+
  out:
   TZOperationRelease(&tzOp);
 
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
-  return rv;  
+  return rv;
 }
 
 int test_pcr_read(tz_session_t *tzPalSession)
 {
   int i=0;
   int rv;
-  
+
   printf("\nPCR_READ\n");
 
   for(i=0; i<TPM_PCR_NUM; i++) {
@@ -992,7 +992,7 @@ int test_rand(tz_session_t *tzPalSession)
     goto out;
   }
   /* fetch result */
-  
+
   if ((tzRet = TZIDecodeF(&tzOp, "%"TZI_DARRSPC, &bytes, &got_bytes))
       || bytes == NULL
       || got_bytes != req_bytes) {
@@ -1138,20 +1138,20 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
   for(i=0; i<len; i++) {
     new[i] = (uint8_t)i;
   }
-  
+
   /* Call PAL */
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
     printf("tzRet 0x%08x\n", tzRet);
     goto out;
 
   }
-  
+
   if (TZDecodeGetError(&tzOp) != TZ_SUCCESS) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
     printf("tzRet 0x%08x\n", tzRet);
     goto out;
 
@@ -1167,12 +1167,12 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
   printf("  len = %d\n", len);
   print_hex("  old NV value: ", old, len);
   print_hex("  new NV value: ", new, len);
-  
+
  out:
   TZOperationRelease(&tzOp);
 
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
-  return rv;  
+  return rv;
 
 }
 
@@ -1223,7 +1223,7 @@ int main(void)
   tze_dev_svc_sess_t tz_sess;
 
   assert(TZ_SUCCESS == init_tz_sess(&tz_sess));
-  
+
 #ifdef TEST_VMMCALL
   rv = test_vmcall() || rv;
 #endif
@@ -1245,7 +1245,7 @@ int main(void)
   rv = test_longterm_seal(&tz_sess.tzSession) || rv;
 #endif
 
-  
+
 #ifdef TEST_QUOTE
   rv = test_quote(&tz_sess.tzSession) || rv;
 #endif
@@ -1269,14 +1269,14 @@ int main(void)
 #ifdef TEST_NV_ROLLBACK
   rv = test_nv_rollback(&tz_sess.tzSession) || rv;
 #endif
-  
+
   if (rv) {
     printf("FAIL with rv=%d\n", rv);
   } else {
     printf("SUCCESS with rv=%d\n", rv);
   }
 
-  rv = TZEClose(&tz_sess) || rv;  
+  rv = TZEClose(&tz_sess) || rv;
 
   return rv;
-} 
+}

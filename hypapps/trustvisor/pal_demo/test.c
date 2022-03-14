@@ -11,4 +11,3 @@ int main(int argc, char *argv[]) {
 	printf("%lu = vmcall(TV_HC_TEST, %lu)\n", result, eax);
 	return (int)result;
 }
-

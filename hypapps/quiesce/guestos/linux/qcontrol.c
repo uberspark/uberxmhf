@@ -59,7 +59,7 @@
 		asm volatile ("vmcall\r\n"
 				 : /* no output registers */
 				 : "b" (QUIESCE_HYPERCALL)
-				 : "memory" 
+				 : "memory"
 				 );
 	}
 #elif defined(__X86SVM__)
@@ -67,7 +67,7 @@
 		asm volatile ("vmmcall\r\n"
 				 : /* no output registers */
 				 : "b" (QUIESCE_HYPERCALL)
-				 : "memory" 
+				 : "memory"
 				 );
 	}
 
@@ -82,7 +82,7 @@
 int main(void){
 	int i;
 	printf("\nStarting qcontrol...");
-	
+
 	for(i=0; i < MAX_ITERATIONS; i++){
 		printf("\n#%u --> quiesce-call", i);
 		do_quiescehypercall();

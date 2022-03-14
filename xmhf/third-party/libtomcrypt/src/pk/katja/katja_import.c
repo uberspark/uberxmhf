@@ -13,7 +13,7 @@
 /**
   @file katja_import.c
   Import a LTC_PKCS-style Katja key, Tom St Denis
-*/  
+*/
 
 #ifdef MKAT
 
@@ -34,29 +34,29 @@ int katja_import(const unsigned char *in, unsigned long inlen, katja_key *key)
    LTC_ARGCHK(ltc_mp.name != NULL);
 
    /* init key */
-   if ((err = mp_init_multi(&zero, &key->d, &key->N, &key->dQ, 
+   if ((err = mp_init_multi(&zero, &key->d, &key->N, &key->dQ,
                             &key->dP, &key->qP, &key->p, &key->q, &key->pq, NULL)) != CRYPT_OK) {
       return err;
    }
 
-   if ((err = der_decode_sequence_multi(in, inlen, 
-                                  LTC_ASN1_INTEGER, 1UL, key->N, 
+   if ((err = der_decode_sequence_multi(in, inlen,
+                                  LTC_ASN1_INTEGER, 1UL, key->N,
                                   LTC_ASN1_EOL,     0UL, NULL)) != CRYPT_OK) {
       goto LBL_ERR;
    }
 
    if (mp_cmp_d(key->N, 0) == LTC_MP_EQ) {
       /* it's a private key */
-      if ((err = der_decode_sequence_multi(in, inlen, 
-                          LTC_ASN1_INTEGER, 1UL, zero, 
-                          LTC_ASN1_INTEGER, 1UL, key->N, 
-                          LTC_ASN1_INTEGER, 1UL, key->d, 
-                          LTC_ASN1_INTEGER, 1UL, key->p, 
-                          LTC_ASN1_INTEGER, 1UL, key->q, 
+      if ((err = der_decode_sequence_multi(in, inlen,
+                          LTC_ASN1_INTEGER, 1UL, zero,
+                          LTC_ASN1_INTEGER, 1UL, key->N,
+                          LTC_ASN1_INTEGER, 1UL, key->d,
+                          LTC_ASN1_INTEGER, 1UL, key->p,
+                          LTC_ASN1_INTEGER, 1UL, key->q,
                           LTC_ASN1_INTEGER, 1UL, key->dP,
-                          LTC_ASN1_INTEGER, 1UL, key->dQ, 
-                          LTC_ASN1_INTEGER, 1UL, key->qP, 
-                          LTC_ASN1_INTEGER, 1UL, key->pq, 
+                          LTC_ASN1_INTEGER, 1UL, key->dQ,
+                          LTC_ASN1_INTEGER, 1UL, key->qP,
+                          LTC_ASN1_INTEGER, 1UL, key->pq,
                           LTC_ASN1_EOL,     0UL, NULL)) != CRYPT_OK) {
          goto LBL_ERR;
       }

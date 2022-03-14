@@ -341,7 +341,7 @@ extern uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
 
 static inline void _reverse_copy(uint8_t *out, const uint8_t *in, uint32_t count)
 {
-    uint32_t i;    
+    uint32_t i;
     for ( i = 0; i < count; i++ )
         out[i] = in[count - i - 1];
 }

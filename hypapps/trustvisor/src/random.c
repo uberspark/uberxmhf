@@ -50,7 +50,7 @@
  * TODO: Support re-seeding.
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 #include <random.h>
 #include <crypto_init.h>
@@ -72,18 +72,18 @@ int reseed_ctr_drbg_using_tpm_entropy_if_needed(void) {
     uint8_t EntropyInput[CTR_DRBG_SEED_BITS/8];
 
     HALT_ON_ERRORCOND(true == g_master_prng_init_completed);
-    
+
     if (g_drbg.reseed_counter < NIST_CTR_DRBG_RESEED_INTERVAL)
         return 0; /* nothing to do */
 
     eu_err("Low Entropy: Attemping TPM-based PRNG reseed.");
-    
+
     /* Get CTR_DRBG_SEED_BITS of entropy from the hardware TPM */
     EU_VERIFYN( get_hw_tpm_entropy(EntropyInput, CTR_DRBG_SEED_BITS/8),
                 eu_err_e("FATAL ERROR: Could not access TPM to reseed PRNG."));
 
     EU_VERIFYN( nist_ctr_drbg_reseed( &g_drbg, EntropyInput, sizeof(EntropyInput), NULL, 0));
-    
+
     eu_trace("master_crypto_init: PRNG reseeded successfully.");
 
     return 0;
@@ -113,11 +113,11 @@ void rand_bytes_or_die(uint8_t *out, unsigned int len) {
     EU_VERIFY( g_master_prng_init_completed);
     EU_VERIFY( out);
     EU_VERIFY( len >= 1);
-    
+
     EU_VERIFYN( reseed_ctr_drbg_using_tpm_entropy_if_needed());
 
     EU_VERIFYN( nist_ctr_drbg_generate(&g_drbg, out, len, NULL, 0));
-}    
+}
 
 /**
  * Best effort to populate an array of *len random-bytes.  Returns 0

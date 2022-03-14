@@ -64,7 +64,7 @@
         pushl %ebx  ; \
         pushl %edx  ; \
         pushl %ecx  ; \
-        pushl %eax  ; 
+        pushl %eax  ;
 
 #define RESTOREALL_GPRS \
         popl  %eax  ; \
@@ -74,7 +74,7 @@
         popl  %esp  ; \
         popl  %ebp  ; \
         popl  %esi  ; \
-        popl  %edi  ; 
+        popl  %edi  ;
 
 
 //----------------------------------------------------------------------
@@ -83,10 +83,10 @@
 .section .text
 .global xmhf_parteventhub_arch_x86svm_entry
 xmhf_parteventhub_arch_x86svm_entry:
-	
+
 	//save EAX as it contains the VMCB address
 	//pushl	%eax
-	
+
 	//step-1: save all CPU GPRs
 #ifdef __X86_64__
   // TODO
@@ -97,13 +97,13 @@ xmhf_parteventhub_arch_x86svm_entry:
 
 	//step-2: get hold of pointer to saved GPRs on stack
 	movl %esp, %eax
-	
+
 	//step-3: get VCPU * for this core (it is the first DWORD on
 	//the core stack when we have an intercept, so move past the
 	//saved GPRs, VMCB address and the return EIP for this function invocation)
 	//movl 40(%esp), %esi
 	movl 36(%esp), %esi
-	
+
    	//step-4: invoke "C" handler
    	//1st argument is VCPU * followed by pointer to saved GPRs
 #ifdef __X86_64__
@@ -125,6 +125,6 @@ xmhf_parteventhub_arch_x86svm_entry:
 
 	//restore VMCB address
 	//popl	%eax
-	
+
 	//return
 	ret

@@ -17,7 +17,7 @@
 
 #ifdef LTC_HMAC
 
-/** 
+/**
   Process data through LTC_HMAC
   @param hmac    The hmac state
   @param in      The data to send through LTC_HMAC

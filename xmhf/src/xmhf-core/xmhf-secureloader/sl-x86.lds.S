@@ -49,7 +49,7 @@ OUTPUT_ARCH(i386)
 ENTRY(_sl_start)
 
 /* Goal: constrain the size of the trusted portion of the SL to 64K. AMD
- * systems limit the Secure Loader Block to 64K max.  Intel permits a   
+ * systems limit the Secure Loader Block to 64K max.  Intel permits a
  * larger MLE (their name for SLB), but we want to remain compatible
  * with both.
  */
@@ -61,18 +61,18 @@ ENTRY(_sl_start)
 MEMORY
 {
   low  (rwxai) : ORIGIN = 0,   LENGTH = 64K
-  high (rwxai) : ORIGIN = 64K, LENGTH = 1984K /* balance of 2M total */ 
+  high (rwxai) : ORIGIN = 64K, LENGTH = 1984K /* balance of 2M total */
   debug (rwxai) : ORIGIN = 0, LENGTH = 1024M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
-              
+
 SECTIONS
 {
   . = 0x00000000;
   .sl_header : {
     *(.sl_header)
-    . = ALIGN(4096);    
+    . = ALIGN(4096);
   } >low
 
   .text : {
@@ -89,8 +89,8 @@ SECTIONS
 
   .bss : {
     *(.bss)
-    /*. = ALIGN(4096);*/    
-    . = ALIGN(16);    
+    /*. = ALIGN(4096);*/
+    . = ALIGN(16);
   } >low
 
   /* protected DMA protection buffer for DMA protection boot-strapping */

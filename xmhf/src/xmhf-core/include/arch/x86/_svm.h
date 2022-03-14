@@ -56,7 +56,7 @@
 
 #ifndef __ASSEMBLY__
 
-//AMD SVM Exception Intercepts 
+//AMD SVM Exception Intercepts
 //each exception (0-31) is a bit, if set to 1 then the
 //exception is intercepted
 #define	EXCEPTION_INTERCEPT_DB 	(1UL << 1)
@@ -111,7 +111,7 @@
 #define VMCB_NPT_ERRORCODE_FINALWALK 	(((u64)1)<<32)
 
 //SVM (Segment) Descriptor State Structure
-//Appendix B-1 AMD SDM 
+//Appendix B-1 AMD SDM
 struct svmdesc {
   u16        selector;
   u16 		 attrib;
@@ -160,27 +160,27 @@ union svmioiointerceptinfo {
 //SVM Virtual Machine Control Block Structure
 //Appendix B-1, AMD SDM
 struct _svm_vmcbfields {
-  u8 __currently_unused0[8];          						
+  u8 __currently_unused0[8];
   u32 exception_intercepts_bitmask;   				//byte offset 0x08
-  u32 class1_intercepts_bitmask;    				//byte offset 0x0C 
-  u32 class2_intercepts_bitmask;					//byte offset 0x10 
-  u8 __reserved0[44];						
+  u32 class1_intercepts_bitmask;    				//byte offset 0x0C
+  u32 class2_intercepts_bitmask;					//byte offset 0x10
+  u8 __reserved0[44];
   u64 iopm_base_pa;           						//byte offset 0x40
-  u64 msrpm_base_pa;          						//byte offset 0x48 
-  u8 __currently_unused1[8];		
-  u32 guest_asid;             						//byte offset 0x58 
-  u8  tlb_control;            						//byte offset 0x5C 
+  u64 msrpm_base_pa;          						//byte offset 0x48
+  u8 __currently_unused1[8];
+  u32 guest_asid;             						//byte offset 0x58
+  u8  tlb_control;            						//byte offset 0x5C
   u8 __reserved1[3];
   u8 __currently_unused2[16];
   u64 exitcode;               						//byte offset 0x70
-  u64 exitinfo1;              						//byte offset 0x78 
-  u64 exitinfo2;              						//byte offset 0x80 
-  struct svmeventinj exitintinfo;    				//byte offset 0x88 
+  u64 exitinfo1;              						//byte offset 0x78
+  u64 exitinfo2;              						//byte offset 0x80
+  struct svmeventinj exitintinfo;    				//byte offset 0x88
   u64 np_enable;              						//byte offset 0x90
   u8 __reserved2[16];
   struct svmeventinj eventinj;       				//byte offset 0xA8
   u64 n_cr3;                  						//byte offset 0xB0
-  u8 __reserved3[840];             					
+  u8 __reserved3[840];
   struct svmdesc es;      							//byte offset 0x400
   struct svmdesc cs;
   struct svmdesc ss;
@@ -194,9 +194,9 @@ struct _svm_vmcbfields {
   u8 __reserved4[43];
   u8 cpl;
   u8 __reserved5[4];
-  u64 efer;                   						
+  u64 efer;
   u8 __reserved6[112];
-  u64 cr4;                    						
+  u64 cr4;
   u64 cr3;
   u64 cr0;
   u64 dr7;

@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -94,6 +94,5 @@ int exdump PROTO_LIST((ssl_obj *ssl,char *name,Data *data));
 #define INDENT_NAME_POP ssl->indent_name_len=0
 #define LINE_LEFT (80-(ssl->indent_name_len + ssl->indent_depth)
 #define LF printf("\n")
-  
-#endif
 
+#endif

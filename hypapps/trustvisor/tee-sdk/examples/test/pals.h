@@ -74,7 +74,7 @@ tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t
 tz_return_t pal_quote(IN TPM_NONCE *nonce,
                       IN TPM_PCR_SELECTION *tpmsel,
                       OUT uint8_t *quote, INOUT size_t *quote_len,
-                      OUT uint8_t *pcrComp, INOUT size_t *pcrCompLen); 
+                      OUT uint8_t *pcrComp, INOUT size_t *pcrCompLen);
 tz_return_t pal_id_getpub(OUT uint8_t* rsaModulus, INOUT size_t *sz);
 tz_return_t pal_pcr_extend(IN uint32_t idx,
                            IN uint8_t *meas);

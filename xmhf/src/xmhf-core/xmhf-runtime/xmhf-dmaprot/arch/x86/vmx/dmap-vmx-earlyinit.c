@@ -149,7 +149,7 @@ static u32 vmx_eap_initialize_early(
     {
         u16 type, length;
         hva_t remappingstructures_vaddr = (hva_t)remappingstructuresaddrphys;
-        
+
         xmhf_baseplatform_arch_flat_copy((u8 *)&type, (u8 *)(remappingstructures_vaddr + i), sizeof(u16));
         xmhf_baseplatform_arch_flat_copy((u8 *)&length, (u8 *)(remappingstructures_vaddr + i + sizeof(u16)), sizeof(u16));
 

@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -81,7 +81,7 @@ int process_tcp_packet(handler,ctx,p)
     int direction;
     stream_data *stream;
     tcp_conn *conn;
-    
+
     p->tcp=(struct tcphdr *)p->data;
 
     print_tcp_packet(p);
@@ -99,7 +99,7 @@ int process_tcp_packet(handler,ctx,p)
 	  printf("\nSSLPA: rejecting packet from unknown connection");
 	return(0);
       }
-      
+
       DBG((0,"SYN1\n"));
       if(r=new_connection(handler,ctx,p,&conn))
 	ABORT(r);
@@ -108,7 +108,7 @@ int process_tcp_packet(handler,ctx,p)
     }
 
     stream=direction==DIR_R2I?&conn->r2i:&conn->i2r;
-    
+
     switch(conn->state){
       case TCP_STATE_SYN1:
 	if(direction != DIR_R2I)
@@ -118,7 +118,7 @@ int process_tcp_packet(handler,ctx,p)
 	conn->r2i.seq=ntohl(p->tcp->th_seq)+1;
 	conn->r2i.ack=ntohl(p->tcp->th_ack)+1;
 	conn->state=TCP_STATE_SYN2;
-	DBG((0,"SYN2\n"));	
+	DBG((0,"SYN2\n"));
 	break;
       case TCP_STATE_SYN2:
         {
@@ -137,7 +137,7 @@ int process_tcp_packet(handler,ctx,p)
           dn,conn->r_port);
         if(NET_print_flags & NET_PRINT_TYPESET)
           printf("\\fR");
-        
+
 	conn->state=TCP_STATE_ESTABLISHED;
         free(sn);
         free(dn);
@@ -146,7 +146,7 @@ int process_tcp_packet(handler,ctx,p)
       case TCP_STATE_FIN1:
 	{
 	  UINT4 length;
-	  
+
 	  if(p->tcp->th_flags & TH_SYN)
 	    break;
 	  length=p->len - (p->tcp->th_off * 4);
@@ -160,11 +160,11 @@ int process_tcp_packet(handler,ctx,p)
 
     if(conn->state==TCP_STATE_CLOSED)
       tcp_destroy_conn(conn);
-      
-    
+
+
     _status=0;
   abort:
-    
+
     return(_status);
   }
 
@@ -185,7 +185,7 @@ static int new_connection(handler,ctx,p,connp)
     memcpy(&conn->start_time,&p->ts,sizeof(struct timeval));
     if(r=create_proto_handler(handler,ctx,&conn->analyzer,conn,&p->ts))
       ABORT(r);
-    
+
     *connp=conn;
     _status=0;
   abort:
@@ -227,7 +227,7 @@ static int process_data_segment(conn,handler,p,stream,direction)
     long l;
 
     l=p->len - p->tcp->th_off * 4;
-    
+
     if(stream->close){
       DBG((0,"Rejecting packet received after FIN"));
       return(0);
@@ -243,10 +243,10 @@ static int process_data_segment(conn,handler,p,stream,direction)
     if(p->tcp->th_flags & TH_ACK){
       long acknum,acked;
 
-	
+
       acknum=ntohl(p->tcp->th_ack);
       acked=acknum-stream->ack;
-      
+
       if(acked && !l){
         /*
 	if(r=timestamp_diff(&p->ts,&conn->start_time,&dt))
@@ -259,18 +259,18 @@ static int process_data_segment(conn,handler,p,stream,direction)
 
           printf("ACK (%d)\n",acked); */
       }
-      
+
       stream->ack=acknum;
     }
-    
-    
+
+
     DBG((0,"Stream Seq %u ",stream->seq));
 
     /* Check to see if this packet has been processed already */
     right_edge=seq + (p->len - (p->tcp->th_off)*4);
     if(!(p->tcp->th_flags & (TH_RST)) && SEQ_LT(right_edge,stream->seq))
       return(0);
-    
+
     if(SEQ_LT(stream->seq,seq)){
       /* Out of order segment */
       tcp_seq left_edge;
@@ -285,14 +285,14 @@ static int process_data_segment(conn,handler,p,stream,direction)
       if(r=packet_copy(p,&nseg->p))
 	ABORT(r);
       nseg->s_seq=seq;
-      
+
       /*Insert this segment into the reassembly queue*/
       if(seg){
 	nseg->next=seg->next;
 	seg->next=nseg;
       }
       else{
-	nseg->next=stream->oo_queue;	
+	nseg->next=stream->oo_queue;
 	stream->oo_queue=nseg;
       }
 
@@ -318,14 +318,14 @@ static int process_data_segment(conn,handler,p,stream,direction)
       }
       else{
         STRIM(stream->seq,&_seg);
-        
+
         if(_seg.p->tcp->th_flags & (TH_FIN)){
           stream->close=_seg.p->tcp->th_flags & (TH_FIN);
 	  seg=&_seg;
         }
         else {
           for(seg=&_seg;seg->next;seg=seg->next){
-            if(seg->p->tcp->th_flags & (TH_FIN)){   
+            if(seg->p->tcp->th_flags & (TH_FIN)){
               stream->close=_seg.p->tcp->th_flags & (TH_FIN);
               break;
             }
@@ -333,7 +333,7 @@ static int process_data_segment(conn,handler,p,stream,direction)
               break;
           }
         }
-        
+
         /*Note that this logic is broken because it doesn't
           do the CLOSE_WAIT/FIN_WAIT stuff, but it's probably
           close enough, since this is a higher level protocol analyzer,
@@ -344,7 +344,7 @@ static int process_data_segment(conn,handler,p,stream,direction)
           else
 	  conn->state=TCP_STATE_CLOSED;
         }
-        
+
         stream->oo_queue=seg->next;
         seg->next=0;
         stream->seq=seg->s_seq + seg->len;
@@ -357,7 +357,7 @@ static int process_data_segment(conn,handler,p,stream,direction)
 	if(r=conn->analyzer->vtbl->close(conn->analyzer->obj,p,direction))
 	  ABORT(r);
       }
-      
+
       free_tcp_segment_queue(_seg.next);
     }
 
@@ -370,13 +370,13 @@ static int print_tcp_packet(p)
   packet *p;
   {
     char *src=0,*dst=0;
-    
+
     if(!(NET_print_flags & NET_PRINT_TCP_HDR))
       return(0);
 
     lookuphostname(&p->ip->ip_src,&src);
     lookuphostname(&p->ip->ip_dst,&dst);
-    
+
     printf("TCP: %s(%d) -> %s(%d) ",
       src,
       ntohs(p->tcp->th_sport),
@@ -416,32 +416,31 @@ int STRIM(_seq,s)
     int off;
 
     /* Test: this shouldn't damage things at all
-    s->p->data-=4; 
+    s->p->data-=4;
     s->p->len+=4;
     s->s_seq-=4;
     */
-    
+
     l=_seq - (s)->s_seq; /* number of bytes to trim
-                            from the left of s */ 
-    off=(s)->p->tcp->th_off*4; 
+                            from the left of s */
+    off=(s)->p->tcp->th_off*4;
     if(l>((s)->p->len-off)) ERETURN(R_BAD_DATA);
 
     /* Now remove the leading l bytes */
-    (s)->data=(s)->p->data + off  + (l) ; 
-    (s)->len=(s)->p->len - (off + l); 
+    (s)->data=(s)->p->data + off  + (l) ;
+    (s)->len=(s)->p->len - (off + l);
     (s)->s_seq += (l);
 
     /* Now trim to the right if necessary */
-    if((s)->next) { 
+    if((s)->next) {
       if((s)->s_seq >= (s)->next->s_seq) {
         l=(s)->s_seq - (s)->next->s_seq;
-        
+
 	if((s)->len){
-	  (s)->len-=(l+1); 
+	  (s)->len-=(l+1);
 	}
       }
     }
-    
+
     return(0);
   }
-

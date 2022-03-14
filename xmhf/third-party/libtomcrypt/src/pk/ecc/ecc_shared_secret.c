@@ -19,7 +19,7 @@
 /**
   @file ecc_shared_secret.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
 #ifdef LTC_MECC
 
@@ -92,4 +92,3 @@ done:
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_shared_secret.c,v $ */
 /* $Revision: 1.10 $ */
 /* $Date: 2007/05/12 14:32:35 $ */
-

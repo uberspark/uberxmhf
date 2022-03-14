@@ -12,7 +12,7 @@
 
 #ifdef LTC_XTS_MODE
 
-/** 
+/**
   Source donated by Elliptic Semiconductor Inc (www.ellipticsemi.com) to the LibTom Projects
   Returns CRYPT_OK upon success.
 */
@@ -147,7 +147,7 @@ int xts_test(void)
    symmetric_xts xts;
    int           i, err, idx;
 
-   /* AES can be under rijndael or aes... try to find it */ 
+   /* AES can be under rijndael or aes... try to find it */
    if ((idx = find_cipher("aes")) == -1) {
       if ((idx = find_cipher("rijndael")) == -1) {
          return CRYPT_NOP;
@@ -159,7 +159,7 @@ int xts_test(void)
        if (err != CRYPT_OK) {
           return err;
        }
- 
+
        seq = tests[i].seqnum;
        STORE64L(seq,T);
        XMEMSET(T+8, 0, 8);
@@ -196,4 +196,3 @@ int xts_test(void)
 /* $Source: /cvs/libtom/libtomcrypt/src/modes/xts/xts_test.c,v $ */
 /* $Revision: 1.4 $ */
 /* $Date: 2007/03/10 23:59:09 $ */
-

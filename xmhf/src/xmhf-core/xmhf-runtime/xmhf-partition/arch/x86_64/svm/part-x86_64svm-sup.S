@@ -48,7 +48,7 @@
 //implements supporting low-level routines for SVM isolation layer
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 //---globals referenced by this module------------------------------------------
 .extern g_midtable_numentries
@@ -73,13 +73,13 @@
         popl	%esp	; \
         popl	%ebp	; \
         popl	%esi	; \
-        popl	%edi	; 
+        popl	%edi	;
 
 .extern svm_intercept_handler
 
 .section .text
 
-//---__svm_start_hvm------------------------------------------------------------	
+//---__svm_start_hvm------------------------------------------------------------
 //we dont care about saving any CPU GPRs as we enter startHVM
 .global __svm_start_hvm
 __svm_start_hvm:
@@ -101,7 +101,7 @@ __svm_start_hvm:
 	movl $0x0, %esi
 	movl $0x0, %edi
 
-__svm_resume_hvm:	
+__svm_resume_hvm:
 	//execute the HVM
 	//stgi
   vmrun
@@ -110,8 +110,6 @@ __svm_resume_hvm:
 
 	//invoke EMHF partition event-hub entry-point
 	call xmhf_parteventhub_arch_x86svm_entry
-	
+
 	//resume HVM
 	jmp __svm_resume_hvm
-  
-	

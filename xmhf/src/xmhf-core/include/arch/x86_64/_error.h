@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//error.h - error handling 
+//error.h - error handling
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #ifndef __ERROR_H_

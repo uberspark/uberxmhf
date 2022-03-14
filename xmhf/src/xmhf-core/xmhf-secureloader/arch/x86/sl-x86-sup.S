@@ -48,10 +48,10 @@
    authors: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 .section .text
-/*------------------------------------------------------------------------------*/	
+/*------------------------------------------------------------------------------*/
 	.global xmhf_sl_arch_x86_invoke_runtime_entrypoint
 xmhf_sl_arch_x86_invoke_runtime_entrypoint:
 /*------------------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ xmhf_sl_arch_x86_invoke_runtime_entrypoint:
 	movl	$(0x00000030), %eax	//CR4_PAE | CR4_PSE
 	movl	%eax, %cr4
 	movl	0x14(%esp), %edi	//EDI = page table base address
-	movl	%edi, %cr3			
+	movl	%edi, %cr3
 	movl	$(0x80000015), %eax	 // ET, EM, PE, PG
 	movl	%eax, %cr0			 //turn on paging
 
@@ -69,7 +69,7 @@ xmhf_sl_arch_x86_invoke_runtime_entrypoint:
 
 	/*load runtime gdt and idt*/
 	subl  $0x8, %esp
-	
+
 	movw  %fs:(%esi), %ax
 	movw  %ax, (%esp)
 	movl  %fs:0x2(%esi), %eax
@@ -81,22 +81,22 @@ xmhf_sl_arch_x86_invoke_runtime_entrypoint:
 	movw  %ax, (%esp)
 	movl  %fs:0x2(%edi), %eax
 	movl  %eax, 0x2(%esp)
-	
+
 	lidt	(%esp)
 
 	addl  $0x8, %esp
-	
+
 	/*grab entrypoint and topofstack parameters*/
 	movl 	0xC(%esp), %edi
 	movl  	0x10(%esp), %esi
 
 	/*load runtime segment selectors*/
 	movw	$(__DS), %ax
-	movw	%ax, %ds	
+	movw	%ax, %ds
 	movw	%ax, %es
 	movw	%ax, %fs
 	movw	%ax, %gs
-	
+
 	/*initialize runtime stack*/
 	movw  %ax, %ss
 	movl  %esi,%esp
@@ -104,9 +104,8 @@ xmhf_sl_arch_x86_invoke_runtime_entrypoint:
 	/*clear flags*/
 	pushl	$0
 	popf
-	
+
 	/*far jump to runtime entry point*/
 	pushl	$(__CS)
 	pushl	%edi
 	lret
-	

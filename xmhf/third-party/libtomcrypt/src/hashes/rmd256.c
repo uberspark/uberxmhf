@@ -428,4 +428,3 @@ int rmd256_test(void)
 }
 
 #endif
-

@@ -10,7 +10,7 @@
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   Source donated by Elliptic Semiconductor Inc (www.ellipticsemi.com) to the LibTom Projects
 */
 
@@ -31,8 +31,8 @@ static int tweak_uncrypt(const unsigned char *C, unsigned char *P, unsigned char
        P[x] = C[x] ^ T[x];
    }
 #endif
-     
-   err = cipher_descriptor[xts->cipher].ecb_decrypt(P, P, &xts->key1);  
+
+   err = cipher_descriptor[xts->cipher].ecb_decrypt(P, P, &xts->key1);
 
 #ifdef LTC_FAST
    for (x = 0; x < 16; x += sizeof(LTC_FAST_TYPE)) {
@@ -48,7 +48,7 @@ static int tweak_uncrypt(const unsigned char *C, unsigned char *P, unsigned char
    xts_mult_x(T);
 
    return err;
-}   
+}
 
 /** XTS Decryption
   @param ct     [in] Ciphertext
@@ -104,7 +104,7 @@ static int tweak_uncrypt(const unsigned char *C, unsigned char *P, unsigned char
       ct += 16;
       pt += 16;
    }
-   
+
    /* if ptlen not divide 16 then */
    if (mo > 0) {
       XMEMCPY(CC, T, 16);
@@ -138,4 +138,3 @@ static int tweak_uncrypt(const unsigned char *C, unsigned char *P, unsigned char
 /* $Source: /cvs/libtom/libtomcrypt/src/modes/xts/xts_decrypt.c,v $ */
 /* $Revision: 1.5 $ */
 /* $Date: 2007/05/12 14:05:56 $ */
-

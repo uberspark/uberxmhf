@@ -112,7 +112,7 @@ typedef union dev_map{
     u32 valid1:1; //1= enable DEV for unit 1 and dom 1
     u32 busno:8; 	//HT bus number
     u32 dom0:6; 	//protection domain number assigned to unit 0
-    u32 dom1:6;		//protection domain number assigned to unit 1 
+    u32 dom1:6;		//protection domain number assigned to unit 1
   }fields;
 } __attribute__ ((packed)) dev_map_t;
 
@@ -138,7 +138,7 @@ typedef union dev_cr {
     u32 devinv:1; 	//1=invalidate DEV table walk cache. bit cleared by h/w when complete
     u32 sldev:1; 		//1=memory region associated with SKINIT is internally protected, 0=use DEV table instead
     u32 walkprobe:1;//1=disable probing of CPU caches during DEV table walks
-    u32 resv1:25; 		//bits 7-31 reserved 
+    u32 resv1:25; 		//bits 7-31 reserved
   }fields;
 } __attribute__ ((packed)) dev_cr_t;
 
@@ -151,7 +151,7 @@ typedef union dev_err_status {
 #define	DEV_ERR_STATUS_ACCESSTYPE_GENERIC						0
 #define	DEV_ERR_STATUS_ACCESSTYPE_READ              1
 #define DEV_ERR_STATUS_ACCESSTYPE_WRITE             2
-#define DEV_ERR_STATUS_ACCESSTYPE_READMODIFYWRITE		3		
+#define DEV_ERR_STATUS_ACCESSTYPE_READMODIFYWRITE		3
 		u32 source:3;		//error code source
 #define DEV_ERR_STATUS_SOURCE_GENERIC								0
 #define DEV_ERR_STATUS_SOURCE_CPU                   1
@@ -177,7 +177,7 @@ typedef union dev_err_addr_lo {
 	u32 bytes;
 	struct{
 		u32 resv0:2;	//reserved
-		u32 addr:30;	//bits 2:31 of error address	
+		u32 addr:30;	//bits 2:31 of error address
 	}fields;
 } __attribute__((packed)) dev_err_addr_lo_t;
 
@@ -186,7 +186,7 @@ typedef union dev_err_addr_hi {
 	u32 bytes;
 	struct{
 		u32 addr:16;	//bits 32-47 of error address
-		u32 resv:16;	//reserved	
+		u32 resv:16;	//reserved
 	}fields;
 } __attribute__((packed)) dev_err_addr_hi_t;
 

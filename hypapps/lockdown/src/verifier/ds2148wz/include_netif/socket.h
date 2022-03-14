@@ -5,7 +5,7 @@
  * \file    socket.h
  * WIZnet SOCKET API function definition
  *
- * For user application, WIZnet provides SOCKET API functions 
+ * For user application, WIZnet provides SOCKET API functions
  * which are similar to Berkeley SOCKET API.\n
  *
  * \author MidnightCow
@@ -19,17 +19,17 @@
 #include "w5300.h"
 
 /**********************************
- * define function of SOCKET APIs * 
+ * define function of SOCKET APIs *
  **********************************/
 
 /**
  * Open a SOCKET.
- */ 
+ */
 uint8    socket(SOCKET s, uint8 protocol, uint16 port, uint16 flag);
 
 /**
  * Close a SOCKET.
- */ 
+ */
 void     close(SOCKET s);                                                           // Close socket
 
 /**
@@ -40,12 +40,12 @@ uint8    connect(SOCKET s, uint8 * addr, uint16 port);
 /**
  * It tries to disconnect a connection SOCKET with a peer.
  */
-void     disconnect(SOCKET s); 
+void     disconnect(SOCKET s);
 
 /**
  * It is listening to a connect-request from a client.
  */
-uint8    listen(SOCKET s);	    
+uint8    listen(SOCKET s);
 
 
 /**
@@ -55,4 +55,3 @@ uint32   recv(SOCKET s, uint8 * buf, uint32 len);
 
 #endif
 /* _SOCKET_H_ */
-

@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -61,9 +61,9 @@ static char *RCSSTRING="$Id: ssl_rec.c,v 1.3 2000/11/03 06:38:06 ekr Exp $";
 struct ssl_rec_decoder_ {
      SSL_CipherSuite *cs;
      Data *mac_key;
-#ifdef OPENSSL     
+#ifdef OPENSSL
      EVP_CIPHER_CTX *evp;
-#endif     
+#endif
      UINT4 seq;
 };
 
@@ -114,7 +114,7 @@ int ssl_create_rec_decoder(dp,cs,mk,sk,iv)
     EVP_CIPHER_CTX_init(dec->evp);
     EVP_CipherInit(dec->evp,ciph,sk,iv,0);
 #endif
-    
+
     *dp=dec;
     _status=0;
   abort:
@@ -128,24 +128,24 @@ int ssl_destroy_rec_decoder(dp)
   ssl_rec_decoder **dp;
   {
     ssl_rec_decoder *d;
-    
+
     if(!dp || !*dp)
       return(0);
     d=*dp;
 
     r_data_destroy(&d->mac_key);
-#ifdef OPENSSL    
+#ifdef OPENSSL
     if(d->evp){
       EVP_CIPHER_CTX_cleanup(d->evp);
       free(d->evp);
     }
     free(*dp);
-#endif    
+#endif
 
     *dp=0;
     return(0);
   }
-    
+
 int ssl_decode_rec_data(ssl,d,ct,version,in,inl,out,outl)
   ssl_obj *ssl;
   ssl_rec_decoder *d;
@@ -160,14 +160,14 @@ int ssl_decode_rec_data(ssl,d,ct,version,in,inl,out,outl)
     int pad;
     int r;
     UCHAR *mac;
-    
+
     CRDUMP("Ciphertext",in,inl);
     /* First decrypt*/
     EVP_Cipher(d->evp,out,in,inl);
 
-    CRDUMP("Plaintext",out,inl);    
+    CRDUMP("Plaintext",out,inl);
     *outl=inl;
-    
+
     /* Now strip off the padding*/
     if(d->cs->block!=1){
       pad=out[inl-1];
@@ -188,11 +188,11 @@ int ssl_decode_rec_data(ssl,d,ct,version,in,inl,out,outl)
       if(r=tls_check_mac(d,ct,version,out,*outl,mac))
         ERETURN(r);
     }
-    
-#endif    
+
+#endif
     return(0);
   }
-    
+
 
 #define MSB(a) ((a>>8)&0xff)
 #define LSB(a) (a&0xff)
@@ -205,14 +205,14 @@ static int fmt_seq(num,buf)
   UCHAR *buf;
   {
     UINT4 netnum;
-    
+
     memset(buf,0,8);
     netnum=htonl(num);
     memcpy(buf+4,&netnum,4);
 
     return(0);
   }
-  
+
 static int tls_check_mac(d,ct,ver,data,datalen,mac)
   ssl_rec_decoder *d;
   int ct;
@@ -225,7 +225,7 @@ static int tls_check_mac(d,ct,ver,data,datalen,mac)
     const EVP_MD *md;
     UINT4 l;
     UCHAR buf[20];
-    
+
     md=EVP_get_digestbyname(digests[d->cs->dig-0x40]);
     HMAC_Init(&hm,d->mac_key->data,d->mac_key->len,md);
 
@@ -244,7 +244,7 @@ static int tls_check_mac(d,ct,ver,data,datalen,mac)
     HMAC_Update(&hm,buf,2);
 
     HMAC_Update(&hm,data,datalen);
-    
+
     HMAC_Final(&hm,buf,&l);
     if(memcmp(mac,buf,l))
       ERETURN(SSL_BAD_MAC);
@@ -268,7 +268,7 @@ int ssl3_check_mac(d,ct,ver,data,datalen,mac)
     int pad_ct;
 
     pad_ct=(d->cs->dig==DIG_SHA)?40:48;
-    
+
     md=EVP_get_digestbyname(digests[d->cs->dig-0x40]);
     EVP_DigestInit(&mc,md);
 
@@ -283,19 +283,19 @@ int ssl3_check_mac(d,ct,ver,data,datalen,mac)
 
     buf[0]=ct;
     EVP_DigestUpdate(&mc,buf,1);
-    
+
     buf[0]=MSB(datalen);
     buf[1]=LSB(datalen);
-    EVP_DigestUpdate(&mc,buf,2);    
+    EVP_DigestUpdate(&mc,buf,2);
 
     EVP_DigestUpdate(&mc,data,datalen);
 
     EVP_DigestFinal(&mc,dgst,&l);
-    
+
     EVP_DigestInit(&mc,md);
 
     EVP_DigestUpdate(&mc,d->mac_key->data,d->mac_key->len);
-    
+
     memset(buf,0x5c,pad_ct);
     EVP_DigestUpdate(&mc,buf,pad_ct);
 
@@ -308,5 +308,5 @@ int ssl3_check_mac(d,ct,ver,data,datalen,mac)
 
     return(0);
   }
-    
-#endif   
+
+#endif

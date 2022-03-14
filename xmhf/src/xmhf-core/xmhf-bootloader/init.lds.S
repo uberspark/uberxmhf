@@ -61,25 +61,25 @@ SECTIONS
   . = 0x1E00000;
   .multiboot_header : {
     *(.multiboot_header)
-    . = ALIGN(4096);    
+    . = ALIGN(4096);
   } = 0x9090
 
   .text : {
     *(.text)
-    . = ALIGN(4096);    
-  } =0x9090 
+    . = ALIGN(4096);
+  } =0x9090
 
   .data : {
     *(.data)
     *(.rodata)
     *(.eh_frame)
     *(.bss)
-    . = ALIGN(4096);    
-  } =0x9090 
-  
+    . = ALIGN(4096);
+  } =0x9090
+
   .stack : {
     *(.stack)
-    . = ALIGN(4096);    
+    . = ALIGN(4096);
   } =0x9090
 
   /DISCARD/ : {

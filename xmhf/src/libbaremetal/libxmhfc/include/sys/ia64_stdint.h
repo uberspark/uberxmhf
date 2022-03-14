@@ -150,7 +150,7 @@
  * 7.18.3  Limits of other integer types
  */
 /* Limits of ptrdiff_t. */
-#define PTRDIFF_MIN     INT64_MIN       
+#define PTRDIFF_MIN     INT64_MIN
 #define PTRDIFF_MAX     INT64_MAX
 
 /* Limits of sig_atomic_t. */
@@ -173,4 +173,3 @@
 #endif /* !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS) */
 
 #endif /* !_MACHINE__STDINT_H_ */
-

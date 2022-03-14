@@ -27,8 +27,8 @@
   @param outlen   [in/out]  The max size and resulting size of the authentication tag
   @return CRYPT_OK if successful, CRYPT_NOP if file support has been disabled
 */
-int hmac_file(int hash, const char *fname, 
-              const unsigned char *key, unsigned long keylen, 
+int hmac_file(int hash, const char *fname,
+              const unsigned char *key, unsigned long keylen,
                     unsigned char *out, unsigned long *outlen)
 {
 #ifdef LTC_NO_FILE
@@ -44,7 +44,7 @@ int hmac_file(int hash, const char *fname,
    LTC_ARGCHK(key    != NULL);
    LTC_ARGCHK(out    != NULL);
    LTC_ARGCHK(outlen != NULL);
-   
+
    if((err = hash_is_valid(hash)) != CRYPT_OK) {
        return err;
    }
@@ -80,7 +80,7 @@ int hmac_file(int hash, const char *fname,
 #ifdef LTC_CLEAN_STACK
    /* clear memory */
    zeromem(buf, sizeof(buf));
-#endif   
+#endif
    return CRYPT_OK;
 #endif
 }

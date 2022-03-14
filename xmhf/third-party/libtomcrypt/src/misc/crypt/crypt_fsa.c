@@ -14,7 +14,7 @@
 /**
   @file crypt_fsa.c
   LibTomCrypt FULL SPEED AHEAD!, Tom St Denis
-*/  
+*/
 
 /* format is ltc_mp, cipher_desc, [cipher_desc], NULL, hash_desc, [hash_desc], NULL, prng_desc, [prng_desc], NULL */
 int crypt_fsa(void *mp, ...)
@@ -27,7 +27,7 @@ int crypt_fsa(void *mp, ...)
    if (mp != NULL) {
       XMEMCPY(&ltc_mp, mp, sizeof(ltc_mp));
    }
-   
+
    while ((p = va_arg(args, void*)) != NULL) {
       if ((err = register_cipher(p)) != CRYPT_OK) {
          va_end(args);
@@ -50,7 +50,7 @@ int crypt_fsa(void *mp, ...)
    }
 
    va_end(args);
-   return CRYPT_OK;   
+   return CRYPT_OK;
 }
 
 

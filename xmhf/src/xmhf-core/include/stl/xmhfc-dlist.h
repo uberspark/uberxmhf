@@ -50,4 +50,3 @@ extern void xmhfstl_list_debug(XMHFList *list);
 
 #endif // __ASSEMBLY__
 #endif // XMHF_STL_DOUBLE_LLIST
-

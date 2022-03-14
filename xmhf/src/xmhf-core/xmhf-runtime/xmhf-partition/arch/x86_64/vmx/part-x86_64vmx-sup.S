@@ -129,4 +129,3 @@ __vmx_start_hvm_undefinedimplementation:
 __vmx_start_hvm_failinvalid:
     xorl %eax, %eax     //return 0 as we have no error code available
     ret
-

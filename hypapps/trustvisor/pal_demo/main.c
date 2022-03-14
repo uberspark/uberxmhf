@@ -47,4 +47,3 @@ int main(int argc, char *argv[]) {
 	call_pal(a, b);
 	return 0;
 }
-

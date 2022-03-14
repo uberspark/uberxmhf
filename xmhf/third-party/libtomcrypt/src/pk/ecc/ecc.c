@@ -19,7 +19,7 @@
 /**
   @file ecc.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
 #ifdef LTC_MECC
 
@@ -124,4 +124,3 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc.c,v $ */
 /* $Revision: 1.40 $ */
 /* $Date: 2007/05/12 14:32:35 $ */
-

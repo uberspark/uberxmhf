@@ -84,12 +84,12 @@
  *
  * "Extra" functions unnecessary in SL denoted as such.
  */
- 
+
 /**
- * Adapted for libtpm - generic TPM library 
- * by Amit Vasudevan amitvasudevan@acm.org 
+ * Adapted for libtpm - generic TPM library
+ * by Amit Vasudevan amitvasudevan@acm.org
  */
- 
+
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
@@ -389,7 +389,7 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
     uint32_t ret, in_size = 0, out_size, requested_size;
     static bool first_attempt;
     uint32_t second_size;
-    
+
     if ( random_data == NULL || data_size == NULL )
         return TPM_BAD_PARAMETER;
     if ( *data_size == 0 )

@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -56,7 +56,7 @@ typedef struct ssl_decoder_ ssl_decoder;
 typedef struct d_queue_ {
      short state;	/*What state we're in*/
 #define SSL_READ_NONE	1
-#define SSL_READ_HEADER 2		   
+#define SSL_READ_HEADER 2
      int read_left;	/*How many more bytes to read in this state*/
      int len;		/*The length of the total record, including header*/
      UCHAR *data;	/*The data for this record*/
@@ -95,7 +95,7 @@ typedef struct ssl_obj_ {
      #define REC_CIPHERTEXT               3
      int record_encryption;
 
-     int direction; /* The direction we're currently working in*/     
+     int direction; /* The direction we're currently working in*/
      int record_count;
      int indent_depth;
      int indent_name_len;
@@ -131,4 +131,3 @@ typedef struct decoder_ {
 
 
 #endif
-

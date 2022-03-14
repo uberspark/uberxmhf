@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF debug component 
+// EMHF debug component
 // x86 arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 

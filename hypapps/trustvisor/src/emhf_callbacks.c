@@ -63,7 +63,7 @@ u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
   return tv_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva, violationcode);
 }
 
-u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
                                         u32 portnum, u32 access_type, u32 access_size)
 {
   return tv_app_handleintercept_portaccess(vcpu, r, portnum, access_type, access_size);

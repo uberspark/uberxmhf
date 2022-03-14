@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -68,20 +68,20 @@ int sslx_print_certificate(ssl,data,pf)
   Data *data;
   int pf;
   {
-#ifdef OPENSSL    
+#ifdef OPENSSL
     X509 *x=0;
     ASN1_INTEGER *a;
-#endif    
+#endif
     UCHAR *d;
     int _status;
-    
-#ifdef OPENSSL        
+
+#ifdef OPENSSL
     P_(P_ASN){
       char buf[BUFSIZE];
       int ext;
-        
+
       d=data->data;
-	
+
       if(!(x=d2i_X509(0,&d,data->len))){
         explain(ssl,"Bad certificate");
         ABORT(R_BAD_DATA);
@@ -106,7 +106,7 @@ int sslx_print_certificate(ssl,data,pf)
       if(ext>0){
         int i,j;
         UCHAR buf[1024];
-          
+
         explain(ssl,"Extensions\n");
         INDENT_INCR;
         for(i=0;i<ext;i++){
@@ -116,7 +116,7 @@ int sslx_print_certificate(ssl,data,pf)
           ex=X509_get_ext(x,i);
           obj=X509_EXTENSION_get_object(ex);
           i2t_ASN1_OBJECT(buf,sizeof(buf),obj);
-            
+
           explain(ssl,"Extension: %s\n",buf);
           j=X509_EXTENSION_get_critical(ex);
           if(j){
@@ -139,25 +139,25 @@ int sslx_print_certificate(ssl,data,pf)
           }
         }
         INDENT_POP;
-        
+
       }
       else{
 #endif
         P_(pf){
           exdump(ssl,"certificate",data);
         }
-#ifdef OPENSSL        
+#ifdef OPENSSL
       }
     }
 #endif
 
     _status=0;
   abort:
-#ifdef OPENSSL    
+#ifdef OPENSSL
     if(x) X509_free(x);
-#endif    
+#endif
     return(_status);
-  }  
+  }
 
 int sslx_print_dn(ssl,data,pf)
   ssl_obj *ssl;
@@ -167,12 +167,12 @@ int sslx_print_dn(ssl,data,pf)
     UCHAR buf[BUFSIZE];
     int _status;
     UCHAR *d=data->data;
-#ifdef OPENSSL    
+#ifdef OPENSSL
     X509_NAME *n=0;
 #endif
-    
+
     P_(pf){
-#ifdef OPENSSL      
+#ifdef OPENSSL
       P_(P_ASN){
 	if(!(n=d2i_X509_NAME(0,&d,data->len)))
 	  ABORT(R_BAD_DATA);
@@ -180,18 +180,18 @@ int sslx_print_dn(ssl,data,pf)
 	sslx__print_dn(ssl,buf);
       }
       else{
-#endif        
+#endif
 	exdump(ssl,0,data);
-#ifdef OPENSSL        
+#ifdef OPENSSL
       }
 #endif
     }
 
     _status=0;
   abort:
-#ifdef OPENSSL    
+#ifdef OPENSSL
     if(n) X509_NAME_free(n);
-#endif    
+#endif
     return(_status);
   }
 
@@ -202,7 +202,7 @@ static int sslx__print_dn(ssl,x)
     char *slash;
 
     if(*x=='/') x++;
-    
+
     while (x){
       if(slash=strchr(x,'/')){
 	*slash=0;
@@ -222,7 +222,7 @@ static int sslx__print_serial(ssl,a)
   ASN1_INTEGER *a;
   {
     Data d;
-    
+
     if(a->length==0)
       printf("0");
 

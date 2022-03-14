@@ -55,12 +55,12 @@
 //------------------------------------------------------------------------------
 //ACPI registers (as per v3.0b spec)
 //the variables here are for internal use for this module only, they are
-//initialized once and then mapped via defines in acpi.h 
+//initialized once and then mapped via defines in acpi.h
 //e.g PM1a_STS maps to __PM1a_STS
-//we need to do this since the register addresses and sizes are not 
+//we need to do this since the register addresses and sizes are not
 //constant and need to be computed at runtime
 //sizes are in bytes
-//currently we only support these registers to be I/O mapped, which is 
+//currently we only support these registers to be I/O mapped, which is
 //usually the case for most ACPI chipsets
 
 //PM1 event registers
@@ -100,12 +100,12 @@ void ACPIInitializeRegisters(void){
 	//RSDT method
 	ACPI_RSDT *rsdt;
 	u32 n_rsdt_entries;
-	u32 *rsdtentrylist;	
+	u32 *rsdtentrylist;
 #endif
 	u32 i;
 	ACPI_FADT *fadt;
 	u8 fadt_found=0;
-	
+
 	//rsdp=(ACPI_RSDP *)acpi_getRSDP();
 #ifdef __X86_64__
 	rsdp_paddr = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
@@ -116,19 +116,19 @@ void ACPIInitializeRegisters(void){
 		printf("\nSystem is not ACPI Compliant (RSDP unavailable!)");
 		HALT();
 	}
-	
+
 	printf("\nACPI System (RSDP phys addr=0x%08X)", rsdp_paddr);
 
 #if 0
 	xsdt=(ACPI_XSDT *)(u32)rsdp.xsdtaddress;
 	printf("\nXSDT phys addr=0x%08X", (u32)xsdt);
   printf("\nLength of XSDT=0x%08X, XSDT header length=0x%08X", xsdt->length, sizeof(ACPI_XSDT));
-  
+
 	n_xsdt_entries=(u32)((xsdt->length-sizeof(ACPI_XSDT))/8);
   printf("\nNumber of XSDT entries=%u", n_xsdt_entries);
   xsdtentrylist=(u64 *) ( (u32)xsdt + sizeof(ACPI_XSDT) );
   //printf("\nxsdtentrylist phys addr=0x%08X", (u32)xsdtentrylist);
-	
+
 	for(i=0; i< n_xsdt_entries; i++){
     fadt=(ACPI_FADT *)( (u32)xsdtentrylist[i]);
     if(fadt->signature == ACPI_FADT_SIGNATURE){
@@ -142,9 +142,9 @@ void ACPIInitializeRegisters(void){
 	n_rsdt_entries=(u32)((rsdt->length-sizeof(ACPI_RSDT))/4);
 
 	printf("\nACPI RSDT at 0x%08x", (u32)rsdt);
-	printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
+	printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u",
 			rsdt->length, sizeof(ACPI_RSDT), n_rsdt_entries);
-  
+
 	rsdtentrylist=(u32 *) ( (u32)rsdt + sizeof(ACPI_RSDT) );
 
 	for(i=0; i< n_rsdt_entries; i++){
@@ -153,7 +153,7 @@ void ACPIInitializeRegisters(void){
 			fadt_found=1;
 			break;
 		}
-	}	
+	}
 #endif
 
 
@@ -169,24 +169,24 @@ void ACPIInitializeRegisters(void){
 	//get register addresses
 	gas=(ACPI_GAS *)&fadt->x_pm2_cnt_blk;
 	//printf("\nPM2_CNT_BLK");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
-	
+
 	gas=(ACPI_GAS *)&fadt->x_pm_tmr_blk;
 	//printf("\nPM_TMR_BLK");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
-	
+
 	gas=(ACPI_GAS *)&fadt->x_gpe0_blk;
 	//printf("\nGPE0_BLK");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
 	gas=(ACPI_GAS *)&fadt->x_gpe1_blk;
 	//printf("\nGPE1_BLK");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
 
@@ -197,12 +197,12 @@ void ACPIInitializeRegisters(void){
 	//printf("\nPM_TMR_LEN=0x%08X", fadt->pm_tmr_len);
 	//printf("\nGPE0_BLK_LEN=0x%08X", fadt->gpe0_blk_len);
 	//printf("\nGPE1_BLK_LEN=0x%08X", fadt->gpe1_blk_len);
-	
-	
+
+
 	//store register addresses
 	gas=(ACPI_GAS *)&fadt->x_pm1a_evt_blk;
 	//printf("\nPM1a_EVT_BLK");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
 	__PM1a_STS=gas->address;
@@ -212,7 +212,7 @@ void ACPIInitializeRegisters(void){
 
 	gas=(ACPI_GAS *)&fadt->x_pm1b_evt_blk;
 	//printf("\nPM1b_EVT_BLK");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
 	__PM1b_STS=gas->address;
@@ -222,7 +222,7 @@ void ACPIInitializeRegisters(void){
 
 	gas=(ACPI_GAS *)&fadt->x_pm1a_cnt_blk;
 	//printf("\nPM1a_CNT_BLK");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
 	__PM1_CNTa=gas->address;
@@ -230,7 +230,7 @@ void ACPIInitializeRegisters(void){
 
 	gas=(ACPI_GAS *)&fadt->x_pm1b_cnt_blk;
 	//printf("\nPM1b_CNT_BLK");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
 	__PM1_CNTb=gas->address;
@@ -248,7 +248,7 @@ void ACPIInitializeRegisters(void){
 
 
 
-#if 0	
+#if 0
 	//obtain ACPI reset register details
 	//we ignore the RESET_REG_SUP bit when using ACPI reset mechanism
 	//According to ACPI 3.0, FADT.flags.RESET_REG_SUP indicates
@@ -263,15 +263,15 @@ void ACPIInitializeRegisters(void){
 	//4. ASID is 1
 	gas=(ACPI_GAS *)&fadt->reset_reg;
 	//printf("\nRESET REG");
-	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X",
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
 	//printf("\nRESET VALUE=0x%02x", fadt->reset_value);
 	HALT_ON_ERRORCOND(gas->address && gas->address_space_id && (gas->register_bit_width == 8) &&
 			(gas->register_bit_offset == 0) );
 	__acpi_reset_reg = (u32)gas->address;
-	__acpi_reset_reg_val = 	fadt->reset_value;		
-#endif			
+	__acpi_reset_reg_val = 	fadt->reset_value;
+#endif
 
 #endif
 
@@ -280,7 +280,7 @@ void ACPIInitializeRegisters(void){
 	__PM1a_STS_size= (fadt->pm1_evt_len)/2;
 	__PM1b_STS=fadt->pm1b_evt_blk;
 	__PM1b_STS_size=(fadt->pm1_evt_len)/2;
-	
+
 	//PM1 enable registers (ACPI 4.0a spec, 4.7.3.1.2)
 	__PM1a_EN=fadt->pm1a_evt_blk + ((fadt->pm1_evt_len)/2);
 	__PM1a_EN_size=(fadt->pm1_evt_len)/2;
@@ -305,4 +305,3 @@ void ACPIInitializeRegisters(void){
 
 
 }
-

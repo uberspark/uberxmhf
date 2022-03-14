@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
@@ -146,7 +146,7 @@ TZDeviceClose(INOUT tz_device_t *psDevice)
   } else if (psDevice->sImp.uiSessionCount > 0) {
     return TZ_ERROR_ILLEGAL_STATE;
   }
-  
+
   rv = psDevice->sImp.cbb->deviceClose(psDevice);
   if (rv == TZ_SUCCESS) {
     psDevice->uiState = TZ_STATE_UNDEFINED;
@@ -242,7 +242,7 @@ TZOperationPrepareInvoke(INOUT tz_session_t* psSession,
       || psOperation == NULL) {
     return TZ_ERROR_UNDEFINED;
   }
-  
+
   rv = CBB_OF_SESSION(psSession)->operationPrepareInvoke(psSession,
                                                          uiCommand,
                                                          pksTimeLimit,
@@ -410,7 +410,7 @@ TZOperationRelease(INOUT tz_operation_t* psOperation)
   unreferenceSharedMemSubranges(psOperation);
 
   /* any cleanup should already be done when
-   * transition to TZ_STATE_INVALID occurred 
+   * transition to TZ_STATE_INVALID occurred
    * FIXME- revisit this
    */
   if (psOperation->uiState == TZ_STATE_INVALID) {
@@ -550,7 +550,7 @@ TZEncodeArray(INOUT tz_operation_t* psOperation,
                  uiLength);
 }
 
-void* 
+void*
 TZEncodeArraySpace(INOUT tz_operation_t* psOperation,
                    uint32_t uiLength)
 {
@@ -650,7 +650,7 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
     /* using TZ_ERROR_MEMORY instead of TZ_ERROR_ENCODE_MEMORY, to
        distinguish from case where encode buffer itself wasn't large
        enough */
-    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_MEMORY; 
+    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_MEMORY;
     return;
   }
   *psSubrange = (tzi_shared_memory_subrange_t) {
@@ -663,7 +663,7 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
 
   /* add to operation's list of referenced subranges */
   if (LL_dpush(&psOperation->sImp.psRefdSubranges, psSubrange) == NULL) {
-    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_MEMORY; 
+    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_MEMORY;
     return;
   }
 
@@ -809,7 +809,7 @@ TZManagerDownloadService(INOUT tz_session_t* psSession,
                          uint32_t uiLength,
                          OUT tz_uuid_t* psServiceId)
 {
-  
+
   /* ensure basic parameter validity */
   {
     if (psSession == NULL

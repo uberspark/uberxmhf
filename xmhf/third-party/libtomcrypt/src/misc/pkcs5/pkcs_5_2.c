@@ -10,7 +10,7 @@
  */
 #include <tomcrypt.h>
 
-/** 
+/**
    @file pkcs_5_2.c
    LTC_PKCS #5, Algorithm #2, Tom St Denis
 */
@@ -28,7 +28,7 @@
    @param outlen            [in/out] The max size and resulting size of the algorithm output
    @return CRYPT_OK if successful
 */
-int pkcs_5_alg2(const unsigned char *password, unsigned long password_len, 
+int pkcs_5_alg2(const unsigned char *password, unsigned long password_len,
                 const unsigned char *salt,     unsigned long salt_len,
                 int iteration_count,           int hash_idx,
                 unsigned char *out,            unsigned long *outlen)
@@ -69,13 +69,13 @@ int pkcs_5_alg2(const unsigned char *password, unsigned long password_len,
    while (left != 0) {
        /* process block number blkno */
        zeromem(buf[0], MAXBLOCKSIZE*2);
-       
+
        /* store current block number and increment for next pass */
        STORE32H(blkno, buf[1]);
        ++blkno;
 
        /* get PRF(P, S||int(blkno)) */
-       if ((err = hmac_init(hmac, hash_idx, password, password_len)) != CRYPT_OK) { 
+       if ((err = hmac_init(hmac, hash_idx, password, password_len)) != CRYPT_OK) {
           goto LBL_ERR;
        }
        if ((err = hmac_process(hmac, salt, salt_len)) != CRYPT_OK) {

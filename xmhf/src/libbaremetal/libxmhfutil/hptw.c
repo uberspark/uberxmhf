@@ -103,8 +103,8 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
 {
   int err = 1;
 
-  EU_CHKN( hptw_get_root( ctx, pmo));  
-  
+  EU_CHKN( hptw_get_root( ctx, pmo));
+
   while(pmo->lvl > end_lvl) {
     hpt_pmeo_t pmeo;
     hpt_pm_get_pmeo_by_va(&pmeo, pmo, va);
@@ -334,7 +334,7 @@ void* nmm_access_gpaddr(hptw_ctx_t *ctx,
 }
 
 // [New MM API] memset the destination gpaddr
-// [NOTE] We should use nmm_* as much as possible, because 
+// [NOTE] We should use nmm_* as much as possible, because
 // the original mm code in XMHF assume gpaddr = spaddr, which is not
 // always true.
 void nmm_memset_gpaddr(hptw_ctx_t *ctx,

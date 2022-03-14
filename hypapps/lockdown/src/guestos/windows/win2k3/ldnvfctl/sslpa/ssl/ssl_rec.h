@@ -18,7 +18,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -56,4 +56,3 @@ int ssl_decode_rec_data PROTO_LIST((ssl_obj *ssl,ssl_rec_decoder *d,
   int ct,int version,UCHAR *in,int inl,UCHAR *out,int *outl));
 
 #endif
-

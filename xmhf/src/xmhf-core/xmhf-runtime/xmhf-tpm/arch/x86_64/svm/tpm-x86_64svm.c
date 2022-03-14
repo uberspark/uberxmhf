@@ -53,13 +53,13 @@
 
 //open TPM locality
 int xmhf_tpm_arch_x86svm_open_locality(int locality){
-		// some systems leave locality 0 open for legacy software 
+		// some systems leave locality 0 open for legacy software
         //dump_locality_access_regs();
         xmhf_tpm_arch_deactivate_all_localities();
         //dump_locality_access_regs();
-        
+
         if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
-            printf("\n%s: TPM successfully opened in Locality %d.", __FUNCTION__, locality);            
+            printf("\n%s: TPM successfully opened in Locality %d.", __FUNCTION__, locality);
 			return 0;
         } else {
             printf("\n%s: TPM ERROR: Locality %d could not be opened.\n", __FUNCTION__, locality);

@@ -4,7 +4,7 @@ XMHF_STL_BITMAP* xmhfstl_bitmap_create(uint32_t num_bits)
 {
 	XMHF_STL_BITMAP* result = NULL;
 	uint32_t num_pages = 0;
-	
+
 	result = (XMHF_STL_BITMAP*)xmhf_mm_malloc(sizeof(XMHF_STL_BITMAP));
 	if(!result)
 		return NULL;
@@ -14,7 +14,7 @@ XMHF_STL_BITMAP* xmhfstl_bitmap_create(uint32_t num_bits)
 	result->mem_table = (char**)xmhf_mm_malloc(num_pages * sizeof(char*));
 	if(!result->mem_table)
 		return NULL;
-	
+
 	result->bits_stat = (uint16_t*)xmhf_mm_malloc(num_pages * sizeof(uint16_t));
 	if(!result->bits_stat)
 		return NULL;
@@ -70,11 +70,11 @@ bool xmhfstl_bitmap_set_bit(XMHF_STL_BITMAP* bitmap, const uint32_t bit_idx)
 
 	if(bit_idx >= bitmap->max_bits)
 		return false;
-	
+
 	bit_offset = bit_idx % BITS_PER_BYTE;
 	byte_offset = BITS_TO_BYTES(bit_idx) % PAGE_SIZE_4K;
 	pg_offset = BITS_TO_BYTES(bit_idx) >> PAGE_SHIFT_4K;
-	
+
 	bits_stat = bitmap->bits_stat[pg_offset];
 
 	if(!bits_stat)
@@ -88,7 +88,7 @@ bool xmhfstl_bitmap_set_bit(XMHF_STL_BITMAP* bitmap, const uint32_t bit_idx)
 	test_bit = bitmap->mem_table[pg_offset][byte_offset];
 	if(test_bit & (1 << bit_offset))
 		return true;  // already set
-	else	
+	else
 		bitmap->mem_table[pg_offset][byte_offset] = (char)(test_bit | (1 << bit_offset));
 	bitmap->bits_stat[pg_offset] = bits_stat + 1;
 
@@ -110,7 +110,7 @@ bool xmhfstl_bitmap_clear_bit(XMHF_STL_BITMAP* bitmap, const uint32_t bit_idx)
 
 	if(bit_idx >= bitmap->max_bits)
 		return false;
-	
+
 	bit_offset = bit_idx % BITS_PER_BYTE;
 	byte_offset = BITS_TO_BYTES(bit_idx) % PAGE_SIZE_4K;
 	pg_offset = BITS_TO_BYTES(bit_idx) >> PAGE_SHIFT_4K;
@@ -152,7 +152,7 @@ bool xmhfstl_bitmap_is_bit_set(XMHF_STL_BITMAP* bitmap, const uint32_t bit_idx)
 
 	if(bitmap->mem_table[pg_offset][byte_offset] & (1 << bit_offset))
 		return true;
-	else 
+	else
 		return false;
 }
 
@@ -171,7 +171,6 @@ bool xmhfstl_bitmap_is_bit_clear(XMHF_STL_BITMAP* bitmap, const uint32_t bit_idx
 
 	if(bitmap->mem_table[pg_offset][byte_offset] & (1 << bit_offset))
 		return false;
-	else 
+	else
 		return true;
 }
-

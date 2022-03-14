@@ -110,4 +110,3 @@ __bswap16(__uint16_t _x)
 #endif /* __CC_SUPPORTS___INLINE && __GNUCLIKE_ASM */
 
 #endif /* !_MACHINE_ENDIAN_H_ */
-

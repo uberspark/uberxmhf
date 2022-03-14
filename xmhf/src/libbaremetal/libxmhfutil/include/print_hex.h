@@ -46,7 +46,7 @@
 
 /* print_hex.h - hex printing function
   author(s): Amit Vasudevan (amitvasudevan@acm.org)
-			Jim Newsome 
+			Jim Newsome
 */
 
 #ifndef PRINT_HEX_H

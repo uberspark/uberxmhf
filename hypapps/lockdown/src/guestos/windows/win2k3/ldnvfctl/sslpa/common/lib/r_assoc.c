@@ -11,7 +11,7 @@
 
    The major problem with this code is it's not resizable, though it
    could be made so.
-   
+
 
    Copyright (C) 1999-2000 RTFM, Inc.
    All Rights Reserved
@@ -29,7 +29,7 @@
       documentation and/or other materials provided with the distribution.
    3. All advertising materials mentioning features or use of this software
       must display the following acknowledgement:
-   
+
       This product includes software developed by Eric Rescorla for
       RTFM, Inc.
 
@@ -68,11 +68,11 @@ typedef struct r_assoc_el_ {
      int (*copy) PROTO_LIST((void **new,void *old));
      int (*destroy) PROTO_LIST((void *ptr));
 } r_assoc_el;
-     
+
 struct r_assoc_ {
      int size;
      int bits;
-     r_assoc_el **chains;	
+     r_assoc_el **chains;
 };
 
 #define DEFAULT_TABLE_BITS 5
@@ -89,18 +89,18 @@ int r_assoc_create(assocp)
   {
     r_assoc *assoc=0;
     int _status;
-    
+
     if(!(assoc=(r_assoc *)calloc(sizeof(r_assoc),1)))
       ABORT(R_NO_MEMORY);
     assoc->size=(1<<DEFAULT_TABLE_BITS);
     assoc->bits=DEFAULT_TABLE_BITS;
-    
+
     if(!(assoc->chains=(r_assoc_el **)calloc(sizeof(r_assoc_el *),
       assoc->size)))
       ABORT(R_NO_MEMORY);
 
     *assocp=assoc;
-    
+
     _status=0;
   abort:
     if(_status){
@@ -114,7 +114,7 @@ int r_assoc_destroy(assocp)
   {
     r_assoc *assoc;
     int i;
-	    
+
     if(!assocp || !*assocp)
       return(0);
 
@@ -129,7 +129,7 @@ static int destroy_assoc_chain(chain)
   r_assoc_el *chain;
   {
     r_assoc_el *nxt;
-    
+
     while(chain){
       nxt=chain->next;
 
@@ -137,7 +137,7 @@ static int destroy_assoc_chain(chain)
 	chain->destroy(chain->data);
 
       free(chain->key);
-      
+
       free(chain);
       chain=nxt;
     }
@@ -159,7 +159,7 @@ static int copy_assoc_chain(newp,old)
     for(;old;old=old->next){
       if(!(tmp=(r_assoc_el *)calloc(sizeof(r_assoc_el),1)))
 	ABORT(R_NO_MEMORY);
-      
+
       if(!new){
 	new=tmp;
 	ptr=new;
@@ -172,7 +172,7 @@ static int copy_assoc_chain(newp,old)
 
       ptr->destroy=old->destroy;
       ptr->copy=old->copy;
-	
+
       if(old->copy){
 	if(r=old->copy(&ptr->data,old->data))
 	  ABORT(r);
@@ -186,7 +186,7 @@ static int copy_assoc_chain(newp,old)
     }
 
     *newp=new;
-    
+
     _status=0;
   abort:
     if(_status){
@@ -203,7 +203,7 @@ static int r_assoc_fetch_bucket(assoc,key,len,bucketp)
   {
     UINT4 hash_value;
     r_assoc_el *bucket;
-    
+
     hash_value=hash_compute(key,len,assoc->bits);
 
     for(bucket=assoc->chains[hash_value];bucket;bucket=bucket->next){
@@ -246,7 +246,7 @@ int r_assoc_insert(assoc,key,len,data,copy,destroy,how)
   {
     r_assoc_el *bucket,*new_bucket=0;
     int r,_status;
-    
+
     if(r=r_assoc_fetch_bucket(assoc,key,len,&bucket)){
       /*Note that we compute the hash value twice*/
       UINT4 hash_value;
@@ -254,14 +254,14 @@ int r_assoc_insert(assoc,key,len,data,copy,destroy,how)
       if(r!=R_NOT_FOUND)
 	ABORT(r);
       hash_value=hash_compute(key,len,assoc->bits);
-    
+
       if(!(new_bucket=(r_assoc_el *)calloc(sizeof(r_assoc_el),1)))
 	ABORT(R_NO_MEMORY);
       if(!(new_bucket->key=(char *)malloc(len)))
 	ABORT(R_NO_MEMORY);
       memcpy(new_bucket->key,key,len);
       new_bucket->key_len=len;
-      
+
       /*Insert at the list head. Is FIFO a good algorithm?*/
       if(assoc->chains[hash_value])
         assoc->chains[hash_value]->prev=new_bucket;
@@ -280,7 +280,7 @@ int r_assoc_insert(assoc,key,len,data,copy,destroy,how)
     bucket->data=data;
     bucket->copy=copy;
     bucket->destroy=destroy;
-    
+
     _status=0;
   abort:
     if(_status && new_bucket){
@@ -296,12 +296,12 @@ int r_assoc_copy(newp,old)
   {
     int r,_status,i;
     r_assoc *new;
-    
+
     if(!(new=(r_assoc *)calloc(sizeof(r_assoc),1)))
       ABORT(r);
     new->size=old->size;
     new->bits=old->bits;
-    
+
     if(!(new->chains=(r_assoc_el **)calloc(sizeof(r_assoc_el),old->size)))
       ABORT(R_NO_MEMORY);
     for(i=0;i<new->size;i++){
@@ -309,7 +309,7 @@ int r_assoc_copy(newp,old)
 	ABORT(r);
     }
     *newp=new;
-    
+
     _status=0;
   abort:
     if(_status){
@@ -323,14 +323,14 @@ int r_assoc_init_iter(assoc,iter)
   r_assoc_iterator *iter;
   {
     int i;
-    
+
     iter->assoc=assoc;
     iter->prev_chain=-1;
     iter->prev=0;
 
     iter->next_chain=assoc->size;
     iter->next=0;
-    
+
     for(i=0;i<assoc->size;i++){
       if(assoc->chains[i]!=0){
 	iter->next_chain=i;
@@ -350,7 +350,7 @@ int r_assoc_iter(iter,key,keyl,val)
   {
     int i;
     r_assoc_el *ret;
-    
+
     if(!iter->next)
       return(R_EOD);
     ret=iter->next;
@@ -358,7 +358,7 @@ int r_assoc_iter(iter,key,keyl,val)
     *key=ret->key;
     *keyl=ret->key_len;
     *val=ret->data;
-    
+
     /* Now increment */
     iter->prev_chain=iter->next_chain;
     iter->prev=iter->next;
@@ -369,7 +369,7 @@ int r_assoc_iter(iter,key,keyl,val)
     }
     else{
       iter->next=0;
-      
+
       /* FInd the next occupied chain*/
       for(i=iter->next_chain;i<iter->assoc->size;i++){
 	if(iter->assoc->chains[i]){
@@ -405,8 +405,8 @@ int r_assoc_iter_delete(iter)
     free(iter->prev);
     return(0);
   }
-    
-    
+
+
 /*This is a hack from AMS. Supposedly, it's pretty good for strings, even
  though it doesn't take into account all the data*/
 UINT4 hash_compute(key,len,bits)
@@ -422,4 +422,3 @@ UINT4 hash_compute(key,len,bits)
 
     return(h);
   }
-

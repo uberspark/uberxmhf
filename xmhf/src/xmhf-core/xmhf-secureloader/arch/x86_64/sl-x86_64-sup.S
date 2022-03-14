@@ -48,7 +48,7 @@
    authors: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 .section .text
 /*------------------------------------------------------------------------------*/
@@ -114,4 +114,3 @@ xmhf_sl_arch_x86_invoke_runtime_entrypoint:
 
     /* jump to runtime entry point */
     jmpq    *%rdx
-
