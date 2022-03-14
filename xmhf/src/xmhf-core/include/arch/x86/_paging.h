@@ -61,6 +61,7 @@
 #define PAGE_MASK_4K				0xfffff000
 #define PAGE_MASK_1G       0xC0000000
 
+// page sizes
 #define PAGE_SHIFT_4K   12
 #define PAGE_SHIFT_2M   21
 #define PAGE_SHIFT_4M   22
@@ -68,11 +69,10 @@
 #define PAGE_SHIFT_512G 39
 #define PAGE_SHIFT_256T 42
 
-// page sizes
 #ifndef __ASSEMBLY__
-#define PAGE_SIZE_4K (1UL << PAGE_SHIFT_4K)
-#define PAGE_SIZE_2M (1UL << PAGE_SHIFT_2M)
-#define PAGE_SIZE_4M (1UL << PAGE_SHIFT_4M)
+#define PAGE_SIZE_4K    (1UL << PAGE_SHIFT_4K)
+#define PAGE_SIZE_2M    (1UL << PAGE_SHIFT_2M)
+#define PAGE_SIZE_4M    (1UL << PAGE_SHIFT_4M)
 #define PAGE_SIZE_1G    (1UL << PAGE_SHIFT_1G)
 #else   
 #define PAGE_SIZE_4K    (1 << PAGE_SHIFT_4K)
@@ -81,21 +81,21 @@
 #define PAGE_SIZE_1G    (1 << PAGE_SHIFT_1G)
 #endif
 
-#define PAGE_ALIGN_UP4K(size)	(((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
-#define PAGE_ALIGN_UP2M(size)	(((size) + PAGE_SIZE_2M - 1) & ~(PAGE_SIZE_2M - 1))
-#define PAGE_ALIGN_UP4M(size)	(((size) + PAGE_SIZE_4M - 1) & ~(PAGE_SIZE_4M - 1))
+#define PAGE_ALIGN_UP4K(size)   (((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
+#define PAGE_ALIGN_UP2M(size)   (((size) + PAGE_SIZE_2M - 1) & ~(PAGE_SIZE_2M - 1))
+#define PAGE_ALIGN_UP4M(size)   (((size) + PAGE_SIZE_4M - 1) & ~(PAGE_SIZE_4M - 1))
 #define PAGE_ALIGN_UP1G(size)   (((size) + PAGE_SIZE_1G - 1) & ~(PAGE_SIZE_1G - 1))
 
-#define PAGE_ALIGN_4K(size)	((size) & ~(PAGE_SIZE_4K - 1))
-#define PAGE_ALIGN_2M(size)	((size) & ~(PAGE_SIZE_2M - 1))
-#define PAGE_ALIGN_4M(size)	((size) & ~(PAGE_SIZE_4M - 1))
+#define PAGE_ALIGN_4K(size)     ((size) & ~(PAGE_SIZE_4K - 1))
+#define PAGE_ALIGN_2M(size)     ((size) & ~(PAGE_SIZE_2M - 1))
+#define PAGE_ALIGN_4M(size)     ((size) & ~(PAGE_SIZE_4M - 1))
 #define PAGE_ALIGN_1G(size)     ((size) & ~(PAGE_SIZE_1G - 1))
 
-#define PAGE_ALIGNED_4K(size) (PAGE_ALIGN_4K(size) == size)
-#define PAGE_ALIGNED_2M(size) (PAGE_ALIGN_2M(size) == size)
-#define PAGE_ALIGNED_4M(size) (PAGE_ALIGN_4M(size) == size)
+#define PAGE_ALIGNED_4K(size)   (PAGE_ALIGN_4K(size) == size)
+#define PAGE_ALIGNED_2M(size)   (PAGE_ALIGN_2M(size) == size)
+#define PAGE_ALIGNED_4M(size)   (PAGE_ALIGN_4M(size) == size)
 
-#define BYTES_TO_PAGE4K(size)	(PAGE_ALIGN_UP4K(size) >> PAGE_SHIFT_4K)
+#define BYTES_TO_PAGE4K(size)   (PAGE_ALIGN_UP4K(size) >> PAGE_SHIFT_4K)
 
 // non-PAE mode specific definitions 
 #define NPAE_PTRS_PER_PDT       1024
@@ -125,35 +125,35 @@
 #define P4L_NPT     2048
 
 // various paging flags 
-#define _PAGE_BIT_PRESENT	0
-#define _PAGE_BIT_RW		1
-#define _PAGE_BIT_USER		2
-#define _PAGE_BIT_PWT		3
-#define _PAGE_BIT_PCD		4
-#define _PAGE_BIT_ACCESSED	5
-#define _PAGE_BIT_DIRTY		6
-#define _PAGE_BIT_PSE		7	
-#define _PAGE_BIT_GLOBAL	8	
-#define _PAGE_BIT_UNUSED1	9	
-#define _PAGE_BIT_UNUSED2	10
-#define _PAGE_BIT_UNUSED3	11
-#define _PAGE_BIT_NX		63
+#define _PAGE_BIT_PRESENT       0
+#define _PAGE_BIT_RW            1
+#define _PAGE_BIT_USER          2
+#define _PAGE_BIT_PWT           3
+#define _PAGE_BIT_PCD           4
+#define _PAGE_BIT_ACCESSED      5
+#define _PAGE_BIT_DIRTY         6
+#define _PAGE_BIT_PSE           7
+#define _PAGE_BIT_GLOBAL        8
+#define _PAGE_BIT_UNUSED1       9
+#define _PAGE_BIT_UNUSED2       10
+#define _PAGE_BIT_UNUSED3       11
+#define _PAGE_BIT_NX            63
 
-#define _PAGE_PRESENT	0x001
-#define _PAGE_RW	0x002   
-#define _PAGE_USER	0x004
-#define _PAGE_PWT	0x008
-#define _PAGE_PCD	0x010
-#define _PAGE_ACCESSED	0x020
-#define _PAGE_DIRTY	0x040
-#define _PAGE_PSE	0x080	
-#define _PAGE_GLOBAL	0x100	
-#define _PAGE_UNUSED1	0x200	
-#define _PAGE_UNUSED2	0x400
-#define _PAGE_UNUSED3	0x800
+#define _PAGE_PRESENT   0x001
+#define _PAGE_RW        0x002   
+#define _PAGE_USER      0x004
+#define _PAGE_PWT       0x008
+#define _PAGE_PCD       0x010
+#define _PAGE_ACCESSED  0x020
+#define _PAGE_DIRTY     0x040
+#define _PAGE_PSE       0x080
+#define _PAGE_GLOBAL    0x100
+#define _PAGE_UNUSED1   0x200
+#define _PAGE_UNUSED2   0x400
+#define _PAGE_UNUSED3   0x800
 
 #ifndef __ASSEMBLY__
-#define _PAGE_NX	(1ULL<<_PAGE_BIT_NX)
+#define _PAGE_NX        (1ULL<<_PAGE_BIT_NX)
 #else
 #define _PAGE_NX  (1 << _PAGE_BIT_NX)
 #endif 
