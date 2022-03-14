@@ -171,8 +171,8 @@ typedef union {
 	 *       memory.
 	 */
 	extern u32 xmhf_baseplatform_arch_flat_va_offset;
-
 #endif /* __X86_64__ */
+
 	static inline void writeb(u32 addr, u8 val) {
 #ifdef __X86_64__
 		u32 phys_addr = (u32)addr - (u32)xmhf_baseplatform_arch_flat_va_offset;
