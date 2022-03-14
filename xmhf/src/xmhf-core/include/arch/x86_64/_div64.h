@@ -57,6 +57,7 @@
 #ifdef __X86_64__
 #define do_div(n,base) ({ \
         switch(0) { case 0: case 0: not_implemented_for_x86_64 }; \
+})
 #else /* !__X86_64__ */
 #define do_div(n,base) ({ \
         unsigned long __upper, __low, __high, __mod, __base; \
@@ -70,8 +71,8 @@
         __asm("divl %2":"=a" (__low), "=d" (__mod):"rm" (__base), "0" (__low), "1" (__upper)); \
         __asm("":"=A" (n):"a" (__low),"d" (__high)); \
         __mod; \
-#endif /* __X86_64__ */
 })
+#endif /* __X86_64__ */
 
 
 #endif /* __ASSEMBLY__ */
