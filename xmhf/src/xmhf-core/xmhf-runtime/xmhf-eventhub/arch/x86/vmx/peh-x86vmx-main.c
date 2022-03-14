@@ -599,24 +599,62 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	vcpu->vmcs.guest_CR0 = (cr0_value | fixed_1_fields) & ~(CR0_CD | CR0_NW);
 
 	/*
+	 * If CR0.PG, need to update a lot of things for PAE and long mode support.
+	 * As a workaround, we let the guest retry setting CR0.PG and CR0.PE. This
+	 * way we do not need to calculate the VMCS fields in hypervisor.
+	 */
+	if ((old_cr0 ^ cr0_value) & CR0_PG) {
+		u64 pg_pe_mask = (CR0_PG | CR0_PE);
+		/* Make sure that CR0.PG and CR0.PE are not masked */
+		if (!(pg_pe_mask & vcpu->vmcs.control_CR0_mask)) {
+			/*
+			 * The original MOV CR0 must also change some bits not related to
+			 * CR0.PG or CR0.PE.
+			 */
+			HALT_ON_ERRORCOND((old_cr0 ^ cr0_value) & ~pg_pe_mask);
+			/*
+			 * Change VMCS's guest CR0 to requested value, except CR0.PG and
+			 * CR0.PE.
+			 */
+			vcpu->vmcs.guest_CR0 &= ~pg_pe_mask;
+			vcpu->vmcs.guest_CR0 |= old_cr0 & pg_pe_mask;
+			//printf("\n[cr0-%02x] RETRY:  old=0x%08llx", vcpu->id,
+			//	vcpu->vmcs.guest_CR0);
+			/* Sanity check: for bits masked, requested value = CR0 shadow */
+			HALT_ON_ERRORCOND(
+				((cr0_value ^ vcpu->vmcs.control_CR0_shadow) &
+				vcpu->vmcs.control_CR0_mask) == 0);
+			/*
+			 * Sanity check: for bits not masked other than CR0.PG and CR0.PE,
+			 * guest CR0 = requested new value.
+			 */
+			HALT_ON_ERRORCOND(
+				((vcpu->vmcs.guest_CR0 ^ cr0_value) &
+				~vcpu->vmcs.control_CR0_mask & ~pg_pe_mask) == 0);
+			/* Skip incrementing PC (RIP / EIP), retry this instruction */
+			return;
+		}
+	}
+
+	/*
 	 * If CR0.PG bit changes, need to update guest_PDPTE0 - guest_PDPTE3 if
 	 * PAE is enabled.
 	 *
-	 * There is a workaround to retry the MOV CR0 instruction, implemented in
-	 * vmx_handle_intercept_cr0access_ug() in peh-x86_64vmx-main.c.
+	 * x86 XMHF cannot support PAE guests easily because the hypervisor cannot
+	 * access memory above 4GB.
 	 *
-	 * x86 XMHF cannot support PAE guests well because the hypervisor cannot
-	 * access memory above 4GB. So the workaround is not implemented here.
-	 * x86_64 XMHF should be used instead.
+	 * To support x86-64 guests, also need to update bit 9 of VM-Entry Controls
+	 * (IA-32e mode guest). This bit should always equal to EFER.LME && CR0.PG
 	 */
 	if ((old_cr0 ^ cr0_value) & CR0_PG) {
 		u32 pae = (cr0_value & CR0_PG) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
-		/* TODO: Need to walk EPT and retrieve values for guest_PDPTE* */
 		HALT_ON_ERRORCOND(!pae);
 	}
 
 	//flush mappings
 	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
+
+	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
 
 //---CR4 access handler---------------------------------------------------------
@@ -645,6 +683,7 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	#endif
   }
 
+  vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
 
 //---XSETBV intercept handler-------------------------------------------
@@ -686,8 +725,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
-		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx",
-			(u32)vcpu->vmcs.info_vmexit_reason, (u64)vcpu->vmcs.info_exit_qualification);
+		printf("\nCPU(0x%02x): VM-ENTRY error: reason=0x%08x, qualification=0x%016llx",
+			vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
+			(u64)vcpu->vmcs.info_exit_qualification);
 		xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
 		HALT();
 	}
@@ -834,7 +874,6 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 						printf("\nunhandled crx, halting!");
 						HALT();
 				}
-				vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 			}else{
 				printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
 					__FUNCTION__, gpr);
@@ -927,7 +966,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//ensure that whenever a partition is resumed on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
 	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) );
-	assert( vcpu->vmcs.control_EPT_pointer == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E) );
+	assert( (vcpu->vmcs.control_EPT_pointer == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
 #endif
 
 	return 1;

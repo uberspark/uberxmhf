@@ -650,6 +650,9 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	 * If CR0.PG bit changes, need to update guest_PDPTE0 - guest_PDPTE3 if
 	 * PAE is enabled.
 	 *
+	 * x86 XMHF cannot support PAE guests easily because the hypervisor cannot
+	 * access memory above 4GB.
+	 *
 	 * To support x86-64 guests, also need to update bit 9 of VM-Entry Controls
 	 * (IA-32e mode guest). This bit should always equal to EFER.LME && CR0.PG
 	 */
@@ -752,7 +755,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
-		printf("\nCPU(0x%02x): VM-ENTRY error, reason=0x%08x, qualification=0x%016llx",
+		printf("\nCPU(0x%02x): VM-ENTRY error: reason=0x%08x, qualification=0x%016llx",
 			vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
 			(u64)vcpu->vmcs.info_exit_qualification);
 		xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
@@ -1026,7 +1029,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//ensure that whenever a partition is resumed on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
 	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) );
-	assert( (vcpu->vmcs.control_EPT_pointer == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) )
+	assert( (vcpu->vmcs.control_EPT_pointer == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
 #endif
 
 	return 1;
