@@ -53,7 +53,36 @@
 //---VMX decode assist----------------------------------------------------------
 //map a CPU register index into appropriate VCPU *vcpu or struct regs *r field
 //and return the address of the field
-static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
+#ifdef __X86_64__
+static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
+    switch(gpr){
+        case  0: return &r->rax;
+        case  1: return &r->rcx;
+        case  2: return &r->rdx;
+        case  3: return &r->rbx;
+        case  4: return (u64*)&vcpu->vmcs.guest_RSP;
+        case  5: return &r->rbp;
+        case  6: return &r->rsi;
+        case  7: return &r->rdi;
+        case  8: return &r->r8 ;
+        case  9: return &r->r9 ;
+        case 10: return &r->r10;
+        case 11: return &r->r11;
+        case 12: return &r->r12;
+        case 13: return &r->r13;
+        case 14: return &r->r14;
+        case 15: return &r->r15;
+        default: {
+            printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
+                   __FUNCTION__, gpr);
+            HALT();
+            //we will never get here, appease the compiler
+            return (u64 *)&r->rax;
+        }
+    }
+}
+#else /* !__X86_64__ */
+static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
   if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 
 	  switch(gpr){
@@ -75,6 +104,7 @@ static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
 	//we will never get here, appease the compiler
 	return (u32 *)&r->eax;
 }
+#endif /* __X86_64__ */
 
 
 //---intercept handler (CPUID)--------------------------------------------------
@@ -140,26 +170,22 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			{
 
 				if( ((sla_t)(vcpu->vmcs.guest_ES_base+(u16)r->edi)) < rpb->XtVmmRuntimePhysBase){
+					GRUBE820 *pe820entry;
 					#ifdef __XMHF_VERIFICATION__
-						GRUBE820 pe820entry;
-						pe820entry.baseaddr_low = g_e820map[r->ebx].baseaddr_low;
-						pe820entry.baseaddr_high = g_e820map[r->ebx].baseaddr_high;
-						pe820entry.length_low = g_e820map[r->ebx].length_low;
-						pe820entry.length_high = g_e820map[r->ebx].length_high;
-						pe820entry.type = g_e820map[r->ebx].type;
+						GRUBE820 e820entry;
+						pe820entry = &e820entry;
 					#else
-						GRUBE820 *pe820entry;
 						pe820entry = (GRUBE820 *)((sla_t)(vcpu->vmcs.guest_ES_base+(u16)r->edi));
-						pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
-						pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
-						pe820entry->length_low = g_e820map[r->ebx].length_low;
-						pe820entry->length_high = g_e820map[r->ebx].length_high;
-						pe820entry->type = g_e820map[r->ebx].type;
 					#endif //__XMHF_VERIFICATION__
+					pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
+					pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
+					pe820entry->length_low = g_e820map[r->ebx].length_low;
+					pe820entry->length_high = g_e820map[r->ebx].length_high;
+					pe820entry->type = g_e820map[r->ebx].type;
 				}else{
-						printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
-							physical memory bounds. Halting!", vcpu->id);
-						HALT();
+					printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest "
+							"physical memory bounds. Halting!", vcpu->id);
+					HALT();
 				}
 
 			}
@@ -291,7 +317,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 	u64 write_data = ((u64)r->edx << 32) | (u64)r->eax;
 
-	//printf("\nCPU(0x%02x): WRMSR 0x%08x", vcpu->id, r->ecx);
+	//printf("\nCPU(0x%02x): WRMSR 0x%08x 0x%08x%08x @ %p", vcpu->id, r->ecx, r->edx, r->eax, vcpu->vmcs.guest_RIP);
 
 	/* Disallow x2APIC MSRs */
 	HALT_ON_ERRORCOND((r->ecx & 0xffffff00U) != 0x800);
@@ -402,7 +428,7 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 	/* After switch statement, will assign this value to r->eax and r->edx */
 	u64 read_result = 0;
 
-	//printf("\nCPU(0x%02x): RDMSR 0x%08x", vcpu->id, r->ecx);
+	//printf("\nCPU(0x%02x): RDMSR 0x%08x @ %p", vcpu->id, r->ecx, vcpu->vmcs.guest_RIP);
 
 	/* Disallow x2APIC MSRs */
 	HALT_ON_ERRORCOND((r->ecx & 0xffffff00U) != 0x800);
@@ -475,11 +501,12 @@ no_assign_read_result:
 
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
-	u32 errorcode, gva;
+	u32 errorcode;
+	uintptr_t gva;
 	u64 gpa;
-	errorcode = (u32)vcpu->vmcs.info_exit_qualification;
+	errorcode = (uintptr_t)vcpu->vmcs.info_exit_qualification;
 	gpa = vcpu->vmcs.guest_paddr;
-	gva = (u32)vcpu->vmcs.info_guest_linear_address;
+	gva = (uintptr_t)vcpu->vmcs.info_guest_linear_address;
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
@@ -549,7 +576,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 
-	cr0_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	cr0_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 	old_cr0 = vcpu->vmcs.guest_CR0;
 
 	//printf("\n[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx",
@@ -597,7 +624,7 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
   if(tofrom == VMX_CRX_ACCESS_TO){
 	u64 cr4_proposed_value;
 
-	cr4_proposed_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	cr4_proposed_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 
 	printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
 		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);

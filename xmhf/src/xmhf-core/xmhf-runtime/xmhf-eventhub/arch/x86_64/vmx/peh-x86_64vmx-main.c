@@ -53,7 +53,8 @@
 //---VMX decode assist----------------------------------------------------------
 //map a CPU register index into appropriate VCPU *vcpu or struct regs *r field
 //and return the address of the field
-static u64 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
+#ifdef __X86_64__
+static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
     switch(gpr){
         case  0: return &r->rax;
         case  1: return &r->rcx;
@@ -80,6 +81,30 @@ static u64 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
         }
     }
 }
+#else /* !__X86_64__ */
+static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
+  if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
+
+	  switch(gpr){
+		case 0: return ( (u32 *)&r->eax );
+		case 1: return ( (u32 *)&r->ecx );
+		case 2: return ( (u32 *)&r->edx );
+		case 3: return ( (u32 *)&r->ebx );
+		case 4: return ( (u32 *)&vcpu->vmcs.guest_RSP);
+		case 5: return ( (u32 *)&r->ebp );
+		case 6: return ( (u32 *)&r->esi );
+		case 7: return ( (u32 *)&r->edi );
+	  }
+   }else{
+		printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
+			__FUNCTION__, gpr);
+		HALT();
+   }
+
+	//we will never get here, appease the compiler
+	return (u32 *)&r->eax;
+}
+#endif /* __X86_64__ */
 
 
 //---intercept handler (CPUID)--------------------------------------------------
@@ -487,10 +512,11 @@ no_assign_read_result:
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 	u32 errorcode;
-	u64 gpa, gva;
-	errorcode = (u32)vcpu->vmcs.info_exit_qualification;
+	uintptr_t gva;
+	u64 gpa;
+	errorcode = (uintptr_t)vcpu->vmcs.info_exit_qualification;
 	gpa = vcpu->vmcs.guest_paddr;
-	gva = vcpu->vmcs.info_guest_linear_address;
+	gva = (uintptr_t)vcpu->vmcs.info_guest_linear_address;
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
@@ -560,7 +586,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 
-	cr0_value = *((u64 *)_vmx_decode_reg(gpr, vcpu, r));
+	cr0_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 	old_cr0 = vcpu->vmcs.guest_CR0;
 
 	//printf("\n[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx",
@@ -663,7 +689,7 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
   if(tofrom == VMX_CRX_ACCESS_TO){
 	u64 cr4_proposed_value;
 
-	cr4_proposed_value = *((u64 *)_vmx_decode_reg(gpr, vcpu, r));
+	cr4_proposed_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 
 	printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
 		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
