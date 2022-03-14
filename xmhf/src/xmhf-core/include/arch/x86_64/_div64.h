@@ -74,6 +74,5 @@
 })
 #endif /* __X86_64__ */
 
-
 #endif /* __ASSEMBLY__ */
 #endif /* __DIV64_H__ */
