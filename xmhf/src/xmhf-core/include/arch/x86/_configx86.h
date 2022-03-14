@@ -65,20 +65,25 @@
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
+#ifdef __X86_64__
+//64K stack for each core during runtime
+#define RUNTIME_STACK_SIZE  			(65536)
+#else /* !__X86_64__ */
 //16K stack for each core during runtime
-#define RUNTIME_STACK_SIZE  			(16384)     
+#define RUNTIME_STACK_SIZE  			(16384)
+#endif /* __X86_64__ */
 
 //8K stack for each core in "init"
-#define INIT_STACK_SIZE					(8192)					
+#define INIT_STACK_SIZE					(8192)
 
 //maximum system memory map entries (e.g., E820) currently supported
-#define MAX_E820_ENTRIES    			(64)  
+#define MAX_E820_ENTRIES    			(64)
 
 //preferred TPM locality to use for access inside hypervisor
 //needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
 #define EMHF_TPM_LOCALITY_PREF 2
 
-//where the guest OS boot record is loaded 
+//where the guest OS boot record is loaded
 #define __GUESTOSBOOTMODULE_BASE		0x7c00
 #define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
 
@@ -94,17 +99,17 @@
 //VMX Unrestricted Guest (UG) E820 hook support
 //we currently use the BIOS data area (BDA) unused region
 //at 0x0040:0x00AC
-#define	VMX_UG_E820HOOK_CS				(0x0040)	
+#define	VMX_UG_E820HOOK_CS				(0x0040)
 #define	VMX_UG_E820HOOK_IP				(0x00AC)
 
 // SHA-1 hash of runtime should be defined during build process.
 // However, if it's not, don't fail.  Just proceed with all zeros.
-// XXX TODO Disable proceeding with insecure hash value. 
+// XXX TODO Disable proceeding with insecure hash value.
 #define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
 #ifndef ___RUNTIME_INTEGRITY_HASH___
 #define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
-#endif // ___RUNTIME_INTEGRITY_HASH___ 
+#endif // ___RUNTIME_INTEGRITY_HASH___
 
 //======================================================================
 
