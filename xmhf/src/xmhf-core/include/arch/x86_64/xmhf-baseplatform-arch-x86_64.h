@@ -45,11 +45,11 @@
  */
 
 // EMHF base platform component 
-// x86_64 arch. specific declarations
+// x86 arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_BASEPLATFORM_ARCH_X86_64_H__
-#define __EMHF_BASEPLATFORM_ARCH_X86_64_H__
+#ifndef __EMHF_BASEPLATFORM_ARCH_X86_H__
+#define __EMHF_BASEPLATFORM_ARCH_X86_H__
 
 #include "_configx86_64.h"	//EMHF arch. specific configurable definitions
 #include "_multiboot.h"  	//boot manager (multiboot)
@@ -806,4 +806,4 @@ void xmhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu);
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_BASEPLATFORM_ARCH_X86_64_H__
+#endif //__EMHF_BASEPLATFORM_ARCH_X86_H__
