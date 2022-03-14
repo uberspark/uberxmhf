@@ -64,13 +64,23 @@ u32 rdmsr_safe(struct regs *r) {
                   "movl $1, %%ebx\r\n"
                   "jmp 3f\r\n"
                   ".section .xcph_table\r\n"
+#ifdef __X86_64__
+                  ".quad 0xd\r\n"
+                  ".quad 1b\r\n"
+                  ".quad 2b\r\n"
+#else /* !__X86_64__ */
                   ".long 0xd\r\n"
                   ".long 1b\r\n"
                   ".long 2b\r\n"
+#endif /* __X86_64__ */
                   ".previous\r\n"
                   "3:\r\n"
+#ifdef __X86_64__
+                  : "=a"(r->rax), "=d"(r->rdx), "=b"(result)
+                  : "c" (r->rcx));
+#else /* !__X86_64__ */
                   : "=a"(r->eax), "=d"(r->edx), "=b"(result)
                   : "c" (r->ecx));
+#endif /* __X86_64__ */
     return result;
 }
-
