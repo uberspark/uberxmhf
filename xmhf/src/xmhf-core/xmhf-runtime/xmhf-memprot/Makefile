@@ -4,13 +4,13 @@
 # source files
 AS_SOURCES =
 C_SOURCES = memp-interface.c
-C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/memp-$(TARGET_HWPLATFORM).c
+C_SOURCES += ./arch/x86/memp-x86.c
 
-C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/memp-$(TARGET_HWPLATFORM)vmx.c
-C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/vmx/memp-$(TARGET_HWPLATFORM)vmx-data.c
+C_SOURCES += ./arch/x86/vmx/memp-x86vmx.c
+C_SOURCES += ./arch/x86/vmx/memp-x86vmx-data.c
 
-C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/svm/memp-$(TARGET_HWPLATFORM)svm.c
-C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/svm/memp-$(TARGET_HWPLATFORM)svm-data.c
+C_SOURCES += ./arch/x86/svm/memp-x86svm.c
+C_SOURCES += ./arch/x86/svm/memp-x86svm-data.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
@@ -22,8 +22,8 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 .PHONY: all
 all: $(OBJECTS)
 	# Optional: use sparse file to reduce fs space usage
-	fallocate -d arch/$(TARGET_HWPLATFORM)/svm/memp-$(TARGET_HWPLATFORM)svm-data.o
-	fallocate -d arch/$(TARGET_HWPLATFORM)/vmx/memp-$(TARGET_HWPLATFORM)vmx-data.o
+	fallocate -d arch/x86/svm/memp-x86svm-data.o
+	fallocate -d arch/x86/vmx/memp-x86vmx-data.o
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<

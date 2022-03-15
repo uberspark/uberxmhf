@@ -5,7 +5,7 @@
 AS_SOURCES = ./arch/$(TARGET_HWPLATFORM)/xcph-stubs.S
 C_SOURCES = xcph-interface.c
 
-C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/xcph-$(TARGET_HWPLATFORM).c
+C_SOURCES += ./arch/x86/xcph-x86.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))

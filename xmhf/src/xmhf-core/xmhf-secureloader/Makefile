@@ -6,7 +6,7 @@ AS_SOURCES = ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM)-entry.S
 AS_SOURCES += ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM)-sup.S
 
 C_SOURCES = sl.c
-C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM).c
+C_SOURCES += ./arch/x86/sl-x86.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
@@ -17,31 +17,28 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 OBJECTS_PRECOMPILED = ../xmhf-runtime/xmhf-debug/lib.a
 
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/tpm-interface.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/$(TARGET_HWPLATFORM)/tpm-$(TARGET_HWPLATFORM).o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/$(TARGET_HWPLATFORM)/svm/tpm-$(TARGET_HWPLATFORM)svm.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/$(TARGET_HWPLATFORM)/vmx/tpm-$(TARGET_HWPLATFORM)vmx.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/tpm-x86.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/svm/tpm-x86svm.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o
 
 
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/dmap-interface-earlyinit.o
-# OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/dmap-$(TARGET_HWPLATFORM).o
-# OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/svm/dmap-$(TARGET_HWPLATFORM)svm.o
-# OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/$(TARGET_HWPLATFORM)/vmx/dmap-$(TARGET_HWPLATFORM)vmx.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/dmap-x86-earlyinit.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/svm/dmap-svm.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/vmx/dmap-vmx-earlyinit.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/vmx/dmap-vmx-internal.o
 
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/bplt-interface.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM).o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-pci.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-acpi.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-pci.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smplock.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-addressing.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-cpu.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-addressing.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-cpu.o
 
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/vmx/bplt-$(TARGET_HWPLATFORM)vmx-mtrrs.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
 # separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
 OBJECTS_PRECOMPILED_LIBBACKENDS = ../xmhf-runtime/xmhf-xmhfcbackend/xmhfc-putchar.o

@@ -8,7 +8,7 @@ AS_SOURCES =
 C_SOURCES = runtime.c
 C_SOURCES += rntm-data.c
 
-C_SOURCES += ./arch/$(TARGET_HWPLATFORM)/rntm-$(TARGET_HWPLATFORM)-data.c
+C_SOURCES += ./arch/x86/rntm-x86-data.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
