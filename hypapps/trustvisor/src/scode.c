@@ -1067,6 +1067,12 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
     VCPU_grflags_set(vcpu, rflags & ~EFLAGS_IF);
   }
 
+  /* disable NMIs, assume regular code has NMIs enabled */
+  {
+    EU_CHK(VCPU_gnmiblock(vcpu) == 0);
+    VCPU_gnmiblock_set(vcpu, 1);
+  }
+
   /* XXX FIXME- what's the right thing here? Keeping 'legacy' behavior
      of setting this flag for AMD only and doing nothing for INTEL for
      now */
@@ -1269,6 +1275,12 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
     VCPU_grflags_set(vcpu, rflags | EFLAGS_IF);
   }
 
+  /* enable NMIs, check that scode has NMIs disabled */
+  {
+    EU_CHK(VCPU_gnmiblock(vcpu) == 1);
+    VCPU_gnmiblock_set(vcpu, 0);
+  }
+
   eu_trace("stack pointer before exiting scode is %#lx",(uintptr_t)VCPU_grsp(vcpu));
 
   /* return to actual return address */
@@ -1307,7 +1319,7 @@ u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode, struct regs *r)
   u32 err=1;
 
 #if defined(__LDN_TV_INTEGRATION__)
-	(void)errorcode;
+  (void)errorcode;
 #endif //__LDN_TV_INTEGRATION__
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
