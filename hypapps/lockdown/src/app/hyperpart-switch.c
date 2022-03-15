@@ -107,11 +107,11 @@ void ACPIInitializeRegisters(void){
 	u8 fadt_found=0;
 
 	//rsdp=(ACPI_RSDP *)acpi_getRSDP();
-#ifdef __X86_64__
+#ifdef __AMD64__
 	rsdp_paddr = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	rsdp_paddr = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 	if(!rsdp_paddr){
 		printf("\nSystem is not ACPI Compliant (RSDP unavailable!)");
 		HALT();

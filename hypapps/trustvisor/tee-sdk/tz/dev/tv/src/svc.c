@@ -51,17 +51,17 @@
 /* from emhf's processor.h */
 static inline uint64_t rdtsc64(void)
 {
-#ifdef __X86_64__
+#ifdef __AMD64__
   uint32_t eax, edx;
 
   __asm__ __volatile__ ("rdtsc" : "=a" (eax), "=d" (edx));
   return ((uint64_t)edx << 32) | eax;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
   uint64_t rv;
 
   __asm__ __volatile__ ("rdtsc" : "=A" (rv));
   return (rv);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 }
 
 int svc_time_elapsed_us(uint64_t *epoch_nonce, /* out */

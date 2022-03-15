@@ -255,22 +255,22 @@ endif
 # Bootloader flags
 BCFLAGS := $(CFLAGS)
 
-# __X86__: code in this component will run in x86
-# __X86_64__: code in this component will run in x86_64
+# __I386__: code in this component will run in x86
+# __AMD64__: code in this component will run in x86_64
 # __XMHF_X86__: XMHF runtime will run in x86
 # __XMHF_X86_64__: XMHF runtime will run in x86_64
 
 ifeq ($(TARGET_WORDSIZE), amd64)
-	CFLAGS += -D__X86_64__ -D__XMHF_X86_64__
-	BCFLAGS += -D__X86__ -D__XMHF_X86_64__
-	VFLAGS += -D__X86_64__ -D__XMHF_X86_64__
+	CFLAGS += -D__AMD64__ -D__XMHF_X86_64__
+	BCFLAGS += -D__I386__ -D__XMHF_X86_64__
+	VFLAGS += -D__AMD64__ -D__XMHF_X86_64__
 	CFLAGS += -m64
 	BCFLAGS += -m32
 endif
 ifeq ($(TARGET_WORDSIZE), i386)
-	CFLAGS += -D__X86__ -D__XMHF_X86__
-	BCFLAGS += -D__X86__ -D__XMHF_X86__
-	VFLAGS += -D__X86__ -D__XMHF_X86__
+	CFLAGS += -D__I386__ -D__XMHF_X86__
+	BCFLAGS += -D__I386__ -D__XMHF_X86__
+	VFLAGS += -D__I386__ -D__XMHF_X86__
 	CFLAGS += -m32
 	BCFLAGS += -m32
 endif
