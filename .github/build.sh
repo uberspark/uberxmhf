@@ -3,8 +3,6 @@
 set -xe
 
 CONFIGURE_ARGS="--with-approot=hypapps/trustvisor"
-CONFIGURE_ARGS="${CONFIGURE_ARGS} --disable-drt"
-CONFIGURE_ARGS="${CONFIGURE_ARGS} --disable-dmap"
 CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-symbols"
 
 if [ "$1" == "i386" ]; then
@@ -19,6 +17,8 @@ fi; fi
 if [ "$2" == "release" ]; then
 	CONFIGURE_ARGS="${CONFIGURE_ARGS}"
 else if [ "$2" == "debug" ]; then
+	CONFIGURE_ARGS="${CONFIGURE_ARGS} --disable-drt"
+	CONFIGURE_ARGS="${CONFIGURE_ARGS} --disable-dmap"
 	CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-qemu"
 else
 	echo '$2 incorrect, should be release or debug'; exit 1

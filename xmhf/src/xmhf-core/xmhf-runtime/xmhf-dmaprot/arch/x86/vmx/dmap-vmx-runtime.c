@@ -259,13 +259,7 @@ static u32 vmx_eap_initialize(
 
     // get ACPI RSDP
     //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
-#ifdef __I386__
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-#elif defined(__AMD64__)
-    status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-#else
-    #error "Unsupported Arch"
-#endif
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
     printf("\n%s: RSDP at %08x", __FUNCTION__, status);
 
@@ -287,14 +281,8 @@ static u32 vmx_eap_initialize(
     }
 
     // grab ACPI RSDT
-#ifdef __I386__
-    // Note: <rsdt_xsdt_spaddr> should be in lower 4GB. So the conversion to vaddr is fine.
+    // Note: in i386, <rsdt_xsdt_spaddr> should be in lower 4GB. So the conversion to vaddr is fine.
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
-#elif defined(__AMD64__)
-    rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
-#else
-    #error "Unsupported Arch"
-#endif
 
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
     printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes",
@@ -559,13 +547,7 @@ void vmx_eap_zap(void)
 
     // get ACPI RSDP
     // [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
-#ifdef __I386__
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-#elif defined(__AMD64__)
-    status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-#else
-    #error "Unsupported Arch"
-#endif
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
     printf("\n%s: RSDP at %08x", __FUNCTION__, status);
 
@@ -587,14 +569,8 @@ void vmx_eap_zap(void)
     }
 
     // grab ACPI RSDT
-#ifdef __I386__
-    // Note: <rsdt_xsdt_spaddr> should be in lower 4GB. So the conversion to vaddr is fine.
+    // Note: in i386, <rsdt_xsdt_spaddr> should be in lower 4GB. So the conversion to vaddr is fine.
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
-#elif defined(__AMD64__)
-    rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
-#else
-    #error "Unsupported Arch"
-#endif
 
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
     printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes",

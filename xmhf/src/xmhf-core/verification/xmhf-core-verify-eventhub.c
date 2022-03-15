@@ -266,23 +266,11 @@ void main() {
 		}
 #endif
 
-#ifdef __AMD64__
-
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
 #else
 			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 #endif
-
-#else /* !__AMD64__ */
-
-#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
-			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
-#else
-			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
-#endif
-
-#endif /* __AMD64__ */
 
 		assert(1);
 }

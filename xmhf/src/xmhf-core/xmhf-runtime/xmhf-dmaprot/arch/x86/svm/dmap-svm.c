@@ -100,13 +100,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
 
     // step-1: we read capabilities pointer (PCI_CONF_HDR_IDX_CAPABILITIES_POINTER)
     // in b:d.f 0:24.3. If its 0, then DEV support is not available
-#ifdef __I386__
     xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, PCI_CONF_HDR_IDX_CAPABILITIES_POINTER, sizeof(u32), &mc_capabilities_pointer);
-#elif defined(__AMD64__)
-    xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, PCI_CONF_HDR_IDX_CAPABILITIES_POINTER, sizeof(u32), &mc_capabilities_pointer);
-#else
-    #error "Unsupported Arch"
-#endif
     if (mc_capabilities_pointer == 0)
         return 0; // DEV support unavailable
 
@@ -118,13 +112,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
     do
     {
         // get the ID of this capability block
-#ifdef __I386__
         xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
-#elif defined(__AMD64__)
-        xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
-#else
-    #error "Unsupported Arch"
-#endif
 
 // check if this is a DEV capability ID block
 #ifdef __XMHF_VERIFICATION__
@@ -139,13 +127,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
 #endif
 
         // get the index of the next capability block
-#ifdef __I386__
-         xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
-#elif defined(__AMD64__)
         xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
-#else
-    #error "Unsupported Arch"
-#endif
     } while (mc_caplist_nextptr != 0);
 
     // did we find a DEV capability block above? if no simply return
@@ -334,23 +316,12 @@ static u32 svm_eap_dev_read(u32 function, u32 index)
 
     // step-1: write function and index to dev_fnidx_reg
     // format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
-#ifdef __I386__
     xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
                                                   _svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)));
 
     // step-2: read 32-bit value from dev_data_reg
     xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
                                                  _svm_eap.dev_data_reg, sizeof(u32), &value);
-#elif defined(__AMD64__)
-    xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
-                                                  _svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)));
-
-    // step-2: read 32-bit value from dev_data_reg
-    xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
-                                                 _svm_eap.dev_data_reg, sizeof(u32), &value);
-#else
-    #error "Unsupported Arch"
-#endif
 
     return value;
 }
@@ -368,23 +339,12 @@ static void svm_eap_dev_write(u32 function, u32 index, u32 value)
 
     // step-1: write function and index to dev_fnidx_reg
     // format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
-#ifdef __I386__
     xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
                                                   _svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)));
 
     // step-2: write 32-bit value to dev_data_reg
     xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
                                                   _svm_eap.dev_data_reg, sizeof(u32), value);
-#elif defined(__AMD64__)
-    xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
-                                                  _svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)));
-
-    // step-2: write 32-bit value to dev_data_reg
-    xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
-                                                  _svm_eap.dev_data_reg, sizeof(u32), value);
-#else
-    #error "Unsupported Arch"
-#endif
 }
 
 //------------------------------------------------------------------------------
