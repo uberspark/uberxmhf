@@ -170,9 +170,9 @@ static u32 do_TV_HC_SHARE(VCPU *vcpu, struct regs *r)
   u32 *addrs=NULL, *lens=NULL;
   u32 ret = 1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   scode_entry = r->ecx;
 
@@ -203,11 +203,11 @@ static u32 do_TV_HC_SHARE(VCPU *vcpu, struct regs *r)
 static u64 do_TV_HC_TEST(VCPU *vcpu, struct regs *r)
 {
   (void)r;
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   eu_trace("CPU(0x%02x): test hypercall, rcx=0x%016x", vcpu->id, r->rcx);
-#else /* !__XMHF_X86_64__ */
+#else /* !__XMHF_AMD64__ */
   eu_trace("CPU(0x%02x): test hypercall, ecx=0x%08x", vcpu->id, r->ecx);
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
   return 0;
 }
 
@@ -216,15 +216,15 @@ static u64 do_TV_HC_REG(VCPU *vcpu, struct regs *r)
   u64 scode_info, scode_pm, scode_en;
   u64 ret;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   scode_info = r->rcx; /* sensitive code as guest virtual address */
   scode_pm = r->rsi; /* sensitive code params information address */
   scode_en = r->rdi; /* sensitive code entry point in edi */
-#else /* !__XMHF_X86_64__ */
+#else /* !__XMHF_AMD64__ */
   scode_info = r->ecx; /* sensitive code as guest virtual address */
   scode_pm = r->esi; /* sensitive code params information address */
   scode_en = r->edi; /* sensitive code entry point in edi */
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   /* do atomic scode registration */
   ret = scode_register(vcpu, scode_info, scode_pm, scode_en);
@@ -237,11 +237,11 @@ static u64 do_TV_HC_UNREG(VCPU *vcpu, struct regs *r)
   u64 scode_gva;
   u64 ret;
   /* sensitive code as guest virtual address in ecx */
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   scode_gva = r->rcx;
-#else /* !__XMHF_X86_64__ */
+#else /* !__XMHF_AMD64__ */
   scode_gva = r->ecx;
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   /* do atomic scode unregistration */
   ret = scode_unregister(vcpu, scode_gva);
@@ -258,9 +258,9 @@ static u32 do_TV_HC_UTPM_SEAL_DEPRECATED(VCPU *vcpu, struct regs *r)
   gva_t pcr_gva;
   u32 ret = 1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   plainbuf_s_gva = r->ecx;
   sealedbuf_s_gva = r->esi;
@@ -293,9 +293,9 @@ static u32 do_TV_HC_UTPM_UNSEAL(VCPU *vcpu, struct regs *r)
   gva_t digestAtCreation_gva;
   u32 ret = 1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   sealedbuf_s_gva = r->ecx;
   plainbuf_s_gva = r->edx;
@@ -327,9 +327,9 @@ static u32 do_TV_HC_UTPM_SEAL(VCPU *vcpu, struct regs *r)
   gva_t pcrinfo_gva;
   u32 ret=1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   plainbuf_s_gva = r->ecx;
   sealedbuf_s_gva = r->esi;
@@ -360,9 +360,9 @@ static u32 do_TV_HC_UTPM_UNSEAL_DEPRECATED(VCPU *vcpu, struct regs *r)
   gva_t plainbuf_s_gva, sealedbuf_s_gva;
   u32 ret=1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   sealedbuf_s_gva = r->ecx;
   plainbuf_s_gva = r->edx;
@@ -396,9 +396,9 @@ static u32 do_TV_HC_UTPM_QUOTE(VCPU *vcpu, struct regs *r)
 
   eu_trace("TV_HC_UTPM_QUOTE hypercall received.");
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   nonce_gva = r->esi; /* address of nonce to be sealed */
   tpmsel_gva = r->ecx; /* tpm selection data address */
@@ -431,9 +431,9 @@ static u32 do_TV_HC_UTPM_ID_GETPUB(VCPU *vcpu, struct regs *r)
   u32 dst_sz_gva;
   u32 ret;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   dst_gva = r->ecx;
   dst_sz_gva = r->edx;
@@ -449,9 +449,9 @@ static u32 do_TV_HC_UTPM_QUOTE_DEPRECATED(VCPU *vcpu, struct regs *r)
   gva_t nonce_gva, tpmsel_gva;
   u32 ret = 1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   nonce_gva = r->esi; /* address of nonce to be sealed */
   tpmsel_gva = r->ecx; /* tpm selection data address */
@@ -476,9 +476,9 @@ static u32 do_TV_HC_UTPM_PCRREAD(VCPU *vcpu, struct regs *r)
   u32 addr, num;
   u32 ret=1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   addr = r->edx;
   num = r->ecx;
@@ -493,9 +493,9 @@ static u32 do_TV_HC_UTPM_PCREXT(VCPU *vcpu, struct regs *r)
   u32 meas_addr, idx;
   u32 ret=1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   meas_addr = r->edx;
   idx = r->ecx;
@@ -510,9 +510,9 @@ static u32 do_TV_HC_UTPM_GENRAND(VCPU *vcpu, struct regs *r)
   u32 addr, len_addr;
   u32 ret=1;
 
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   addr = r->ecx;
   len_addr = r->edx;
@@ -528,9 +528,9 @@ static u32 do_TV_HC_TPMNVRAM_GETSIZE(VCPU *vcpu, struct regs *r)
   u32 ret=1;
 
   eu_trace("TV_HC_TPMNVRAM_GETSIZE invoked.");
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   size_addr = r->ecx;
   ret = hc_tpmnvram_getsize(vcpu, size_addr);
@@ -543,9 +543,9 @@ static u32 do_TV_HC_TPMNVRAM_READALL(VCPU *vcpu, struct regs *r)
   u32 ret;
 
   eu_trace("TV_HC_TPMNVRAM_READALL invoked.");
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   out_addr = r->ecx;
   ret = hc_tpmnvram_readall(vcpu, out_addr);
@@ -559,9 +559,9 @@ static u32 do_TV_HC_TPMNVRAM_WRITEALL(VCPU *vcpu, struct regs *r)
   u32 ret = 1;
 
   eu_trace("TV_HC_TPMNVRAM_WRITEALL invoked.");
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 
   in_addr = r->ecx;
   ret = hc_tpmnvram_writeall(vcpu, in_addr);
@@ -581,11 +581,11 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
 //#endif
 
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
     cmd = (u32)r->rax;
-#else /* !__XMHF_X86_64__ */
+#else /* !__XMHF_AMD64__ */
     cmd = (u32)r->eax;
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
     linux_vmcb = 0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     linux_vmcb = (struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr);
@@ -626,11 +626,11 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
 #undef HANDLE
 
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
     r->rax = ret;
-#else /* !__XMHF_X86_64__ */
+#else /* !__XMHF_AMD64__ */
     r->eax = (u32)ret;
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     linux_vmcb->rax = ret;
   } else {

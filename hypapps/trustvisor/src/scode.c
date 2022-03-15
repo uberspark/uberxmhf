@@ -715,7 +715,7 @@ u64 scode_unregister(VCPU * vcpu, u64 gvaddr)
 
 u32 scode_marshall64(VCPU * vcpu, struct regs *r)
 {
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
   uintptr_t pm_addr, pm_addr_base; /*parameter stack base address*/
   u64 pm_value, pm_tmp; /* For x86-64 calling convention, need to be u64 */
   u64 pm_type;
@@ -854,12 +854,12 @@ u32 scode_marshall64(VCPU * vcpu, struct regs *r)
  out:
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
   return err;
-#else /* !__XMHF_X86_64__ */
+#else /* !__XMHF_AMD64__ */
   (void)vcpu;
   (void)r;
   /* Not supported */
   return 1;
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
 }
 
 u32 scode_marshall32(VCPU * vcpu)

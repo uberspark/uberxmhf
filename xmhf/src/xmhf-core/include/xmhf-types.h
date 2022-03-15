@@ -56,7 +56,7 @@
 #define KB(x)           (((size_t)(x)) << 10)
 
 // TODO: bootloader for 64 bit XMHF will have incorrect size
-// Ideally, should change __AMD64__ to __XMHF_X86_64__
+// Ideally, should change __AMD64__ to __XMHF_AMD64__
 #ifdef __I386__
     typedef u32 hva_t;  // hypervisor virtual address
     typedef u64 spa_t;  // system physical address
@@ -108,9 +108,9 @@ typedef struct _integrity_measurement_values {
 typedef struct {
     u32     magic;
     hva_t   XtVmmEntryPoint;
-#ifdef __XMHF_X86_64__
+#ifdef __XMHF_AMD64__
     hva_t   XtVmmPml4Base;
-#endif /* __XMHF_X86_64__ */
+#endif /* __XMHF_AMD64__ */
     hva_t   XtVmmPdptBase;
     hva_t   XtVmmPdtsBase;
     hva_t   XtGuestOSBootModuleBase;
