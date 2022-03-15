@@ -871,9 +871,15 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			if (vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI) {
 				/*
 				 * TODO: hypapp has chosen to intercept NMI so callback.
-				 * Currently not implemented, so drop the NMI exception.
+				 * Currently not implemented. One way is to drop the NMI
+				 * interrupt.
+				 *
+				 * For example, TrustVisor should use VCPU_gnmiblock_set() to
+				 * block NMIs when running PALs. For now, halt to make sure
+				 * hypapp developer notices the problem.
 				 */
-				printf("\nCPU(0x%02x): drop NMI", vcpu->id);
+				printf("\nCPU(0x%02x): HALT because dropping NMI", vcpu->id);
+				HALT_ON_ERRORCOND(0);
 			} else {
 				/* Inject NMI to guest */
 				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
