@@ -39,8 +39,8 @@ jobs:
           xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe
           xmhf/src/xmhf-core/xmhf-bootloader/init_syms.exe
           xmhf/src/xmhf-core/xmhf-runtime/runtime.exe
-          hypervisor-${{ matrix.target_arch }}.bin.gz
-          init-${{ matrix.target_arch }}.bin
+          hypervisor-x86-${{ matrix.target_arch }}.bin.gz
+          init-x86-${{ matrix.target_arch }}.bin
     - name: Build pal_demo Linux
       if: ${{ matrix.compile_mode == 'debug' }}
       run: |
