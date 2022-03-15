@@ -1060,8 +1060,12 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
     VCPU_gpdpte_set(vcpu, pdptes);
   }
 
-  /* disable interrupts */
-  VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) & ~EFLAGS_IF);
+  /* disable interrupts, assume regular code has interrupts enabled */
+  {
+    u64 rflags = VCPU_grflags(vcpu);
+    EU_CHK((rflags & EFLAGS_IF) == EFLAGS_IF);
+    VCPU_grflags_set(vcpu, rflags & ~EFLAGS_IF);
+  }
 
   /* XXX FIXME- what's the right thing here? Keeping 'legacy' behavior
      of setting this flag for AMD only and doing nothing for INTEL for
@@ -1258,8 +1262,12 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   VCPU_grsp_set(vcpu, whitelist[curr].grsp + word_size);
   whitelist[curr].grsp = (uintptr_t)-1;
 
-  /* enable interrupts */
-  VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) | EFLAGS_IF);
+  /* enable interrupts, check that scode has interrupts disabled */
+  {
+    u64 rflags = VCPU_grflags(vcpu);
+    EU_CHK((rflags & EFLAGS_IF) == 0);
+    VCPU_grflags_set(vcpu, rflags | EFLAGS_IF);
+  }
 
   eu_trace("stack pointer before exiting scode is %#lx",(uintptr_t)VCPU_grsp(vcpu));
 
