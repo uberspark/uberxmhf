@@ -717,7 +717,7 @@ u32 scode_marshall64(VCPU * vcpu, struct regs *r)
 {
 #ifdef __XMHF_AMD64__
   uintptr_t pm_addr, pm_addr_base; /*parameter stack base address*/
-  u64 pm_value, pm_tmp; /* For x86-64 calling convention, need to be u64 */
+  u64 pm_value, pm_tmp; /* For amd64 calling convention, need to be u64 */
   u64 pm_type;
   u64 pm_size, pm_size_sum; /*save pm information*/
   int pm_i;

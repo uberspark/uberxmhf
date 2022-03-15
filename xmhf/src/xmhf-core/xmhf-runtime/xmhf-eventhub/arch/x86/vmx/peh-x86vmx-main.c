@@ -660,7 +660,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	 * x86 XMHF cannot support PAE guests easily because the hypervisor cannot
 	 * access memory above 4GB.
 	 *
-	 * To support x86-64 guests, also need to update bit 9 of VM-Entry Controls
+	 * To support amd64 guests, also need to update bit 9 of VM-Entry Controls
 	 * (IA-32e mode guest). This bit should always equal to EFER.LME && CR0.PG
 	 */
 	if ((old_cr0 ^ cr0_value) & CR0_PG) {
@@ -969,7 +969,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		default:{
 #ifdef __AMD64__
 			if (vcpu->vmcs.control_VM_entry_controls & (1U << 9)) {
-				/* x86-64 mode */
+				/* amd64 mode */
 				printf("\nCPU(0x%02x): Unhandled intercept in long mode: %d (0x%08x)",
 						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
 						(u32)vcpu->vmcs.info_vmexit_reason);

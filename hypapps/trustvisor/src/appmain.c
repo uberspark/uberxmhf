@@ -171,7 +171,7 @@ static u32 do_TV_HC_SHARE(VCPU *vcpu, struct regs *r)
   u32 ret = 1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   scode_entry = r->ecx;
@@ -259,7 +259,7 @@ static u32 do_TV_HC_UTPM_SEAL_DEPRECATED(VCPU *vcpu, struct regs *r)
   u32 ret = 1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   plainbuf_s_gva = r->ecx;
@@ -294,7 +294,7 @@ static u32 do_TV_HC_UTPM_UNSEAL(VCPU *vcpu, struct regs *r)
   u32 ret = 1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   sealedbuf_s_gva = r->ecx;
@@ -328,7 +328,7 @@ static u32 do_TV_HC_UTPM_SEAL(VCPU *vcpu, struct regs *r)
   u32 ret=1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   plainbuf_s_gva = r->ecx;
@@ -361,7 +361,7 @@ static u32 do_TV_HC_UTPM_UNSEAL_DEPRECATED(VCPU *vcpu, struct regs *r)
   u32 ret=1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   sealedbuf_s_gva = r->ecx;
@@ -397,7 +397,7 @@ static u32 do_TV_HC_UTPM_QUOTE(VCPU *vcpu, struct regs *r)
   eu_trace("TV_HC_UTPM_QUOTE hypercall received.");
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   nonce_gva = r->esi; /* address of nonce to be sealed */
@@ -432,7 +432,7 @@ static u32 do_TV_HC_UTPM_ID_GETPUB(VCPU *vcpu, struct regs *r)
   u32 ret;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   dst_gva = r->ecx;
@@ -450,7 +450,7 @@ static u32 do_TV_HC_UTPM_QUOTE_DEPRECATED(VCPU *vcpu, struct regs *r)
   u32 ret = 1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   nonce_gva = r->esi; /* address of nonce to be sealed */
@@ -477,7 +477,7 @@ static u32 do_TV_HC_UTPM_PCRREAD(VCPU *vcpu, struct regs *r)
   u32 ret=1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   addr = r->edx;
@@ -494,7 +494,7 @@ static u32 do_TV_HC_UTPM_PCREXT(VCPU *vcpu, struct regs *r)
   u32 ret=1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   meas_addr = r->edx;
@@ -511,7 +511,7 @@ static u32 do_TV_HC_UTPM_GENRAND(VCPU *vcpu, struct regs *r)
   u32 ret=1;
 
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   addr = r->ecx;
@@ -529,7 +529,7 @@ static u32 do_TV_HC_TPMNVRAM_GETSIZE(VCPU *vcpu, struct regs *r)
 
   eu_trace("TV_HC_TPMNVRAM_GETSIZE invoked.");
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   size_addr = r->ecx;
@@ -544,7 +544,7 @@ static u32 do_TV_HC_TPMNVRAM_READALL(VCPU *vcpu, struct regs *r)
 
   eu_trace("TV_HC_TPMNVRAM_READALL invoked.");
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   out_addr = r->ecx;
@@ -560,7 +560,7 @@ static u32 do_TV_HC_TPMNVRAM_WRITEALL(VCPU *vcpu, struct regs *r)
 
   eu_trace("TV_HC_TPMNVRAM_WRITEALL invoked.");
 #ifdef __XMHF_AMD64__
-  HALT_ON_ERRORCOND(0 && "Not implemented yet for x86-64");
+  HALT_ON_ERRORCOND(0 && "Not implemented yet for amd64");
 #endif /* __XMHF_AMD64__ */
 
   in_addr = r->ecx;

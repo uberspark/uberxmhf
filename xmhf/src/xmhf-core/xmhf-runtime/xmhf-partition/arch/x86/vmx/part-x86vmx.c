@@ -401,7 +401,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #ifdef __AMD64__
 			if (msr == MSR_EFER) {
 			    /*
-			     * Host is in x86-64, but guest should enter from x86.
+			     * Host is in amd64, but guest should enter from x86.
 			     * Need to manually clear MSR_EFER's 8th bit (LME) and
 			     * 10th bit (LMA). Otherwise when guest enables paging
 			     * a #GP exception will occur.

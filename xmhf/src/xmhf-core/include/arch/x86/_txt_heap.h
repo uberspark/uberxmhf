@@ -116,7 +116,7 @@ typedef struct {
 /* This struct is manually aligned */
 typedef struct {
     uint32_t          version;           /* currently 2 */
-    uint32_t          _;                 /* alignment padding for x86-64 */
+    uint32_t          _;                 /* alignment padding for amd64 */
     mtrr_state_t      saved_mtrr_state;  /* saved prior to changes for SINIT */
     uint32_t          mbi;               /* needs to be restored to ebx */
                                          /* type was multiboot_info_t* */
