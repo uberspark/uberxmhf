@@ -65,7 +65,7 @@
 typedef struct _midtab {
     union {
         u32 cpu_lapic_id;       // CPU LAPIC id (unique)
-        hva_t _cpu_lapic_id_64; // Keep struct aligned in x86_64; don't use this
+        hva_t _cpu_lapic_id_64; // Keep struct aligned in amd64; don't use this
     };
     hva_t vcpu_vaddr_ptr;   // virt. addr. pointer to vcpu struct for this CPU
 } __attribute__((packed)) MIDTAB;

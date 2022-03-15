@@ -365,7 +365,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 
 #ifdef __AMD64__
 	/*
-	 * For x86_64, set the Host address-space size (bit 9) in
+	 * For amd64, set the Host address-space size (bit 9) in
 	 * control_VM_exit_controls. First check whether setting this bit is
 	 * allowed through bit (9 + 32) in the MSR.
 	 */

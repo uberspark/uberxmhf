@@ -56,7 +56,7 @@
 
 #ifdef __AMD64__
 #define do_div(n,base) ({ \
-        switch(0) { case 0: case 0: not_implemented_for_x86_64 }; \
+        switch(0) { case 0: case 0: not_implemented_for_amd64 }; \
 })
 #else /* !__AMD64__ */
 #define do_div(n,base) ({ \

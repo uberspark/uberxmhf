@@ -298,7 +298,7 @@ static void _vmx_setupEPT(VCPU *vcpu){
 	u64 pdp_table = hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table);
 	u64 pd_table = hva2spa((void*)vcpu->vmx_vaddr_ept_pd_tables);
 	u64 p_table = hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables);
-	// TODO: for x86_64, likely can use 1G / 2M pages.
+	// TODO: for amd64, likely can use 1G / 2M pages.
 	// If so, also need to change _vmx_getmemorytypeforphysicalpage()
 
 	for (u64 paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PAGE_SIZE_4K) {

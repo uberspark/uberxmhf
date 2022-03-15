@@ -96,7 +96,7 @@ void xmhf_runtime_entry(void){
 	#endif
 
 #if defined (__DMAP__)
-		// TODO: DMAP code not ported to x86_64 yet
+		// TODO: DMAP code not ported to amd64 yet
 		{
 			#define ADDR_512GB  (PAGE_SIZE_512G)
 				u64 protectedbuffer_paddr;

@@ -1,5 +1,5 @@
 /*
- * Translate between Windows calling convention and Linux for x86_64
+ * Translate between Windows calling convention and Linux for amd64
  *
  * Registers:
  *
