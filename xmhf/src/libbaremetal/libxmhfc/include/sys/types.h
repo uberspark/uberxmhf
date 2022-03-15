@@ -44,8 +44,8 @@
 
 /* Machine type dependent parameters. */
 #ifdef __X86_64__
-#include <sys/ia64_endian.h>
-#include <sys/ia64_types.h>
+#include <sys/amd64_endian.h>
+#include <sys/amd64_types.h>
 #else /* !__X86_64__ */
 #include <sys/i386_endian.h>
 #include <sys/i386_types.h>

@@ -1,10 +1,15 @@
 # top-level makefile for XMHF x86 platform 
 # author: amit vasudevan (amitvasudevan@acm.org)
 
+# e.g. init-x86-i386.bin or init-x86-amd64.bin
+INIT_BIN := init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
+
+# e.g. hypervisor-x86-i386.bin.gz or hypervisor-x86-amd64.bin.gz
+HYPERVISOR_BIN_GZ := hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
 
 #-----build rules
 .PHONY: all
-all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz 
+all: runtime secureloader bootloader $(HYPERVISOR_BIN_GZ)
 
 .PHONY: runtime
 runtime:
@@ -25,18 +30,18 @@ bootloader: secureloader runtime
 		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
-xmhf-bootloader/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin: bootloader
+xmhf-bootloader/$(INIT_BIN): bootloader
 
 xmhf-secureloader/sl.bin: secureloader
 xmhf-runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
+$(HYPERVISOR_BIN_GZ): xmhf-secureloader/sl.bin xmhf-runtime/runtime.bin xmhf-bootloader/$(INIT_BIN)
 	# concatenate sl image and runtime image 
 	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
-	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
+	gzip -c ./hypervisor.tmp.img > $(HYPERVISOR_BIN_GZ)
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
-	$(CP) ./xmhf-bootloader/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
-	$(CP) ./hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
+	$(CP) ./xmhf-bootloader/$(INIT_BIN) $(HYPOUTDIR)/$(INIT_BIN)
+	$(CP) $(HYPERVISOR_BIN_GZ) $(HYPOUTDIR)/$(HYPERVISOR_BIN_GZ)
 
 
 # cleanup rules
@@ -51,9 +56,9 @@ clean:
 
 	rm -rf $(APPOBJECTSDIR)
 
-	rm -rf ./hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
-	$(RM) -rf $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
-	$(RM) -rf $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
+	rm -rf ./$(HYPERVISOR_BIN_GZ)
+	$(RM) -rf $(HYPOUTDIR)/$(INIT_BIN)
+	$(RM) -rf $(HYPOUTDIR)/$(HYPERVISOR_BIN_GZ)
 
 
 .PHONY: install-dev

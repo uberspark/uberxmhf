@@ -34,7 +34,7 @@
 #define _SYS_ENDIAN_H_
 
 #ifdef __X86_64__
-#include <sys/ia64_types.h>
+#include <sys/amd64_types.h>
 #else /* !__X86_64__ */
 #include <sys/i386_types.h>
 #endif /* __X86_64__ */

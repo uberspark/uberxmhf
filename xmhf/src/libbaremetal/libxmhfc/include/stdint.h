@@ -34,8 +34,8 @@
 #define _SYS_STDINT_H_
 
 #ifdef __X86_64__
-#include <sys/ia64_types.h>
-#include <sys/ia64_stdint.h>
+#include <sys/amd64_types.h>
+#include <sys/amd64_stdint.h>
 #else /* !__X86_64__ */
 #include <sys/i386_types.h>
 #include <sys/i386_stdint.h>
