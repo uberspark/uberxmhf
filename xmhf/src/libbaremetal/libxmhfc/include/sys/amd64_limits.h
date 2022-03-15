@@ -1,6 +1,3 @@
-/* $FreeBSD$ */
-/* From: NetBSD: limits.h,v 1.3 1997/04/06 08:47:31 cgd Exp */
-
 /*-
  * Copyright (c) 1988, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -30,6 +27,7 @@
  * SUCH DAMAGE.
  *
  *      @(#)limits.h    8.3 (Berkeley) 1/4/94
+ * $FreeBSD$
  */
 
 /**
@@ -53,27 +51,26 @@
 #define __CHAR_BIT      8               /* number of bits in a char */
 
 #define __SCHAR_MAX     0x7f            /* max value for a signed char */
-#define __SCHAR_MIN     (-0x7f-1)       /* min value for a signed char */
+#define __SCHAR_MIN     (-0x7f - 1)     /* min value for a signed char */
 
 #define __UCHAR_MAX     0xffU           /* max value for an unsigned char */
 
 #define __USHRT_MAX     0xffffU         /* max value for an unsigned short */
 #define __SHRT_MAX      0x7fff          /* max value for a short */
-#define __SHRT_MIN      (-0x7fff-1)     /* min value for a short */
+#define __SHRT_MIN      (-0x7fff - 1)   /* min value for a short */
 
 #define __UINT_MAX      0xffffffffU     /* max value for an unsigned int */
 #define __INT_MAX       0x7fffffff      /* max value for an int */
-#define __INT_MIN       (-0x7fffffff-1) /* min value for an int */
+#define __INT_MIN       (-0x7fffffff - 1)       /* min value for an int */
 
 #define __ULONG_MAX     0xffffffffffffffffUL    /* max for an unsigned long */
 #define __LONG_MAX      0x7fffffffffffffffL     /* max for a long */
-#define __LONG_MIN      (-0x7fffffffffffffffL-1) /* min for a long */
+#define __LONG_MIN      (-0x7fffffffffffffffL - 1) /* min for a long */
 
-/* Long longs and longs are the same size on the IA-64. */
-                                        /* max for an unsigned long long */
+                        /* max value for an unsigned long long */
 #define __ULLONG_MAX    0xffffffffffffffffULL
-#define __LLONG_MAX     0x7fffffffffffffffLL    /* max for a long long */
-#define __LLONG_MIN     (-0x7fffffffffffffffLL-1) /* min for a long long */
+#define __LLONG_MAX     0x7fffffffffffffffLL    /* max value for a long long */
+#define __LLONG_MIN     (-0x7fffffffffffffffLL - 1)  /* min for a long long */
 
 #define __SSIZE_MAX     __LONG_MAX      /* max value for a ssize_t */
 
@@ -82,15 +79,18 @@
 #define __OFF_MAX       __LONG_MAX      /* max value for an off_t */
 #define __OFF_MIN       __LONG_MIN      /* min value for an off_t */
 
-/* Quads and longs are the same.  Ensure they stay in sync. */
-#define __UQUAD_MAX     (__ULONG_MAX)   /* max value for a uquad_t */
-#define __QUAD_MAX      (__LONG_MAX)    /* max value for a quad_t */
-#define __QUAD_MIN      (__LONG_MIN)    /* min value for a quad_t */
+/* Quads and longs are the same on the amd64.  Ensure they stay in sync. */
+#define __UQUAD_MAX     __ULONG_MAX     /* max value for a uquad_t */
+#define __QUAD_MAX      __LONG_MAX      /* max value for a quad_t */
+#define __QUAD_MIN      __LONG_MIN      /* min value for a quad_t */
 
 #define __LONG_BIT      64
 #define __WORD_BIT      32
 
-/* Minimum signal stack size. */
-#define __MINSIGSTKSZ   (3072 * 4)
+/*
+ * Minimum signal stack size. The current signal frame
+ * for i386 is 408 bytes large.
+ */
+#define __MINSIGSTKSZ   (512 * 4)
 
 #endif /* !_MACHINE__LIMITS_H_ */

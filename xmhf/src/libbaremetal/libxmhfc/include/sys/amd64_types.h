@@ -46,6 +46,8 @@
 /* number of bits per byte */
 #define NBBY 8
 
+#define __NO_STRICT_ALIGNMENT
+
 /*
  * Basic types upon which most other types are built.
  */

@@ -1,6 +1,6 @@
 /*-
- * Copyright (c) 1987, 1991, 1993
- *      The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1987, 1991 Regents of the University of California.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,8 +26,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      @(#)endian.h    8.1 (Berkeley) 6/10/93
- *      $NetBSD: endian.h,v 1.5 1997/10/09 15:42:19 bouyer Exp $
+ *      @(#)endian.h    7.8 (Berkeley) 4/3/91
  * $FreeBSD$
  */
 
@@ -39,6 +38,10 @@
 #define _MACHINE_ENDIAN_H_
 
 #include <sys/amd64_types.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Define the order of 32-bit words in 64-bit words.
@@ -67,30 +70,73 @@
 #define BYTE_ORDER      _BYTE_ORDER
 #endif
 
-#if defined(__CC_SUPPORTS___INLINE) && defined(__GNUCLIKE_ASM)
+#if defined(__GNUCLIKE_ASM) && defined(__GNUCLIKE_BUILTIN_CONSTANT_P)
+
+#define __byte_swap_int_var(x) \
+__extension__ ({ register __uint32_t __X = (x); \
+   __asm ("bswap %0" : "+r" (__X)); \
+   __X; })
+
+#ifdef __OPTIMIZE__
+
+#define __byte_swap_int_const(x) \
+        ((((x) & 0xff000000) >> 24) | \
+         (((x) & 0x00ff0000) >>  8) | \
+         (((x) & 0x0000ff00) <<  8) | \
+         (((x) & 0x000000ff) << 24))
+#define __byte_swap_int(x) (__builtin_constant_p(x) ? \
+        __byte_swap_int_const(x) : __byte_swap_int_var(x))
+
+#else   /* __OPTIMIZE__ */
+
+#define __byte_swap_int(x) __byte_swap_int_var(x)
+
+#endif  /* __OPTIMIZE__ */
+
+#define __byte_swap_long_var(x) \
+__extension__ ({ register __uint64_t __X = (x); \
+   __asm ("bswap %0" : "+r" (__X)); \
+   __X; })
+
+#ifdef __OPTIMIZE__
+
+#define __byte_swap_long_const(x) \
+        (((x >> 56) | \
+         ((x >> 40) & 0xff00) | \
+         ((x >> 24) & 0xff0000) | \
+         ((x >> 8) & 0xff000000) | \
+         ((x << 8) & (0xfful << 32)) | \
+         ((x << 24) & (0xfful << 40)) | \
+         ((x << 40) & (0xfful << 48)) | \
+         ((x << 56))))
+
+#define __byte_swap_long(x) (__builtin_constant_p(x) ? \
+        __byte_swap_long_const(x) : __byte_swap_long_var(x))
+
+#else   /* __OPTIMIZE__ */
+
+#define __byte_swap_long(x) __byte_swap_long_var(x)
+
+#endif  /* __OPTIMIZE__ */
 
 static __inline __uint64_t
 __bswap64(__uint64_t _x)
 {
-        __uint64_t __r;
 
-        __asm __volatile("mux1 %0=%1,@rev"
-                         : "=r" (__r) : "r"(_x));
-        return __r;
+        return (__byte_swap_long(_x));
 }
 
 static __inline __uint32_t
 __bswap32(__uint32_t _x)
 {
 
-        return (__bswap64(_x) >> 32);
+        return (__byte_swap_int(_x));
 }
 
 static __inline __uint16_t
 __bswap16(__uint16_t _x)
 {
-
-        return (__bswap64(_x) >> 48);
+        return (_x << 8 | _x >> 8);
 }
 
 #define __htonl(x)      __bswap32(x)
@@ -98,7 +144,7 @@ __bswap16(__uint16_t _x)
 #define __ntohl(x)      __bswap32(x)
 #define __ntohs(x)      __bswap16(x)
 
-#else /* !(__CC_SUPPORTS___INLINE && __GNUCLIKE_ASM) */
+#else /* !(__GNUCLIKE_ASM && __GNUCLIKE_BUILTIN_CONSTANT_P) */
 
 /*
  * No optimizations are available for this compiler.  Fall back to
@@ -107,6 +153,10 @@ __bswap16(__uint16_t _x)
  */
 #define _BYTEORDER_FUNC_DEFINED
 
-#endif /* __CC_SUPPORTS___INLINE && __GNUCLIKE_ASM */
+#endif /* __GNUCLIKE_ASM && __GNUCLIKE_BUILTIN_CONSTANT_P */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !_MACHINE_ENDIAN_H_ */
