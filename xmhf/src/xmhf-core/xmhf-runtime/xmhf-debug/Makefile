@@ -16,7 +16,7 @@ C_SOURCES += ./arch/x86/dbg-x86-vgamem.c
 endif
 
 # TODO: Workaround to compile x86 for bootloader
-ifeq ($(TARGET_HWPLATFORM), x86_64)
+ifeq ($(TARGET_WORDSIZE), amd64)
 C_OBJECTS32 = $(subst x86_64,x86,$(patsubst %.c, %.x86.o, $(C_SOURCES)))
 OBJECTS32 = $(C_OBJECTS32)
 endif
@@ -39,7 +39,7 @@ lib.a: $(OBJECTS)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # TODO: Workaround to compile x86 for bootloader
-ifeq ($(TARGET_HWPLATFORM), x86_64)
+ifeq ($(TARGET_WORDSIZE), amd64)
 all: lib.x86.a
 
 lib.x86.a: $(OBJECTS32)

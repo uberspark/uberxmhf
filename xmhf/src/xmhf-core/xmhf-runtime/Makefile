@@ -22,9 +22,9 @@ OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/vmx/memp-x86vmx-data.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/svm/memp-x86svm.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/svm/memp-x86svm-data.o
 
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/$(TARGET_HWPLATFORM)/svm/peh-$(TARGET_HWPLATFORM)svm-entry.o
+OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/svm/peh-x86-$(TARGET_WORDSIZE)svm-entry.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/svm/peh-x86svm-main.o
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/$(TARGET_HWPLATFORM)/vmx/peh-$(TARGET_HWPLATFORM)vmx-entry.o
+OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86-$(TARGET_WORDSIZE)vmx-entry.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-main.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86-safemsr.o
 
@@ -46,7 +46,7 @@ OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-data.o
 
 OBJECTS_PRECOMPILED += ./xmhf-xcphandler/xcph-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/x86/xcph-x86.o
-OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/$(TARGET_HWPLATFORM)/xcph-stubs.o
+OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/x86/xcph-stubs-$(TARGET_WORDSIZE).o
 
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface-runtime.o
@@ -58,8 +58,8 @@ OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-pit.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-smp.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smptrampoline.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smplock.o
+OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-$(TARGET_WORDSIZE)-smptrampoline.o
+OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-$(TARGET_WORDSIZE)-smplock.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-addressing.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-reboot.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-cpu.o
@@ -81,9 +81,9 @@ OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/part-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/part-x86.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86svm.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/$(TARGET_HWPLATFORM)/svm/part-$(TARGET_HWPLATFORM)svm-sup.o
+OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86-$(TARGET_WORDSIZE)svm-sup.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/$(TARGET_HWPLATFORM)/vmx/part-$(TARGET_HWPLATFORM)vmx-sup.o
+OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86-$(TARGET_WORDSIZE)vmx-sup.o
 
 OBJECTS_PRECOMPILED += ./xmhf-startup/runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-startup/rntm-data.o
@@ -133,8 +133,8 @@ all: runtimecomponents runtime.bin
 $(OBJECTS_PRECOMPILED): %: runtimecomponents
 $(OBJECTS_PRECOMPILED_LIBBACKENDS): %: runtimecomponents
 
-runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM).lds.S
-	$(LD) -T runtime-$(TARGET_HWPLATFORM).lds.S -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).lds.S
+	$(LD) -T runtime-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).lds.S -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	# Optional: use sparse file for runtime.exe to reduce fs space usage
 	fallocate -d runtime.exe
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin

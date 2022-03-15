@@ -83,13 +83,14 @@ export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
 export DRT := @DRT@
 export DMAP := @DMAP@
-export TARGET_HWPLATFORM := @TARGET_HWPLATFORM@
+export TARGET_HWPLATFORM := x86
 export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
 export XMHF_TARGET_ARCH := @TARGET_ARCH@
+export TARGET_WORDSIZE := @TARGET_WORDSIZE@
 
-# The following ifeq depends on TARGET_HWPLATFORM
+# The following ifeq depends on TARGET_WORDSIZE
 # TODO: move this to a better place
-ifeq ($(TARGET_HWPLATFORM), x86_64)
+ifeq ($(TARGET_WORDSIZE), amd64)
 LIBBAREMETAL_BUILD32 = $(CURDIR)/_build_libbaremetal32
 LIBTOMCRYPT_BUILD32 = $(CURDIR)/_build_libtomcrypt32
 LIBTOMMATH_BUILD32 = $(CURDIR)/_build_libtommath32
@@ -129,7 +130,7 @@ export CAT = @CAT@
 export CCLIB = @CCLIB@
 export BCCLIB = @BCCLIB@
 
-ifeq ($(TARGET_HWPLATFORM), x86_64)
+ifeq ($(TARGET_WORDSIZE), amd64)
 export CC32 = @CC32@
 endif
 
@@ -259,14 +260,14 @@ BCFLAGS := $(CFLAGS)
 # __XMHF_X86__: XMHF runtime will run in x86
 # __XMHF_X86_64__: XMHF runtime will run in x86_64
 
-ifeq ($(TARGET_HWPLATFORM), x86_64)
+ifeq ($(TARGET_WORDSIZE), amd64)
 	CFLAGS += -D__X86_64__ -D__XMHF_X86_64__
 	BCFLAGS += -D__X86__ -D__XMHF_X86_64__
 	VFLAGS += -D__X86_64__ -D__XMHF_X86_64__
 	CFLAGS += -m64
 	BCFLAGS += -m32
 endif
-ifeq ($(TARGET_HWPLATFORM), x86)
+ifeq ($(TARGET_WORDSIZE), i386)
 	CFLAGS += -D__X86__ -D__XMHF_X86__
 	BCFLAGS += -D__X86__ -D__XMHF_X86__
 	VFLAGS += -D__X86__ -D__XMHF_X86__
@@ -325,7 +326,7 @@ subdirs: $(LIBBAREMETAL_SRC) $(APP_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo libbaremetal.a build SUCCESS
 	@echo ---------------------------------------------------------------
-ifeq ($(TARGET_HWPLATFORM), x86_64)
+ifeq ($(TARGET_WORDSIZE), amd64)
 	@echo ---------------------------------------------------------------
 	@echo Building libtommath 32-bits...
 	@echo ---------------------------------------------------------------
@@ -409,7 +410,7 @@ clean:
 	@echo ---------------------------------------------------------------
 	@echo libtommath and libtomcrypt clean SUCCESS...
 	@echo ---------------------------------------------------------------
-ifeq ($(TARGET_HWPLATFORM), x86_64)
+ifeq ($(TARGET_WORDSIZE), amd64)
 	@echo ---------------------------------------------------------------
 	@echo Cleaning 32-bits external libraries...
 	@echo ---------------------------------------------------------------

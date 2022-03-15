@@ -26,16 +26,16 @@ AC_CHECK_PROG([CAT], [cat], [cat])
 # user-defined options
 
 # 64-bit?
-AC_SUBST([TARGET_HWPLATFORM])
-AC_ARG_WITH([target_hwplatform],
-        AS_HELP_STRING([--with-target-hwplatform=@<:@HWPLATFORM@:>@],
-                [select target hardware platform (x86, x86_64)]),
-                , [with_target_hwplatform=x86])
-TARGET_HWPLATFORM=$[]with_target_hwplatform
+AC_SUBST([TARGET_WORDSIZE])
+AC_ARG_WITH([target_wordsize],
+        AS_HELP_STRING([--with-target-wordsize=@<:@WORDSIZE@:>@],
+                [select target hardware platform (i386, amd64)]),
+                , [with_target_wordsize=i386])
+TARGET_WORDSIZE=$[]with_target_wordsize
 
 # find path to -lgcc
 AC_SUBST([CCLIB])
-AS_IF([test "x${with_target_hwplatform}" != "xx86_64"],
+AS_IF([test "x${with_target_wordsize}" != "xamd64"],
       [CCLIB=`$CC -m32 --print-file-name=`],
       [CCLIB=`$CC -m64 --print-file-name=`])
 

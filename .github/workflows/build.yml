@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         target_arch:
-          - 'x86'
-          - 'x86_64'
+          - 'i386'
+          - 'amd64'
         compile_mode:
           - 'debug'
           - 'release'

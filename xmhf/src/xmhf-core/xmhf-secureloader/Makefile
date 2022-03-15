@@ -2,8 +2,8 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM)-entry.S
-AS_SOURCES += ./arch/$(TARGET_HWPLATFORM)/sl-$(TARGET_HWPLATFORM)-sup.S
+AS_SOURCES = ./arch/x86/sl-x86-$(TARGET_WORDSIZE)-entry.S
+AS_SOURCES += ./arch/x86/sl-x86-$(TARGET_WORDSIZE)-sup.S
 
 C_SOURCES = sl.c
 C_SOURCES += ./arch/x86/sl-x86.c
@@ -32,7 +32,7 @@ OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/bplt-interface.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/$(TARGET_HWPLATFORM)/bplt-$(TARGET_HWPLATFORM)-smplock.o
+OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-$(TARGET_WORDSIZE)-smplock.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-addressing.o
 OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-cpu.o
 
@@ -61,8 +61,8 @@ endif
 all: sl.bin
 
 # FIXME: ADDL_LIBS is overly general; sl/ doesn't need all of them
-sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl-$(TARGET_HWPLATFORM).lds.S
-	$(LD) -T sl-$(TARGET_HWPLATFORM).lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).lds.S
+	$(LD) -T sl-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(CP) sl.exe sl_syms.exe
 	$(STRIP) -s sl.exe
 	$(OBJCOPY) --output-format=binary sl.exe sl.bin
