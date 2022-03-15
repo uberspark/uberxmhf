@@ -853,7 +853,12 @@ void cstartup(multiboot_info_t *mbi){
 
 	//welcome banner
 	printf("\neXtensible Modular Hypervisor Framework (XMHF) %s", ___XMHF_BUILD_VERSION___);
-	printf("\nBuild revision: %s\n", ___XMHF_BUILD_REVISION___);
+	printf("\nBuild revision: %s", ___XMHF_BUILD_REVISION___);
+#ifdef __AMD64__
+	printf("\nWord size: amd64\n");
+#else /* !__AMD64__ */
+	printf("\nWord size: i386\n");
+#endif /* __AMD64__ */
 
     printf("\nINIT(early): initializing, total modules=%u", mods_count);
 
