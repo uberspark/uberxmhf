@@ -68,14 +68,14 @@ endif
 
 # targets
 .PHONY: all
-all: init-$(TARGET_HWPLATFORM).bin
+all: init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
 
 # FIXME: ADDL_LIBS is overly general; init/ doesn't need all of them
-init-$(TARGET_HWPLATFORM).bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) init.lds.S
+init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) init.lds.S
 	$(LD) -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS32) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(CP) init.exe init_syms.exe
 	$(STRIP) -s init.exe
-	$(OBJCOPY) --output-format=binary init.exe init-$(TARGET_HWPLATFORM).bin
+	$(OBJCOPY) --output-format=binary init.exe init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile  ../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<

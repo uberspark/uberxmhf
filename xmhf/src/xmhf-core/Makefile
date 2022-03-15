@@ -4,7 +4,7 @@
 
 #-----build rules
 .PHONY: all
-all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz 
+all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz 
 
 .PHONY: runtime
 runtime:
@@ -25,18 +25,18 @@ bootloader: secureloader runtime
 		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
-xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin: bootloader
+xmhf-bootloader/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin: bootloader
 
 xmhf-secureloader/sl.bin: secureloader
 xmhf-runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
+hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
 	# concatenate sl image and runtime image 
 	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
-	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
+	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
-	$(CP) ./xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
-	$(CP) ./hypervisor-$(TARGET_HWPLATFORM).bin.gz $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
+	$(CP) ./xmhf-bootloader/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
+	$(CP) ./hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
 
 
 # cleanup rules
@@ -51,9 +51,9 @@ clean:
 
 	rm -rf $(APPOBJECTSDIR)
 
-	rm -rf ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
-	$(RM) -rf $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
-	$(RM) -rf $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
+	rm -rf ./hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
+	$(RM) -rf $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
+	$(RM) -rf $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
 
 
 .PHONY: install-dev
