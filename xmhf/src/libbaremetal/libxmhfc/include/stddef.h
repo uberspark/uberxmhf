@@ -33,11 +33,11 @@
 #define _SYS_STDDEF_H_
 
 #include <sys/_null.h>
-#ifdef __X86_64__
+#ifdef __AMD64__
 #include <sys/amd64_types.h>
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 #include <sys/i386_types.h>
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 typedef __ptrdiff_t     ptrdiff_t;
 

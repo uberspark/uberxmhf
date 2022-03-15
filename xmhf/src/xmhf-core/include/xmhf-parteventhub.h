@@ -77,7 +77,7 @@ extern u32 rdmsr_safe(struct regs *r);
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 
 //----------------------------------------------------------------------
 //x86_64 ARCH. INTERFACES
@@ -95,7 +95,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 void xmhf_parteventhub_arch_x86svm_entry(void);
 u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r);
 
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
@@ -113,7 +113,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 void xmhf_parteventhub_arch_x86svm_entry(void);
 u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r);
 
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 
 #endif	//__ASSEMBLY__

@@ -166,11 +166,11 @@ struct _guestmtrrmsrs {
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
   //common fields
-#ifdef __X86_64__
+#ifdef __AMD64__
   hva_t rsp;              //used to establish stack for the CPU
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
   hva_t esp;              //used to establish stack for the CPU
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
   hva_t sipi_page_vaddr;  //SIPI page of the CPU used for SIPI handling
   u32 id;                 //LAPIC id of the core
   u32 idx;                //this vcpu's index in the g_vcpubuffers array
@@ -272,15 +272,15 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
-#ifdef __X86_64__
+#ifdef __AMD64__
 #define 	__CS 	0x0010 	//runtime code segment selector
 #define 	__DS 	0x0018 	//runtime data segment selector
 #define 	__TRSEL 0x0020  //runtime TSS (task) selector
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 #define 	__CS 	0x0008 	//runtime code segment selector
 #define 	__DS 	0x0010 	//runtime data segment selector
 #define 	__TRSEL 0x0018  //runtime TSS (task) selector
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 
 #ifndef __ASSEMBLY__
@@ -566,7 +566,7 @@ enum CPU_Reg_Sel
     CPU_REG_SP,
     CPU_REG_BP,
 
-#ifdef __X86_64__
+#ifdef __AMD64__
     CPU_REG_R8,
     CPU_REG_R9,
     CPU_REG_R10,
@@ -575,7 +575,7 @@ enum CPU_Reg_Sel
     CPU_REG_R13,
     CPU_REG_R14,
     CPU_REG_R15,
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
     CPU_REG_FLAGS,
     CPU_REG_IP
@@ -589,7 +589,7 @@ static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
 {
     switch (sel)
     {
-#ifdef __X86_64__
+#ifdef __AMD64__
         case CPU_REG_AX: return r->rax;
         case CPU_REG_BX: return r->rbx;
         case CPU_REG_CX: return r->rcx;
@@ -607,7 +607,7 @@ static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
         case CPU_REG_R13: return r->r13;
         case CPU_REG_R14: return r->r14;
         case CPU_REG_R15: return r->r15;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
         case CPU_REG_AX: return r->eax;
         case CPU_REG_BX: return r->ebx;
         case CPU_REG_CX: return r->ecx;
@@ -616,7 +616,7 @@ static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
         case CPU_REG_DI: return r->edi;
         case CPU_REG_SP: return r->esp;
         case CPU_REG_BP: return r->ebp;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
         case CPU_REG_FLAGS: return VCPU_grflags(vcpu);
         case CPU_REG_IP: return VCPU_grip(vcpu);
@@ -636,7 +636,7 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
 {
     switch (sel)
     {
-#ifdef __X86_64__
+#ifdef __AMD64__
         case CPU_REG_AX: r->rax = val; break;
         case CPU_REG_BX: r->rbx = val; break;
         case CPU_REG_CX: r->rcx = val; break;
@@ -654,7 +654,7 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
         case CPU_REG_R13: r->r13 = val; break;
         case CPU_REG_R14: r->r14 = val; break;
         case CPU_REG_R15: r->r15 = val; break;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
         case CPU_REG_AX: r->eax = val; break;
         case CPU_REG_BX: r->ebx = val; break;
         case CPU_REG_CX: r->ecx = val; break;
@@ -663,7 +663,7 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
         case CPU_REG_DI: r->edi = val; break;
         case CPU_REG_SP: r->esp = val; break;
         case CPU_REG_BP: r->ebp = val; break;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
         case CPU_REG_FLAGS:
             VCPU_grflags_set(vcpu, val);

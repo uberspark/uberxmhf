@@ -70,9 +70,9 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 	xmhf_setup_sl_paging(baseaddr);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 	//linker relocates sl image starting from 0, so
     //parameter block must be at offset 0x10000

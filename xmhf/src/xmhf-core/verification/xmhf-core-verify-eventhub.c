@@ -266,7 +266,7 @@ void main() {
 		}
 #endif
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
@@ -274,7 +274,7 @@ void main() {
 			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 #endif
 
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
@@ -282,7 +282,7 @@ void main() {
 			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 #endif
 
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 		assert(1);
 }

@@ -101,7 +101,7 @@ void xmhf_partition_arch_start(VCPU *vcpu);
 void xmhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 
 //----------------------------------------------------------------------
 //x86_64 ARCH. INTERFACES
@@ -144,7 +144,7 @@ void __svm_start_hvm(VCPU *vcpu, u32 vmcb_paddr);
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
@@ -187,7 +187,7 @@ void __svm_start_hvm(VCPU *vcpu, u32 vmcb_paddr);
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 
 #endif	//__ASSEMBLY__

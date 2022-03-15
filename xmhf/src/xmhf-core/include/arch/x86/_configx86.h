@@ -66,11 +66,11 @@
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 // For i386, 16K stack for each core during runtime. For amd64, 64K stack.
-#ifdef __X86_64__
+#ifdef __AMD64__
 #define RUNTIME_STACK_SIZE  			(65536)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 #define RUNTIME_STACK_SIZE  			(16384)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 //8K stack for each core in "init"
 #define INIT_STACK_SIZE					(8192)

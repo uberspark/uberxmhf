@@ -76,10 +76,10 @@
 #define PAGE_SIZE_2M    (1UL << PAGE_SHIFT_2M)
 #define PAGE_SIZE_4M    (1UL << PAGE_SHIFT_4M)
 #define PAGE_SIZE_1G    (1UL << PAGE_SHIFT_1G)
-#ifdef __X86_64__
+#ifdef __AMD64__
 #define PAGE_SIZE_512G  (1UL << PAGE_SHIFT_512G)
 #define PAGE_SIZE_256T  (1UL << PAGE_SHIFT_256T)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 /* For i386 to access large page size: u64 for both word size */
 #define PAGE_SIZE_512G_LL   (1ULL << PAGE_SHIFT_512G)
@@ -100,28 +100,28 @@
 #define PAGE_ALIGN_UP2M(size)   (((size) + PAGE_SIZE_2M - 1) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_UP4M(size)   (((size) + PAGE_SIZE_4M - 1) & ~(PAGE_SIZE_4M - 1))
 #define PAGE_ALIGN_UP1G(size)   (((size) + PAGE_SIZE_1G - 1) & ~(PAGE_SIZE_1G - 1))
-#ifdef __X86_64__
+#ifdef __AMD64__
 #define PAGE_ALIGN_UP512G(size) (((size) + PAGE_SIZE_512G - 1) & ~(PAGE_SIZE_512G - 1))
 #define PAGE_ALIGN_UP256T(size) (((size) + PAGE_SIZE_256T - 1) & ~(PAGE_SIZE_256T - 1))
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 #define PAGE_ALIGN_4K(size)     ((size) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_2M(size)     ((size) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_4M(size)     ((size) & ~(PAGE_SIZE_4M - 1))
 #define PAGE_ALIGN_1G(size)     ((size) & ~(PAGE_SIZE_1G - 1))
-#ifdef __X86_64__
+#ifdef __AMD64__
 #define PAGE_ALIGN_512G(size)   ((size) & ~(PAGE_SIZE_512G - 1))
 #define PAGE_ALIGN_256T(size)   ((size) & ~(PAGE_SIZE_256T - 1))
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 #define PAGE_ALIGNED_4K(size)   (PAGE_ALIGN_4K(size) == size)
 #define PAGE_ALIGNED_2M(size)   (PAGE_ALIGN_2M(size) == size)
 #define PAGE_ALIGNED_4M(size)   (PAGE_ALIGN_4M(size) == size)
-#ifdef __X86_64__
+#ifdef __AMD64__
 #define PAGE_ALIGNED_1G(size)   (PAGE_ALIGN_1G(size) == size)
 #define PAGE_ALIGNED_512G(size) (PAGE_ALIGN_512G(size) == size)
 #define PAGE_ALIGNED_256T(size) (PAGE_ALIGN_256T(size) == size)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 #define BYTES_TO_PAGE4K(size)   (PAGE_ALIGN_UP4K(size) >> PAGE_SHIFT_4K)
 
@@ -146,18 +146,18 @@
 #define PAE_ENTRY_SIZE     8
 
 // 4-level paging specific definitions
-#ifdef __X86_64__
+#ifdef __AMD64__
 #define P4L_NPLM4T  (PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
 #define P4L_NPDPT   (PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
 #define P4L_NPDT    (PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
 #define P4L_NPT     (PAGE_ALIGN_UP2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 /* i386: cannot calculate using PAGE_ALIGN_UP, because PAGE_SIZE is 32-bits */
 #define P4L_NPLM4T  1
 #define P4L_NPDPT   1
 #define P4L_NPDT    4
 #define P4L_NPT     2048
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 // various paging flags
 #define _PAGE_BIT_PRESENT       0
@@ -210,7 +210,7 @@ typedef pte_t *pt_t;
 typedef u32 *npdt_t;
 typedef u32 *npt_t;
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 
 /* 4-level paging macros */
 
@@ -282,7 +282,7 @@ typedef u32 *npt_t;
 #define p4l_get_flags_from_pte(entry) \
   ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))
 
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 /* 32-bit macros */
 

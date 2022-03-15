@@ -33,13 +33,13 @@
 #ifndef _SYS_STDINT_H_
 #define _SYS_STDINT_H_
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 #include <sys/amd64_types.h>
 #include <sys/amd64_stdint.h>
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 #include <sys/i386_types.h>
 #include <sys/i386_stdint.h>
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 #include <sys/types.h>
 
 #ifndef _INT8_T_DECLARED

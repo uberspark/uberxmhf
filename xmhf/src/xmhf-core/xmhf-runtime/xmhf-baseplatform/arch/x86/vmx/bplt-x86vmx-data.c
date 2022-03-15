@@ -76,12 +76,12 @@ struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(
     DECLARE_FIELD(0x6408, info_IO_RIP)
 #endif /* !__DEBUG_QEMU__ */
 #if defined(__NESTED_PAGING__)
-#ifdef __X86_64__
+#ifdef __AMD64__
     DECLARE_FIELD(0x2400, guest_paddr)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     DECLARE_FIELD(0x2400, guest_paddr_full)
     DECLARE_FIELD(0x2401, guest_paddr_high)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 #endif
     DECLARE_FIELD(0x640A, info_guest_linear_address)
 };
@@ -125,14 +125,14 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
     DECLARE_FIELD(0x600E, control_CR3_target3)
 #endif /* !__DEBUG_QEMU__ */
     // Full 64-bit Control fields
-#ifdef __X86_64__
+#ifdef __AMD64__
     DECLARE_FIELD(0x2000, control_IO_BitmapA_address)
     DECLARE_FIELD(0x2002, control_IO_BitmapB_address)
     DECLARE_FIELD(0x2004, control_MSR_Bitmaps_address)
     DECLARE_FIELD(0x2006, control_VM_exit_MSR_store_address)
     DECLARE_FIELD(0x2008, control_VM_exit_MSR_load_address)
     DECLARE_FIELD(0x200A, control_VM_entry_MSR_load_address)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     DECLARE_FIELD(0x2000, control_IO_BitmapA_address_full)
     DECLARE_FIELD(0x2001, control_IO_BitmapA_address_high)
     DECLARE_FIELD(0x2002, control_IO_BitmapB_address_full)
@@ -145,31 +145,31 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
     DECLARE_FIELD(0x2009, control_VM_exit_MSR_load_address_high)
     DECLARE_FIELD(0x200A, control_VM_entry_MSR_load_address_full)
     DECLARE_FIELD(0x200B, control_VM_entry_MSR_load_address_high)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 #ifndef __DEBUG_QEMU__
-#ifdef __X86_64__
+#ifdef __AMD64__
     DECLARE_FIELD(0x200C, control_Executive_VMCS_pointer)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     DECLARE_FIELD(0x200C, control_Executive_VMCS_pointer_full)
     DECLARE_FIELD(0x200D, control_Executive_VMCS_pointer_high)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 #endif /* !__DEBUG_QEMU__ */
-#ifdef __X86_64__
+#ifdef __AMD64__
     DECLARE_FIELD(0x2010, control_TSC_offset)
     //DECLARE_FIELD(0x2012, control_virtual_APIC_page_address)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     DECLARE_FIELD(0x2010, control_TSC_offset_full)
     DECLARE_FIELD(0x2011, control_TSC_offset_high)
     //DECLARE_FIELD(0x2012, control_virtual_APIC_page_address_full)
     //DECLARE_FIELD(0x2013, control_virtual_APIC_page_address_high)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
     #if defined(__NESTED_PAGING__)
-#ifdef __X86_64__
+#ifdef __AMD64__
     DECLARE_FIELD(0x201A, control_EPT_pointer)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     DECLARE_FIELD(0x201A, control_EPT_pointer_full)
     DECLARE_FIELD(0x201B, control_EPT_pointer_high)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
     #endif
     // Host-State fields
     // Natural 64-bit Host-State fields
@@ -218,12 +218,12 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
     DECLARE_FIELD(0x6824, guest_SYSENTER_ESP)
     DECLARE_FIELD(0x6826, guest_SYSENTER_EIP)
     #if defined(__NESTED_PAGING__)
-#ifdef __X86_64__
+#ifdef __AMD64__
     DECLARE_FIELD(0x280A, guest_PDPTE0)
     DECLARE_FIELD(0x280C, guest_PDPTE1)
     DECLARE_FIELD(0x280E, guest_PDPTE2)
     DECLARE_FIELD(0x2810, guest_PDPTE3)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     DECLARE_FIELD(0x280A, guest_PDPTE0_full)
     DECLARE_FIELD(0x280B, guest_PDPTE0_high)
     DECLARE_FIELD(0x280C, guest_PDPTE1_full)
@@ -232,7 +232,7 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
     DECLARE_FIELD(0x280F, guest_PDPTE2_high)
     DECLARE_FIELD(0x2810, guest_PDPTE3_full)
     DECLARE_FIELD(0x2811, guest_PDPTE3_high)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
     #endif
     // Natural 32-bit Guest-State fields
     DECLARE_FIELD(0x4800, guest_ES_limit)
@@ -269,15 +269,15 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
     DECLARE_FIELD(0x080C, guest_LDTR_selector)
     DECLARE_FIELD(0x080E, guest_TR_selector)
     // Full 64-bit Guest-State fields
-#ifdef __X86_64__
+#ifdef __AMD64__
     DECLARE_FIELD(0x2800, guest_VMCS_link_pointer)
     DECLARE_FIELD(0x2802, guest_IA32_DEBUGCTL)
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     DECLARE_FIELD(0x2800, guest_VMCS_link_pointer_full)
     DECLARE_FIELD(0x2801, guest_VMCS_link_pointer_high)
     DECLARE_FIELD(0x2802, guest_IA32_DEBUGCTL_full)
     DECLARE_FIELD(0x2803, guest_IA32_DEBUGCTL_high)
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 };
 
 //count of VMX VMCS read-write fields

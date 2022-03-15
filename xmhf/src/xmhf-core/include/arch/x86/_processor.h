@@ -157,7 +157,7 @@
 // amd64: manually follow this order in assembly code
 struct regs
 {
-#ifdef __X86_64__
+#ifdef __AMD64__
   union { u64 rdi; u32 edi; } __attribute__ ((packed));
   union { u64 rsi; u32 esi; } __attribute__ ((packed));
   union { u64 rbp; u32 ebp; } __attribute__ ((packed));
@@ -174,7 +174,7 @@ struct regs
   u64 r13;
   u64 r14;
   u64 r15;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
   u32 edi;
   u32 esi;
   u32 ebp;
@@ -183,7 +183,7 @@ struct regs
   u32 edx;
   u32 ecx;
   u32 eax;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 } __attribute__ ((packed));
 
 
@@ -193,10 +193,10 @@ typedef struct {
   u8  count;
   u8  type;
   u16 isrHigh16;
-#ifdef __X86_64__
+#ifdef __AMD64__
   u32 isrHigh32;
   u32 reserved_zero;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 } __attribute__ ((packed)) idtentry_t;
 
 typedef struct {
@@ -206,20 +206,20 @@ typedef struct {
   u8  attributes1;
   u8  limit16_19attributes2;
   u8  baseAddr24_31;
-#ifdef __X86_64__
+#ifdef __AMD64__
   u32 baseAddr32_63;
   u32 reserved_zero;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 } __attribute__ ((packed)) TSSENTRY;
 
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 #define get_eflags(x) __asm__ __volatile__("pushfq ; popq %0 ":"=g" (x): /* no input */ :"memory")
 #define set_eflags(x) __asm__ __volatile__("pushq %0 ; popfq": /* no output */ :"g" (x):"memory", "cc")
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 #define get_eflags(x) __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
 #define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 #define cpuid(op, eax, ebx, ecx, edx)		\
 ({						\
@@ -238,15 +238,15 @@ typedef struct {
 
 static inline uint64_t rdtsc64(void)
 {
-#ifdef __X86_64__
+#ifdef __AMD64__
         u32 eax, edx;
         __asm__ __volatile__ ("rdtsc" : "=a" (eax), "=d" (edx));
         return ((u64)edx << 32) | eax;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
         uint64_t rv;
         __asm__ __volatile__ ("rdtsc" : "=A" (rv));
         return (rv);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 }
 
 

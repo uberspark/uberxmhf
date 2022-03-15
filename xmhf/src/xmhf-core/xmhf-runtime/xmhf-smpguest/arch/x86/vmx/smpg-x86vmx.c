@@ -419,7 +419,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
 
 /* Unblock NMI by executing iret, but do not jump to somewhere else */
 static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
-#ifdef __X86_64__
+#ifdef __AMD64__
     asm volatile (
         "movq    %%rsp, %%rsi   \r\n"
         "xorq    %%rax, %%rax   \r\n"
@@ -436,7 +436,7 @@ static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
         : // no output
         : // no input
         : "%rax", "%rsi", "cc", "memory");
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     asm volatile (
         "pushfl                 \r\n"
         "xorl    %%eax, %%eax   \r\n"
@@ -448,7 +448,7 @@ static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
         : // no output
         : // no input
         : "%eax", "cc", "memory");
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 }
 
 //quiesce interface to switch all guest cores into hypervisor mode
@@ -562,9 +562,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
    * Issue 5: Will the "__control_VMX_cpu_based" code in <xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception> and
    * virtual NMI VMExit mismatch when there are multiple guests/domains? In other words, they are reading/writing different VMCS.
    */
-#ifndef __X86_64__
+#ifndef __AMD64__
 
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
   // The function handles NMI as follows:
   // (1) If XMHF on core i requests quiesce and the current core is not quiesced yet, XMHF must quiesce the current core
   // (2) If XMHF on core i requests quiesce and the current core is quiesced, then some device must issue NMI after core i

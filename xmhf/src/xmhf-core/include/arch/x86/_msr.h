@@ -108,9 +108,9 @@
 #define IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL     0x7f00
 #define IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER        0x8000
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 //MTRRs
 #define	IA32_MTRRCAP	0x000000fe
 #define IA32_MTRR_DEF_TYPE 	0x000002ff
@@ -226,25 +226,25 @@ static inline void wrmsr(u32 msr, u32 eax, u32 edx){
 
 static inline u64 rdmsr64(uint32_t msr)
 {
-#ifdef __X86_64__
+#ifdef __AMD64__
     u32 eax, edx;
     __asm__ __volatile__ ("rdmsr" : "=a" (eax), "=d" (edx) : "c" (msr));
     return ((u64)edx << 32) | eax;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     u64 rv;
     __asm__ __volatile__ ("rdmsr" : "=A" (rv) : "c" (msr));
     return (rv);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 }
 
 static inline void wrmsr64(uint32_t msr, uint64_t newval)
 {
-#ifdef __X86_64__
+#ifdef __AMD64__
     __asm__ __volatile__ ("wrmsr" : : "a" (newval & ((1UL << 32) - 1)),
                           "d" (newval >> 32), "c" (msr));
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     __asm__ __volatile__ ("wrmsr" : : "A" (newval), "c" (msr));
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 }
 
 #endif /* __ASSEMBLY__ */

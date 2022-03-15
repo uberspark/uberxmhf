@@ -36,11 +36,11 @@
 #ifndef _SYS_LIMITS_H_
 #define _SYS_LIMITS_H_
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 #include <sys/amd64_limits.h>
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 #include <sys/i386_limits.h>
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 #define CHAR_BIT        __CHAR_BIT      /* number of bits in a char */
 

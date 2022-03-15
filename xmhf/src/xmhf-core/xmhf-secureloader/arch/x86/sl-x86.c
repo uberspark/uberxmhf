@@ -60,7 +60,7 @@
 //    .sha_slbelow64K = BAD_INTEGRITY_HASH
 //};
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 /* Access page table as an array */
 extern u64 sl_pdt[2048];
 
@@ -83,11 +83,11 @@ void xmhf_setup_sl_paging(u32 baseaddr) {
         sl_pdt[i] = p4l_make_pde_big(hva, default_flags);
     }
 }
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 #ifndef __XMHF_VERIFICATION__
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 //---runtime paging setup-------------------------------------------------------
 //build a 4-level paging that identity maps the lowest 4GiB memory
 //returns 64-bit address of PML4 Table (can be loaded into CR3)
@@ -144,7 +144,7 @@ u64 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t run
 
     return sla2spa((void *)xpml4);
 }
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
 //returns 32-bit base address of page table root (can be loaded into CR3)
@@ -192,7 +192,7 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
   return sla2spa((void *)xpdpt);
 }
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 #endif //__XMHF_VERIFICATION__
 
@@ -329,23 +329,23 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	#endif
 
 		//fix TSS descriptor, 18h
-#ifdef __X86_64__
+#ifdef __AMD64__
 		t= (TSSENTRY *)((hva_t)(hva2sla((void *)gdt_base)) + __TRSEL );
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 		t= (TSSENTRY *)((hva_t)gdt_base + __TRSEL );
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 		t->attributes1= 0x89;
 		t->limit16_19attributes2= 0x10;
-#ifdef __X86_64__
+#ifdef __AMD64__
 		t->baseAddr0_15= (u16)(tss_base & 0x000000000000FFFF);
 		t->baseAddr16_23= (u8)((tss_base & 0x0000000000FF0000) >> 16);
 		t->baseAddr24_31= (u8)((tss_base & 0x00000000FF000000) >> 24);
 		t->baseAddr32_63= (u32)((tss_base & 0xFFFFFFFF00000000) >> 32);
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
 		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
 		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 		t->limit0_15=0x67;
 	printf("\nSL: setup runtime TSS.");
 
@@ -364,11 +364,11 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
 	xmhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt,
-#ifdef __X86_64__
+#ifdef __AMD64__
 				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba, sla2spa((void *)0));
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 	#else
 	return;
 	#endif

@@ -250,24 +250,24 @@ typedef struct {
  * In amd64, use (VA + 256MiB) % 4GiB = PA to access physical memory
  */
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 extern u32 xmhf_baseplatform_arch_flat_va_offset;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 static inline uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
 {
     u32 addr = config_regs_base + reg;
-#ifdef __X86_64__
+#ifdef __AMD64__
     u32 physical_addr = (u32)addr - (u32)xmhf_baseplatform_arch_flat_va_offset;
     u64 ret = *(u64 *)(u64)physical_addr;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     u64 ret;
     __asm__ __volatile__("movl %%fs:(%%ebx), %%eax\r\n"
                          "movl %%fs:4(%%ebx), %%edx\r\n"
                          : "=A"(ret)
                          : "b"(addr)
                          );
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
     return ret;
 }
 
@@ -275,17 +275,17 @@ static inline void write_config_reg(uint32_t config_regs_base, uint32_t reg,
                                     uint64_t val)
 {
     u32 addr = config_regs_base + reg;
-#ifdef __X86_64__
+#ifdef __AMD64__
     u32 physical_addr = (u32)addr - (u32)xmhf_baseplatform_arch_flat_va_offset;
     *(u64 *)(u64)physical_addr = val;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
                          "movl %%edx, %%fs:4(%%ebx)\r\n"
                          :
                          : "A"(val), "b"(addr)
                          );
 
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 }
 
 static inline uint64_t read_pub_config_reg(uint32_t reg)

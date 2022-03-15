@@ -288,7 +288,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 
 
 //---setup EPT for VMX----------------------------------------------------------
-#ifdef __X86_64__
+#ifdef __AMD64__
 static void _vmx_setupEPT(VCPU *vcpu){
 	//step-1: tie in EPT PML4 structures
 	u64 *pml4_entry = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
@@ -341,7 +341,7 @@ static void _vmx_setupEPT(VCPU *vcpu){
 		}
 	}
 }
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 static void _vmx_setupEPT(VCPU *vcpu){
 	//step-1: tie in EPT PML4 structures
 	u64 *pml4_table, *pdp_table, *pd_table, *p_table;
@@ -387,7 +387,7 @@ static void _vmx_setupEPT(VCPU *vcpu){
 		}
 	}
 }
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 
 //flush hardware page table mappings (TLB)

@@ -53,7 +53,7 @@
 //---VMX decode assist----------------------------------------------------------
 //map a CPU register index into appropriate VCPU *vcpu or struct regs *r field
 //and return the address of the field
-#ifdef __X86_64__
+#ifdef __AMD64__
 static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
     switch(gpr){
         case  0: return &r->rax;
@@ -81,7 +81,7 @@ static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
         }
     }
 }
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
   if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 
@@ -104,7 +104,7 @@ static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
 	//we will never get here, appease the compiler
 	return (u32 *)&r->eax;
 }
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 
 //---intercept handler (CPUID)--------------------------------------------------
@@ -186,7 +186,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					 * 64-bit: Check whether exceed supported memory.
 					 * 32-bit: Continue even if machine has physical memory > 4G
 					 */
-#ifdef __X86_64__
+#ifdef __AMD64__
 					{
 						u64 baseaddr = (((u64)pe820entry->baseaddr_high) << 32) |
 										pe820entry->baseaddr_low;
@@ -194,7 +194,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 									pe820entry->length_low;
 						HALT_ON_ERRORCOND(baseaddr + length <= MAX_PHYS_ADDR);
 					}
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 				}else{
 					printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest "
 							"physical memory bounds. Halting!", vcpu->id);
@@ -501,10 +501,10 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 
 	/* Assign read_result to r->eax and r->edx */
 	{
-#ifdef __X86_64__
+#ifdef __AMD64__
 		r->rax = 0;	/* Clear upper 32-bits of RAX */
 		r->rdx = 0;	/* Clear upper 32-bits of RDX */
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 		r->eax = (u32)(read_result);
 		r->edx = (u32)(read_result >> 32);
 	}
@@ -664,7 +664,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	 * (IA-32e mode guest). This bit should always equal to EFER.LME && CR0.PG
 	 */
 	if ((old_cr0 ^ cr0_value) & CR0_PG) {
-#ifdef __X86_64__
+#ifdef __AMD64__
 		u32 value = vcpu->vmcs.control_VM_entry_controls;
 		u32 lme, pae;
 		msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[0];
@@ -686,9 +686,9 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		 * vcpu->vmcs.guest_PDPTE2 = pdptes[2];
 		 * vcpu->vmcs.guest_PDPTE3 = pdptes[3];
 		 */
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 		u32 pae = (cr0_value & CR0_PG) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 		HALT_ON_ERRORCOND(!pae);
 	}
 
@@ -896,11 +896,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			(u32) (((u64)vcpu->vmcs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4);
 			//printf("\ncrx=%u, gpr=%u, tofrom=%u", crx, gpr, tofrom);
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 			if ( ((int)gpr >=0) && ((int)gpr <= 15) ){
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 				switch(crx){
 					case 0x0: //CR0 access
 						vmx_handle_intercept_cr0access_ug(vcpu, r, gpr, tofrom);
@@ -967,7 +967,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 
 		default:{
-#ifdef __X86_64__
+#ifdef __AMD64__
 			if (vcpu->vmcs.control_VM_entry_controls & (1U << 9)) {
 				/* x86-64 mode */
 				printf("\nCPU(0x%02x): Unhandled intercept in long mode: %d (0x%08x)",
@@ -993,7 +993,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				}
 				HALT();
 			}
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 			/* x86 mode */
 			printf("\nCPU(0x%02x): Unhandled intercept: %d (0x%08x)",
 					vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,

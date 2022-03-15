@@ -56,15 +56,15 @@
 #define KB(x)           (((size_t)(x)) << 10)
 
 // TODO: bootloader for 64 bit XMHF will have incorrect size
-// Ideally, should change __X86_64__ to __XMHF_X86_64__
-#ifdef __X86__
+// Ideally, should change __AMD64__ to __XMHF_X86_64__
+#ifdef __I386__
     typedef u32 hva_t;  // hypervisor virtual address
     typedef u64 spa_t;  // system physical address
     typedef u64	spfn_t; // pfn of system physical address
     typedef u32 gva_t;  // guest virtual address
     typedef u64 gpa_t;  // guest physical address. can be 64-bit with PAE
     typedef u32 sla_t;  // secure loader address
-#elif defined(__X86_64__)
+#elif defined(__AMD64__)
     typedef u64 hva_t;  // hypervisor virtual address
     typedef u64 spa_t;  // system physical address
     typedef u64	spfn_t; // pfn of system physical address
@@ -73,7 +73,7 @@
     typedef u64 sla_t;  // secure loader address
 #else
     #error "Unsupported Arch"
-#endif /* __X86__ */
+#endif /* __I386__ */
 
 
 #define INVALID_ADDR		        0
@@ -82,15 +82,15 @@
 #define INVALID_GPADDR		        (INVALID_ADDR)
 #define INVALID_GVADDR		        (INVALID_ADDR)
 
-#ifdef __X86__
+#ifdef __I386__
     #define UINT32sToSPADDR(high, low) (spa_t)(low)
     #define UINT32sToSIZE(high, low) (size_t)(low)
-#elif defined(__X86_64__)
+#elif defined(__AMD64__)
     #define UINT32sToSPADDR(high, low) (spa_t)((((spa_t)high) << 32) | (low))
     #define UINT32sToSIZE(high, low) (size_t)((((size_t)high) << 32) | (low))
 #else
     #error "Unsupported Arch"
-#endif /* __X86__ */
+#endif /* __I386__ */
 
 #define ADDR_TO_PFN(addr)		(addr >> PAGE_SHIFT_4K)
 

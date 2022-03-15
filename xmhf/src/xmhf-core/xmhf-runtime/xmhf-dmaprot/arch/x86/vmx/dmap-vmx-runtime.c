@@ -259,9 +259,9 @@ static u32 vmx_eap_initialize(
 
     // get ACPI RSDP
     //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
-#ifdef __X86__
+#ifdef __I386__
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-#elif defined(__X86_64__)
+#elif defined(__AMD64__)
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 #else
     #error "Unsupported Arch"
@@ -287,10 +287,10 @@ static u32 vmx_eap_initialize(
     }
 
     // grab ACPI RSDT
-#ifdef __X86__
+#ifdef __I386__
     // Note: <rsdt_xsdt_spaddr> should be in lower 4GB. So the conversion to vaddr is fine.
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
-#elif defined(__X86_64__)
+#elif defined(__AMD64__)
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
 #else
     #error "Unsupported Arch"
@@ -559,9 +559,9 @@ void vmx_eap_zap(void)
 
     // get ACPI RSDP
     // [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
-#ifdef __X86__
+#ifdef __I386__
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-#elif defined(__X86_64__)
+#elif defined(__AMD64__)
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 #else
     #error "Unsupported Arch"
@@ -587,10 +587,10 @@ void vmx_eap_zap(void)
     }
 
     // grab ACPI RSDT
-#ifdef __X86__
+#ifdef __I386__
     // Note: <rsdt_xsdt_spaddr> should be in lower 4GB. So the conversion to vaddr is fine.
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
-#elif defined(__X86_64__)
+#elif defined(__AMD64__)
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
 #else
     #error "Unsupported Arch"

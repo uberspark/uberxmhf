@@ -76,7 +76,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	  hva_t gdtstart = (hva_t)&x_gdt_start;
 	  u16 trselector = 	__TRSEL;
 	  #ifndef __XMHF_VERIFICATION__
-#ifdef __X86_64__
+#ifdef __AMD64__
 	  asm volatile("movq %0, %%rdi\r\n"
 		"xorq %%rax, %%rax\r\n"
 		"movw %1, %%ax\r\n"
@@ -89,7 +89,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	     : "m"(gdtstart), "m"(trselector)
 	     : "rdi", "rax"
 	  );
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	  asm volatile("movl %0, %%edi\r\n"
 		"xorl %%eax, %%eax\r\n"
 		"movw %1, %%ax\r\n"
@@ -102,7 +102,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 	  #endif
 	}
 
@@ -190,15 +190,15 @@ static void _vmx_initVT(VCPU *vcpu){
 
   //step-4: enable VMX by setting CR4
 	#ifndef __XMHF_VERIFICATION__
-#ifdef __X86_64__
+#ifdef __AMD64__
 	asm(	" mov  %%cr4, %%rax	\n"\
 		" bts  $13, %%rax	\n"\
 		" mov  %%rax, %%cr4	" ::: "rax" );
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	asm(	" mov  %%cr4, %%eax	\n"\
 		" bts  $13, %%eax	\n"\
 		" mov  %%eax, %%cr4	" ::: "eax" );
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 	#endif
   printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
 
@@ -212,7 +212,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	    #endif
 
 	    #ifndef __XMHF_VERIFICATION__
-#ifdef __X86_64__
+#ifdef __AMD64__
 	    asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
 				 "movq $0x1, %%rax \n"
@@ -225,7 +225,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr)
 	       : "rax");
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	   	asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
 				 "movl $0x1, %%eax \n"
@@ -238,7 +238,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr)
 	       : "eax");
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 			#endif
 
 	    if(!retval){
@@ -325,23 +325,23 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif //__XMHF_VERIFICATION__
 
 	//store vcpu at TOS
-#ifdef __X86_64__
+#ifdef __AMD64__
 	vcpu->rsp = vcpu->rsp - sizeof(hva_t);
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	vcpu->esp = vcpu->esp - sizeof(hva_t);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 #ifndef __XMHF_VERIFICATION__
-#ifdef __X86_64__
+#ifdef __AMD64__
 	*(hva_t *)vcpu->rsp = (hva_t)vcpu;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	*(hva_t *)vcpu->esp = (hva_t)vcpu;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 #endif
-#ifdef __X86_64__
+#ifdef __AMD64__
 	vcpu->vmcs.host_RSP = (u64)vcpu->rsp;
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	vcpu->vmcs.host_RSP = (u64)vcpu->esp;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 
 #ifndef __XMHF_VERIFICATION__
@@ -363,7 +363,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
 	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 
-#ifdef __X86_64__
+#ifdef __AMD64__
 	/*
 	 * For x86_64, set the Host address-space size (bit 9) in
 	 * control_VM_exit_controls. First check whether setting this bit is
@@ -371,7 +371,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	 */
 	HALT_ON_ERRORCOND(vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] & (1UL << (9 + 32)));
 	vcpu->vmcs.control_VM_exit_controls |= (1UL << 9);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
 	//IO bitmap support
 	{
@@ -398,7 +398,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			rdmsr(msr, &eax, &edx);
 			hmsr[i].index = gmsr[i].index = msr;
 			hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
-#ifdef __X86_64__
+#ifdef __AMD64__
 			if (msr == MSR_EFER) {
 			    /*
 			     * Host is in x86-64, but guest should enter from x86.
@@ -408,7 +408,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			     */
 			    gmsr[i].data &= ~((1LU << EFER_LME) | (1LU << EFER_LMA));
 			}
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 		}
 		#endif
 
@@ -478,12 +478,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_TR_base = 0;
 	vcpu->vmcs.guest_TR_limit = 0;
 	vcpu->vmcs.guest_TR_selector = 0;
-#ifdef __X86_64__
+#ifdef __AMD64__
 	vcpu->vmcs.guest_TR_access_rights = 0x8b; //present, 32/64-bit busy TSS
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	// TODO: should be able to use 0x8b, not 0x83
 	vcpu->vmcs.guest_TR_access_rights = 0x83; //present, 16-bit busy TSS
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 	//DR7
 	vcpu->vmcs.guest_DR7 = 0x400;
 	//RSP

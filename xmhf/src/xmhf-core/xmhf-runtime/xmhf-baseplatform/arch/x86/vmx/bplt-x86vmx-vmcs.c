@@ -71,7 +71,7 @@ void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
                                                  u32 size) {
     unsigned long value;
     HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
-#ifdef __X86_64__
+#ifdef __AMD64__
     /* Read 64-bit fields using 1 VMREAD instruction (different from x86) */
     switch ((encoding >> 13) & 0x3) {
     case 0: /* 16-bit */
@@ -91,10 +91,10 @@ void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
     default:
         HALT();
     }
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
 	(void)size;
     *(u32 *)addr = (u32)value;
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 }
 
 //---getVMCS--------------------------------------------------------------------
@@ -185,11 +185,11 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
 #define DUMP_VCPU_PRINT_INT64_INDEX(x, i) \
     printf("\nCPU(0x%02x): " #x "[%x]=0x%016lx", vcpu->id, (i), (x)[i]);
 
-#ifdef __X86_64__
+#ifdef __AMD64__
     DUMP_VCPU_PRINT_INT64(vcpu->rsp);
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     DUMP_VCPU_PRINT_INT64(vcpu->esp);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
     DUMP_VCPU_PRINT_INT64(vcpu->sipi_page_vaddr);
     DUMP_VCPU_PRINT_INT32(vcpu->id);
     DUMP_VCPU_PRINT_INT32(vcpu->idx);

@@ -184,11 +184,11 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     vcpu->isbsp = 1;	//this core is a BSP
 
 	printf("\nBSP rallying APs...");
-#ifdef __X86_64__
+#ifdef __AMD64__
     printf("\nBSP(0x%02x): My RSP is 0x%016lx", vcpu->id, vcpu->rsp);
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
 
     //increment a CPU to account for the BSP
     spin_lock(&g_lock_cpus_active);
@@ -217,11 +217,11 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 
     while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
 
-#ifdef __X86_64__
+#ifdef __AMD64__
     printf("\nAP(0x%02x): My RSP is 0x%016lx, proceeding...", vcpu->id, vcpu->rsp);
-#else /* !__X86_64__ */
+#else /* !__AMD64__ */
     printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
-#endif /* __X86_64__ */
+#endif /* __AMD64__ */
   }
 
   //invoke EMHF runtime component main function for this CPU
