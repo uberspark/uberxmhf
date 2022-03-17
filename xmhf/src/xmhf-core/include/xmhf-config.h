@@ -60,7 +60,7 @@
     // Note: 32-bit XMHF (non-PAE) always assumes the maximum physical memory size == 4GB.
 	#define MAX_PHYS_ADDR					ADDR_4GB
 #elif defined(__AMD64__)
-	#define MAX_PHYS_ADDR                   GB(16)
+	#define MAX_PHYS_ADDR                   (AMD64_MAX_PHYS_ADDR)
 #else
     #error "Unsupported Arch"
 #endif // __I386__
