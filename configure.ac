@@ -38,8 +38,8 @@ AC_SUBST([AMD64_MAX_PHYS_ADDR])
 AC_ARG_WITH([amd64_max_phys_addr],
         AS_HELP_STRING([--with-amd64-max-phys-addr=@<:@MAX_PHYS_ADDR@:>@],
                 [select max physical address when using subarch amd64]),
-                , [amd64_max_phys_addr="0x400000000"])
-AMD64_MAX_PHYS_ADDR=$[]amd64_max_phys_addr
+                , [with_amd64_max_phys_addr=0x400000000])
+AMD64_MAX_PHYS_ADDR=$[]with_amd64_max_phys_addr
 
 # find path to -lgcc
 AC_SUBST([CCLIB])
