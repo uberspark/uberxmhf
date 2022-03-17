@@ -256,7 +256,7 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
         }
     }
 
-    printf("\n Verify all Vt-d units success");
+    printf("\nVerify all Vt-d units success");
 
     return true;
 }

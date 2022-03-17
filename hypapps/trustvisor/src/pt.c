@@ -308,6 +308,9 @@ void scode_lend_section( hptw_ctx_t *reg_npm_ctx,
                                          page_pal_gpa);
     CHK_RV(hpt_err);
 
+    /* Disable device accesses to these memory (via IOMMU) */
+	xmhf_dmaprot_protect(page_reg_gpa, PAGE_SIZE_4K);
+
     /* unlock? unquiesce? */
   }
 }
@@ -373,6 +376,9 @@ void scode_return_section(hptw_ctx_t *reg_npm_ctx,
     hptw_set_prot(reg_npm_ctx,
                        page_reg_gpa,
                        HPT_PROTS_RWX);
+
+    /* Enable device accesses to these memory (via IOMMU) */
+	xmhf_dmaprot_unprotect(page_reg_gpa, PAGE_SIZE_4K);
   }
 }
 

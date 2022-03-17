@@ -681,7 +681,7 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size)
         ptindex = PAE_get_ptindex(cur_spaddr);
 
         // get the page-table for this physical page
-        pt = (pt_t)(l_vtd_pts_vaddr + (pdptindex * PAGE_SIZE_4K * 512) + (pdtindex * PAGE_SIZE_4K));
+        pt = (pt_t)(l_vtd_pts_vaddr + (pdptindex * PAGE_SIZE_4K * PAE_PTRS_PER_PDT) + (pdtindex * PAGE_SIZE_4K));
 
         // protect the physical page
         // pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;
@@ -718,7 +718,7 @@ void xmhf_dmaprot_arch_x86_vmx_unprotect(spa_t start_paddr, size_t size)
         ptindex = PAE_get_ptindex(cur_spaddr);
 
         // get the page-table for this physical page
-        pt = (pt_t)(l_vtd_pts_vaddr + (pdptindex * PAGE_SIZE_4K * 512) + (pdtindex * PAGE_SIZE_4K));
+        pt = (pt_t)(l_vtd_pts_vaddr + (pdptindex * PAGE_SIZE_4K * PAE_PTRS_PER_PDT) + (pdtindex * PAGE_SIZE_4K));
 
         // protect the physical page
         // pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;
