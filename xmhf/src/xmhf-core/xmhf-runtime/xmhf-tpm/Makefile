@@ -14,7 +14,7 @@ OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 # TODO: Workaround to compile x86 for bootloader
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 C_SOURCES32 =  ./tpm-interface.c
 C_SOURCES32 += ./arch/x86/tpm-x86.c
 C_SOURCES32 += ./arch/x86/svm/tpm-x86svm.c
@@ -36,7 +36,7 @@ all: $(OBJECTS)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # TODO: Workaround to compile x86 for bootloader
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 $(C_OBJECTS32): %.x86.o: %.c $(I_SOURCES) Makefile ../Makefile ../../Makefile
 	$(CC32) -c $(BCFLAGS) -o $@ $<
 endif

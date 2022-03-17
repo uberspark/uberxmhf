@@ -9,7 +9,7 @@ if [ "$1" == "i386" ]; then
 	CONFIGURE_ARGS="${CONFIGURE_ARGS} CC=i686-linux-gnu-gcc"
 	CONFIGURE_ARGS="${CONFIGURE_ARGS} LD=i686-linux-gnu-ld"
 else if [ "$1" == "amd64" ]; then
-	CONFIGURE_ARGS="${CONFIGURE_ARGS} --with-target-wordsize=amd64"
+	CONFIGURE_ARGS="${CONFIGURE_ARGS} --with-target-subarch=amd64"
 else
 	echo '$1 incorrect, should be i386 or amd64'; exit 1
 fi; fi

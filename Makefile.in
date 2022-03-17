@@ -86,11 +86,11 @@ export DMAP := @DMAP@
 export TARGET_HWPLATFORM := x86
 export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
 export XMHF_TARGET_ARCH := @TARGET_ARCH@
-export TARGET_WORDSIZE := @TARGET_WORDSIZE@
+export TARGET_SUBARCH := @TARGET_SUBARCH@
 
-# The following ifeq depends on TARGET_WORDSIZE
+# The following ifeq depends on TARGET_SUBARCH
 # TODO: move this to a better place
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 LIBBAREMETAL_BUILD32 = $(CURDIR)/_build_libbaremetal32
 LIBTOMCRYPT_BUILD32 = $(CURDIR)/_build_libtomcrypt32
 LIBTOMMATH_BUILD32 = $(CURDIR)/_build_libtommath32
@@ -130,7 +130,7 @@ export CAT = @CAT@
 export CCLIB = @CCLIB@
 export BCCLIB = @BCCLIB@
 
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 export CC32 = @CC32@
 endif
 
@@ -260,14 +260,14 @@ BCFLAGS := $(CFLAGS)
 # __XMHF_I386__: XMHF runtime will run in i386 (32-bit)
 # __XMHF_AMD64__: XMHF runtime will run in amd64 (64-bit)
 
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 	CFLAGS += -D__AMD64__ -D__XMHF_AMD64__
 	BCFLAGS += -D__I386__ -D__XMHF_AMD64__
 	VFLAGS += -D__AMD64__ -D__XMHF_AMD64__
 	CFLAGS += -m64
 	BCFLAGS += -m32
 endif
-ifeq ($(TARGET_WORDSIZE), i386)
+ifeq ($(TARGET_SUBARCH), i386)
 	CFLAGS += -D__I386__ -D__XMHF_I386__
 	BCFLAGS += -D__I386__ -D__XMHF_I386__
 	VFLAGS += -D__I386__ -D__XMHF_I386__
@@ -326,7 +326,7 @@ subdirs: $(LIBBAREMETAL_SRC) $(APP_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo libbaremetal.a build SUCCESS
 	@echo ---------------------------------------------------------------
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 	@echo ---------------------------------------------------------------
 	@echo Building libtommath 32-bits...
 	@echo ---------------------------------------------------------------
@@ -367,8 +367,8 @@ install: install-bin
 install-bin:
 	# Install the _actual_ final product
 	install -d $(DESTDIR)/boot
-	install --mode=644 $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz $(DESTDIR)/boot
-	install --mode=644 $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin $(DESTDIR)/boot
+	install --mode=644 $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).bin.gz $(DESTDIR)/boot
+	install --mode=644 $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).bin $(DESTDIR)/boot
 
 .PHONY: install-dev
 install-dev:
@@ -410,7 +410,7 @@ clean:
 	@echo ---------------------------------------------------------------
 	@echo libtommath and libtomcrypt clean SUCCESS...
 	@echo ---------------------------------------------------------------
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 	@echo ---------------------------------------------------------------
 	@echo Cleaning 32-bits external libraries...
 	@echo ---------------------------------------------------------------

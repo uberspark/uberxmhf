@@ -3,8 +3,8 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES =  ./arch/x86/vmx/part-x86-$(TARGET_WORDSIZE)vmx-sup.S
-AS_SOURCES +=  ./arch/x86/svm/part-x86-$(TARGET_WORDSIZE)svm-sup.S
+AS_SOURCES =  ./arch/x86/vmx/part-x86-$(TARGET_SUBARCH)vmx-sup.S
+AS_SOURCES +=  ./arch/x86/svm/part-x86-$(TARGET_SUBARCH)svm-sup.S
 
 
 C_SOURCES = part-interface.c

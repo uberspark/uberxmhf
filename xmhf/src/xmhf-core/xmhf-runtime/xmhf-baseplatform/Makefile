@@ -2,8 +2,8 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES =  ./arch/x86/bplt-x86-$(TARGET_WORDSIZE)-smptrampoline.S
-AS_SOURCES +=  ./arch/x86/bplt-x86-$(TARGET_WORDSIZE)-smplock.S
+AS_SOURCES =  ./arch/x86/bplt-x86-$(TARGET_SUBARCH)-smptrampoline.S
+AS_SOURCES +=  ./arch/x86/bplt-x86-$(TARGET_SUBARCH)-smplock.S
 
 C_SOURCES = bplt-interface.c bplt-interface-runtime.c 
 C_SOURCES += bplt-interface-smp.c
@@ -37,7 +37,7 @@ OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 # TODO: Workaround to compile x86 for bootloader
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 AS_SOURCES32 =  ./arch/x86/bplt-x86-i386-smplock.S
 C_SOURCES32 =  ./arch/x86/bplt-x86-pci.c
 C_SOURCES32 += ./arch/x86/bplt-x86-acpi.c
@@ -66,7 +66,7 @@ all: $(OBJECTS)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # TODO: Workaround to compile x86 for bootloader
-ifeq ($(TARGET_WORDSIZE), amd64)
+ifeq ($(TARGET_SUBARCH), amd64)
 $(AS_OBJECTS32): %.x86.o: %.S $(I_SOURCES) Makefile ../Makefile ../../Makefile
 	$(CC32) -c $(BCFLAGS) -o $@ $<
 $(C_OBJECTS32): %.x86.o: %.c $(I_SOURCES) Makefile ../Makefile ../../Makefile

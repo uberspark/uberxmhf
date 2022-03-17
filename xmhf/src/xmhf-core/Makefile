@@ -2,10 +2,10 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # e.g. init-x86-i386.bin or init-x86-amd64.bin
-INIT_BIN := init-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin
+INIT_BIN := init-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).bin
 
 # e.g. hypervisor-x86-i386.bin.gz or hypervisor-x86-amd64.bin.gz
-HYPERVISOR_BIN_GZ := hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_WORDSIZE).bin.gz
+HYPERVISOR_BIN_GZ := hypervisor-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).bin.gz
 
 #-----build rules
 .PHONY: all

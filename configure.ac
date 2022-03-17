@@ -26,16 +26,16 @@ AC_CHECK_PROG([CAT], [cat], [cat])
 # user-defined options
 
 # 64-bit?
-AC_SUBST([TARGET_WORDSIZE])
-AC_ARG_WITH([target_wordsize],
-        AS_HELP_STRING([--with-target-wordsize=@<:@WORDSIZE@:>@],
+AC_SUBST([TARGET_SUBARCH])
+AC_ARG_WITH([target_subarch],
+        AS_HELP_STRING([--with-target-subarch=@<:@SUBARCH@:>@],
                 [select target hardware platform (i386, amd64)]),
-                , [with_target_wordsize=i386])
-TARGET_WORDSIZE=$[]with_target_wordsize
+                , [with_target_subarch=i386])
+TARGET_SUBARCH=$[]with_target_subarch
 
 # find path to -lgcc
 AC_SUBST([CCLIB])
-AS_IF([test "x${with_target_wordsize}" != "xamd64"],
+AS_IF([test "x${with_target_subarch}" != "xamd64"],
       [CCLIB=`$CC -m32 --print-file-name=`],
       [CCLIB=`$CC -m64 --print-file-name=`])
 

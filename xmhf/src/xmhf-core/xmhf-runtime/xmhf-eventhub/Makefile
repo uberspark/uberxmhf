@@ -2,8 +2,8 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = ./arch/x86/svm/peh-x86-$(TARGET_WORDSIZE)svm-entry.S
-AS_SOURCES += ./arch/x86/vmx/peh-x86-$(TARGET_WORDSIZE)vmx-entry.S
+AS_SOURCES = ./arch/x86/svm/peh-x86-$(TARGET_SUBARCH)svm-entry.S
+AS_SOURCES += ./arch/x86/vmx/peh-x86-$(TARGET_SUBARCH)vmx-entry.S
 
 C_SOURCES =  ./arch/x86/svm/peh-x86svm-main.c
 C_SOURCES += ./arch/x86/vmx/peh-x86vmx-main.c
