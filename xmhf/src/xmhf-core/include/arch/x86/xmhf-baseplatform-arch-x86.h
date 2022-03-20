@@ -273,8 +273,9 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
 #ifdef __AMD64__
-#define 	__CS 	0x0010 	//runtime code segment selector
+#define 	__CS 	0x0008 	//runtime code segment selector
 #define 	__DS 	0x0018 	//runtime data segment selector
+#define 	__CS32 	0x0010 	//runtime 32-bit code segment selector
 #define 	__TRSEL 0x0020  //runtime TSS (task) selector
 #else /* !__AMD64__ */
 #define 	__CS 	0x0008 	//runtime code segment selector

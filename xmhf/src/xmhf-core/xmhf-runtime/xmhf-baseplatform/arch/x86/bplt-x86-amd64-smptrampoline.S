@@ -80,8 +80,8 @@ CODE
     .align 16
     _ap_gdt_start:
       .quad 0x0000000000000000  // 0x00: NULL selector
-      .quad 0x00cf9a000000ffff  // 0x08: 32-bit CODE selector
-      .quad 0x00af9a000000ffff  // 0x10: 64-bit CODE selector
+      .quad 0x00af9a000000ffff  // 0x08: 64-bit CODE selector
+      .quad 0x00cf9a000000ffff  // 0x10: 32-bit CODE selector
       .quad 0x00cf92000000ffff  // 0x18: 32-bit DATA selector
       .quad 0x0000000000000000  // 0x20: TSS low (unused)
       .quad 0x0000000000000000  // 0x28: TSS high (unused)
@@ -92,7 +92,7 @@ CODE
     _mle_join_start:
     .long _ap_gdt_end - _ap_gdt_start - 1 // gdt_limit
     .long _ap_gdt_start - _ap_bootstrap_start + 0x10000// gdt_base
-    .long 0x00000008 // CS
+    .long __CS32 // CS, also DS - 8
     .long _ap_clear_pipe - _ap_bootstrap_start + 0x10000 // entry point
     _mle_join_end:
     .align 16
@@ -112,10 +112,10 @@ CODE
       orl $(CR0_PE), %eax
       movl %eax, %cr0
 
-      jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4))
+      jmpl $__CS32, $(_ap_clear_pipe - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4))
     .code32
     _ap_clear_pipe:
-      movw $0x18, %ax
+      movw $__DS, %ax
       movw %ax, %ds
       movw %ax, %es
       movw %ax, %ss

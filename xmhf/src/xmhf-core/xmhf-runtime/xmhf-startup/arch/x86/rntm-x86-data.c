@@ -56,8 +56,8 @@
 u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
 #ifdef __AMD64__
 	0x0000000000000000ULL,  /* 0x00: NULL selector */
-	0x00cf9a000000ffffULL,  /* 0x08: 32-bit CODE selector */
-	0x00af9a000000ffffULL,  /* 0x10: 64-bit CODE selector */
+	0x00af9a000000ffffULL,  /* 0x08: 64-bit CODE selector */
+	0x00cf9a000000ffffULL,  /* 0x10: 32-bit CODE selector */
 	0x00cf92000000ffffULL,  /* 0x18: 32-bit DATA selector */
 	0x0000000000000000ULL,  /* 0x20: TSS low (set by secure loader) */
 	0x0000000000000000ULL   /* 0x28: TSS high (set by secure loader) */
