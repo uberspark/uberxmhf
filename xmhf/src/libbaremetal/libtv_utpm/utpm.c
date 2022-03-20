@@ -188,10 +188,17 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
 
     /* pcr = H( pcr || measurement) */
     outlen = sizeof(utpm->pcr_bank[pcr_num].value);
+    /*
+     * TPM_HASH_SIZE must be casted as unsigned long, otherwise in amd64 it
+     * will be treated as int in the caller and unsigned long in the callee,
+     * causing problems in va_arg (e.g. the upper 32-bits become undefined).
+     */
     rv = hash_memory_multi( find_hash("sha1"),
                             utpm->pcr_bank[pcr_num].value, &outlen,
-                            utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE,
-                            measurement->value, TPM_HASH_SIZE,
+                            utpm->pcr_bank[pcr_num].value,
+                            (unsigned long) TPM_HASH_SIZE,
+                            measurement->value,
+                            (unsigned long) TPM_HASH_SIZE,
                             NULL, NULL);
     if (rv) {
       abort();
