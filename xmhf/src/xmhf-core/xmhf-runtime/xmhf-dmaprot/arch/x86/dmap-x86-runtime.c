@@ -87,10 +87,7 @@ void xmhf_dmaprot_arch_protect(spa_t start_paddr, size_t size){
 	if(cpu_vendor == CPU_VENDOR_AMD){
 	  return xmhf_dmaprot_arch_x86_svm_protect(start_paddr, size);
 	}else{	//CPU_VENDOR_INTEL
-#ifdef __DMAP__
-		xmhf_dmaprot_arch_x86_vmx_protect(start_paddr, size);
-#endif /* __DMAP__ */
-		return;
+		return xmhf_dmaprot_arch_x86_vmx_protect(start_paddr, size);
 	//   return; //we use Vtd PMRs to protect the SL + runtime during SL launch
 	}
 }
@@ -99,16 +96,11 @@ void xmhf_dmaprot_arch_protect(spa_t start_paddr, size_t size){
 //assumed to be page aligned physical memory address
 void xmhf_dmaprot_arch_unprotect(spa_t start_paddr, size_t size){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
-	(void) start_paddr;
-	(void) size;
 
 	if(cpu_vendor == CPU_VENDOR_AMD){
 	  return;
 	}else{	//CPU_VENDOR_INTEL
-#ifdef __DMAP__
-	  xmhf_dmaprot_arch_x86_vmx_unprotect(start_paddr, size);
-#endif /* __DMAP__ */
-	  return;
+	  return xmhf_dmaprot_arch_x86_vmx_unprotect(start_paddr, size);
 	}
 }
 
