@@ -288,7 +288,6 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 
 
 //---setup EPT for VMX----------------------------------------------------------
-#ifdef __AMD64__
 static void _vmx_setupEPT(VCPU *vcpu){
 	//step-1: tie in EPT PML4 structures
 	u64 *pml4_entry = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
@@ -301,26 +300,26 @@ static void _vmx_setupEPT(VCPU *vcpu){
 	// TODO: for amd64, likely can use 1G / 2M pages.
 	// If so, also need to change _vmx_getmemorytypeforphysicalpage()
 
-	for (u64 paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PAGE_SIZE_4K) {
-		if (PAGE_ALIGNED_512G(paddr)) {
+	for (u64 paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PA_PAGE_SIZE_4K) {
+		if (PA_PAGE_ALIGNED_512G(paddr)) {
 			/* Create PML4E */
-			u64 i = paddr / PAGE_SIZE_512G;
-			pml4_entry[i] = (pdp_table + i * PAGE_SIZE_4K) | 0x7;
+			u64 i = paddr / PA_PAGE_SIZE_512G;
+			pml4_entry[i] = (pdp_table + i * PA_PAGE_SIZE_4K) | 0x7;
 		}
-		if (PAGE_ALIGNED_1G(paddr)) {
+		if (PA_PAGE_ALIGNED_1G(paddr)) {
 			/* Create PDPE */
-			u64 i = paddr / PAGE_SIZE_1G;
-			pdp_entry[i] = (pd_table + i * PAGE_SIZE_4K) | 0x7;
+			u64 i = paddr / PA_PAGE_SIZE_1G;
+			pdp_entry[i] = (pd_table + i * PA_PAGE_SIZE_4K) | 0x7;
 		}
-		if (PAGE_ALIGNED_2M(paddr)) {
+		if (PA_PAGE_ALIGNED_2M(paddr)) {
 			/* Create PDE */
-			u64 i = paddr / PAGE_SIZE_2M;
-			pd_entry[i] = (p_table + i * PAGE_SIZE_4K) | 0x7;
+			u64 i = paddr / PA_PAGE_SIZE_2M;
+			pd_entry[i] = (p_table + i * PA_PAGE_SIZE_4K) | 0x7;
 		}
-		/* PAGE_ALIGNED_4K */
+		/* PA_PAGE_ALIGNED_4K */
 		{
 			/* Create PE */
-			u64 i = paddr / PAGE_SIZE_4K;
+			u64 i = paddr / PA_PAGE_SIZE_4K;
 			u64 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, paddr);
 			u64 lower;
 			/*
@@ -331,7 +330,7 @@ static void _vmx_setupEPT(VCPU *vcpu){
 			HALT_ON_ERRORCOND(memorytype == 0 || memorytype == 1 ||
 								memorytype == 4 || memorytype == 5 ||
 								memorytype == 6);
-			if ((paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+			if ((paddr >= (rpb->XtVmmRuntimePhysBase - PA_PAGE_SIZE_2M)) &&
 				(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) {
 				lower = 0x0;	/* not present */
 			} else {
@@ -341,53 +340,6 @@ static void _vmx_setupEPT(VCPU *vcpu){
 		}
 	}
 }
-#else /* !__AMD64__ */
-static void _vmx_setupEPT(VCPU *vcpu){
-	//step-1: tie in EPT PML4 structures
-	u64 *pml4_table, *pdp_table, *pd_table, *p_table;
-	u32 i, j, k, paddr=0;
-
-	pml4_table = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
-	pml4_table[0] = (u64) (hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table) | 0x7);
-
-	pdp_table = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
-
-	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		pdp_table[i] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
-		pd_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
-
-		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			pd_table[j] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
-			p_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) ;
-
-			for(k=0; k < PAE_PTRS_PER_PT; k++){
-				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
-				/*
-				 * For memorytype equal to 0 (UC), 1 (WC), 4 (WT), 5 (WP), 6 (WB),
-				 * MTRR memory type and EPT memory type are the same encoding.
-				 * Currently other encodings are reserved.
-				 */
-				HALT_ON_ERRORCOND(memorytype == 0 || memorytype == 1 ||
-									memorytype == 4 || memorytype == 5 ||
-									memorytype == 6);
-				//the XMHF memory region includes the secure loader +
-				//the runtime (core + app). this runs from
-				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
-				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
-				//make XMHF physical pages inaccessible
-				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
-					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) ){
-					p_table[k] = (u64) (paddr) | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
-				}else{
-					p_table[k] = (u64) (paddr) | ((u64)memorytype << 3) | (u64)0x7 ;	//present
-				}
-
-				paddr += PAGE_SIZE_4K;
-			}
-		}
-	}
-}
-#endif /* __AMD64__ */
 
 
 //flush hardware page table mappings (TLB)
