@@ -65,6 +65,14 @@ u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			return status;
 }
 
+//returns APP_SUCCESS if we allow EPT to change in response to MTRR
+u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val) {
+	(void) vcpu;
+	(void) msr;
+	(void) val;
+	return APP_SUCCESS;
+}
+
 //handles XMHF shutdown callback
 //note: should not return
 void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){

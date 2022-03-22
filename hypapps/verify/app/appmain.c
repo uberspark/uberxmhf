@@ -128,6 +128,14 @@ u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 	return status;
 }
 
+//returns APP_SUCCESS if we allow EPT to change in response to MTRR
+u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val) {
+	(void) vcpu;
+	(void) msr;
+	(void) val;
+	// TODO: This hypapp needs to be reviewed to decide when MTRRs can change
+	return APP_ERROR;
+}
 
 //handles XMHF shutdown callback
 //note: should not return

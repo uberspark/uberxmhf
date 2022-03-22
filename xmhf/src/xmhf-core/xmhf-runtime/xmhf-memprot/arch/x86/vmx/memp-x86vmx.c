@@ -408,12 +408,20 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_read(VCPU *vcpu, u32 msr, u64 *val) {
 
 /* Write a guest MTRR value to shadow and update EPT, return 0 if successful */
 u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
-	// TODO: notify hypapp
+	u32 hypapp_status;
 	{
 		u64 oldval;
 		HALT_ON_ERRORCOND(xmhf_memprot_arch_x86vmx_mtrr_read(vcpu, msr, &oldval) == 0);
-		printf("\nCPU(0x%02x): wrmsr 0x%08x 0x%016llx <- 0x%016llx",
+		printf("\nCPU(0x%02x): WRMSR (MTRR) 0x%08x 0x%016llx (old = 0x%016llx)",
 				vcpu->id, msr, val, oldval);
+	}
+	xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+	hypapp_status = xmhf_app_handlemtrr(vcpu, msr, val);
+	xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+	if (hypapp_status != APP_SUCCESS) {
+		printf("\nCPU(0x%02x): Hypapp does not allow changing MTRRs. Halt!",
+				vcpu->id);
+		HALT();
 	}
 	if (msr == IA32_MTRR_DEF_TYPE) {
 		/* Default type register */

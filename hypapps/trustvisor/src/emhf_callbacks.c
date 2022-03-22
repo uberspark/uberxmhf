@@ -57,6 +57,11 @@ u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
   return tv_app_handlehypercall(vcpu, r);
 }
 
+u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val)
+{
+  return tv_app_handlemtrr(vcpu, msr, val);
+}
+
 u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
                                               struct regs *r, u64 gpa, u64 gva, u64 violationcode)
 {

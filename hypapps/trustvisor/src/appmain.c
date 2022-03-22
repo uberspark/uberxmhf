@@ -65,6 +65,13 @@
 #include <tv_emhf.h>
 #include <cmdline.h>
 
+/*
+ * When this variable is 0, allow the guest to changing MTRRs (which will
+ * change EPTs). When PALs have started, do not allow MTRR change (because
+ * PALs need to duplicate MTRRs).
+ */
+static u32 started_business = 0;
+
 const cmdline_option_t gc_trustvisor_available_cmdline_options[] = {
   { "nvpalpcr0", "0000000000000000000000000000000000000000"}, /* Req'd PCR[0] of NvMuxPal */
   { "nvenforce", "true" }, /* true|false - actually enforce nvpalpcr0? */
@@ -576,6 +583,8 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
   u32 status = APP_SUCCESS;
   u64 ret = 0;
 
+  started_business = 1;
+
 //#ifdef __MP_VERSION__
 //  xmhf_smpguest_quiesce(vcpu);
 //#endif
@@ -645,6 +654,17 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
   return status;
 }
 
+u32 tv_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val)
+{
+  (void) vcpu;
+  (void) msr;
+  (void) val;
+  if (started_business) {
+    return APP_ERROR;
+  }
+  return APP_SUCCESS;
+}
+
 /* EPT violation handler */
 u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
                                             struct regs *r, u64 gpa, u64 gva, u64 violationcode)
@@ -653,6 +673,8 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 #if defined(__LDN_TV_INTEGRATION__)
   (void)gva;
 #endif //__LDN_TV_INTEGRATION__
+
+  started_business = 1;
 
 //#ifdef __MP_VERSION__
 //  xmhf_smpguest_quiesce(vcpu);
@@ -683,6 +705,8 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
 //  xmhf_smpguest_quiesce(vcpu);
 //#endif
 
+  started_business = 1;
+
   eu_err("CPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
   eu_trace("CPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
            (u32)portnum, (u32)access_type, (u32)access_size);
@@ -699,6 +723,7 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
 
 void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
+  // TODO: can we do `started_business = 0;`?
   eu_trace("CPU(0x%02x): Shutdown intercept!", vcpu->id);
   //g_libemhf->xmhf_reboot(vcpu);
   xmhf_baseplatform_reboot(vcpu);

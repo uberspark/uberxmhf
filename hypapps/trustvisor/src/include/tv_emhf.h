@@ -51,6 +51,7 @@
 
 u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
 u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r);
+u32 tv_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val);
 u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
                                             struct regs *r, u64 gpa, u64 gva, u64 violationcode);
 u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
