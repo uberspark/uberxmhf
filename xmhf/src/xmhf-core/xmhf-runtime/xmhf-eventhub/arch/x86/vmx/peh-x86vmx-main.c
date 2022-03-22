@@ -366,6 +366,8 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			HALT_ON_ERRORCOND(found != 0);
 			break;
 		}
+		case IA32_MTRRCAP: /* fallthrough */
+		case IA32_MTRR_DEF_TYPE: /* fallthrough */
 		case IA32_MTRR_FIX64K_00000: /* fallthrough */
 		case IA32_MTRR_FIX16K_80000: /* fallthrough */
 		case IA32_MTRR_FIX16K_A0000: /* fallthrough */
