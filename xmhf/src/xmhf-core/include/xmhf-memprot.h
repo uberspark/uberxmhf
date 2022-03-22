@@ -128,6 +128,12 @@ u64 * xmhf_memprot_arch_get_lvl4_pagemap_address(VCPU *vcpu);
 //get default root page map address
 u64 * xmhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu);
 
+//handle RDMSR on MTRRs
+u32 xmhf_memprot_arch_x86vmx_mtrr_read(VCPU *vcpu, u32 msr, u64 *val);
+
+//handle WRMSR on MTRRs
+u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val);
+
 //flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_flushmappings(VCPU *vcpu);
 

@@ -403,24 +403,13 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			 * Need to change EPT to reflect MTRR changes, because host MTRRs
 			 * are not used when EPT is used.
 			 */
-			{
-				/*
-				 * As a workaround, if writing the MSR will not cause change,
-				 * do not halt. For example Windows 10 will do this.
-				 */
-				u32 eax, edx;
-				rdmsr(r->ecx, &eax, &edx);
-				if (eax == r->eax && edx == r->edx) {
-					break;
-				}
-				printf("\nCPU(0x%02x): Old       MTRR 0x%08x is 0x %08x %08x",
-						vcpu->id, r->ecx, edx, eax);
+			if (xmhf_memprot_arch_x86vmx_mtrr_write(vcpu, r->ecx, write_data)) {
+				// TODO: error handling (sometimes need to return error to user)
+				printf("\nCPU(0x%02x): Modifying MTRR failed. Error handling "
+						"not implemented. Halt!",
+						vcpu->id);
+				HALT();
 			}
-			printf("\nCPU(0x%02x): Modifying MTRR 0x%08x to 0x %08x %08x",
-					vcpu->id, r->ecx, r->edx, r->eax);
-			printf("\nCPU(0x%02x): Modifying MTRR not yet supported. Halt!",
-					vcpu->id);
-			HALT();
 			break;
 		case IA32_BIOS_UPDT_TRIG:
 			printf("\nCPU(0x%02x): OS tries to write microcode, ignore",
@@ -479,6 +468,48 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			HALT_ON_ERRORCOND(found != 0);
 			break;
 		}
+		case IA32_MTRR_DEF_TYPE: /* fallthrough */
+		case IA32_MTRR_FIX64K_00000: /* fallthrough */
+		case IA32_MTRR_FIX16K_80000: /* fallthrough */
+		case IA32_MTRR_FIX16K_A0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_C0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_C8000: /* fallthrough */
+		case IA32_MTRR_FIX4K_D0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_D8000: /* fallthrough */
+		case IA32_MTRR_FIX4K_E0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_E8000: /* fallthrough */
+		case IA32_MTRR_FIX4K_F0000: /* fallthrough */
+		case IA32_MTRR_FIX4K_F8000: /* fallthrough */
+		case IA32_MTRR_PHYSBASE0: /* fallthrough */
+		case IA32_MTRR_PHYSMASK0: /* fallthrough */
+		case IA32_MTRR_PHYSBASE1: /* fallthrough */
+		case IA32_MTRR_PHYSMASK1: /* fallthrough */
+		case IA32_MTRR_PHYSBASE2: /* fallthrough */
+		case IA32_MTRR_PHYSMASK2: /* fallthrough */
+		case IA32_MTRR_PHYSBASE3: /* fallthrough */
+		case IA32_MTRR_PHYSMASK3: /* fallthrough */
+		case IA32_MTRR_PHYSBASE4: /* fallthrough */
+		case IA32_MTRR_PHYSMASK4: /* fallthrough */
+		case IA32_MTRR_PHYSBASE5: /* fallthrough */
+		case IA32_MTRR_PHYSMASK5: /* fallthrough */
+		case IA32_MTRR_PHYSBASE6: /* fallthrough */
+		case IA32_MTRR_PHYSMASK6: /* fallthrough */
+		case IA32_MTRR_PHYSBASE7: /* fallthrough */
+		case IA32_MTRR_PHYSMASK7: /* fallthrough */
+		case IA32_MTRR_PHYSBASE8: /* fallthrough */
+		case IA32_MTRR_PHYSMASK8: /* fallthrough */
+		case IA32_MTRR_PHYSBASE9: /* fallthrough */
+		case IA32_MTRR_PHYSMASK9:
+			/*
+			 * When reading MTRR MSRs, IA32_MTRRCAP is the same as host's MSR.
+			 * Other MTRR MSRs come from the shadow in vcpu.
+			 */
+			if (xmhf_memprot_arch_x86vmx_mtrr_read(vcpu, r->ecx, &read_result)) {
+				printf("\nCPU(0x%02x): Strange failure when reading MTRR. Halt!",
+						vcpu->id);
+				HALT();
+			}
+			break;
 		default:{
 			if (rdmsr_safe(r) != 0) {
 				/* Inject a Hardware exception #GP */
