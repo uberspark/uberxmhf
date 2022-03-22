@@ -81,9 +81,13 @@
 #define PAGE_SIZE_256T  (1UL << PAGE_SHIFT_256T)
 #endif /* __AMD64__ */
 
-/* For i386 to access large page size: u64 for both word size */
-#define PAGE_SIZE_512G_LL   (1ULL << PAGE_SHIFT_512G)
-#define PAGE_SIZE_256T_LL   (1ULL << PAGE_SHIFT_256T)
+/* For physical address: definitions in u64 for both i386 and amd64 */
+#define PA_PAGE_SIZE_4K     (1ULL << PAGE_SHIFT_4K)
+#define PA_PAGE_SIZE_2M     (1ULL << PAGE_SHIFT_2M)
+#define PA_PAGE_SIZE_4M     (1ULL << PAGE_SHIFT_4M)
+#define PA_PAGE_SIZE_1G     (1ULL << PAGE_SHIFT_1G)
+#define PA_PAGE_SIZE_512G   (1ULL << PAGE_SHIFT_512G)
+#define PA_PAGE_SIZE_256T   (1ULL << PAGE_SHIFT_256T)
 
 #else
 
@@ -96,6 +100,8 @@
 
 #endif
 
+/* Align address up */
+
 #define PAGE_ALIGN_UP4K(size)   (((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_UP2M(size)   (((size) + PAGE_SIZE_2M - 1) & ~(PAGE_SIZE_2M - 1))
 #define PAGE_ALIGN_UP4M(size)   (((size) + PAGE_SIZE_4M - 1) & ~(PAGE_SIZE_4M - 1))
@@ -104,6 +110,15 @@
 #define PAGE_ALIGN_UP512G(size) (((size) + PAGE_SIZE_512G - 1) & ~(PAGE_SIZE_512G - 1))
 #define PAGE_ALIGN_UP256T(size) (((size) + PAGE_SIZE_256T - 1) & ~(PAGE_SIZE_256T - 1))
 #endif /* __AMD64__ */
+
+#define PA_PAGE_ALIGN_UP4K(size)    (((size) + PA_PAGE_SIZE_4K - 1) & ~(PA_PAGE_SIZE_4K - 1))
+#define PA_PAGE_ALIGN_UP2M(size)    (((size) + PA_PAGE_SIZE_2M - 1) & ~(PA_PAGE_SIZE_2M - 1))
+#define PA_PAGE_ALIGN_UP4M(size)    (((size) + PA_PAGE_SIZE_4M - 1) & ~(PA_PAGE_SIZE_4M - 1))
+#define PA_PAGE_ALIGN_UP1G(size)    (((size) + PA_PAGE_SIZE_1G - 1) & ~(PA_PAGE_SIZE_1G - 1))
+#define PA_PAGE_ALIGN_UP512G(size)  (((size) + PA_PAGE_SIZE_512G - 1) & ~(PA_PAGE_SIZE_512G - 1))
+#define PA_PAGE_ALIGN_UP256T(size)  (((size) + PA_PAGE_SIZE_256T - 1) & ~(PA_PAGE_SIZE_256T - 1))
+
+/* Align address (down) */
 
 #define PAGE_ALIGN_4K(size)     ((size) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_2M(size)     ((size) & ~(PAGE_SIZE_2M - 1))
@@ -114,6 +129,15 @@
 #define PAGE_ALIGN_256T(size)   ((size) & ~(PAGE_SIZE_256T - 1))
 #endif /* __AMD64__ */
 
+#define PA_PAGE_ALIGN_4K(size)      ((size) & ~(PA_PAGE_SIZE_4K - 1))
+#define PA_PAGE_ALIGN_2M(size)      ((size) & ~(PA_PAGE_SIZE_2M - 1))
+#define PA_PAGE_ALIGN_4M(size)      ((size) & ~(PA_PAGE_SIZE_4M - 1))
+#define PA_PAGE_ALIGN_1G(size)      ((size) & ~(PA_PAGE_SIZE_1G - 1))
+#define PA_PAGE_ALIGN_512G(size)    ((size) & ~(PA_PAGE_SIZE_512G - 1))
+#define PA_PAGE_ALIGN_256T(size)    ((size) & ~(PA_PAGE_SIZE_256T - 1))
+
+/* Test whether address is aligned */
+
 #define PAGE_ALIGNED_4K(size)   (PAGE_ALIGN_4K(size) == size)
 #define PAGE_ALIGNED_2M(size)   (PAGE_ALIGN_2M(size) == size)
 #define PAGE_ALIGNED_4M(size)   (PAGE_ALIGN_4M(size) == size)
@@ -122,6 +146,13 @@
 #define PAGE_ALIGNED_512G(size) (PAGE_ALIGN_512G(size) == size)
 #define PAGE_ALIGNED_256T(size) (PAGE_ALIGN_256T(size) == size)
 #endif /* __AMD64__ */
+
+#define PA_PAGE_ALIGNED_4K(size)    (PA_PAGE_ALIGN_4K(size) == size)
+#define PA_PAGE_ALIGNED_2M(size)    (PA_PAGE_ALIGN_2M(size) == size)
+#define PA_PAGE_ALIGNED_4M(size)    (PA_PAGE_ALIGN_4M(size) == size)
+#define PA_PAGE_ALIGNED_1G(size)    (PA_PAGE_ALIGN_1G(size) == size)
+#define PA_PAGE_ALIGNED_512G(size)  (PA_PAGE_ALIGN_512G(size) == size)
+#define PA_PAGE_ALIGNED_256T(size)  (PA_PAGE_ALIGN_256T(size) == size)
 
 #define BYTES_TO_PAGE4K(size)   (PAGE_ALIGN_UP4K(size) >> PAGE_SHIFT_4K)
 
