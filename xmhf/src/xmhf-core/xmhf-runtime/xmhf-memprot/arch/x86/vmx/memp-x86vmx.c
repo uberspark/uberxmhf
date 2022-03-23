@@ -418,12 +418,15 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_read(VCPU *vcpu, u32 msr, u64 *val) {
  */
 u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 	u32 hypapp_status;
+	u64 skip_ept_update = 0;
+	/* Logging */
 	{
 		u64 oldval;
 		HALT_ON_ERRORCOND(xmhf_memprot_arch_x86vmx_mtrr_read(vcpu, msr, &oldval) == 0);
 		printf("\nCPU(0x%02x): WRMSR (MTRR) 0x%08x 0x%016llx (old = 0x%016llx)",
 				vcpu->id, msr, val, oldval);
 	}
+	/* Check whether hypapp allows modifying MTRR */
 	xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
 	hypapp_status = xmhf_app_handlemtrr(vcpu, msr, val);
 	xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
@@ -473,6 +476,10 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 		/* Only one write will be effective, but this saves if-else blocks */
 		vcpu->vmx_guestmtrrmsrs.var_mtrrs[index].base = baseval;
 		vcpu->vmx_guestmtrrmsrs.var_mtrrs[index].mask = maskval;
+		/* If MTRRs are not enabled, no need to update EPT */
+		if (!vcpu->vmx_ept_mtrr_enable) {
+			skip_ept_update = 1;
+		}
 	} else {
 		/* Fixed MTRR */
 		u32 found = 0;
@@ -494,14 +501,24 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 			printf("\nCannot find MTRR, the caller (XMHF code) is wrong.");
 			HALT();
 		}
+		/* If MTRRs / fixed MTRRs are not enabled, no need to update EPT */
+		if (!vcpu->vmx_ept_mtrr_enable || !vcpu->vmx_ept_fixmtrr_enable) {
+			skip_ept_update = 1;
+		}
 	}
 
-	/* Update EPT */
-	// TODO: do not update everything every time
-	_vmx_updateEPT_memtype(vcpu, 0, MAX_PHYS_ADDR);
-
-	/* Flush EPT's TLB */
-	xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
+	/* Update EPT and flush EPT's TLB */
+	if (!skip_ept_update) {
+		/*
+		 * Currently updating all of EPT (from 0 to MAX_PHYS_ADDR). It is
+		 * possible to only update a part of EPT, depending on what MTRR is
+		 * changed and the value before and after change. However, this needs a
+		 * complicated logic.
+		 */
+		printf("\nCPU(0x%02x): Update EPT memory types due to MTRR", vcpu->id);
+		_vmx_updateEPT_memtype(vcpu, 0, MAX_PHYS_ADDR);
+		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
+	}
 	return 0;
 }
 
