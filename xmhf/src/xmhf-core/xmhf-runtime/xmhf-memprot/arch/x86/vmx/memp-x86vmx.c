@@ -377,7 +377,10 @@ static void _vmx_updateEPT_memtype(VCPU *vcpu, u64 start, u64 end){
 	}
 }
 
-/* Read a guest MTRR value from shadow, return 0 if successful read */
+/*
+ * Read a guest MTRR value from shadow, return 0 if successful read,
+ * return non-zero if unsuccessful read (should report error to guest OS)
+ */
 u32 xmhf_memprot_arch_x86vmx_mtrr_read(VCPU *vcpu, u32 msr, u64 *val) {
 	if (msr == IA32_MTRR_DEF_TYPE) {
 		/* Default type register */
@@ -402,11 +405,17 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_read(VCPU *vcpu, u32 msr, u64 *val) {
 				return 0;
 			}
 		}
+		printf("\nCannot find MTRR, the caller (XMHF code) is wrong.");
+		HALT();
+		/* Placate compiler */
 		return 1;
 	}
 }
 
-/* Write a guest MTRR value to shadow and update EPT, return 0 if successful */
+/*
+ * Write a guest MTRR value to shadow and update EPT, return 0 if successful,
+ * return non-zero if unsuccessful write (should report error to guest OS)
+ */
 u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 	u32 hypapp_status;
 	{
@@ -482,12 +491,13 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 			}
 		}
 		if (!found) {
-			return 1;
+			printf("\nCannot find MTRR, the caller (XMHF code) is wrong.");
+			HALT();
 		}
 	}
 
 	/* Update EPT */
-	// TODO: do not update everything all the time
+	// TODO: do not update everything every time
 	_vmx_updateEPT_memtype(vcpu, 0, MAX_PHYS_ADDR);
 
 	/* Flush EPT's TLB */

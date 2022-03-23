@@ -404,11 +404,14 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			 * are not used when EPT is used.
 			 */
 			if (xmhf_memprot_arch_x86vmx_mtrr_write(vcpu, r->ecx, write_data)) {
-				// TODO: error handling (sometimes need to return error to user)
-				printf("\nCPU(0x%02x): Modifying MTRR failed. Error handling "
-						"not implemented. Halt!",
-						vcpu->id);
-				HALT();
+				/*
+				 * When designed, xmhf_memprot_arch_x86vmx_mtrr_write() has not
+				 * been observed to fail. This may happen if the guest OS
+				 * performs an invalid WRMSR. Please make sure that in this
+				 * case injecting #GP is the correct action.
+				 */
+				HALT_ON_ERRORCOND(0 && "Unexperienced fail in MTRR write");
+				goto wrmsr_inject_gp;
 			}
 			break;
 		case IA32_BIOS_UPDT_TRIG:
@@ -425,6 +428,25 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	//printf("\nCPU(0x%02x): WRMSR end", vcpu->id);
+	return;
+
+wrmsr_inject_gp:
+	{
+		/* Inject a Hardware exception #GP */
+		union {
+			struct _vmx_event_injection st;
+			uint32_t ui;
+		} injection_info;
+		injection_info.ui = 0;
+		injection_info.st.vector = 0xd;     /* #GP */
+		injection_info.st.type = 0x3;       /* Hardware Exception */
+		injection_info.st.errorcode = 1;    /* Deliver error code */
+		injection_info.st.valid = 1;
+		vcpu->vmcs.control_VM_entry_interruption_information = injection_info.ui;
+		vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+		/* Do not increase guest RIP */
+		return;
+	}
 }
 
 //---intercept handler (RDMSR)--------------------------------------------------
@@ -505,28 +527,17 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			 * Other MTRR MSRs come from the shadow in vcpu.
 			 */
 			if (xmhf_memprot_arch_x86vmx_mtrr_read(vcpu, r->ecx, &read_result)) {
-				printf("\nCPU(0x%02x): Strange failure when reading MTRR. Halt!",
-						vcpu->id);
-				HALT();
+				/*
+				 * When designed, xmhf_memprot_arch_x86vmx_mtrr_read() cannot
+				 * fail. Please make sure injecting #GP is the correct action.
+				 */
+				HALT_ON_ERRORCOND(0 && "Unexpected fail in MTRR read");
+				goto rdmsr_inject_gp;
 			}
 			break;
 		default:{
 			if (rdmsr_safe(r) != 0) {
-				/* Inject a Hardware exception #GP */
-				union {
-					struct _vmx_event_injection st;
-					uint32_t ui;
-				} injection_info;
-				injection_info.ui = 0;
-				injection_info.st.vector = 0xd;     /* #GP */
-				injection_info.st.type = 0x3;       /* Hardware Exception */
-				injection_info.st.errorcode = 1;    /* Deliver error code */
-				injection_info.st.valid = 1;
-				vcpu->vmcs.control_VM_entry_interruption_information = injection_info.ui;
-				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-
-				/* Do not increase guest RIP */
-				return;
+				goto rdmsr_inject_gp;
 			}
 			goto no_assign_read_result;
 		}
@@ -542,10 +553,29 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		r->edx = (u32)(read_result >> 32);
 	}
 
+	//printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
+
 no_assign_read_result:
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	return;
 
-	//printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
+rdmsr_inject_gp:
+	{
+		/* Inject a Hardware exception #GP */
+		union {
+			struct _vmx_event_injection st;
+			uint32_t ui;
+		} injection_info;
+		injection_info.ui = 0;
+		injection_info.st.vector = 0xd;     /* #GP */
+		injection_info.st.type = 0x3;       /* Hardware Exception */
+		injection_info.st.errorcode = 1;    /* Deliver error code */
+		injection_info.st.valid = 1;
+		vcpu->vmcs.control_VM_entry_interruption_information = injection_info.ui;
+		vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+		/* Do not increase guest RIP */
+		return;
+	}
 }
 
 
