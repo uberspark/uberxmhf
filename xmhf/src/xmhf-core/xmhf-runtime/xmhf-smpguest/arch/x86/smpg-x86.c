@@ -54,6 +54,14 @@
 void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
+	/*
+	 * When DRT is enabled, hypervisor will block NMIs. This may cause failures
+	 * in quiescing. So unblock NMIs here (regardless of DRT to be safe).
+	 */
+	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+		xmhf_smpguest_arch_x86vmx_unblock_nmi();
+	}
+
 #if defined(__MP_VERSION__)
 	//TODOs:
 	//1. conceal g_midtable_numentries behind "baseplatform" component interface

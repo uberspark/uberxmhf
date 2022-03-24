@@ -418,7 +418,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
 }
 
 /* Unblock NMI by executing iret, but do not jump to somewhere else */
-static void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
+void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
 #ifdef __AMD64__
     asm volatile (
         "movq    %%rsp, %%rsi   \r\n"
