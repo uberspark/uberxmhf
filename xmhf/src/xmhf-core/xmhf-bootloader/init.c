@@ -82,10 +82,12 @@ u8 cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".st
 
 SL_PARAMETER_BLOCK *slpb = NULL;
 
+#ifdef __DRT__
 /* TODO: refactor to eliminate a lot of these globals, or at least use
  * static where appropriate */
 static u8 *g_sinit_module_ptr = NULL;
 static u32 g_sinit_module_size = 0;
+#endif /* __DRT__ */
 
 extern void init_core_lowlevel_setup(void);
 
@@ -520,7 +522,6 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
 
     return false; /* unreachable if launch is successful, thus should return failure */
 }
-#endif /* __DRT__ */
 
 /**
  * Check each module to see if it is an SINIT module.  If it is, set
@@ -556,7 +557,6 @@ static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
     return false;
 }
 
-#ifdef __DRT__
 //---svm_verify_platform-------------------------------------------------------
 //do some basic checks on SVM platform to ensure DRTM should work as expected
 static bool svm_verify_platform(void) __attribute__((unused));
@@ -868,11 +868,13 @@ void cstartup(multiboot_info_t *mbi){
     if(CPU_VENDOR_INTEL == cpu_vendor) {
         printf("\nINIT(early): detected an Intel CPU");
 
+#ifdef __DRT__
         /* Intel systems require an SINIT module */
         if(!txt_parse_sinit(mod_array, mods_count)) {
             printf("\nINIT(early): FATAL ERROR: Intel CPU without SINIT module!\n");
             HALT();
         }
+#endif /* __DRT__ */
     } else if(CPU_VENDOR_AMD == cpu_vendor) {
         printf("\nINIT(early): detected an AMD CPU");
     } else {
@@ -935,21 +937,26 @@ void cstartup(multiboot_info_t *mbi){
 		//check if we have an optional app module and if so populate relevant SLPB
 		//fields
 		{
-			u32 i, bytes;
+			u32 i, start, bytes;
 			slpb->runtime_appmodule_base= 0;
 			slpb->runtime_appmodule_size= 0;
 
 			//we search from module index 2 upto and including mods_count-1
 			//and grab the first non-SINIT module in the list
 			for(i=2; i < mods_count; i++) {
-				bytes = mod_array[i].mod_end - mod_array[i].mod_start;
-				if(!is_sinit_acmod((void*)mod_array[i].mod_start, bytes, false)){
-						slpb->runtime_appmodule_base= mod_array[i].mod_start;
-						slpb->runtime_appmodule_size= bytes;
-						printf("\nINIT(early): found app module, base=0x%08x, size=0x%08x",
-								slpb->runtime_appmodule_base, slpb->runtime_appmodule_size);
-						break;
+				start = mod_array[i].mod_start;
+				bytes = mod_array[i].mod_end - start;
+#ifdef __DRT__
+				if (is_sinit_acmod((void*) start, bytes, false)) {
+					continue;
 				}
+#endif /* __DRT__ */
+				/* Found app module */
+				slpb->runtime_appmodule_base = start;
+				slpb->runtime_appmodule_size = bytes;
+				printf("\nINIT(early): found app module, base=0x%08x, size=0x%08x",
+						slpb->runtime_appmodule_base, slpb->runtime_appmodule_size);
+				break;
 			}
 		}
 
