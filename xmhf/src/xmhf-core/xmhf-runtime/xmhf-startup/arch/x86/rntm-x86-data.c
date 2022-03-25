@@ -96,7 +96,7 @@ u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".bss.
 #endif /* __AMD64__ */
 
 //runtime stack
-u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
+u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".bss.stack") ));
 
 
 RPB arch_rpb __attribute__(( section(".s_rpb") )) = {

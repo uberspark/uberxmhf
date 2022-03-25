@@ -84,7 +84,7 @@ SECTIONS
   } =0x9090
 
   .stack : {
-    *(.stack)
+    *(.bss.stack)
     . = ALIGN(4096);
   } =0x9090
 

@@ -103,7 +103,7 @@ typedef struct _pcpu {
 extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
 
 //runtime stacks for individual cores
-extern u8 g_cpustacks[] __attribute__(( section(".stack") ));
+extern u8 g_cpustacks[] __attribute__(( section(".bss.stack") ));
 
 //VCPU structure for each "guest OS" core
 extern VCPU g_vcpubuffers[] __attribute__(( section(".data") ));
