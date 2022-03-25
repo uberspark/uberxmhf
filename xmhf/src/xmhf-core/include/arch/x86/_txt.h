@@ -58,9 +58,11 @@
 /* XXX TODO order is important for these; fix it */
 #include "_txt_mle.h"
 #include "_txt_smx.h"
-#include "_txt_acmod.h" /* XXX TODO This is really only necessary in init/ */
+#ifdef __DRT__
+#include "_txt_acmod.h"
 #include "_txt_mtrrs.h"
 #include "_txt_heap.h"
+#endif /* __DRT__ */
 
 #endif //__ASSEMBLY__
 
