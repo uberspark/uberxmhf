@@ -45,7 +45,9 @@ C_SOURCES32 =  ./arch/x86/bplt-x86-pci.c
 C_SOURCES32 += ./arch/x86/bplt-x86-acpi.c
 C_SOURCES32 += ./arch/x86/bplt-x86-addressing.c
 C_SOURCES32 += ./arch/x86/bplt-x86-cpu.c
+ifeq ($(DRT), y)
 C_SOURCES32 += ./arch/x86/vmx/bplt-x86vmx-mtrrs.c
+endif
 
 AS_OBJECTS32 = $(patsubst %.S, %.x86.o, $(AS_SOURCES32))
 C_OBJECTS32 = $(patsubst %.c, %.x86.o, $(C_SOURCES32))
