@@ -35,6 +35,7 @@ OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/svm/smpg-x86svm-data.o
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/vmx/smpg-x86vmx.o
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/vmx/smpg-x86vmx-data.o
 
+ifeq ($(DMAP), y)
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/dmap-interface-runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/iommu-pt.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/dmap-x86-runtime.o
@@ -43,6 +44,7 @@ OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-internal.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-utils.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-data.o
+endif
 
 OBJECTS_PRECOMPILED += ./xmhf-xcphandler/xcph-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/x86/xcph-x86.o
@@ -108,8 +110,10 @@ runtimecomponents:
 	cd xmhf-eventhub && $(MAKE) -w all
 	#XMHF SMP guest component
 	cd xmhf-smpguest && $(MAKE) -w all
+ifeq ($(DMAP), y)
 	#XMHF DMA protection component
 	cd xmhf-dmaprot && $(MAKE) -w all
+endif
 	#XMHF exception handler component
 	cd xmhf-xcphandler && $(MAKE) -w all
 	#XMHF base platform component

@@ -107,7 +107,9 @@ extern RPB *rpb;
 #include <xmhf-baseplatform.h>	//XMHF base platform component
 #include <xmhf-mm.h>            //XMHF memory management component
 #include <xmhf-memprot.h>		//XMHF memory protection component
+#ifdef __DMAP__
 #include <xmhf-dmaprot.h>		//XMHF DMA protection component
+#endif /* __DMAP__ */
 #include <xmhf-partition.h>		//XMHF partition component
 #include <xmhf-smpguest.h>		//XMHF SMP guest component
 #include <xmhf-parteventhub.h>	//XMHF partition event-hub component
