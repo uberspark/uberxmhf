@@ -94,12 +94,10 @@ export AMD64_MAX_PHYS_ADDR := @AMD64_MAX_PHYS_ADDR@
 ifeq ($(TARGET_SUBARCH), amd64)
 LIBBAREMETAL_BUILD32 = $(CURDIR)/_build_libbaremetal32
 LIBTOMCRYPT_BUILD32 = $(CURDIR)/_build_libtomcrypt32
-LIBTOMMATH_BUILD32 = $(CURDIR)/_build_libtommath32
 
 export ADDL_LIBS32 :=
 ADDL_LIBS32 += $(LIBBAREMETAL_BUILD32)/_objects/$(LIBBAREMETAL_ARCHIVE)
 ADDL_LIBS32 += $(LIBTOMCRYPT_BUILD32)/$(LIBTOMCRYPT_ARCHIVE)
-ADDL_LIBS32 += $(LIBTOMMATH_BUILD32)/$(LIBTOMMATH_ARCHIVE)
 # link libbaremetal *again* to resolve more dependencies
 ADDL_LIBS32 += $(LIBBAREMETAL_BUILD32)/_objects/$(LIBBAREMETAL_ARCHIVE)
 else
@@ -332,14 +330,6 @@ subdirs: $(LIBBAREMETAL_SRC) $(APP_ARCHIVE)
 	@echo ---------------------------------------------------------------
 ifeq ($(TARGET_SUBARCH), amd64)
 	@echo ---------------------------------------------------------------
-	@echo Building libtommath 32-bits...
-	@echo ---------------------------------------------------------------
-	mkdir -p $(LIBTOMMATH_BUILD32)
-	cd $(LIBTOMMATH_BUILD32) && $(MAKE) -f $(LIBTOMMATH_SRC)/makefile CFLAGS="$(filter-out -Werror,$(BCFLAGS))" -w libtommath.a
-	@echo ---------------------------------------------------------------
-	@echo libtommath.a 32-bits build SUCCESS
-	@echo ---------------------------------------------------------------
-	@echo ---------------------------------------------------------------
 	@echo Building libtomcrypt 32-bits...
 	@echo ---------------------------------------------------------------
 	mkdir -p $(LIBTOMCRYPT_BUILD32)
@@ -418,7 +408,6 @@ ifeq ($(TARGET_SUBARCH), amd64)
 	@echo ---------------------------------------------------------------
 	@echo Cleaning 32-bits external libraries...
 	@echo ---------------------------------------------------------------
-	rm -rf $(LIBTOMMATH_BUILD32)
 	rm -rf $(LIBTOMCRYPT_BUILD32)
 	rm -rf $(LIBBAREMETAL_BUILD32)
 	@echo ---------------------------------------------------------------
