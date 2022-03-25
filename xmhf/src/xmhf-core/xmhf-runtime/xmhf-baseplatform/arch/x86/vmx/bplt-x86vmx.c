@@ -54,8 +54,10 @@
 //initialize CPU state
 void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
     	u32 bcr0;
-	    txt_heap_t  __attribute__((unused)) *txt_heap;
-        os_mle_data_t __attribute__((unused)) *os_mle_data ;
+#ifdef __DRT__
+	    txt_heap_t  *txt_heap;
+        os_mle_data_t *os_mle_data;
+#endif /* __DRT__ */
 
 	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
 		bcr0 = read_cr0();
