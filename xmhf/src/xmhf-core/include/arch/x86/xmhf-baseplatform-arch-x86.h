@@ -740,20 +740,20 @@ extern struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attri
 extern unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") ));
 
 //VMX VMXON buffers
-extern u8 g_vmx_vmxon_buffers[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_vmxon_buffers[] __attribute__(( section(".bss.palign_data") ));
 
 //VMX VMCS buffers
-extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".bss.palign_data") ));
 
 //VMX IO bitmap buffers
-extern u8 g_vmx_iobitmap_buffer[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_iobitmap_buffer[] __attribute__(( section(".bss.palign_data") ));
 
 //VMX guest and host MSR save area buffers
-extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".palign_data") ));
-extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".bss.palign_data") ));
 
 //VMX MSR bitmap buffers
-extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".bss.palign_data") ));
 
 
 //initialize CPU state
@@ -789,16 +789,16 @@ void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 #endif
 
 //SVM VM_HSAVE buffers
-extern u8 g_svm_hsave_buffers[]__attribute__(( section(".palign_data") ));
+extern u8 g_svm_hsave_buffers[]__attribute__(( section(".bss.palign_data") ));
 
 //SVM VMCB buffers
-extern u8 g_svm_vmcb_buffers[]__attribute__(( section(".palign_data") ));
+extern u8 g_svm_vmcb_buffers[]__attribute__(( section(".bss.palign_data") ));
 
 //SVM IO bitmap buffer
-extern u8 g_svm_iobitmap_buffer[]__attribute__(( section(".palign_data") ));
+extern u8 g_svm_iobitmap_buffer[]__attribute__(( section(".bss.palign_data") ));
 
 //SVM MSR bitmap buffer
-extern u8 g_svm_msrpm[]__attribute__(( section(".palign_data") ));
+extern u8 g_svm_msrpm[]__attribute__(( section(".bss.palign_data") ));
 
 
 //wake up application processors (cores) in the system

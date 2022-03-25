@@ -79,7 +79,7 @@ SECTIONS
   } =0x9090
 
   .palign_data : {
-    *(.palign_data)
+    *(.bss.palign_data)
     . = ALIGN(4096);
   } =0x9090
 

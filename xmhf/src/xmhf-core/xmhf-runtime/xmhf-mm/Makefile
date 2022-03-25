@@ -15,8 +15,6 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 # targets
 .PHONY: all
 all: $(OBJECTS) 
-	# Optional: use sparse file to reduce fs space usage
-	fallocate -d xmhf-mm.o
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
 	$(CC) -c $(ASFLAGS) -o $@ $<

@@ -92,8 +92,8 @@ u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
 //during INIT-SIPI-SIPI emulation
 //smpguest x86svm
-u8 g_svm_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+u8 g_svm_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".bss.palign_data") ));
 
 //SVM SIPI page buffers used for guest INIT-SIPI-SIPI emulation
 //smpguest x86svm
-u8 g_svm_sipi_page_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
+u8 g_svm_sipi_page_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".bss.palign_data") ));

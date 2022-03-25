@@ -118,7 +118,7 @@ extern u32 g_vmx_lapic_base __attribute__(( section(".data") ));
 
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
 //during INIT-SIPI-SIPI emulation
-extern u8 g_vmx_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_virtual_LAPIC_base[] __attribute__(( section(".bss.palign_data") ));
 
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
@@ -199,10 +199,10 @@ extern u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") ));
 
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
 //during INIT-SIPI-SIPI emulation
-extern u8 g_svm_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
+extern u8 g_svm_virtual_LAPIC_base[] __attribute__(( section(".bss.palign_data") ));
 
 //SVM SIPI page buffers used for guest INIT-SIPI-SIPI emulation
-extern u8 g_svm_sipi_page_buffers[]__attribute__(( section(".palign_data") ));
+extern u8 g_svm_sipi_page_buffers[]__attribute__(( section(".bss.palign_data") ));
 
 
 

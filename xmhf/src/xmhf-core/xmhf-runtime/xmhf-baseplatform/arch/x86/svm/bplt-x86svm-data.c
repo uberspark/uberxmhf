@@ -52,13 +52,13 @@
 #include <xmhf.h>
 
 //SVM VM_HSAVE buffers
-u8 g_svm_hsave_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
+u8 g_svm_hsave_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".bss.palign_data") ));
 
 //SVM VMCB buffers
-u8 g_svm_vmcb_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
+u8 g_svm_vmcb_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".bss.palign_data") ));
 
 //SVM IO bitmap buffer
-u8 g_svm_iobitmap_buffer[3 * PAGE_SIZE_4K]__attribute__(( section(".palign_data") ));
+u8 g_svm_iobitmap_buffer[3 * PAGE_SIZE_4K]__attribute__(( section(".bss.palign_data") ));
 
 //SVM MSR bitmap buffer
-u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));
+u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".bss.palign_data") ));
