@@ -99,35 +99,39 @@ OBJECTS_PRECOMPILED_LIBBACKENDS = ./xmhf-xmhfcbackend/xmhfc-putchar.o
 OBJECTS_PRECOMPILED_LIBBACKENDS += ./xmhf-xmhfcbackend/stl/xmhfc-bitmap.o
 OBJECTS_PRECOMPILED_LIBBACKENDS += ./xmhf-xmhfcbackend/stl/xmhfc-dlist.o
 
-# targets
-.PHONY: runtimecomponents
-runtimecomponents:
-	#XMHF memory protection component
-	cd xmhf-memprot && $(MAKE) -w all
-	#XMHF Memory management component
-	cd xmhf-mm && $(MAKE) -w all
-	#XMHF partition event-hub component
-	cd xmhf-eventhub && $(MAKE) -w all
-	#XMHF SMP guest component
-	cd xmhf-smpguest && $(MAKE) -w all
+#XMHF memory protection component
+RUNTIME_COMPONENTS = xmhf-memprot
+#XMHF Memory management component
+RUNTIME_COMPONENTS += xmhf-mm
+#XMHF partition event-hub component
+RUNTIME_COMPONENTS += xmhf-eventhub
+#XMHF SMP guest component
+RUNTIME_COMPONENTS += xmhf-smpguest
 ifeq ($(DMAP), y)
-	#XMHF DMA protection component
-	cd xmhf-dmaprot && $(MAKE) -w all
+#XMHF DMA protection component
+RUNTIME_COMPONENTS += xmhf-dmaprot
 endif
-	#XMHF exception handler component
-	cd xmhf-xcphandler && $(MAKE) -w all
-	#XMHF base platform component
-	cd xmhf-baseplatform && $(MAKE) -w all
-	#XMHF partition component
-	cd xmhf-partition && $(MAKE) -w all
-	#XMHF TPM component
-	cd xmhf-tpm && $(MAKE) -w all
-	#XMHF debug component
-	cd xmhf-debug && $(MAKE) -w all
-	#XMHF libxmhfc environment callbacks
-	cd xmhf-xmhfcbackend && $(MAKE) -w all
-	#XMHF startup component
-	cd xmhf-startup && $(MAKE) -w all
+#XMHF exception handler component
+RUNTIME_COMPONENTS += xmhf-xcphandler
+#XMHF base platform component
+RUNTIME_COMPONENTS += xmhf-baseplatform
+#XMHF partition component
+RUNTIME_COMPONENTS += xmhf-partition
+#XMHF TPM component
+RUNTIME_COMPONENTS += xmhf-tpm
+#XMHF debug component
+RUNTIME_COMPONENTS += xmhf-debug
+#XMHF libxmhfc environment callbacks
+RUNTIME_COMPONENTS += xmhf-xmhfcbackend
+#XMHF startup component
+RUNTIME_COMPONENTS += xmhf-startup
+
+# targets
+.PHONY: runtimecomponents $(RUNTIME_COMPONENTS)
+runtimecomponents: $(RUNTIME_COMPONENTS)
+
+$(RUNTIME_COMPONENTS): %:
+	cd $@ && $(MAKE) -w all
 
 
 .PHONY: all
