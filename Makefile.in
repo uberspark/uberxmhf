@@ -145,9 +145,16 @@ export ADDL_INCLUDES_BOOTLOADER :=
 ADDL_INCLUDES_BOOTLOADER += -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
 ADDL_INCLUDES_BOOTLOADER += -I$(LIBTOMCRYPT_SRC)/src/headers/
 
+# List of subdirs need to be built
+export LIB_SUBDIRS :=
+LIB_SUBDIRS += $(LIBBAREMETAL_BUILD)
+LIB_SUBDIRS += $(LIBTOMCRYPT_BUILD)
+LIB_SUBDIRS += $(LIBTOMMATH_BUILD)
+ifeq ($(TARGET_SUBARCH), amd64)
+LIB_SUBDIRS += $(LIBBAREMETAL_BUILD32)
+LIB_SUBDIRS += $(LIBTOMCRYPT_BUILD32)
+endif
 
-# FIXME- this should be configurable
-# export CFLAGS=-m32
 
 ##CFLAGS and ASFLAGS population
 # experimental support
@@ -300,10 +307,9 @@ export ASFLAGS
 export BASFLAGS
 export VFLAGS
 
-.PHONY: all
-all: $(APP_ARCHIVE) subdirs
+.PHONY: all $(APP_ARCHIVE) $(LIB_SUBDIRS) core
+all: core
 
-.PHONY: $(APP_ARCHIVE)
 $(APP_ARCHIVE):
 	@echo ---------------------------------------------------------------
 	@echo Building primary hyperapp...
@@ -315,8 +321,7 @@ $(APP_ARCHIVE):
 	@echo primary hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
 
-.PHONY: subdirs
-subdirs: $(LIBBAREMETAL_SRC) $(APP_ARCHIVE)
+$(LIBTOMMATH_BUILD):
 	@echo ---------------------------------------------------------------
 	@echo Building libtommath...
 	@echo ---------------------------------------------------------------
@@ -325,6 +330,8 @@ subdirs: $(LIBBAREMETAL_SRC) $(APP_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo libtommath.a build SUCCESS
 	@echo ---------------------------------------------------------------
+
+$(LIBTOMCRYPT_BUILD):
 	@echo ---------------------------------------------------------------
 	@echo Building libtomcrypt...
 	@echo ---------------------------------------------------------------
@@ -333,6 +340,8 @@ subdirs: $(LIBBAREMETAL_SRC) $(APP_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo libtomcrypt.a build SUCCESS
 	@echo ---------------------------------------------------------------
+
+$(LIBBAREMETAL_BUILD):
 	@echo ---------------------------------------------------------------
 	@echo Building libbaremetal...
 	@echo ---------------------------------------------------------------
@@ -341,7 +350,10 @@ subdirs: $(LIBBAREMETAL_SRC) $(APP_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo libbaremetal.a build SUCCESS
 	@echo ---------------------------------------------------------------
+
 ifeq ($(TARGET_SUBARCH), amd64)
+
+$(LIBTOMCRYPT_BUILD32):
 	@echo ---------------------------------------------------------------
 	@echo Building libtomcrypt 32-bits...
 	@echo ---------------------------------------------------------------
@@ -350,6 +362,8 @@ ifeq ($(TARGET_SUBARCH), amd64)
 	@echo ---------------------------------------------------------------
 	@echo libtomcrypt.a 32-bits build SUCCESS
 	@echo ---------------------------------------------------------------
+
+$(LIBBAREMETAL_BUILD32):
 	@echo ---------------------------------------------------------------
 	@echo Building libbaremetal 32-bits...
 	@echo ---------------------------------------------------------------
@@ -358,7 +372,10 @@ ifeq ($(TARGET_SUBARCH), amd64)
 	@echo ---------------------------------------------------------------
 	@echo libbaremetal.a 32-bits build SUCCESS
 	@echo ---------------------------------------------------------------
+
 endif
+
+core: $(APP_ARCHIVE) $(LIB_SUBDIRS)
 	@echo ---------------------------------------------------------------
 	@echo Building XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
