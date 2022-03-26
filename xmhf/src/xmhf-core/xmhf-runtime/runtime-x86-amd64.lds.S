@@ -78,11 +78,19 @@ SECTIONS
     . = ALIGN(4096);
   } =0x9090
 
+  /*
+   * This section is marked as NOBITS in runtime.exe. Need to use
+   * --set-section-flags in objcopy to include this section to runtime.bin
+   */
   .palign_data : {
     *(.bss.palign_data)
     . = ALIGN(4096);
   } =0x9090
 
+  /*
+   * This section is marked as NOBITS in runtime.exe. Need to use
+   * --set-section-flags in objcopy to include this section to runtime.bin
+   */
   .stack : {
     *(.bss.stack)
     . = ALIGN(4096);
