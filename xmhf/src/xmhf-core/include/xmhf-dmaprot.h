@@ -53,6 +53,9 @@
 
 #ifndef __ASSEMBLY__
 
+/// @brief maximum number of RSDT entries we support
+#define ACPI_MAX_RSDT_ENTRIES (256)
+
 /// @brief The invalid handler of the IOMMU PageTable
 #define IOMMU_PT_INVALID	0xFFFFFFFF
 

@@ -3,9 +3,6 @@
 #include <xmhf.h>
 #include "dmap-vmx-internal.h"
 
-// maximum number of RSDT entries we support
-#define ACPI_MAX_RSDT_ENTRIES (256)
-
 //==============================================================================
 // local (static) variables and function definitions
 //==============================================================================

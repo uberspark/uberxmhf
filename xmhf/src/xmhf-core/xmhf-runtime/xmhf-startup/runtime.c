@@ -50,6 +50,99 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf.h>
 
+#if defined(__DRT__) && !defined(__DMAP__)
+
+// This macro is defined in xmhf-dmaprot.h. However when !__DMAP__ this header
+// is not included. So define it here.
+#define ACPI_MAX_RSDT_ENTRIES (256)
+
+static void vmx_eap_zap(void)
+{
+    ACPI_RSDP rsdp;
+    ACPI_RSDT rsdt;
+    u32 num_rsdtentries;
+    uintptr_t rsdtentries[ACPI_MAX_RSDT_ENTRIES];
+    uintptr_t status;
+    VTD_DMAR dmar;
+    u32 i, dmarfound;
+    spa_t dmaraddrphys, remappingstructuresaddrphys;
+    spa_t rsdt_xsdt_spaddr = INVALID_SPADDR;
+    hva_t rsdt_xsdt_vaddr = INVALID_VADDR;
+
+    // zero out rsdp and rsdt structures
+    memset(&rsdp, 0, sizeof(ACPI_RSDP));
+    memset(&rsdt, 0, sizeof(ACPI_RSDT));
+
+    // get ACPI RSDP
+    // [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
+    status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
+    HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
+    printf("\n%s: RSDP at %08x", __FUNCTION__, status);
+
+    // [Superymk] Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
+    if (rsdp.revision == 0) // ACPI v1
+    {
+        printf("\n%s: ACPI v1", __FUNCTION__);
+        rsdt_xsdt_spaddr = rsdp.rsdtaddress;
+    }
+    else if (rsdp.revision == 0x2) // ACPI v2
+    {
+        printf("\n%s: ACPI v2", __FUNCTION__);
+        rsdt_xsdt_spaddr = (spa_t)rsdp.xsdtaddress;
+    }
+    else // Unrecognized ACPI version
+    {
+        printf("\n%s: ACPI unsupported version!", __FUNCTION__);
+        return;
+    }
+
+    // grab ACPI RSDT
+    // Note: in i386, <rsdt_xsdt_spaddr> should be in lower 4GB. So the conversion to vaddr is fine.
+    rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
+
+    xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
+    printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes",
+           __FUNCTION__, rsdt_xsdt_vaddr, rsdt.length, sizeof(ACPI_RSDT));
+
+    // get the RSDT entry list
+    num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT)) / sizeof(u32);
+    HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
+    xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)),
+                                     sizeof(u32) * num_rsdtentries);
+    printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
+           (rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)), num_rsdtentries);
+
+    // find the VT-d DMAR table in the list (if any)
+    for (i = 0; i < num_rsdtentries; i++)
+    {
+        xmhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));
+        if (dmar.signature == VTD_DMAR_SIGNATURE)
+        {
+            dmarfound = 1;
+            break;
+        }
+    }
+
+    // if no DMAR table, bail out
+    if (!dmarfound)
+        return;
+
+    dmaraddrphys = rsdtentries[i]; // DMAR table physical memory address;
+    printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
+
+    i = 0;
+    remappingstructuresaddrphys = dmaraddrphys + sizeof(VTD_DMAR);
+    printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
+
+    // zap VT-d presence in ACPI table...
+    // TODO: we need to be a little elegant here. eventually need to setup
+    // EPT/NPTs such that the DMAR pages are unmapped for the guest
+    xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);
+
+    // success
+    printf("\n%s: success, leaving...", __FUNCTION__);
+}
+#endif /* defined(__DRT__) && !defined(__DMAP__) */
 
 //---runtime main---------------------------------------------------------------
 void xmhf_runtime_entry(void){
@@ -125,7 +218,6 @@ void xmhf_runtime_entry(void){
 	//if __DRT__ is enabled without DMA protections, zap DMAR device
 	//from ACPI tables
 	if(cpu_vendor == CPU_VENDOR_INTEL){
-		extern void vmx_eap_zap(void);
 		vmx_eap_zap();
 	}
 	#endif	//__DRT__
