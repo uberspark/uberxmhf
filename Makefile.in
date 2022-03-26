@@ -326,7 +326,7 @@ $(LIBTOMMATH_BUILD):
 	@echo Building libtommath...
 	@echo ---------------------------------------------------------------
 	mkdir -p $(LIBTOMMATH_BUILD)
-	cd $(LIBTOMMATH_BUILD) && $(MAKE) -f $(LIBTOMMATH_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS))" -w libtommath.a
+	cd $(LIBTOMMATH_BUILD) && $(MAKE) -f $(LIBTOMMATH_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS))" -w $(LIBTOMMATH_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo libtommath.a build SUCCESS
 	@echo ---------------------------------------------------------------
@@ -336,7 +336,7 @@ $(LIBTOMCRYPT_BUILD):
 	@echo Building libtomcrypt...
 	@echo ---------------------------------------------------------------
 	mkdir -p $(LIBTOMCRYPT_BUILD)
-	cd $(LIBTOMCRYPT_BUILD) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS)) -DLTC_SOURCE" -w libtomcrypt.a
+	cd $(LIBTOMCRYPT_BUILD) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS)) -DLTC_SOURCE" -w $(LIBTOMCRYPT_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo libtomcrypt.a build SUCCESS
 	@echo ---------------------------------------------------------------
@@ -358,7 +358,7 @@ $(LIBTOMCRYPT_BUILD32):
 	@echo Building libtomcrypt 32-bits...
 	@echo ---------------------------------------------------------------
 	mkdir -p $(LIBTOMCRYPT_BUILD32)
-	cd $(LIBTOMCRYPT_BUILD32) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(BCFLAGS)) -DLTC_SOURCE" -w libtomcrypt.a
+	cd $(LIBTOMCRYPT_BUILD32) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(BCFLAGS)) -DLTC_SOURCE" -w $(LIBTOMCRYPT_ARCHIVE)
 	@echo ---------------------------------------------------------------
 	@echo libtomcrypt.a 32-bits build SUCCESS
 	@echo ---------------------------------------------------------------
