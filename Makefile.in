@@ -19,35 +19,6 @@ export NESTED_PAGING := y
 #where you want loader and runtime binaries to go
 export HYPOUTDIR = $(CURDIR)
 
-# libtommath
-export LIBTOMMATH_SRC := $(realpath @LIBTOMMATH_SRC@)
-LIBTOMMATH_BUILD = $(CURDIR)/_build_libtommath
-LIBTOMMATH_ARCHIVE = libtommath.a
-
-# libtomcrypt
-export LIBTOMCRYPT_SRC := $(realpath @LIBTOMCRYPT_SRC@)
-LIBTOMCRYPT_BUILD = $(CURDIR)/_build_libtomcrypt
-LIBTOMCRYPT_ARCHIVE = libtomcrypt.a
-
-# libbaremetal "source" location, currently hard-coded
-# TODO: specify via configure
-# LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
-export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
-
-# libbaremetal archive
-# TODO: specify via configure
-LIBBAREMETAL_ARCHIVE = libbaremetal.a
-
-# libbaremetal includes
-LIBBAREMETAL_SUBLIBS = $(wildcard $(LIBBAREMETAL_SRC)/lib*)
-LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
-
-# libbaremetal build directory
-LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
-
-export ADDL_LIBS :=
-export ADDL_INCLUDES :=
-
 # App's source tree root (
 export APP_ROOT := $(realpath @APP_ROOT@)
 
@@ -56,18 +27,6 @@ export APP_ROOT := $(realpath @APP_ROOT@)
 export builddir=@builddir@
 
 export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
-
-ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-ADDL_INCLUDES += -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
-
-ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
-ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
-
-ADDL_LIBS += $(LIBTOMMATH_BUILD)/$(LIBTOMMATH_ARCHIVE)
-ADDL_INCLUDES += -I$(LIBTOMMATH_SRC)
-
-# link libbaremetal *again* to resolve more dependencies
-ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -88,25 +47,6 @@ export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
 export XMHF_TARGET_ARCH := @TARGET_ARCH@
 export TARGET_SUBARCH := @TARGET_SUBARCH@
 export AMD64_MAX_PHYS_ADDR := @AMD64_MAX_PHYS_ADDR@
-
-# The following ifeq depends on TARGET_SUBARCH
-# TODO: move this to a better place
-ifeq ($(TARGET_SUBARCH), amd64)
-LIBBAREMETAL_BUILD32 = $(CURDIR)/_build_libbaremetal32
-LIBTOMCRYPT_BUILD32 = $(CURDIR)/_build_libtomcrypt32
-
-export ADDL_LIBS_BOOTLOADER :=
-ADDL_LIBS_BOOTLOADER += $(LIBBAREMETAL_BUILD32)/_objects/$(LIBBAREMETAL_ARCHIVE)
-ADDL_LIBS_BOOTLOADER += $(LIBTOMCRYPT_BUILD32)/$(LIBTOMCRYPT_ARCHIVE)
-# link libbaremetal *again* to resolve more dependencies
-ADDL_LIBS_BOOTLOADER += $(LIBBAREMETAL_BUILD32)/_objects/$(LIBBAREMETAL_ARCHIVE)
-else
-export ADDL_LIBS_BOOTLOADER :=
-ADDL_LIBS_BOOTLOADER += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-ADDL_LIBS_BOOTLOADER += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
-# link libbaremetal *again* to resolve more dependencies
-ADDL_LIBS_BOOTLOADER += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-endif
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -136,6 +76,75 @@ export BCCLIB = @BCCLIB@
 ifeq ($(TARGET_SUBARCH), amd64)
 export CC32 = @CC32@
 endif
+
+################################################################################
+### Configure libraries (depends on TARGET_SUBARCH)
+################################################################################
+
+# libtommath
+export LIBTOMMATH_SRC := $(realpath @LIBTOMMATH_SRC@)
+LIBTOMMATH_BUILD = $(CURDIR)/_build_libtommath
+LIBTOMMATH_ARCHIVE = libtommath.a
+
+# libtomcrypt
+export LIBTOMCRYPT_SRC := $(realpath @LIBTOMCRYPT_SRC@)
+LIBTOMCRYPT_BUILD = $(CURDIR)/_build_libtomcrypt
+LIBTOMCRYPT_ARCHIVE = libtomcrypt.a
+
+# libbaremetal "source" location, currently hard-coded
+# TODO: specify via configure
+# LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
+export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
+
+# libbaremetal archive
+# TODO: specify via configure
+LIBBAREMETAL_ARCHIVE = libbaremetal.a
+
+# libbaremetal includes
+LIBBAREMETAL_SUBLIBS = $(wildcard $(LIBBAREMETAL_SRC)/lib*)
+LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
+
+# libbaremetal build directory
+LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
+
+# For bootloader (always i386 regardless of runtime subarch), compile separate
+# i386 versions of libraries if runtime is amd64.
+ifeq ($(TARGET_SUBARCH), amd64)
+LIBBAREMETAL_BUILD32 = $(CURDIR)/_build_libbaremetal32
+LIBTOMCRYPT_BUILD32 = $(CURDIR)/_build_libtomcrypt32
+endif
+
+# Libraries for secureloader and runtime: libbaremetal, tomcrypt, tommath
+export ADDL_LIBS :=
+ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
+ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
+ADDL_LIBS += $(LIBTOMMATH_BUILD)/$(LIBTOMMATH_ARCHIVE)
+# link libbaremetal *again* to resolve more dependencies
+ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
+
+# Includes for secureloader and runtime
+export ADDL_INCLUDES :=
+ADDL_INCLUDES += -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
+ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
+ADDL_INCLUDES += -I$(LIBTOMMATH_SRC)
+
+# Libraries for bootloader (always i386): libbaremetal, tomcrypt
+export ADDL_LIBS_BOOTLOADER :=
+ifeq ($(TARGET_SUBARCH), amd64)
+ADDL_LIBS_BOOTLOADER += $(LIBBAREMETAL_BUILD32)/_objects/$(LIBBAREMETAL_ARCHIVE)
+ADDL_LIBS_BOOTLOADER += $(LIBTOMCRYPT_BUILD32)/$(LIBTOMCRYPT_ARCHIVE)
+ADDL_LIBS_BOOTLOADER += $(LIBBAREMETAL_BUILD32)/_objects/$(LIBBAREMETAL_ARCHIVE)
+else
+ADDL_LIBS_BOOTLOADER += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
+ADDL_LIBS_BOOTLOADER += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
+ADDL_LIBS_BOOTLOADER += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
+endif
+
+# Includes for bootloader
+export ADDL_INCLUDES_BOOTLOADER :=
+ADDL_INCLUDES_BOOTLOADER += -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
+ADDL_INCLUDES_BOOTLOADER += -I$(LIBTOMCRYPT_SRC)/src/headers/
+
 
 # FIXME- this should be configurable
 # export CFLAGS=-m32
