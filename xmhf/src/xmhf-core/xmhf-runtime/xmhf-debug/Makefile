@@ -28,7 +28,7 @@ all: lib.a
 lib.a: $(OBJECTS)
 	$(AR) rvs $@ $^
 
-# TODO: Workaround to compile i386 for bootloader
+# If runtime is amd64, compile i386 version of this library for bootloader
 ifeq ($(TARGET_SUBARCH), amd64)
 all: lib.i386.a
 
