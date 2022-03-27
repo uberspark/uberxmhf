@@ -35,15 +35,15 @@ OBJECTS_BL =
 .PHONY: all
 all: $(OBJECTS)
 
-# TODO: Review whether I_SOURCES contains all header files
-I_SOURCES = $(wildcard $(INCLUDEDIR)/*.h)
+# Generate .d files
+DEPFLAGS = -MMD
 
 M_SOURCES = Makefile ../Makefile ../../Makefile
 
-$(_AS_OBJECTS): %.o: %.S $(I_SOURCES) $(M_SOURCES)
-	$(CC) -c $(ASFLAGS) -o $@ $<
-$(_C_OBJECTS): %.o: %.c $(I_SOURCES) $(M_SOURCES)
-	$(CC) -c $(CFLAGS) -o $@ $<
+$(_AS_OBJECTS): %.o: %.S $(M_SOURCES)
+	$(CC) -c $(ASFLAGS) $(DEPFLAGS) -o $@ $<
+$(_C_OBJECTS): %.o: %.c $(M_SOURCES)
+	$(CC) -c $(CFLAGS) $(DEPFLAGS) -o $@ $<
 
 # If runtime is amd64, compile i386 version of object files for bootloader
 ifeq ($(TARGET_SUBARCH), amd64)
@@ -53,13 +53,17 @@ OBJECTS_BL = $(_AS_OBJECTS_BL) $(_C_OBJECTS_BL)
 
 all: $(OBJECTS_BL)
 
-$(_AS_OBJECTS_BL): %.i386.o: %.S $(I_SOURCES) $(M_SOURCES)
-	$(CC32) -c $(BASFLAGS) -o $@ $<
-$(_C_OBJECTS_BL): %.i386.o: %.c $(I_SOURCES) $(M_SOURCES)
-	$(CC32) -c $(BCFLAGS) -o $@ $<
+$(_AS_OBJECTS_BL): %.i386.o: %.S $(M_SOURCES)
+	$(CC32) -c $(BASFLAGS) $(DEPFLAGS) -o $@ $<
+$(_C_OBJECTS_BL): %.i386.o: %.c $(M_SOURCES)
+	$(CC32) -c $(BCFLAGS) $(DEPFLAGS) -o $@ $<
 endif
+
+_DEP_FILES = $(patsubst %.o, %.d, $(OBJECTS) $(OBJECTS_BL))
+
+-include $(_DEP_FILES)
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(OBJECTS) $(OBJECTS_BL) $(EXTRA_CLEAN)
+	$(RM) -rf $(OBJECTS) $(OBJECTS_BL) $(_DEP_FILES) $(EXTRA_CLEAN)
 
