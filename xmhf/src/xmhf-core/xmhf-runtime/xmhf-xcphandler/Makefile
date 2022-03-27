@@ -3,22 +3,9 @@
 
 # source files
 AS_SOURCES = ./arch/x86/xcph-stubs-$(TARGET_SUBARCH).S
-C_SOURCES = xcph-interface.c
-
+C_SOURCES =  xcph-interface.c
 C_SOURCES += ./arch/x86/xcph-x86.c
 
-
-OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
-OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
-
-I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
-
 # targets
-.PHONY: all
-all: $(OBJECTS)
-
-.PHONY: clean
-clean:
-	$(RM) -rf *.o
-	$(RM) -rf ./arch/x86/*.o
+include ../runtime.mk
 

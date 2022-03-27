@@ -3,7 +3,9 @@
 
 # source files
 AS_SOURCES =
-C_SOURCES = dmap-interface-earlyinit.c dmap-interface-runtime.c iommu-pt.c
+C_SOURCES =  dmap-interface-earlyinit.c
+C_SOURCES += dmap-interface-runtime.c
+C_SOURCES += iommu-pt.c
 C_SOURCES += ./arch/x86/dmap-x86-earlyinit.c
 C_SOURCES += ./arch/x86/dmap-x86-runtime.c
 C_SOURCES += ./arch/x86/svm/dmap-svm.c
@@ -13,19 +15,6 @@ C_SOURCES += ./arch/x86/vmx/dmap-vmx-runtime.c
 C_SOURCES += ./arch/x86/vmx/dmap-vmx-utils.c
 C_SOURCES += ./arch/x86/vmx/dmap-vmx-data.c
 
-OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
-OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
-
-I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
-
 # targets
-.PHONY: all
-all: $(OBJECTS)
-
-.PHONY: clean
-clean:
-	$(RM) -rf *.o
-	$(RM) -rf ./arch/x86/*.o
-	$(RM) -rf ./arch/x86/svm/*.o
-	$(RM) -rf ./arch/x86/vmx/*.o
+include ../runtime.mk
 
