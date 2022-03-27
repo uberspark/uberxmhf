@@ -77,7 +77,7 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
                                  spa_t vtd_pdpt_paddr, hva_t vtd_pdpt_vaddr,
                                  spa_t vtd_pdts_paddr, hva_t vtd_pdts_vaddr,
                                  spa_t vtd_pts_paddr, hva_t vtd_pts_vaddr,
-                                 spa_t machine_low_spa, u64 machine_high_spa)
+                                 spa_t machine_low_spa, spa_t machine_high_spa)
 {
     spa_t pml4tphysaddr, pdptphysaddr, pdtphysaddr, ptphysaddr;
     u32 i, j, k;
@@ -86,8 +86,8 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
     pdt_t pdt;
     pt_t pt;
     uintptr_t physaddr = 0;
-    spa_t m_low_spa = PAGE_ALIGN_1G(machine_low_spa);
-    u64 m_high_spa = PAGE_ALIGN_UP1G(machine_high_spa);
+    spa_t m_low_spa = PA_PAGE_ALIGN_1G(machine_low_spa);
+    spa_t m_high_spa = PA_PAGE_ALIGN_UP1G(machine_high_spa);
     u32 num_1G_entries = (m_high_spa - (u64)m_low_spa) >> PAGE_SHIFT_1G;
 
     // Sanity checks
@@ -122,6 +122,7 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
     // setup pdpt, pdt and pt
     // initially set the entire spaddr space [m_low_spa, m_high_spa) as DMA read/write capable
     pdpt = (pdpt_t)vtd_pdpt_vaddr;
+
     for (i = 0; i < num_1G_entries; i++) // DMAPROT_VMX_P4L_NPDT
     {
         pdpt[i] = (u64)(pdtphysaddr + (i * PAGE_SIZE_4K));
@@ -130,10 +131,10 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
         pdt = (pdt_t)(vtd_pdts_vaddr + (i * PAGE_SIZE_4K));
         for (j = 0; j < PAE_PTRS_PER_PDT; j++)
         {
-            pdt[j] = (u64)(ptphysaddr + (i * PAGE_SIZE_4K * 512) + (j * PAGE_SIZE_4K));
+            pdt[j] = (u64)(ptphysaddr + (i * PAGE_SIZE_4K * PAE_PTRS_PER_PDT) + (j * PAGE_SIZE_4K));
             pdt[j] |= ((u64)VTD_READ | (u64)VTD_WRITE);
 
-            pt = (pt_t)(vtd_pts_vaddr + (i * PAGE_SIZE_4K * 512) + (j * PAGE_SIZE_4K));
+            pt = (pt_t)(vtd_pts_vaddr + (i * PAGE_SIZE_4K * PAE_PTRS_PER_PDT) + (j * PAGE_SIZE_4K));
             for (k = 0; k < PAE_PTRS_PER_PT; k++)
             {
                 pt[k] = (u64)physaddr;
@@ -219,6 +220,33 @@ static bool _vtd_setupRETCET(struct dmap_vmx_cap *vtd_cap,
             *value |= 0x1ULL; // present, enable fault recording/processing, multilevel pt translation
         }
     }
+
+    return true;
+}
+
+// On 32bit machine, we always return 0 - 4G as the machine physical address range, no matter how many memory is installed
+// On 64-bit machine, the function queries the E820 map for the used memory region.
+bool vmx_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_spa)
+{
+    // Sanity checks
+	if(!machine_base_spa || !machine_limit_spa)
+		return false;
+
+#ifdef __AMD64__
+    // Get the base and limit used system physical address from the E820 map
+    if (!xmhf_baseplatform_x86_e820_paddr_range(machine_base_spa, machine_limit_spa))
+    {
+        printf("\n%s: Get system physical address range error! Halting!", __FUNCTION__);
+        return false;
+    }
+
+    // 4K-align the return the address
+    *machine_base_spa = PAGE_ALIGN_4K(*machine_base_spa);
+    *machine_limit_spa = PAGE_ALIGN_UP4K(*machine_limit_spa);
+#else /* !__AMD64__ */
+    *machine_base_spa = 0;
+    *machine_limit_spa = ADDR_4GB;
+#endif /* __AMD64__ */
 
     return true;
 }
@@ -366,18 +394,16 @@ static u32 vmx_eap_initialize(
     // initialize VT-d page tables (not done if we are bootstrapping)
     {
         spa_t machine_low_spa = INVALID_SPADDR;
-        u64 machine_high_spa = INVALID_SPADDR;
+        spa_t machine_high_spa = INVALID_SPADDR;
         u64 phy_space_size = 0;
 
         // Get the base and limit used system physical address from the E820 map
-        status2 = xmhf_baseplatform_x86_e820_paddr_range(&machine_low_spa, &machine_high_spa);
+        status2 = vmx_get_machine_paddr_range(&machine_low_spa, &machine_high_spa);
         if (!status2)
         {
             printf("\n%s: Get system physical address range error! Halting!", __FUNCTION__);
             HALT();
         }
-        machine_low_spa = PAGE_ALIGN_4K(machine_low_spa);
-        machine_high_spa = PAGE_ALIGN_UP4K(machine_high_spa);
 
         // Check: The base and limit of the physical address space must <= DMAPROT_PHY_ADDR_SPACE_SIZE
         phy_space_size = machine_high_spa - machine_low_spa;
@@ -571,8 +597,8 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size)
     u32 pdptindex, pdtindex, ptindex;
 
     // compute page aligned end
-    end_paddr = PAGE_ALIGN_4K(start_paddr + size);
-    start_paddr = PAGE_ALIGN_4K(start_paddr);
+    end_paddr = PA_PAGE_ALIGN_UP4K(start_paddr + size);
+    start_paddr = PA_PAGE_ALIGN_4K(start_paddr);
 
     // sanity check
     HALT_ON_ERRORCOND((l_vtd_pdpt_paddr != 0) && (l_vtd_pdpt_vaddr != 0));
@@ -582,7 +608,6 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size)
 #ifndef __XMHF_VERIFICATION__
     for (cur_spaddr = start_paddr; cur_spaddr <= end_paddr; cur_spaddr += PAGE_SIZE_4K)
     {
-
         // compute pdpt, pdt and pt indices
         pdptindex = PAE_get_pdptindex(cur_spaddr);
         pdtindex = PAE_get_pdtindex(cur_spaddr);
@@ -609,8 +634,8 @@ void xmhf_dmaprot_arch_x86_vmx_unprotect(spa_t start_paddr, size_t size)
     u32 pdptindex, pdtindex, ptindex;
 
     // compute page aligned end
-    end_paddr = PAGE_ALIGN_4K(start_paddr + size);
-    start_paddr = PAGE_ALIGN_4K(start_paddr);
+    end_paddr = PA_PAGE_ALIGN_UP4K(start_paddr + size);
+    start_paddr = PA_PAGE_ALIGN_4K(start_paddr);
 
     // sanity check
     HALT_ON_ERRORCOND((l_vtd_pdpt_paddr != 0) && (l_vtd_pdpt_vaddr != 0));

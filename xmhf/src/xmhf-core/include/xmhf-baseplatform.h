@@ -153,7 +153,7 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 // [NOTE] <machine_high_spa> must be u64 even on 32-bit machines, because it could be 4G, and hence overflow u32.
 // Return: <machine_base_spa> and <machine_limit_spa> may not be 4K-aligned.
 // [TODO][Issue 85] Move this function to a better place
-extern bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, u64* machine_limit_spa);
+extern bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_spa);
 
 #ifndef __XMHF_VERIFICATION__
 

@@ -58,11 +58,11 @@ extern RPB *rpb;
 // [NOTE] <machine_high_spa> must be u64 even on 32-bit machines, because it could be 4G, and hence overflow u32.
 // Return: <machine_base_spa> and <machine_limit_spa> may not be 4K-aligned.
 // [TODO][Issue 85] Move this function to a better place
-bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, u64* machine_limit_spa)
+bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_spa)
 {
 	u32 i = 0;
 	spa_t base_spa = INVALID_SPADDR;
-	u64 limit_spa = INVALID_SPADDR;
+	spa_t limit_spa = INVALID_SPADDR;
 
 	// Sanity checks
 	if(!machine_base_spa || !machine_limit_spa)
@@ -82,8 +82,8 @@ bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, u64* machin
 	FOREACH_S(i, rpb->XtVmmE820NumEntries, MAX_E820_ENTRIES, 0, 1)
 	{
 		spa_t cur_base_spa = UINT32sToSPADDR(g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low);
-		size_t cur_size = UINT32sToSIZE(g_e820map[i].length_high, g_e820map[i].length_low);
-		u64 cur_limit_spa = (spa_t)(cur_base_spa + cur_size);
+		u64 cur_size = UINT32sToUINT64(g_e820map[i].length_high, g_e820map[i].length_low); // E820 map may have entry size > 4GB
+		spa_t cur_limit_spa = cur_base_spa + cur_size;
 
 		if(cur_base_spa <= base_spa)
 		{

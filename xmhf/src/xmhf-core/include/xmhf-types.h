@@ -59,7 +59,8 @@
 // Ideally, should change __AMD64__ to __XMHF_AMD64__
 #ifdef __I386__
     typedef u32 hva_t;  // hypervisor virtual address
-    typedef u64 spa_t;  // system physical address
+    typedef u64 spa_t;  // system physical address. [NOTE] spa_t could have a value larger than 4G; e.g., PC installs
+                        // 8GB physical memory but installing 32-bit software stack.
     typedef u64	spfn_t; // pfn of system physical address
     typedef u32 gva_t;  // guest virtual address
     typedef u64 gpa_t;  // guest physical address. can be 64-bit with PAE
@@ -82,12 +83,13 @@
 #define INVALID_GPADDR		        (INVALID_ADDR)
 #define INVALID_GVADDR		        (INVALID_ADDR)
 
+#define UINT32sToUINT64(high, low) (u64)((((u64)(high)) << 32) | (low))
 #ifdef __I386__
-    #define UINT32sToSPADDR(high, low) (spa_t)(low)
+    #define UINT32sToSPADDR(high, low) (spa_t)(UINT32sToUINT64(high, low))
     #define UINT32sToSIZE(high, low) (size_t)(low)
 #elif defined(__AMD64__)
-    #define UINT32sToSPADDR(high, low) (spa_t)((((spa_t)high) << 32) | (low))
-    #define UINT32sToSIZE(high, low) (size_t)((((size_t)high) << 32) | (low))
+    #define UINT32sToSPADDR(high, low) (spa_t)(UINT32sToUINT64(high, low))
+    #define UINT32sToSIZE(high, low) (size_t)(UINT32sToUINT64(high, low))
 #else
     #error "Unsupported Arch"
 #endif /* __I386__ */
