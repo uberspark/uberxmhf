@@ -25,11 +25,6 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 .PHONY: all
 all: $(OBJECTS)
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
-
 # TODO: Workaround to compile x86 for bootloader
 ifeq ($(TARGET_SUBARCH), amd64)
 $(C_OBJECTS32): %.x86.o: %.c $(I_SOURCES) Makefile ../Makefile ../../Makefile

@@ -74,15 +74,10 @@ sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl-$(TARGET_HWPLATFORM)-$(TARGET_SUBAR
 	fallocate -d sl.bin
 	fallocate -d sl_syms.exe
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
-
 .PHONY: clean
 clean:
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/*/*.o
+	$(RM) -rf ./arch/x86/*.o
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz

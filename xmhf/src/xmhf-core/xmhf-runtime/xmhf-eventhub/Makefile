@@ -18,14 +18,9 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 .PHONY: all
 all: $(OBJECTS)
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
-
 .PHONY: clean
 clean:
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/*/svm/*.o
-	$(RM) -rf ./arch/*/vmx/*.o
+	$(RM) -rf ./arch/x86/svm/*.o
+	$(RM) -rf ./arch/x86/vmx/*.o
 

@@ -155,11 +155,6 @@ runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM)-$(TAR
 	# Optional: use sparse file for runtime.bin to reduce fs space usage
 	fallocate -d runtime.bin
 
-%.o: %.S $(I_SOURCES) Makefile ../../Makefile
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../../Makefile 
-	$(CC) -c $(CFLAGS) -o $@ $<
-
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.exe

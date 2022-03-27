@@ -33,11 +33,6 @@ all: lib.a
 lib.a: $(OBJECTS)
 	$(AR) rvs $@ $^
 
-%.o: %.S $(I_SOURCES) Makefile ../../Makefile 
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
-
 # TODO: Workaround to compile x86 for bootloader
 ifeq ($(TARGET_SUBARCH), amd64)
 all: lib.x86.a
@@ -52,4 +47,4 @@ endif
 clean: 
 	$(RM) -rf lib.a lib.x86.a
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/*/*.o
+	$(RM) -rf ./arch/x86/*.o

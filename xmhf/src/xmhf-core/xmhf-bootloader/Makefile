@@ -78,11 +78,6 @@ init-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).bin: $(OBJECTS) $(OBJECTS_PRECOMPILE
 	$(STRIP) -s init.exe
 	$(OBJCOPY) --output-format=binary init.exe init-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).bin
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile  ../../../Makefile
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile	../../../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
-
 .PHONY: clean
 clean:
 	$(RM) -rf *.o
