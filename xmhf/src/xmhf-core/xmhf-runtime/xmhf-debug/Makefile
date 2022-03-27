@@ -18,7 +18,7 @@ endif
 
 C_SOURCES_BL = $(C_SOURCES)
 
-EXTRA_CLEAN = lib.a lib.x86.a
+EXTRA_CLEAN = lib.a lib.i386.a
 
 # targets
 include ../runtime.mk
@@ -28,11 +28,11 @@ all: lib.a
 lib.a: $(OBJECTS)
 	$(AR) rvs $@ $^
 
-# TODO: Workaround to compile x86 for bootloader
+# TODO: Workaround to compile i386 for bootloader
 ifeq ($(TARGET_SUBARCH), amd64)
-all: lib.x86.a
+all: lib.i386.a
 
-lib.x86.a: $(OBJECTS_BL)
+lib.i386.a: $(OBJECTS_BL)
 	$(AR) rvs $@ $^
 endif
 

@@ -15,8 +15,7 @@
 # This file will define these targets
 #   all: the default target, contains OBJECTS and OBJECTS_BL
 #   *.o: built for secure loader / runtime
-#   *.x86.o: built for boot loader when runtime is amd64
-#       TODO: rename *.x86.o to *.i386.o
+#   *.i386.o: built for boot loader when runtime is amd64
 #   clean: remove object files and EXTRA_CLEAN
 
 _AS_OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
@@ -27,25 +26,27 @@ OBJECTS_BL =
 .PHONY: all
 all: $(OBJECTS)
 
-$(_AS_OBJECTS): %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../Makefile
-	$(CC) -c $(ASFLAGS) -o $@ $<
-$(_C_OBJECTS): %.o: %.c $(I_SOURCES) Makefile ../Makefile ../../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
-
 # TODO: Review whether I_SOURCES contains all header files
-I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
+I_SOURCES = $(wildcard $(INCLUDEDIR)/*.h)
+
+M_SOURCES = Makefile ../Makefile ../../Makefile
+
+$(_AS_OBJECTS): %.o: %.S $(I_SOURCES) $(M_SOURCES)
+	$(CC) -c $(ASFLAGS) -o $@ $<
+$(_C_OBJECTS): %.o: %.c $(I_SOURCES) $(M_SOURCES)
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 # TODO: Workaround to compile i386 bootloader
 ifeq ($(TARGET_SUBARCH), amd64)
-_AS_OBJECTS_BL = $(patsubst %.S, %.x86.o, $(AS_SOURCES_BL))
-_C_OBJECTS_BL = $(patsubst %.c, %.x86.o, $(C_SOURCES_BL))
+_AS_OBJECTS_BL = $(patsubst %.S, %.i386.o, $(AS_SOURCES_BL))
+_C_OBJECTS_BL = $(patsubst %.c, %.i386.o, $(C_SOURCES_BL))
 OBJECTS_BL = $(_AS_OBJECTS_BL) $(_C_OBJECTS_BL)
 
 all: $(OBJECTS_BL)
 
-$(_AS_OBJECTS_BL): %.x86.o: %.S $(I_SOURCES) Makefile ../Makefile ../../Makefile
+$(_AS_OBJECTS_BL): %.i386.o: %.S $(I_SOURCES) $(M_SOURCES)
 	$(CC32) -c $(BASFLAGS) -o $@ $<
-$(_C_OBJECTS_BL): %.x86.o: %.c $(I_SOURCES) Makefile ../Makefile ../../Makefile
+$(_C_OBJECTS_BL): %.i386.o: %.c $(I_SOURCES) $(M_SOURCES)
 	$(CC32) -c $(BCFLAGS) -o $@ $<
 endif
 
