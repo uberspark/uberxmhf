@@ -68,9 +68,11 @@
 // For i386, 16K stack for each core during runtime. For amd64, 64K stack.
 #ifdef __AMD64__
 #define RUNTIME_STACK_SIZE  			(65536)
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 #define RUNTIME_STACK_SIZE  			(16384)
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 //8K stack for each core in "init"
 #define INIT_STACK_SIZE					(8192)

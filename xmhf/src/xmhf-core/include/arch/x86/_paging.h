@@ -79,7 +79,9 @@
 #ifdef __AMD64__
 #define PAGE_SIZE_512G  (1UL << PAGE_SHIFT_512G)
 #define PAGE_SIZE_256T  (1UL << PAGE_SHIFT_256T)
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 
 /* For physical address: definitions in u64 for both i386 and amd64 */
 #define PA_PAGE_SIZE_4K     (1ULL << PAGE_SHIFT_4K)
@@ -109,7 +111,9 @@
 #ifdef __AMD64__
 #define PAGE_ALIGN_UP512G(size) (((size) + PAGE_SIZE_512G - 1) & ~(PAGE_SIZE_512G - 1))
 #define PAGE_ALIGN_UP256T(size) (((size) + PAGE_SIZE_256T - 1) & ~(PAGE_SIZE_256T - 1))
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 
 #define PA_PAGE_ALIGN_UP4K(size)    (((size) + PA_PAGE_SIZE_4K - 1) & ~(PA_PAGE_SIZE_4K - 1))
 #define PA_PAGE_ALIGN_UP2M(size)    (((size) + PA_PAGE_SIZE_2M - 1) & ~(PA_PAGE_SIZE_2M - 1))
@@ -127,7 +131,9 @@
 #ifdef __AMD64__
 #define PAGE_ALIGN_512G(size)   ((size) & ~(PAGE_SIZE_512G - 1))
 #define PAGE_ALIGN_256T(size)   ((size) & ~(PAGE_SIZE_256T - 1))
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 
 #define PA_PAGE_ALIGN_4K(size)      ((size) & ~(PA_PAGE_SIZE_4K - 1))
 #define PA_PAGE_ALIGN_2M(size)      ((size) & ~(PA_PAGE_SIZE_2M - 1))
@@ -145,7 +151,9 @@
 #define PAGE_ALIGNED_1G(size)   (PAGE_ALIGN_1G(size) == size)
 #define PAGE_ALIGNED_512G(size) (PAGE_ALIGN_512G(size) == size)
 #define PAGE_ALIGNED_256T(size) (PAGE_ALIGN_256T(size) == size)
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 
 #define PA_PAGE_ALIGNED_4K(size)    (PA_PAGE_ALIGN_4K(size) == size)
 #define PA_PAGE_ALIGNED_2M(size)    (PA_PAGE_ALIGN_2M(size) == size)
@@ -182,13 +190,15 @@
 #define P4L_NPDPT   (PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
 #define P4L_NPDT    (PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
 #define P4L_NPT     (PAGE_ALIGN_UP2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 /* i386: cannot calculate using PAGE_ALIGN_UP, because PAGE_SIZE is 32-bits */
 #define P4L_NPLM4T  1
 #define P4L_NPDPT   1
 #define P4L_NPDT    4
 #define P4L_NPT     2048
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 // various paging flags
 #define _PAGE_BIT_PRESENT       0
@@ -313,7 +323,9 @@ typedef u32 *npt_t;
 #define p4l_get_flags_from_pte(entry) \
   ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))
 
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 
 /* 32-bit macros */
 

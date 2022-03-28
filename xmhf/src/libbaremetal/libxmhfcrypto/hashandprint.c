@@ -54,9 +54,11 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
 
 #ifdef __AMD64__
     printf("hashandprint: processing 0x%016x bytes at addr %016x\n", len, (u64)bytes);
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     printf("hashandprint: processing 0x%08x bytes at addr 0x%08x\n", len, (u32)bytes);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
     EU_VERIFYN( sha1_buffer(bytes, len, digest));
 

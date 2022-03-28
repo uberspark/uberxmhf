@@ -81,7 +81,7 @@ static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
         }
     }
 }
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
   if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 
@@ -104,7 +104,9 @@ static uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
 	//we will never get here, appease the compiler
 	return (u32 *)&r->eax;
 }
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 
 //---intercept handler (CPUID)--------------------------------------------------
@@ -194,7 +196,9 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 									pe820entry->length_low;
 						HALT_ON_ERRORCOND(baseaddr + length <= MAX_PHYS_ADDR);
 					}
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 				}else{
 					printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest "
 							"physical memory bounds. Halting!", vcpu->id);
@@ -548,7 +552,9 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 #ifdef __AMD64__
 		r->rax = 0;	/* Clear upper 32-bits of RAX */
 		r->rdx = 0;	/* Clear upper 32-bits of RDX */
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 		r->eax = (u32)(read_result);
 		r->edx = (u32)(read_result >> 32);
 	}
@@ -749,9 +755,11 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		 * vcpu->vmcs.guest_PDPTE2 = pdptes[2];
 		 * vcpu->vmcs.guest_PDPTE3 = pdptes[3];
 		 */
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 		u32 pae = (cr0_value & CR0_PG) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 		HALT_ON_ERRORCOND(!pae);
 	}
 
@@ -967,9 +975,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 #ifdef __AMD64__
 			if ( ((int)gpr >=0) && ((int)gpr <= 15) ){
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 				switch(crx){
 					case 0x0: //CR0 access
 						vmx_handle_intercept_cr0access_ug(vcpu, r, gpr, tofrom);
@@ -1062,7 +1072,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				}
 				HALT();
 			}
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 			/* x86 mode */
 			printf("\nCPU(0x%02x): Unhandled intercept: %d (0x%08x)",
 					vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,

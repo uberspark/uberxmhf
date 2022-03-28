@@ -72,7 +72,9 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 #ifdef __AMD64__
 	xmhf_setup_sl_paging(baseaddr);
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 
 	//linker relocates sl image starting from 0, so
     //parameter block must be at offset 0x10000

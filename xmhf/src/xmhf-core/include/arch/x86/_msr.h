@@ -227,11 +227,13 @@ static inline u64 rdmsr64(uint32_t msr)
     u32 eax, edx;
     __asm__ __volatile__ ("rdmsr" : "=a" (eax), "=d" (edx) : "c" (msr));
     return ((u64)edx << 32) | eax;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     u64 rv;
     __asm__ __volatile__ ("rdmsr" : "=A" (rv) : "c" (msr));
     return (rv);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 }
 
 static inline void wrmsr64(uint32_t msr, uint64_t newval)
@@ -239,9 +241,11 @@ static inline void wrmsr64(uint32_t msr, uint64_t newval)
 #ifdef __AMD64__
     __asm__ __volatile__ ("wrmsr" : : "a" (newval & ((1UL << 32) - 1)),
                           "d" (newval >> 32), "c" (msr));
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     __asm__ __volatile__ ("wrmsr" : : "A" (newval), "c" (msr));
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 }
 
 #endif /* __ASSEMBLY__ */

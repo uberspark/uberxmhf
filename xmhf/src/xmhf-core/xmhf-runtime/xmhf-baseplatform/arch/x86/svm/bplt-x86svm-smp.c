@@ -90,9 +90,11 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
 
 #ifdef __AMD64__
     vcpu->rsp = ((hva_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     vcpu->esp = ((hva_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
     vcpu->hsave_vaddr_ptr = ((hva_t)g_svm_hsave_buffers + (i * 8192));
     vcpu->vmcb_vaddr_ptr = (struct _svm_vmcbfields *)((hva_t)g_svm_vmcb_buffers + (i * 8192));
 
@@ -123,10 +125,12 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
 #ifdef __AMD64__
     printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, rsp=0x%16lx", i, g_midtable[i].vcpu_vaddr_ptr,
       vcpu->rsp);
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, g_midtable[i].vcpu_vaddr_ptr,
       vcpu->esp);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
     printf("\n  hsave_vaddr_ptr=0x%08x, vmcb_vaddr_ptr=0x%08x", vcpu->hsave_vaddr_ptr,
           vcpu->vmcb_vaddr_ptr);
   }

@@ -68,19 +68,23 @@ u32 rdmsr_safe(struct regs *r) {
                   ".quad 0xd\r\n"
                   ".quad 1b\r\n"
                   ".quad 2b\r\n"
-#else /* !__AMD64__ */
+#elif defined(__I386__)
                   ".long 0xd\r\n"
                   ".long 1b\r\n"
                   ".long 2b\r\n"
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
                   ".previous\r\n"
                   "3:\r\n"
 #ifdef __AMD64__
                   : "=a"(r->rax), "=d"(r->rdx), "=b"(result)
                   : "c" (r->rcx));
-#else /* !__AMD64__ */
+#elif defined(__I386__)
                   : "=a"(r->eax), "=d"(r->edx), "=b"(result)
                   : "c" (r->ecx));
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
     return result;
 }

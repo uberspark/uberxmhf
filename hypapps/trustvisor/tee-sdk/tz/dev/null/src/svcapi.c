@@ -58,12 +58,14 @@ static inline uint64_t rdtsc64(void)
 
   __asm__ __volatile__ ("rdtsc" : "=a" (eax), "=d" (edx));
   return ((uint64_t)edx << 32) | eax;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
   uint64_t rv;
 
   __asm__ __volatile__ ("rdtsc" : "=A" (rv));
   return (rv);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 }
 
 int svc_time_elapsed_us(uint64_t *epoch_nonce, /* out */

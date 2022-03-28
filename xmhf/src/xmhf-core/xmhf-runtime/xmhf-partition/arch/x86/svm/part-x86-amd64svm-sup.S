@@ -89,9 +89,11 @@ __svm_start_hvm:
 	//XX: save vcpu vaddr
 #ifdef __AMD64__
 	pushq %rbx
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	pushl %ebx
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
   //real-mode setup just like the BIOS
   movl $0x0, %ebx

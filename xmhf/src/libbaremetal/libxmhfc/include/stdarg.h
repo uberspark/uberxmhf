@@ -58,7 +58,7 @@
 
 #include <stdarg64.h>
 
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 
 typedef void *va_list;
 
@@ -68,7 +68,9 @@ typedef void *va_list;
 
 #define	va_end(list) (void)0
 
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 #endif //#ifndef __ASSEMBLY__
 

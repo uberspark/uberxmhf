@@ -89,7 +89,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	     : "m"(gdtstart), "m"(trselector)
 	     : "rdi", "rax"
 	  );
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	  asm volatile("movl %0, %%edi\r\n"
 		"xorl %%eax, %%eax\r\n"
 		"movw %1, %%ax\r\n"
@@ -102,7 +102,9 @@ static void _vmx_initVT(VCPU *vcpu){
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 	  #endif
 	}
 
@@ -186,11 +188,13 @@ static void _vmx_initVT(VCPU *vcpu){
 	asm(	" mov  %%cr4, %%rax	\n"\
 		" bts  $13, %%rax	\n"\
 		" mov  %%rax, %%cr4	" ::: "rax" );
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	asm(	" mov  %%cr4, %%eax	\n"\
 		" bts  $13, %%eax	\n"\
 		" mov  %%eax, %%cr4	" ::: "eax" );
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 	#endif
   printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
 
@@ -217,7 +221,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr)
 	       : "rax");
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	   	asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
 				 "movl $0x1, %%eax \n"
@@ -230,7 +234,9 @@ static void _vmx_initVT(VCPU *vcpu){
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr)
 	       : "eax");
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 			#endif
 
 	    if(!retval){
@@ -319,21 +325,27 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//store vcpu at TOS
 #ifdef __AMD64__
 	vcpu->rsp = vcpu->rsp - sizeof(hva_t);
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	vcpu->esp = vcpu->esp - sizeof(hva_t);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 #ifndef __XMHF_VERIFICATION__
 #ifdef __AMD64__
 	*(hva_t *)vcpu->rsp = (hva_t)vcpu;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	*(hva_t *)vcpu->esp = (hva_t)vcpu;
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 #endif
 #ifdef __AMD64__
 	vcpu->vmcs.host_RSP = (u64)vcpu->rsp;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	vcpu->vmcs.host_RSP = (u64)vcpu->esp;
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 
 #ifndef __XMHF_VERIFICATION__
@@ -363,7 +375,9 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	 */
 	HALT_ON_ERRORCOND(vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] & (1UL << (9 + 32)));
 	vcpu->vmcs.control_VM_exit_controls |= (1UL << 9);
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 
 	//IO bitmap support
 	{
@@ -400,7 +414,9 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			     */
 			    gmsr[i].data &= ~((1LU << EFER_LME) | (1LU << EFER_LMA));
 			}
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 		}
 		#endif
 
@@ -472,10 +488,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_TR_selector = 0;
 #ifdef __AMD64__
 	vcpu->vmcs.guest_TR_access_rights = 0x8b; //present, 32/64-bit busy TSS
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	// TODO: should be able to use 0x8b, not 0x83
 	vcpu->vmcs.guest_TR_access_rights = 0x83; //present, 16-bit busy TSS
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 	//DR7
 	vcpu->vmcs.guest_DR7 = 0x400;
 	//RSP

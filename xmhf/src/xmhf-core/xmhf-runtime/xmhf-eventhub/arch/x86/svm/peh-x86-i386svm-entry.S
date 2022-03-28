@@ -90,10 +90,12 @@ xmhf_parteventhub_arch_x86svm_entry:
 	//step-1: save all CPU GPRs
 #ifdef __AMD64__
   // TODO
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	//SAVEALL_GPRS
 	pushal
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 	//step-2: get hold of pointer to saved GPRs on stack
 	movl %esp, %eax
@@ -108,20 +110,24 @@ xmhf_parteventhub_arch_x86svm_entry:
    	//1st argument is VCPU * followed by pointer to saved GPRs
 #ifdef __AMD64__
   // TODO
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     pushl %eax
     pushl %esi
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 	call xmhf_parteventhub_arch_x86svm_intercept_handler
     addl $0x08, %esp
 
 	//step-5: restore all CPU GPRs
 #ifdef __AMD64__
   // TODO
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	//RESTOREALL_GPRS
 	popal
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 	//restore VMCB address
 	//popl	%eax

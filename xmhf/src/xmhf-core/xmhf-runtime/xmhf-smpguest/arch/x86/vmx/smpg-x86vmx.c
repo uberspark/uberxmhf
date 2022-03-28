@@ -436,7 +436,7 @@ void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
         : // no output
         : // no input
         : "%rax", "%rsi", "cc", "memory");
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     asm volatile (
         "pushfl                 \r\n"
         "xorl    %%eax, %%eax   \r\n"
@@ -448,7 +448,9 @@ void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
         : // no output
         : // no input
         : "%eax", "cc", "memory");
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 }
 
 //quiesce interface to switch all guest cores into hypervisor mode

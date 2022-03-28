@@ -46,10 +46,12 @@
 #ifdef __AMD64__
 #include <sys/amd64_endian.h>
 #include <sys/amd64_types.h>
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 #include <sys/i386_endian.h>
 #include <sys/i386_types.h>
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;

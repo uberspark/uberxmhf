@@ -171,25 +171,29 @@ typedef union {
 	 *       memory.
 	 */
 	extern u32 xmhf_baseplatform_arch_flat_va_offset;
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 
 	static inline void writeb(u32 addr, u8 val) {
 #ifdef __AMD64__
 		u32 phys_addr = (u32)addr - (u32)xmhf_baseplatform_arch_flat_va_offset;
 		*(u8 *)(u64)phys_addr = val;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 		__asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
 							 :
 							 : "b"(addr), "a"((u32)val)
 							 );
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 	}
 
 	static inline u8 readb(u32 addr) {
 #ifdef __AMD64__
 		u32 phys_addr = (u32)addr - (u32)xmhf_baseplatform_arch_flat_va_offset;
 		return *(u8 *)(u64)phys_addr;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 		u32 ret;
 		__asm__ __volatile("xor %%eax, %%eax\r\n"
 						   "movb %%fs:(%%ebx), %%al\r\n"
@@ -197,7 +201,9 @@ typedef union {
 						   : "b"(addr)
 						   );
 		return (u8)ret;
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 	}
 
 #else //__XMHF_VERIFICATION__

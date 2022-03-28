@@ -174,7 +174,7 @@ struct regs
   u64 r13;
   u64 r14;
   u64 r15;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
   u32 edi;
   u32 esi;
   u32 ebp;
@@ -183,7 +183,9 @@ struct regs
   u32 edx;
   u32 ecx;
   u32 eax;
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 } __attribute__ ((packed));
 
 
@@ -196,7 +198,9 @@ typedef struct {
 #ifdef __AMD64__
   u32 isrHigh32;
   u32 reserved_zero;
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 } __attribute__ ((packed)) idtentry_t;
 
 typedef struct {
@@ -209,17 +213,21 @@ typedef struct {
 #ifdef __AMD64__
   u32 baseAddr32_63;
   u32 reserved_zero;
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 } __attribute__ ((packed)) TSSENTRY;
 
 
 #ifdef __AMD64__
 #define get_eflags(x) __asm__ __volatile__("pushfq ; popq %0 ":"=g" (x): /* no input */ :"memory")
 #define set_eflags(x) __asm__ __volatile__("pushq %0 ; popfq": /* no output */ :"g" (x):"memory", "cc")
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 #define get_eflags(x) __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
 #define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 #define cpuid(op, eax, ebx, ecx, edx)		\
 ({						\
@@ -242,11 +250,13 @@ static inline uint64_t rdtsc64(void)
         u32 eax, edx;
         __asm__ __volatile__ ("rdtsc" : "=a" (eax), "=d" (edx));
         return ((u64)edx << 32) | eax;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
         uint64_t rv;
         __asm__ __volatile__ ("rdtsc" : "=A" (rv));
         return (rv);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 }
 
 

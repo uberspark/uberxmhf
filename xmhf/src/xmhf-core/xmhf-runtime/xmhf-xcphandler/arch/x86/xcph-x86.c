@@ -95,7 +95,9 @@ void xmhf_xcphandler_arch_initialize(void){
 #ifdef __AMD64__
         idtentry->isrHigh32 = (u32)(pexceptionstubs[i] >> 32);
         idtentry->reserved_zero = 0x0;
-#endif /* __AMD64__ */
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
         idtentry->isrSelector = __CS;
         idtentry->count = 0x0;  // for now, set IST to 0
         idtentry->type = 0x8E;  // 32-bit / 64-bit interrupt gate
@@ -157,20 +159,24 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 error_code_available = 1;
 #ifdef __AMD64__
                 r->rsp += sizeof(uintptr_t);
-#else /* !__AMD64__ */
+#elif defined(__I386__)
                 r->esp += sizeof(uintptr_t);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
             }
 
 #ifdef __AMD64__
             exception_rip = ((uintptr_t *)(r->rsp))[0];
             exception_cs = ((uintptr_t *)(r->rsp))[1];
             exception_rflags = ((uintptr_t *)(r->rsp))[2];
-#else /* !__AMD64__ */
+#elif defined(__I386__)
             exception_rip = ((uintptr_t *)(r->esp))[0];
             exception_cs = ((uintptr_t *)(r->esp))[1];
             exception_rflags = ((uintptr_t *)(r->esp))[2];
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
             for (hva_t *i = (hva_t *)_begin_xcph_table;
                  i < (hva_t *)_end_xcph_table; i += 3) {
@@ -185,9 +191,11 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 printf("\nFound in xcph table");
 #ifdef __AMD64__
                 ((uintptr_t *)(r->rsp))[0] = found[2];
-#else /* !__AMD64__ */
+#elif defined(__I386__)
                 ((uintptr_t *)(r->esp))[0] = found[2];
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
                 break;
             }
 
@@ -197,9 +205,11 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             if (error_code_available) {
 #ifdef __AMD64__
                 printf("\n[%02x]: error code: 0x%016lx", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
-#else /* !__AMD64__ */
+#elif defined(__I386__)
                 printf("\n[%02x]: error code: 0x%08lx", vcpu->id, ((uintptr_t *)(r->esp))[-1]);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
             }
             printf("\n[%02x]: state dump follows...", vcpu->id);
             // things to dump
@@ -215,7 +225,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             printf("\n[%02x] R10=0x%016lx R11=0x%016lx", vcpu->id, r->r10, r->r11);
             printf("\n[%02x] R12=0x%016lx R13=0x%016lx", vcpu->id, r->r12, r->r13);
             printf("\n[%02x] R14=0x%016lx R15=0x%016lx", vcpu->id, r->r14, r->r15);
-#else /* !__AMD64__ */
+#elif defined(__I386__)
             printf("\n[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x", vcpu->id,
                 (u16)exception_cs, exception_rip, exception_rflags);
             printf("\n[%02x]: VCPU at 0x%08x", vcpu->id, (u32)vcpu, vcpu->id);
@@ -223,7 +233,9 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                     r->eax, r->ebx, r->ecx, r->edx);
             printf("\n[%02x] ESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", vcpu->id,
                     r->esi, r->edi, r->ebp, r->esp);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
             printf("\n[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
                 (u16)read_segreg_cs(), (u16)read_segreg_ds(),
                 (u16)read_segreg_es(), (u16)read_segreg_ss());
@@ -240,11 +252,13 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
                 for(i=r->rsp; i < vcpu->rsp; i+=sizeof(uintptr_t)){
                     printf("\n[%02x]  Stack(0x%016lx) -> 0x%016lx", vcpu->id, i, *(uintptr_t *)i);
                 }
-#else /* !__AMD64__ */
+#elif defined(__I386__)
                 for(i=r->esp; i < vcpu->esp; i+=sizeof(uintptr_t)){
                     printf("\n[%02x]  Stack(0x%08x) -> 0x%08x", vcpu->id, i, *(uintptr_t *)i);
                 }
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
                 printf("\n[%02x]-----end------------", vcpu->id);
             }
 

@@ -58,7 +58,7 @@
 #define do_div(n,base) ({ \
         switch(0) { case 0: case 0: not_implemented_for_amd64 }; \
 })
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 #define do_div(n,base) ({ \
         unsigned long __upper, __low, __high, __mod, __base; \
         __base = (base); \
@@ -72,7 +72,9 @@
         __asm("":"=A" (n):"a" (__low),"d" (__high)); \
         __mod; \
 })
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 #endif /* __ASSEMBLY__ */
 #endif /* __DIV64_H__ */

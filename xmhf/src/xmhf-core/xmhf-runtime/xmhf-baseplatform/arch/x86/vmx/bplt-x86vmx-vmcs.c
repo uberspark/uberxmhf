@@ -91,10 +91,12 @@ void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
     default:
         HALT();
     }
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 	(void)size;
     *(u32 *)addr = (u32)value;
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 }
 
 //---getVMCS--------------------------------------------------------------------
@@ -187,9 +189,11 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
 
 #ifdef __AMD64__
     DUMP_VCPU_PRINT_INT64(vcpu->rsp);
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     DUMP_VCPU_PRINT_INT64(vcpu->esp);
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
     DUMP_VCPU_PRINT_INT64(vcpu->sipi_page_vaddr);
     DUMP_VCPU_PRINT_INT32(vcpu->id);
     DUMP_VCPU_PRINT_INT32(vcpu->idx);

@@ -56,7 +56,6 @@
 #define KB(x)           (((size_t)(x)) << 10)
 
 // TODO: bootloader for 64 bit XMHF will have incorrect size
-// Ideally, should change __AMD64__ to __XMHF_AMD64__
 #ifdef __I386__
     typedef u32 hva_t;  // hypervisor virtual address
     typedef u64 spa_t;  // system physical address. [NOTE] spa_t could have a value larger than 4G; e.g., PC installs
@@ -65,7 +64,6 @@
     typedef u32 gva_t;  // guest virtual address
     typedef u64 gpa_t;  // guest physical address. can be 64-bit with PAE
     typedef u32 sla_t;  // secure loader address
-#elif defined(__AMD64__)
     typedef u64 hva_t;  // hypervisor virtual address
     typedef u64 spa_t;  // system physical address
     typedef u64	spfn_t; // pfn of system physical address
@@ -87,7 +85,6 @@
 #ifdef __I386__
     #define UINT32sToSPADDR(high, low) (spa_t)(UINT32sToUINT64(high, low))
     #define UINT32sToSIZE(high, low) (size_t)(low)
-#elif defined(__AMD64__)
     #define UINT32sToSPADDR(high, low) (spa_t)(UINT32sToUINT64(high, low))
     #define UINT32sToSIZE(high, low) (size_t)(UINT32sToUINT64(high, low))
 #else

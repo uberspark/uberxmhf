@@ -38,9 +38,11 @@
 
 #ifdef __AMD64__
 #include <sys/amd64_limits.h>
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 #include <sys/i386_limits.h>
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 #define CHAR_BIT        __CHAR_BIT      /* number of bits in a char */
 

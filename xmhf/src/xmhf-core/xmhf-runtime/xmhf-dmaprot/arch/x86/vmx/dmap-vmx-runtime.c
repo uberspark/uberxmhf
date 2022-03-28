@@ -243,10 +243,12 @@ bool vmx_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_s
     // 4K-align the return the address
     *machine_base_spa = PAGE_ALIGN_4K(*machine_base_spa);
     *machine_limit_spa = PAGE_ALIGN_UP4K(*machine_limit_spa);
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     *machine_base_spa = 0;
     *machine_limit_spa = ADDR_4GB;
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
     return true;
 }

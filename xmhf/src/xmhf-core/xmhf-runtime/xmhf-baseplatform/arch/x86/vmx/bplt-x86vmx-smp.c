@@ -70,9 +70,11 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 	//allocate runtime stack
 #ifdef __AMD64__
     vcpu->rsp = ((hva_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
-#else /* !__AMD64__ */
+#elif defined(__I386__)
     vcpu->esp = ((hva_t)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
     //allocate VMXON memory region
     vcpu->vmx_vmxonregion_vaddr = ((hva_t)g_vmx_vmxon_buffers + (i * PAGE_SIZE_4K)) ;

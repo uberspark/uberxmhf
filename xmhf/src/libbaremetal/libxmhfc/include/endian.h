@@ -35,9 +35,11 @@
 
 #ifdef __AMD64__
 #include <sys/amd64_types.h>
-#else /* !__AMD64__ */
+#elif defined(__I386__)
 #include <sys/i386_types.h>
-#endif /* __AMD64__ */
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 #include <sys/endian.h>
 
 #ifndef _UINT16_T_DECLARED
