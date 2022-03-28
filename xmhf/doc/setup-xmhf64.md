@@ -69,20 +69,19 @@ is
   should be `--with-approot=hypapps/trustvisor`
 * Depending on cross build situations, add these extra arguments (mandatory):
 	* Build i386 XMHF on i386 (Debian / Fedora): (no extra arguments)
-	* Build amd64 XMHF on i386
-		* Debian:
+	* Build amd64 XMHF on i386 ...
+		* ... Debian:
 		  `--with-target-subarch=amd64 CC=x86_64-linux-gnu-gcc LD=x86_64-linux-gnu-ld`
-		* Fedora:
+		* ... Fedora:
 		  `--with-target-subarch=amd64`
-	* Build i386 XMHF on amd64:
-		* Debian:
+	* Build i386 XMHF on amd64 ...:
+		* ... Debian:
 		  `CC=i686-linux-gnu-gcc LD=i686-linux-gnu-ld`
-		* Fedora: (no extra arguments)
+		* ... Fedora: (no extra arguments)
 	* Build amd64 XMHF on amd64 (Debian / Fedora):
 	  `--with-target-subarch=amd64`
 	* If these argument is not added correctly, an error message like
 	  `ld: cannot find -lgcc` may appear when building.
-	* TODO: enhance and document build.sh
 * The following arguments helps debugging and are highly recommended. They have
   minimum impact on XMHF's behavior.
 	* `--enable-debug-symbols`: add debug info to generated ELF files
@@ -98,6 +97,14 @@ is
 	  configuration is ignored in i386 XMHF.
 * By default, XMHF prints debug message to serial port. To print on VGA, use
   `--disable-debug-serial --enable-debug-vga`.
+
+`.github/build.sh` can be used to generate configuration options. It can be
+especially helpful to figure out cross-compile options. See comments at the
+start of this file. Try the following:
+```sh
+./.github/build.sh i386 release -n
+./.github/build.sh amd64 release -n
+```
 
 After configuring, simply run Make.
 ```
