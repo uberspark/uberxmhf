@@ -47,6 +47,7 @@ export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
 export XMHF_TARGET_ARCH := @TARGET_ARCH@
 export TARGET_SUBARCH := @TARGET_SUBARCH@
 export AMD64_MAX_PHYS_ADDR := @AMD64_MAX_PHYS_ADDR@
+export OPT_FLAGS := @OPT_FLAGS@
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -197,6 +198,9 @@ CFLAGS += -mno-pclmul -mno-sse4a -mno-3dnow -mno-popcnt -mno-abm
 CFLAGS += -nostdinc -pipe
 CFLAGS += -Wno-address-of-packed-member
 CFLAGS += -fno-pie -fno-pic -mno-red-zone
+
+# Compiler optimization (-O1, -O3, ...)
+CFLAGS += $(OPT_FLAGS)
 
 CFLAGS += $(ADDL_INCLUDES)
 VFLAGS = $(ADDL_INCLUDES)

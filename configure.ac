@@ -139,6 +139,13 @@ AS_IF([test "x${enable_dmap}" != "xno"],
       [DMAP=y],
       [DMAP=n])
 
+# select optimization level
+AC_SUBST([OPT_FLAGS])
+AC_ARG_WITH([opt],
+        AS_HELP_STRING([--with-opt=@<:@OPT@:>@],
+                [select optimization level (-O1, -O3, ...)]),
+                , [with_opt=])
+OPT_FLAGS=$[]with_opt
 
 # libbaremetal source directory
 AC_SUBST([LIBBAREMETAL_SRC])
