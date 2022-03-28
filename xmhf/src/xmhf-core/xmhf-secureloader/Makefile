@@ -70,9 +70,9 @@ sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl-$(TARGET_HWPLATFORM)-$(TARGET_SUBAR
 	$(STRIP) -s sl.exe
 	$(OBJCOPY) --output-format=binary sl.exe sl.bin
 	# Optional: use sparse file to reduce fs space usage
-	fallocate -d sl.exe
-	fallocate -d sl.bin
-	fallocate -d sl_syms.exe
+	-fallocate -d sl.exe
+	-fallocate -d sl.bin
+	-fallocate -d sl_syms.exe
 
 .PHONY: clean
 clean:

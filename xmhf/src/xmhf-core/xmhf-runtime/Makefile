@@ -153,7 +153,7 @@ runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM)-$(TAR
 		--set-section-flags .stack=alloc,load,contents \
 		--output-format=binary runtime.exe runtime.bin
 	# Optional: use sparse file for runtime.bin to reduce fs space usage
-	fallocate -d runtime.bin
+	-fallocate -d runtime.bin
 
 .PHONY: clean 
 clean: 

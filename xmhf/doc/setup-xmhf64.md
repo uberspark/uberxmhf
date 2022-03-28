@@ -20,9 +20,10 @@ operating systems. A comparision is below.
 
 ## Compiling XMHF
 
-Currently compiling XMHF64 is only tested on Debian-based platforms (e.g.
-Debian, Ubuntu). Docker can be used (e.g. tag `debian:latest`). We will use
-Debian as the example OS below.
+Compiling XMHF64 is tested on Debian 11 and Fedora 35. For Ubuntu, the usage
+should be similar to Debian. For Docker, the `debian:11` tag is tested. This
+documentation will use "Debian" and "Fedora" to differentiate between RPM-based
+Linux and DEB-based Linux.
 
 ### Installing build tools
 
@@ -43,6 +44,13 @@ Debian as the example OS below.
 	apt-get update
 	apt-get install build-essential crossbuild-essential-i386
 	```
+* When building on amd64 Fedora (looks like as of Fedora 35 there is no support
+  for i386 Fedora), install dependencies with:
+	```sh
+	dnf install autoconf automake make gcc
+	# The next line installs fallocate, which is recommended
+	dnf install util-linux
+	```
 
 ### Building
 
@@ -60,15 +68,21 @@ is
 * HYPAPP is the relative path to hypapp. For example, building TrustVisor
   should be `--with-approot=hypapps/trustvisor`
 * Depending on cross build situations, add these extra arguments (mandatory):
-	* Build i386 XMHF on i386 Debian: (no extra arguments)
-	* Build amd64 XMHF on i386 Debian:
-	  `--with-target-subarch=amd64 CC=x86_64-linux-gnu-gcc LD=x86_64-linux-gnu-ld`
-	* Build i386 XMHF on amd64 Debian:
-	  `CC=i686-linux-gnu-gcc LD=i686-linux-gnu-ld`
-	* Build amd64 XMHF on amd64 Debian:
+	* Build i386 XMHF on i386 (Debian / Fedora): (no extra arguments)
+	* Build amd64 XMHF on i386
+		* Debian:
+		  `--with-target-subarch=amd64 CC=x86_64-linux-gnu-gcc LD=x86_64-linux-gnu-ld`
+		* Fedora:
+		  `--with-target-subarch=amd64`
+	* Build i386 XMHF on amd64:
+		* Debian:
+		  `CC=i686-linux-gnu-gcc LD=i686-linux-gnu-ld`
+		* Fedora: (no extra arguments)
+	* Build amd64 XMHF on amd64 (Debian / Fedora):
 	  `--with-target-subarch=amd64`
 	* If these argument is not added correctly, an error message like
 	  `ld: cannot find -lgcc` may appear when building.
+	* TODO: enhance and document build.sh
 * The following arguments helps debugging and are highly recommended. They have
   minimum impact on XMHF's behavior.
 	* `--enable-debug-symbols`: add debug info to generated ELF files
