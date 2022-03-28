@@ -110,16 +110,8 @@ static void _vmx_initVT(VCPU *vcpu){
 
   //step-1: check if intel CPU
   {
-    char cpu_oemid[12];
-	  #ifndef __XMHF_VERIFICATION__
-	  asm(	"xor	%%eax, %%eax \n"
-				  "cpuid \n"
-				  "mov	%%ebx, %0 \n"
-				  "mov	%%edx, %1 \n"
-				  "mov	%%ecx, %2 \n"
-			     :: "m"(cpu_oemid[0]), "m"(cpu_oemid[4]), "m"(cpu_oemid[8]): "eax", "ebx", "ecx", "edx" );
-
-   	if ( strncmp( cpu_oemid, "GenuineIntel", 12 ) ){
+	#ifndef __XMHF_VERIFICATION__
+    if (get_cpu_vendor_or_die() != CPU_VENDOR_INTEL) {
    	  printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", vcpu->id);
    	  HALT();
    	}
