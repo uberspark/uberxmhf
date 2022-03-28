@@ -53,8 +53,16 @@
 
 #ifndef __ASSEMBLY__
 
-#define HALT()	__asm__ __volatile__ ("1: hlt\r\n jmp 1b\r\n");
-#define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { printf("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__); HALT(); } }
+/* HALT() contains an infinite loop to indicate that it never exits */
+#define HALT() do { __asm__ __volatile__ ("hlt\r\n"); } while (1)
+
+#define HALT_ON_ERRORCOND(_p) \
+    do { \
+        if ( !(_p) ) { \
+            printf("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__); \
+            HALT(); \
+        } \
+    } while (0)
 //#define WARNING(_p) { if ( !(_p) ) { printf("\nWarning Assertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__);} }
 
 /* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
