@@ -59,15 +59,23 @@ In xmhf64 project root directory, first run autogen:
 ./autogen.sh
 ```
 
-Then run configure. Configure selects hypapp and build subarch etc. The usage
-is
+Then run configure. Configure selects hypapp and build subarch etc.
+`.github/build.sh` can be used to generate configuration options. It can be
+especially helpful to figure out cross-compile options. See comments at the
+start of this file. Try the following:
+```sh
+./.github/build.sh i386 release -n
+./.github/build.sh amd64 release -n
+```
+
+If not using `.github/build.sh`, the usage of configure is
 ```
 ./configure --with-approot=HYPAPP [ARGUMENTS [...]]
 ```
 
 * HYPAPP is the relative path to hypapp. For example, building TrustVisor
   should be `--with-approot=hypapps/trustvisor`
-* Depending on cross build situations, add these extra arguments (mandatory):
+* Depending on cross build situations, add these **mandatory** extra arguments
 	* Build i386 XMHF on i386 (Debian / Fedora): (no extra arguments)
 	* Build amd64 XMHF on i386 ...
 		* ... Debian:
@@ -97,14 +105,6 @@ is
 	  configuration is ignored in i386 XMHF.
 * By default, XMHF prints debug message to serial port. To print on VGA, use
   `--disable-debug-serial --enable-debug-vga`.
-
-`.github/build.sh` can be used to generate configuration options. It can be
-especially helpful to figure out cross-compile options. See comments at the
-start of this file. Try the following:
-```sh
-./.github/build.sh i386 release -n
-./.github/build.sh amd64 release -n
-```
 
 After configuring, simply run Make.
 ```

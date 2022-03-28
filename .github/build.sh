@@ -26,6 +26,18 @@ QEMU="y"
 AMD64MEM="0x140000000"
 DRY_RUN="n"
 
+# Determine LINUX_BASE (may not be 100% correct all the time)
+if [ -f "/etc/debian_version" ]; then
+	# DEB-based Linux (e.g. Debian, Ubuntu)
+	LINUX_BASE="DEB"
+else if [ -f "/etc/redhat-release" ]; then
+	# RPM-based Linux (e.g. Fedora)
+	LINUX_BASE="RPM"
+else
+	echo 'Error: build.sh does not know about OS it is running on.'; exit 1
+fi; fi
+
+# Check LINUX_BIT
 case "$LINUX_BIT" in
 	32)
 		;;
@@ -36,17 +48,7 @@ case "$LINUX_BIT" in
 		;;
 esac
 
-
-if [ -f /etc/debian_version ]; then
-	# DEB-based Linux (e.g. Debian, Ubuntu)
-	LINUX_BASE="DEB"
-else if [ -f /etc/redhat-release ]; then
-	# RPM-based Linux (e.g. Fedora)
-	LINUX_BASE="RPM"
-else
-	echo 'Error: build.sh does not know about OS it is running on.'; exit 1
-fi; fi
-
+# Determine SUBARCH
 case "$1" in
 	i386)
 		SUBARCH="i386"
@@ -60,6 +62,7 @@ case "$1" in
 esac
 shift
 
+# Process other arguments
 while [ "$#" -gt 0 ]; do
 	case "$1" in
 		--drt)
@@ -98,6 +101,7 @@ while [ "$#" -gt 0 ]; do
 	shift 
 done
 
+# Build configure arguments
 CONFIGURE_ARGS="--with-approot=$APPROOT"
 CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-symbols"
 
@@ -133,12 +137,14 @@ if [ "$QEMU" == "y" ]; then
 	CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-qemu"
 fi
 
+# Output configure arguments, if `-n`
 if [ "$DRY_RUN" == "y" ]; then
 	set +x
 	echo $'\n'"./autogen.sh; ./configure ${CONFIGURE_ARGS}"$'\n'
 	exit 0
 fi
 
+# Build
 ./autogen.sh
 ./configure ${CONFIGURE_ARGS}
 make -j "$(nproc)"
