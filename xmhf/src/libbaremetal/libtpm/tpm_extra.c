@@ -498,7 +498,12 @@ static uint32_t _tpm_wrap_seal(uint32_t locality,
     uint32_t ordinal = TPM_ORD_SEAL;
     tpm_digest_t digest;
 
-    /* skip generate nonce for odd_osap, just use the random value in stack */
+    /*
+     * Skip generate nonce for odd_osap. Used to use the random value in stack,
+     * but since GCC 11 -Werror=maybe-uninitialized will cause compiler
+     * warning. TODO: generate a random number?
+     */
+    memset(&odd_osap, 0, sizeof(odd_osap));
 
     /* establish a osap session */
     ret = tpm_osap(locality, TPM_ET_SRK, TPM_KH_SRK, &odd_osap, &hauth,
@@ -575,7 +580,12 @@ static uint32_t _tpm_wrap_unseal(uint32_t locality, const uint8_t *in_data,
     uint32_t ordinal = TPM_ORD_UNSEAL;
     tpm_digest_t digest;
 
-    /* skip generate nonce for odd_osap, just use the random value in stack */
+    /*
+     * Skip generate nonce for odd_osap. Used to use the random value in stack,
+     * but since GCC 11 -Werror=maybe-uninitialized will cause compiler
+     * warning. TODO: generate a random number?
+     */
+    memset(&odd_osap, 0, sizeof(odd_osap));
 
     /* establish a osap session */
     ret = tpm_osap(locality, TPM_ET_SRK, TPM_KH_SRK, &odd_osap, &hauth,
