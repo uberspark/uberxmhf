@@ -84,6 +84,8 @@ SECTIONS
 
   /DISCARD/ : {
     *(.comment)
+    *(.note.gnu.property)
+    *(.gnu.build.attributes)
   }
 
   /* debug sections */
@@ -93,6 +95,8 @@ SECTIONS
   .debug_line : { *(.debug_line) } >debug
   .debug_ranges : { *(.debug_ranges) } >debug
   .debug_str : { *(.debug_str) } >debug
+  .debug_line_str : { *(.debug_line_str) } >debug
+  .debug_rnglists : { *(.debug_rnglists) } >debug
 
   /* this is to cause the link to fail if there is
    * anything we didn't explicitly place.
