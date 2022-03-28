@@ -317,26 +317,26 @@ static void _vmx_setupEPT(VCPU *vcpu){
 	// TODO: for amd64, likely can use 1G / 2M pages.
 	// If so, also need to change _vmx_getmemorytypeforphysicalpage()
 
-	for (u64 paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PA_PAGE_SIZE_4K) {
+	for (gpa_t paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PA_PAGE_SIZE_4K) {
 		if (PA_PAGE_ALIGNED_512G(paddr)) {
 			/* Create PML4E */
-			u64 i = paddr / PA_PAGE_SIZE_512G;
-			pml4_entry[i] = (pdp_table + i * PA_PAGE_SIZE_4K) | 0x7;
+			gpa_t i = paddr >> PAGE_SHIFT_512G;
+			pml4_entry[i] = (pdp_table + (i << PAGE_SHIFT_4K)) | 0x7;
 		}
 		if (PA_PAGE_ALIGNED_1G(paddr)) {
 			/* Create PDPE */
-			u64 i = paddr / PA_PAGE_SIZE_1G;
-			pdp_entry[i] = (pd_table + i * PA_PAGE_SIZE_4K) | 0x7;
+			gpa_t i = paddr >> PAGE_SHIFT_1G;
+			pdp_entry[i] = (pd_table + (i << PAGE_SHIFT_4K)) | 0x7;
 		}
 		if (PA_PAGE_ALIGNED_2M(paddr)) {
 			/* Create PDE */
-			u64 i = paddr / PA_PAGE_SIZE_2M;
-			pd_entry[i] = (p_table + i * PA_PAGE_SIZE_4K) | 0x7;
+			gpa_t i = paddr >> PAGE_SHIFT_2M;
+			pd_entry[i] = (p_table + (i << PAGE_SHIFT_4K)) | 0x7;
 		}
 		/* PA_PAGE_ALIGNED_4K */
 		{
 			/* Create PE */
-			u64 i = paddr / PA_PAGE_SIZE_4K;
+			gpa_t i = paddr >> PAGE_SHIFT_4K;
 			u64 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, paddr);
 			u64 lower;
 			/*
