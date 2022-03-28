@@ -198,7 +198,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 		u32 eax, ebx, ecx, edx;
 		/* Check whether CPUID 0x80000008 is supported */
 		cpuid(0x80000000U, &eax, &ebx, &ecx, &edx);
-		HALT_ON_ERRORCOND(eax >= 0x80000008U)
+		HALT_ON_ERRORCOND(eax >= 0x80000008U);
 		/* Compute paddrmask from CPUID.80000008H:EAX[7:0] (max phy addr) */
 		cpuid(0x80000008U, &eax, &ebx, &ecx, &edx);
 		eax &= 0xFFU;
