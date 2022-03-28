@@ -98,7 +98,7 @@ void	 rijndael_encrypt(const rijndael_ctx *, const u_char *src, u_char *dst);
 */
 int	rijndaelKeySetupEnc(unsigned int [], const unsigned char [], int);
 int	rijndaelKeySetupDec(unsigned int [], const unsigned char [], int);
-void	rijndaelEncrypt(const unsigned int [], int, const unsigned char [],
-	    unsigned char []);
+void	rijndaelEncrypt(const unsigned int [], int, const unsigned char [16],
+	    unsigned char [16]);
 
 #endif /* __RIJNDAEL_H */
