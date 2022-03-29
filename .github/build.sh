@@ -9,6 +9,8 @@
 #   --mem MEM: if amd64, set physical memory, default is 0x140000000 (5GiB)
 #   release: equivalent to --drt --dmap --no-dbg (For GitHub actions)
 #   debug: ignored (For GitHub actions)
+#   O0: ignored (For GitHub actions)
+#   O3: enable -O3 optimization, etc. (For GitHub actions)
 #   -n: print autogen.sh and configure options, do not run them
 
 set -e
@@ -25,6 +27,7 @@ DMAP="n"
 QEMU="y"
 AMD64MEM="0x140000000"
 DRY_RUN="n"
+OPT=""
 
 # Determine LINUX_BASE (may not be 100% correct all the time)
 if [ -f "/etc/debian_version" ]; then
@@ -91,6 +94,13 @@ while [ "$#" -gt 0 ]; do
 		debug)
 			# For GitHub actions
 			;;
+		O0)
+			# For GitHub actions
+			;;
+		O3)
+			# For GitHub actions
+			OPT="O3"
+			;;
 		-n)
 			DRY_RUN="y"
 			;;
@@ -102,50 +112,58 @@ while [ "$#" -gt 0 ]; do
 done
 
 # Build configure arguments
-CONFIGURE_ARGS="--with-approot=$APPROOT"
-CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-symbols"
+CONF=()
+CONF+=("--with-approot=$APPROOT")
+CONF+=("--enable-debug-symbols")
 
 if [ "$SUBARCH" == "i386" ]; then
 	# Building i386 XMHF
 	if [ "$LINUX_BASE" == "DEB" -a "$LINUX_BIT" == "64" ]; then
 		# Building on amd64 Debian
-		CONFIGURE_ARGS="${CONFIGURE_ARGS} CC=i686-linux-gnu-gcc"
-		CONFIGURE_ARGS="${CONFIGURE_ARGS} LD=i686-linux-gnu-ld"
+		CONF+=("CC=i686-linux-gnu-gcc")
+		CONF+=("LD=i686-linux-gnu-ld")
 	fi
 else if [ "$SUBARCH" == "amd64" ]; then
 	# Building amd64 XMHF
-	CONFIGURE_ARGS="${CONFIGURE_ARGS} --with-target-subarch=amd64"
-	CONFIGURE_ARGS="${CONFIGURE_ARGS} --with-amd64-max-phys-addr=$AMD64MEM"
+	CONF+=("--with-target-subarch=amd64")
+	CONF+=("--with-amd64-max-phys-addr=$AMD64MEM")
 	if [ "$LINUX_BASE" == "DEB" -a "$LINUX_BIT" == "32" ]; then
 		# Building on i386 Debian
-		CONFIGURE_ARGS="${CONFIGURE_ARGS} CC=x86_64-linux-gnu-gcc"
-		CONFIGURE_ARGS="${CONFIGURE_ARGS} LD=x86_64-linux-gnu-ld"
+		CONF+=("CC=x86_64-linux-gnu-gcc")
+		CONF+=("LD=x86_64-linux-gnu-ld")
 	fi
 else
 	echo 'Error: unexpected $SUBARCH'; exit 1
 fi; fi
 
 if [ "$DRT" == "n" ]; then
-	CONFIGURE_ARGS="${CONFIGURE_ARGS} --disable-drt"
+	CONF+=("--disable-drt")
 fi
 
 if [ "$DMAP" == "n" ]; then
-	CONFIGURE_ARGS="${CONFIGURE_ARGS} --disable-dmap"
+	CONF+=("--disable-dmap")
 fi
 
 if [ "$QEMU" == "y" ]; then
-	CONFIGURE_ARGS="${CONFIGURE_ARGS} --enable-debug-qemu"
+	CONF+=("--enable-debug-qemu")
+fi
+
+if [ "$OPT" == "O3" ]; then
+	# -Wno-stringop-overflow is set due to a compile bug in GCC 10 / GCC 11
+	# Reported in https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105100
+	CONF+=("--with-opt=-O3 -Wno-stringop-overflow")
 fi
 
 # Output configure arguments, if `-n`
 if [ "$DRY_RUN" == "y" ]; then
 	set +x
-	echo $'\n'"./autogen.sh; ./configure ${CONFIGURE_ARGS}"$'\n'
+	echo $'\n'"./autogen.sh; ./configure ${CONF[@]@Q}"$'\n'
 	exit 0
 fi
 
 # Build
+set -x
 ./autogen.sh
-./configure ${CONFIGURE_ARGS}
+./configure "${CONF[@]}"
 make -j "$(nproc)"
 
