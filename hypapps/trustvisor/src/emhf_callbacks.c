@@ -63,7 +63,7 @@ u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val)
 }
 
 u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
-                                              struct regs *r, u64 gpa, u64 gva, u64 violationcode)
+                                              struct regs *r, gpa_t gpa, gva_t gva, u64 violationcode)
 {
   return tv_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva, violationcode);
 }

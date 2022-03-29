@@ -87,7 +87,7 @@ extern u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
 extern u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size);
 extern u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
       struct regs *r,
-      u64 gpa, u64 gva, u64 violationcode);
+      gpa_t gpa, gva_t gva, u64 violationcode);
 extern void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
 extern u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_SUCCESS if handled, else APP_ERROR
 extern u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val);	//returns APP_SUCCESS if allow MTRR change

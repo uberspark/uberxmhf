@@ -631,7 +631,7 @@ enum CPU_Reg_Sel
 /*
  * Get a guest register
  */
-static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
+static inline ulong_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
                                      enum CPU_Reg_Sel sel)
 {
     switch (sel)
@@ -643,7 +643,6 @@ static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
         case CPU_REG_DX: return r->rdx;
         case CPU_REG_SI: return r->rsi;
         case CPU_REG_DI: return r->rdi;
-        case CPU_REG_SP: return r->rsp;
         case CPU_REG_BP: return r->rbp;
 
         case CPU_REG_R8: return r->r8;
@@ -661,17 +660,17 @@ static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
         case CPU_REG_DX: return r->edx;
         case CPU_REG_SI: return r->esi;
         case CPU_REG_DI: return r->edi;
-        case CPU_REG_SP: return r->esp;
         case CPU_REG_BP: return r->ebp;
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 
+        case CPU_REG_SP: return VCPU_grsp(vcpu);
         case CPU_REG_FLAGS: return VCPU_grflags(vcpu);
         case CPU_REG_IP: return VCPU_grip(vcpu);
 
         default:
-            printf("CPU_Reg_Read: Invalid CPU register is given (sel:%u)!\n", sel);
+            printf("VCPU_reg_get: Invalid guest CPU register is given (sel:%u)!\n", sel);
             HALT();
             return 0; // should never hit
     }
@@ -681,7 +680,7 @@ static inline uintptr_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
  * Set a guest register
  */
 static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
-                                enum CPU_Reg_Sel sel, uintptr_t val)
+                                enum CPU_Reg_Sel sel, ulong_t val)
 {
     switch (sel)
     {
@@ -692,7 +691,6 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
         case CPU_REG_DX: r->rdx = val; break;
         case CPU_REG_SI: r->rsi = val; break;
         case CPU_REG_DI: r->rdi = val; break;
-        case CPU_REG_SP: r->rsp = val; break;
         case CPU_REG_BP: r->rbp = val; break;
 
         case CPU_REG_R8: r->r8 = val; break;
@@ -710,12 +708,14 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
         case CPU_REG_DX: r->edx = val; break;
         case CPU_REG_SI: r->esi = val; break;
         case CPU_REG_DI: r->edi = val; break;
-        case CPU_REG_SP: r->esp = val; break;
         case CPU_REG_BP: r->ebp = val; break;
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 
+        case CPU_REG_SP: 
+            VCPU_grsp_set(vcpu, val);
+            break;
         case CPU_REG_FLAGS:
             VCPU_grflags_set(vcpu, val);
             break;
@@ -724,7 +724,7 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
             break;
 
         default:
-            printf("CPU_Reg_Read: Invalid CPU register is given (sel:%u)!\n", sel);
+            printf("VCPU_reg_set: Invalid guest CPU register is given (sel:%u)!\n", sel);
             HALT();
     }
 }

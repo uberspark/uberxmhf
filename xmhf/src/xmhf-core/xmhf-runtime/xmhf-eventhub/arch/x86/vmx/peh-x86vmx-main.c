@@ -587,10 +587,10 @@ rdmsr_inject_gp:
 
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
-	u32 errorcode;
+	ulong_t errorcode;
 	uintptr_t gva;
 	u64 gpa;
-	errorcode = (uintptr_t)vcpu->vmcs.info_exit_qualification;
+	errorcode = (ulong_t)vcpu->vmcs.info_exit_qualification;
 	gpa = vcpu->vmcs.guest_paddr;
 	gva = (uintptr_t)vcpu->vmcs.info_guest_linear_address;
 

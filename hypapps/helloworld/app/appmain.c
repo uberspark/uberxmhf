@@ -84,7 +84,7 @@ void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 //for now this always returns APP_SUCCESS
 u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
       struct regs *r,
-      u64 gpa, u64 gva, u64 violationcode){
+      gpa_t gpa, gva_t gva, u64 violationcode){
 	u32 status = APP_SUCCESS;
 
 	(void)vcpu; //unused

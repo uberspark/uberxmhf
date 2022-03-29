@@ -57,9 +57,15 @@
 #define ADDR_4GB 0x100000000
 #endif
 
-
-#define PAGE_MASK_4K				0xfffff000
-#define PAGE_MASK_1G       0xC0000000
+#ifdef __I386__
+    #define PAGE_MASK_4K        0xFFFFF000
+    #define PAGE_MASK_1G        0xC0000000
+#elif defined(__AMD64__)
+    #define PAGE_MASK_4K        0xFFFFFFFFFFFFF000
+    #define PAGE_MASK_1G        0xFFFFFFFFC0000000
+#else
+    #error "Unsupported Arch"
+#endif
 
 // page sizes
 #define PAGE_SHIFT_4K   12
@@ -76,6 +82,7 @@
 #define PAGE_SIZE_2M    (1UL << PAGE_SHIFT_2M)
 #define PAGE_SIZE_4M    (1UL << PAGE_SHIFT_4M)
 #define PAGE_SIZE_1G    (1UL << PAGE_SHIFT_1G)
+
 #ifdef __AMD64__
 #define PAGE_SIZE_512G  (1UL << PAGE_SHIFT_512G)
 #define PAGE_SIZE_256T  (1UL << PAGE_SHIFT_256T)
