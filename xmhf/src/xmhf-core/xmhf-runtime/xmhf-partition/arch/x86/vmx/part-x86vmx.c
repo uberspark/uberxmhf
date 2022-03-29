@@ -112,27 +112,24 @@ static void _vmx_initVT(VCPU *vcpu){
 
   //step-1: check if intel CPU
   {
-	#ifndef __XMHF_VERIFICATION__
+    #ifndef __XMHF_VERIFICATION__
     if (get_cpu_vendor_or_die() != CPU_VENDOR_INTEL) {
-   	  printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", vcpu->id);
-   	  HALT();
-   	}
-   	#endif
+      printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", vcpu->id);
+      HALT();
+    }
+    #endif
   }
 
   //step-2: check VT support
   {
-  	u32	cpu_features;
     #ifndef __XMHF_VERIFICATION__
-    asm("mov	$1, %%eax \n"
-				"cpuid \n"
-				"mov	%%ecx, %0	\n"
-				::"m"(cpu_features): "eax", "ebx", "ecx", "edx" );
-		if ( ( cpu_features & (1<<5) ) == 0 ){
-			printf("CPU(0x%02x) does not support VT. Halting!", vcpu->id);
+    u32 eax, ebx, ecx, edx;
+    cpuid(1, &eax, &ebx, &ecx, &edx);
+    if ( ( ecx & (1<<5) ) == 0 ){
+      printf("CPU(0x%02x) does not support VT. Halting!", vcpu->id);
       HALT();
-		}
-	#endif
+    }
+    #endif
   }
 
   //step-3: save contents of VMX MSRs as well as MSR EFER and EFCR
@@ -142,9 +139,9 @@ static void _vmx_initVT(VCPU *vcpu){
     u32 eax, edx;
     #ifndef __XMHF_VERIFICATION__
     for(i=0; i < IA32_VMX_MSRCOUNT; i++){
-	#else
-	for(i=0; i < 1; i++){
-	#endif
+    #else
+    for(i=0; i < 1; i++){
+    #endif
         rdmsr( (IA32_VMX_BASIC_MSR + i), &eax, &edx);
         vcpu->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;
     }
