@@ -77,6 +77,40 @@
 
 #ifndef __ASSEMBLY__
 
+/*
+ * In x86 two architectures are supported: i386 and amd64. Physical addresses
+ * are always 64-bits, so are defined with long long (1ULL). Virtual addresses
+ * are 32-bits for i386 and 64-bits for amd64, so are defined with long (1UL).
+ *
+ * | type      | i386 | amd64 |
+ * |-----------|------|-------|
+ * | int       | 32   | 32    |
+ * | long      | 32   | 64    |
+ * | long long | 64   | 64    |
+ * | hva_t     | 32   | 64    |
+ * | spa_t     | 64   | 64    |
+ *
+ * This file defines two types of macros. PAGE_* are used for virtual addresses
+ * (long, 32-bit for i386, 64-bit for amd64). PA_PAGE_* (SP stands for physical
+ * address) are used for physical addresses (long long, always 64-bit).
+ *
+ * | PAGE_* macro    | PA_PAGE_* macro    | Usage                             |
+ * |-----------------|--------------------|-----------------------------------|
+ * | PAGE_SIZE_4K    | PA_PAGE_SIZE_4K    | Size of page (integer)            | 
+ * | PAGE_ALIGN_UP4K | PA_PAGE_ALIGN_UP4K | Align address up to page boundary |
+ * | PAGE_ALIGN_4K   | PA_PAGE_ALIGN_4K   | Align address to page boundary    |
+ * | PAGE_ALIGNED_4K | PA_PAGE_ALIGNED_4K | Test whether address is aligned   |
+ *
+ * For i386, PAGE_* macros are defined up to 1G, because larger sizes are
+ * greater than 4G and are not supported by the 32-bit address space. For
+ * amd64 and for PA_PAGE_* macros, all sizes are supported.
+ *
+ * | Subarch | PAGE_* macro               | PA_PAGE_* macro            |
+ * |---------|----------------------------|----------------------------|
+ * | i386    | 4K, 2M, 4M, 1G             | 4K, 2M, 4M, 1G, 512G, 256T | 
+ * | amd64   | 4K, 2M, 4M, 1G, 512G, 256T | 4K, 2M, 4M, 1G, 512G, 256T |
+ */
+
 /* Normal macros: u32 for i386, u64 for amd64 */
 #define PAGE_SIZE_4K    (1UL << PAGE_SHIFT_4K)
 #define PAGE_SIZE_2M    (1UL << PAGE_SHIFT_2M)
