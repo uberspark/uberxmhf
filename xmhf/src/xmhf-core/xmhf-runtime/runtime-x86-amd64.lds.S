@@ -103,10 +103,11 @@ SECTIONS
   .debug_aranges : { *(.debug_aranges) } >debug
   .debug_info : { *(.debug_info) } >debug
   .debug_line : { *(.debug_line) } >debug
-  .debug_ranges : { *(.debug_ranges) } >debug
-  .debug_str : { *(.debug_str) } >debug
   .debug_line_str : { *(.debug_line_str) } >debug
+  .debug_loclists : { *(.debug_loclists) } >debug
+  .debug_ranges : { *(.debug_ranges) } >debug
   .debug_rnglists : { *(.debug_rnglists) } >debug
+  .debug_str : { *(.debug_str) } >debug
 
   /DISCARD/ : {
     *(.note.gnu.property)
