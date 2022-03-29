@@ -84,10 +84,13 @@
  *
  */
 
+/* Adding the unlikely compiler hint can remove some compiler warnings */
+#define _euchk_unlikely(x)    __builtin_expect(!!(x), 0)
+
 #define EU_CHKN_PRI(cond, priority, args...)                            \
   do {                                                                  \
     int _eu_chk_cond = (int)(cond);                                     \
-    if (_eu_chk_cond) {                                                 \
+    if (_euchk_unlikely(_eu_chk_cond)) {                                \
       EU_CHK_LOG(priority, "EU_CHKN( %s) failed with: %d", #cond, _eu_chk_cond); \
       (void)0, ## args;                                                 \
       goto out;                                                         \
@@ -96,7 +99,7 @@
 
 #define EU_CHK_PRI(cond, priority, args...)             \
   do {                                                  \
-    if (!(cond)) {                                      \
+    if (_euchk_unlikely(!(cond))) {                     \
       EU_CHK_LOG(priority, "EU_CHK( %s) failed", #cond);    \
       (void)0, ## args;                                 \
       goto out;                                         \
@@ -118,7 +121,7 @@
    check never disabled */
 #define EU_VERIFY(cond, args...)                \
   do {                                          \
-    if (!(cond)) {                              \
+    if (_euchk_unlikely(!(cond))) {             \
       EU_CHK_LOG( EU_ERR, "EU_VERIFY( %s) failed", #cond);       \
       (void)0, ## args;                         \
       abort();                                  \
@@ -129,7 +132,7 @@
 #define EU_VERIFYN(cond, args...)                                       \
   do {                                                                  \
     int _eu_chk_cond = (int)(cond);                                     \
-    if (_eu_chk_cond) {                                                 \
+    if (_euchk_unlikely(_eu_chk_cond)) {                                \
       EU_CHK_LOG( EU_ERR, "EU_VERIFYN( %s) failed with %d", #cond, _eu_chk_cond); \
       (void)0, ## args;                                                 \
       abort();                                                          \
