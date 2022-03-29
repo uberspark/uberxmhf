@@ -64,36 +64,36 @@ u8 g_vmx_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".bss.palign_d
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
 //smpguest x86vmx
-u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
+volatile u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86vmx
-u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
+volatile u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
 
 //resume counter to rally all CPUs after resumption from quiesce
 //smpguest x86vmx
-u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
+volatile u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86vmx
-u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1;
+volatile u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1;
 
 //the "quiesce" variable, if 1, then we have a quiesce in process
 //smpguest x86vmx
-u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
+volatile u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
 
 //SMP lock to access the above variable
 //smpguest x86vmx
-u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
+volatile u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
 
 //resume signal, becomes 1 to signal resume after quiescing
 //smpguest x86vmx
-u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
+volatile u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
 //smpguest x86vmx
-u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
+volatile u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
 
 //Flush all EPT TLB on all cores
 //smpguest x86vmx
-u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )) = 0;
+volatile u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )) = 0;
