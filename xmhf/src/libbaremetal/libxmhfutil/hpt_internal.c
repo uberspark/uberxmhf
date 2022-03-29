@@ -518,6 +518,8 @@ hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme)
       return HPT_PMT_WC; /* really UC- unless overriden by mtrr */
     } else if (pcd && pwt) {
       return HPT_PMT_UC;
+    } else {
+      assert(0); /* Not implemented? */
     }
   } else {
     assert(0);
