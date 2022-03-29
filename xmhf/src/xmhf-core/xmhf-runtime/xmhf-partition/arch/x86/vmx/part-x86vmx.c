@@ -252,16 +252,17 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->isbsp);
 
 	{
-		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
+		/* use BDA reserved memory at 0040:00AC */
+		volatile u8 *bdamemory = (volatile u8 *)0x4AC;
 
-		u16 *ivt_int15 = (u16 *)(0x54);			//32-bit CS:IP for IVT INT 15 handler
+		/* 32-bit CS:IP for IVT INT 15 handler */
+		volatile u16 *ivt_int15 = (volatile u16 *)(0x54);
 
 		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
 			ivt_int15[1], ivt_int15[0]);
 
-		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original
-		//IVT INT 15h handler address, zero them to start off
-		memset(bdamemory, 0x0, 8);
+		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for the
+		//original IVT INT 15h handler address
 
 		//implant VMCALL followed by IRET at 0040:04AC
 		bdamemory[0]= 0x0f;	//VMCALL
@@ -270,8 +271,8 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 		bdamemory[3]= 0xcf;	//IRET
 
 		//store original INT 15h handler CS:IP following VMCALL and IRET
-		*((u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
-		*((u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
+		*((volatile u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
+		*((volatile u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
 
 
 		//point IVT INT15 handler to the VMCALL instruction
