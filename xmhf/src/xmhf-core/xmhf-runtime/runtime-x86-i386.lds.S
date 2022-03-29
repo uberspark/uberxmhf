@@ -62,12 +62,14 @@ SECTIONS
   .text : {
     *(.s_rpb)
     *(.text)
+    *(.text.unlikely)
     . = ALIGN(4096);
   } =0x9090
 
   .data : {
     *(.data)
     *(.rodata)
+    *(.rodata.str1.*)
     *(.comment)
     *(.eh_frame) /* exception-metadata. might be able to discard */
     *(.bss)

@@ -77,6 +77,7 @@ SECTIONS
 
   .text : {
     *(.text)
+    *(.text.unlikely)
   } >low
 
   .data : {
@@ -85,6 +86,7 @@ SECTIONS
 
   .rodata : {
     *(.rodata)
+    *(.rodata.str1.*)
   } >low
 
   .bss : {

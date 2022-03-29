@@ -66,12 +66,14 @@ SECTIONS
 
   .text : {
     *(.text)
+    *(.text.unlikely)
     . = ALIGN(4096);
   } =0x9090
 
   .data : {
     *(.data)
     *(.rodata)
+    *(.rodata.str1.*)
     *(.eh_frame)
     *(.bss)
     . = ALIGN(4096);
