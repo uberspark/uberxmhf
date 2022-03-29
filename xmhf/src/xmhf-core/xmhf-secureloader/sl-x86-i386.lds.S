@@ -129,6 +129,7 @@ SECTIONS
   .debug_info : { *(.debug_info) } >debug
   .debug_line : { *(.debug_line) } >debug
   .debug_line_str : { *(.debug_line_str) } >debug
+  .debug_loc : { *(.debug_loc) } >debug
   .debug_loclists : { *(.debug_loclists) } >debug
   .debug_ranges : { *(.debug_ranges) } >debug
   .debug_rnglists : { *(.debug_rnglists) } >debug
