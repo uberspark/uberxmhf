@@ -47,6 +47,6 @@
 #ifndef __STDLIB_H__
 #define __STDLIB_H__
 
-void abort(void);
+__attribute__((__noreturn__)) void abort(void);
 
 #endif

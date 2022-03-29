@@ -48,7 +48,7 @@
 
 #include <emhfc_callbacks.h>
 
-void abort(void)
+__attribute__((__noreturn__)) void abort(void)
 {
   emhfc_abort();
   while(1);
