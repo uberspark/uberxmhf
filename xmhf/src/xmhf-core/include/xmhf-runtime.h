@@ -78,10 +78,10 @@ extern u8 g_rntm_dmaprot_buffer[] __attribute__(( section(".bss.palign_data") ))
 //successfully, this should be finally equal to g_midtable_numentries at
 //runtime which signifies that EMHF appmain executed successfully on all
 //cores
-extern u32 g_appmain_success_counter __attribute__(( section(".data") ));
+extern volatile u32 g_appmain_success_counter __attribute__(( section(".data") ));
 
 //SMP lock for the above variable
-extern u32 g_lock_appmain_success_counter __attribute__(( section(".data") ));
+extern volatile u32 g_lock_appmain_success_counter __attribute__(( section(".data") ));
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS

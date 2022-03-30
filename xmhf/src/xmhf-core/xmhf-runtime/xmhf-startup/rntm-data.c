@@ -62,7 +62,7 @@ u8 g_rntm_dmaprot_buffer[SIZE_G_RNTM_DMAPROT_BUFFER] __attribute__(( section(".b
 //successfully, this should be finally equal to g_midtable_numentries at
 //runtime which signifies that EMHF appmain executed successfully on all
 //cores
-u32 g_appmain_success_counter __attribute__(( section(".data") )) = 0;
+u32 volatile g_appmain_success_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock for the above variable
-u32 g_lock_appmain_success_counter __attribute__(( section(".data") )) = 1;
+u32 volatile g_lock_appmain_success_counter __attribute__(( section(".data") )) = 1;
