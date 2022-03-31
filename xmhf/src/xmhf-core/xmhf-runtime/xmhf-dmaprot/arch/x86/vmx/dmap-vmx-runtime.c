@@ -224,35 +224,6 @@ static bool _vtd_setupRETCET(struct dmap_vmx_cap *vtd_cap,
     return true;
 }
 
-// On 32bit machine, we always return 0 - 4G as the machine physical address range, no matter how many memory is installed
-// On 64-bit machine, the function queries the E820 map for the used memory region.
-bool vmx_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_spa)
-{
-    // Sanity checks
-	if(!machine_base_spa || !machine_limit_spa)
-		return false;
-
-#ifdef __AMD64__
-    // Get the base and limit used system physical address from the E820 map
-    if (!xmhf_baseplatform_x86_e820_paddr_range(machine_base_spa, machine_limit_spa))
-    {
-        printf("\n%s: Get system physical address range error! Halting!", __FUNCTION__);
-        return false;
-    }
-
-    // 4K-align the return the address
-    *machine_base_spa = PAGE_ALIGN_4K(*machine_base_spa);
-    *machine_limit_spa = PAGE_ALIGN_UP4K(*machine_limit_spa);
-#elif defined(__I386__)
-    *machine_base_spa = 0;
-    *machine_limit_spa = ADDR_4GB;
-#else /* !defined(__I386__) && !defined(__AMD64__) */
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) && !defined(__AMD64__) */
-
-    return true;
-}
-
 // initialize VMX EAP a.k.a VT-d
 // returns 1 if all went well, else 0
 // if input parameter bootstrap is 1 then we perform minimal translation
@@ -400,7 +371,7 @@ static u32 vmx_eap_initialize(
         u64 phy_space_size = 0;
 
         // Get the base and limit used system physical address from the E820 map
-        status2 = vmx_get_machine_paddr_range(&machine_low_spa, &machine_high_spa);
+        status2 = xmhf_get_machine_paddr_range(&machine_low_spa, &machine_high_spa);
         if (!status2)
         {
             printf("\n%s: Get system physical address range error! Halting!", __FUNCTION__);

@@ -165,3 +165,32 @@ u32 xmhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa){
 	else //CPU_VENDOR_INTEL
 		return xmhf_memprot_arch_x86vmx_getprot(vcpu, gpa);
 }
+
+// On 32bit machine, we always return 0 - 4G as the machine physical address range, no matter how many memory is installed
+// On 64-bit machine, the function queries the E820 map for the used memory region.
+bool xmhf_arch_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_spa)
+{
+    // Sanity checks
+	if(!machine_base_spa || !machine_limit_spa)
+		return false;
+
+#ifdef __AMD64__
+    // Get the base and limit used system physical address from the E820 map
+    if (!xmhf_baseplatform_x86_e820_paddr_range(machine_base_spa, machine_limit_spa))
+    {
+        printf("\n%s: Get system physical address range error! Halting!", __FUNCTION__);
+        return false;
+    }
+
+    // 4K-align the return the address
+    *machine_base_spa = PAGE_ALIGN_4K(*machine_base_spa);
+    *machine_limit_spa = PAGE_ALIGN_UP4K(*machine_limit_spa);
+#elif defined(__I386__)
+    *machine_base_spa = 0;
+    *machine_limit_spa = ADDR_4GB;
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+
+    return true;
+}

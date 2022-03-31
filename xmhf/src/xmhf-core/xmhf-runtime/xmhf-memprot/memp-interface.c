@@ -132,3 +132,10 @@ bool xmhf_is_mhv_memory(spa_t spa)
 
 	return false;
 }
+
+// On 32bit machine, we always return 0 - 4G as the machine physical address range, no matter how many memory is installed
+// On 64-bit machine, the function queries the E820 map for the used memory region.
+bool xmhf_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_spa)
+{
+    return xmhf_arch_get_machine_paddr_range(machine_base_spa, machine_limit_spa);
+}

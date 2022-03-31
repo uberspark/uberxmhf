@@ -105,6 +105,10 @@ u32 xmhf_memprot_getprot(VCPU *vcpu, u64 gpa);
 // Is the given system paddr belong to mHV (XMHF + hypapp)?
 bool xmhf_is_mhv_memory(spa_t spa);
 
+// On 32bit machine, we always return 0 - 4G as the machine physical address range, no matter how many memory is installed
+// On 64-bit machine, the function queries the E820 map for the used memory region.
+bool xmhf_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_spa);
+
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
@@ -145,6 +149,10 @@ void xmhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype);
 
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa);
+
+// On 32bit machine, we always return 0 - 4G as the machine physical address range, no matter how many memory is installed
+// On 64-bit machine, the function queries the E820 map for the used memory region.
+bool xmhf_arch_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_limit_spa);
 
 
 //----------------------------------------------------------------------
