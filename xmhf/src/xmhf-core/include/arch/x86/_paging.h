@@ -238,20 +238,10 @@
 #define PAE_ENTRY_SIZE     8
 
 // 4-level paging specific definitions
-#ifdef __AMD64__
-#define P4L_NPLM4T  (PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
-#define P4L_NPDPT   (PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
-#define P4L_NPDT    (PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
-#define P4L_NPT     (PAGE_ALIGN_UP2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
-#elif defined(__I386__)
-/* i386: cannot calculate using PAGE_ALIGN_UP, because PAGE_SIZE is 32-bits */
-#define P4L_NPLM4T  1
-#define P4L_NPDPT   1
-#define P4L_NPDT    4
-#define P4L_NPT     2048
-#else /* !defined(__I386__) && !defined(__AMD64__) */
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) && !defined(__AMD64__) */
+#define P4L_NPLM4T  (PA_PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
+#define P4L_NPDPT   (PA_PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
+#define P4L_NPDT    (PA_PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
+#define P4L_NPT     (PA_PAGE_ALIGN_UP2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
 
 // various paging flags
 #define _PAGE_BIT_PRESENT       0
