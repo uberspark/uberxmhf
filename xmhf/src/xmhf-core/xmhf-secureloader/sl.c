@@ -124,7 +124,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	runtime_physical_base = sl_baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
 
 	//compute 2M aligned runtime size
-	runtime_size_2Maligned = PAGE_ALIGN_UP2M((ulong_t)slpb.runtime_size);
+	runtime_size_2Maligned = PAGE_ALIGN_UP_2M((ulong_t)slpb.runtime_size);
 
 	printf("\nSL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)",
 			runtime_physical_base, slpb.runtime_size, runtime_size_2Maligned);

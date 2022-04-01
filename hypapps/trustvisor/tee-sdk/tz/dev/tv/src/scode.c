@@ -106,8 +106,8 @@ void tv_pal_sections_init(struct tv_pal_sections *scode_info,
    * memory space. We still need a stronger guarantee that nothing is mapped to
    * the next lowest page, though (see Issue #67)
    */
-  param_sz = PAGE_ALIGN_UP4K(param_sz);
-  stack_sz = PAGE_ALIGN_UP4K(stack_sz);
+  param_sz = PAGE_ALIGN_UP_4K(param_sz);
+  stack_sz = PAGE_ALIGN_UP_4K(stack_sz);
   assert(mem = tz_aligned_malloc(param_sz+stack_sz, PAGE_SIZE));
   stack_mem = mem;
   param_mem = stack_mem+stack_sz;

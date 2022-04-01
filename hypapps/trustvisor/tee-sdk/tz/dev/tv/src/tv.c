@@ -399,7 +399,7 @@ TVManagerRemoveService(INOUT tz_session_t* psSession,
 tz_return_t TVsharedMemoryAllocate(INOUT tz_session_t* psSession,
                                    INOUT tz_shared_memory_t* psSharedMem)
 {
-  if ( !( psSharedMem->pBlock = tz_aligned_malloc( PAGE_ALIGN_UP4K( psSharedMem->uiLength),
+  if ( !( psSharedMem->pBlock = tz_aligned_malloc( PAGE_ALIGN_UP_4K( psSharedMem->uiLength),
                                                    PAGE_SIZE_4K))) {
     return TZ_ERROR_MEMORY;
   }

@@ -58,7 +58,7 @@
 /* FIXME: copied from paging.h in trustvisor. should use that directly */
 #define PAGE_SIZE 0x1000
 #define PAGE_SIZE_4K (1UL << 12)
-#define PAGE_ALIGN_UP4K(size)   (((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
+#define PAGE_ALIGN_UP_4K(size)   (((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_4K(size)     ((size) & ~(PAGE_SIZE_4K - 1))
 
 #define PAGE_ALIGNED_4K(size) (PAGE_ALIGN_4K(size) == size)

@@ -57,7 +57,7 @@ void pagelist_init(pagelist_t *pl)
   pl->buf = malloc(pages*PAGE_SIZE_4K);
   EU_VERIFY(pl->buf != NULL);
 
-  pl->page_base = (void*)PAGE_ALIGN_UP4K((uintptr_t)pl->buf);
+  pl->page_base = (void*)PAGE_ALIGN_UP_4K((uintptr_t)pl->buf);
   pl->num_allocd =
     (pl->page_base == pl->buf)
     ? pages

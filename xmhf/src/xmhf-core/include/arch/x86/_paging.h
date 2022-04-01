@@ -100,7 +100,7 @@
  * | PAGE_* macro    | PA_PAGE_* macro    | Usage                             |
  * |-----------------|--------------------|-----------------------------------|
  * | PAGE_SIZE_4K    | PA_PAGE_SIZE_4K    | Size of page (integer)            | 
- * | PAGE_ALIGN_UP4K | PA_PAGE_ALIGN_UP4K | Align address up to page boundary |
+ * | PAGE_ALIGN_UP_4K | PA_PAGE_ALIGN_UP_4K | Align address up to page boundary |
  * | PAGE_ALIGN_4K   | PA_PAGE_ALIGN_4K   | Align address to page boundary    |
  * | PAGE_ALIGNED_4K | PA_PAGE_ALIGNED_4K | Test whether address is aligned   |
  *
@@ -113,7 +113,7 @@
  * | i386    | 4K, 2M, 4M, 1G             | 4K, 2M, 4M, 1G, 512G, 256T | 
  * | amd64   | 4K, 2M, 4M, 1G, 512G, 256T | 4K, 2M, 4M, 1G, 512G, 256T |
  *
- * PA_PAGE_ALIGN_UP_NOCHK* macros are similar to PA_PAGE_ALIGN_UP* but disable
+ * PA_PAGE_ALIGN_UP_NOCHK_* macros are similar to PA_PAGE_ALIGN_UP_* but disable
  * the type checking. This is necessary when the macro is used outside a
  * function.
  */
@@ -165,30 +165,30 @@
 #define _PA_PAGE_ALIGN_UP_NOCHK(x, sz)  \
     (((x) + PA_PAGE_SIZE_##sz - 1) & ~(PA_PAGE_SIZE_##sz - 1))
 
-#define PAGE_ALIGN_UP4K(x)      _PAGE_ALIGN_UP((x), , 4K)
-#define PAGE_ALIGN_UP2M(x)      _PAGE_ALIGN_UP((x), , 2M)
-#define PAGE_ALIGN_UP4M(x)      _PAGE_ALIGN_UP((x), , 4M)
-#define PAGE_ALIGN_UP1G(x)      _PAGE_ALIGN_UP((x), , 1G)
+#define PAGE_ALIGN_UP_4K(x)         _PAGE_ALIGN_UP((x), , 4K)
+#define PAGE_ALIGN_UP_2M(x)         _PAGE_ALIGN_UP((x), , 2M)
+#define PAGE_ALIGN_UP_4M(x)         _PAGE_ALIGN_UP((x), , 4M)
+#define PAGE_ALIGN_UP_1G(x)         _PAGE_ALIGN_UP((x), , 1G)
 #ifdef __AMD64__
-#define PAGE_ALIGN_UP512G(x)    _PAGE_ALIGN_UP((x), , 512G)
-#define PAGE_ALIGN_UP256T(x)    _PAGE_ALIGN_UP((x), , 256T)
+#define PAGE_ALIGN_UP_512G(x)       _PAGE_ALIGN_UP((x), , 512G)
+#define PAGE_ALIGN_UP_256T(x)       _PAGE_ALIGN_UP((x), , 256T)
 #elif !defined(__I386__)
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) */
 
-#define PA_PAGE_ALIGN_UP4K(x)   _PAGE_ALIGN_UP((x), PA_, 4K)
-#define PA_PAGE_ALIGN_UP2M(x)   _PAGE_ALIGN_UP((x), PA_, 2M)
-#define PA_PAGE_ALIGN_UP4M(x)   _PAGE_ALIGN_UP((x), PA_, 4M)
-#define PA_PAGE_ALIGN_UP1G(x)   _PAGE_ALIGN_UP((x), PA_, 1G)
-#define PA_PAGE_ALIGN_UP512G(x) _PAGE_ALIGN_UP((x), PA_, 512G)
-#define PA_PAGE_ALIGN_UP256T(x) _PAGE_ALIGN_UP((x), PA_, 256T)
+#define PA_PAGE_ALIGN_UP_4K(x)      _PAGE_ALIGN_UP((x), PA_, 4K)
+#define PA_PAGE_ALIGN_UP_2M(x)      _PAGE_ALIGN_UP((x), PA_, 2M)
+#define PA_PAGE_ALIGN_UP_4M(x)      _PAGE_ALIGN_UP((x), PA_, 4M)
+#define PA_PAGE_ALIGN_UP_1G(x)      _PAGE_ALIGN_UP((x), PA_, 1G)
+#define PA_PAGE_ALIGN_UP_512G(x)    _PAGE_ALIGN_UP((x), PA_, 512G)
+#define PA_PAGE_ALIGN_UP_256T(x)    _PAGE_ALIGN_UP((x), PA_, 256T)
 
-#define PA_PAGE_ALIGN_UP_NOCHK4K(x)     _PA_PAGE_ALIGN_UP_NOCHK((x), 4K)
-#define PA_PAGE_ALIGN_UP_NOCHK2M(x)     _PA_PAGE_ALIGN_UP_NOCHK((x), 2M)
-#define PA_PAGE_ALIGN_UP_NOCHK4M(x)     _PA_PAGE_ALIGN_UP_NOCHK((x), 4M)
-#define PA_PAGE_ALIGN_UP_NOCHK1G(x)     _PA_PAGE_ALIGN_UP_NOCHK((x), 1G)
-#define PA_PAGE_ALIGN_UP_NOCHK512G(x)   _PA_PAGE_ALIGN_UP_NOCHK((x), 512G)
-#define PA_PAGE_ALIGN_UP_NOCHK256T(x)   _PA_PAGE_ALIGN_UP_NOCHK((x), 256T)
+#define PA_PAGE_ALIGN_UP_NOCHK_4K(x)    _PA_PAGE_ALIGN_UP_NOCHK((x), 4K)
+#define PA_PAGE_ALIGN_UP_NOCHK_2M(x)    _PA_PAGE_ALIGN_UP_NOCHK((x), 2M)
+#define PA_PAGE_ALIGN_UP_NOCHK_4M(x)    _PA_PAGE_ALIGN_UP_NOCHK((x), 4M)
+#define PA_PAGE_ALIGN_UP_NOCHK_1G(x)    _PA_PAGE_ALIGN_UP_NOCHK((x), 1G)
+#define PA_PAGE_ALIGN_UP_NOCHK_512G(x)  _PA_PAGE_ALIGN_UP_NOCHK((x), 512G)
+#define PA_PAGE_ALIGN_UP_NOCHK_256T(x)  _PA_PAGE_ALIGN_UP_NOCHK((x), 256T)
 
 /* Align address (down) */
 
@@ -238,7 +238,7 @@
 #define PA_PAGE_ALIGNED_512G(x) _PAGE_ALIGNED((x), PA_, 512G)
 #define PA_PAGE_ALIGNED_256T(x) _PAGE_ALIGNED((x), PA_, 256T)
 
-#define BYTES_TO_PAGE4K(size)   (PAGE_ALIGN_UP4K(size) >> PAGE_SHIFT_4K)
+#define BYTES_TO_PAGE4K(size)   (PAGE_ALIGN_UP_4K(size) >> PAGE_SHIFT_4K)
 
 // non-PAE mode specific definitions
 #define NPAE_PTRS_PER_PDT       1024
@@ -262,13 +262,13 @@
 
 // 4-level paging specific definitions
 #define P4L_NPLM4T  \
-    (PA_PAGE_ALIGN_UP_NOCHK256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
+    (PA_PAGE_ALIGN_UP_NOCHK_256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
 #define P4L_NPDPT   \
-    (PA_PAGE_ALIGN_UP_NOCHK512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
+    (PA_PAGE_ALIGN_UP_NOCHK_512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
 #define P4L_NPDT    \
-    (PA_PAGE_ALIGN_UP_NOCHK1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
+    (PA_PAGE_ALIGN_UP_NOCHK_1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
 #define P4L_NPT     \
-    (PA_PAGE_ALIGN_UP_NOCHK2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
+    (PA_PAGE_ALIGN_UP_NOCHK_2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
 
 // various paging flags
 #define _PAGE_BIT_PRESENT       0

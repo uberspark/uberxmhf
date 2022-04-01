@@ -87,7 +87,7 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
     pt_t pt;
     uintptr_t physaddr = 0;
     spa_t m_low_spa = PA_PAGE_ALIGN_1G(machine_low_spa);
-    spa_t m_high_spa = PA_PAGE_ALIGN_UP1G(machine_high_spa);
+    spa_t m_high_spa = PA_PAGE_ALIGN_UP_1G(machine_high_spa);
     u32 num_1G_entries = (m_high_spa - (u64)m_low_spa) >> PAGE_SHIFT_1G;
 
     // Sanity checks
@@ -570,7 +570,7 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size)
     u32 pdptindex, pdtindex, ptindex;
 
     // compute page aligned end
-    end_paddr = PA_PAGE_ALIGN_UP4K(start_paddr + size);
+    end_paddr = PA_PAGE_ALIGN_UP_4K(start_paddr + size);
     start_paddr = PA_PAGE_ALIGN_4K(start_paddr);
 
     // sanity check
@@ -607,7 +607,7 @@ void xmhf_dmaprot_arch_x86_vmx_unprotect(spa_t start_paddr, size_t size)
     u32 pdptindex, pdtindex, ptindex;
 
     // compute page aligned end
-    end_paddr = PA_PAGE_ALIGN_UP4K(start_paddr + size);
+    end_paddr = PA_PAGE_ALIGN_UP_4K(start_paddr + size);
     start_paddr = PA_PAGE_ALIGN_4K(start_paddr);
 
     // sanity check

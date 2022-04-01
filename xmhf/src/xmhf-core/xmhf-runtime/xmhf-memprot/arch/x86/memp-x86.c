@@ -184,7 +184,7 @@ bool xmhf_arch_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_l
 
     // 4K-align the return the address
     *machine_base_spa = PAGE_ALIGN_4K(*machine_base_spa);
-    *machine_limit_spa = PAGE_ALIGN_UP4K(*machine_limit_spa);
+    *machine_limit_spa = PAGE_ALIGN_UP_4K(*machine_limit_spa);
 #elif defined(__I386__)
     *machine_base_spa = 0;
     *machine_limit_spa = ADDR_4GB;

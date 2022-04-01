@@ -76,7 +76,7 @@ int tv_lock_range(void *ptr, size_t len)
                                 FALSE,
                                 GetCurrentProcessId());
   ptr = (void*)PAGE_ALIGN_4K((uintptr_t)ptr);
-  len = PAGE_ALIGN_UP4K(len);
+  len = PAGE_ALIGN_UP_4K(len);
 
   if (!GetProcessWorkingSetSize(hProcess, &dwMin, &dwMax)) {
     printf("GetProcessWorkingSetSize failed (%ld)\n",
@@ -102,7 +102,7 @@ int tv_lock_range(void *ptr, size_t len)
 int tv_lock_range(void *ptr, size_t len)
 {
   ptr = (void*)PAGE_ALIGN_4K((uintptr_t)ptr);
-  len = PAGE_ALIGN_UP4K(len);
+  len = PAGE_ALIGN_UP_4K(len);
 
   if(!mlock(ptr, len)) {
     return 0;

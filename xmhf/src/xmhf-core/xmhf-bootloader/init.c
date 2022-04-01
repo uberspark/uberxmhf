@@ -887,7 +887,7 @@ void cstartup(multiboot_info_t *mbi){
     //find highest 2MB aligned physical memory address that the hypervisor
     //binary must be moved to
     sl_rt_size = mod_array[0].mod_end - mod_array[0].mod_start;
-    hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M((sl_rt_size)));
+    hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP_2M((sl_rt_size)));
 
     //relocate the hypervisor binary to the above calculated address
     memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
@@ -913,7 +913,7 @@ void cstartup(multiboot_info_t *mbi){
 
     //print out stats
     printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
-    printf("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
+    printf("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP_2M((mod_array[0].mod_end - mod_array[0].mod_start)));
     printf("\nINIT(early): un-aligned size = 0x%08x", mod_array[0].mod_end - mod_array[0].mod_start);
 
     //fill in "sl" parameter block
