@@ -447,8 +447,8 @@ void xmhf_dmaprot_arch_x86_svm_protect(u32 start_paddr, u32 size)
     u32 paligned_paddr_start, paligned_paddr_end, i;
 
     // compute page-aligned physical start and end addresses
-    paligned_paddr_start = PAGE_ALIGN_4K(start_paddr);
-    paligned_paddr_end = PAGE_ALIGN_4K((start_paddr + size));
+    paligned_paddr_start = PAGE_ALIGN_4K((uintptr_t)start_paddr);
+    paligned_paddr_end = PAGE_ALIGN_4K(((uintptr_t)start_paddr + size));
 
 #ifndef __XMHF_VERIFICATION__
     // protect pages from paligned_paddr_start through paligned_paddr_end inclusive
