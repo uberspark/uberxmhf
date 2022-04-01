@@ -92,7 +92,10 @@
  *
  * This file defines two types of macros. PAGE_* are used for virtual addresses
  * (long, 32-bit for i386, 64-bit for amd64). PA_PAGE_* (SP stands for physical
- * address) are used for physical addresses (long long, always 64-bit).
+ * address) are used for physical addresses (long long, always 64-bit). These
+ * macros will check whether the operand type matches the size of virtual /
+ * physical address. If the size does not match, an static assertion error will
+ * fail.
  *
  * | PAGE_* macro    | PA_PAGE_* macro    | Usage                             |
  * |-----------------|--------------------|-----------------------------------|
@@ -109,6 +112,10 @@
  * |---------|----------------------------|----------------------------|
  * | i386    | 4K, 2M, 4M, 1G             | 4K, 2M, 4M, 1G, 512G, 256T | 
  * | amd64   | 4K, 2M, 4M, 1G, 512G, 256T | 4K, 2M, 4M, 1G, 512G, 256T |
+ *
+ * PA_PAGE_ALIGN_UP_NOCHK* macros are similar to PA_PAGE_ALIGN_UP* but disable
+ * the type checking. This is necessary when the macro is used outside a
+ * function.
  */
 
 /* Normal macros: u32 for i386, u64 for amd64 */
@@ -143,11 +150,20 @@
 
 #endif
 
+/* Check whether x's type satisfies prefix pf ("" or "PA_") */
+#define _PAGE_TYPE_CHECK(x, pf) \
+    ({ _Static_assert(sizeof(x) == sizeof(pf##PAGE_SIZE_4K)); (x); })
+
 /* Align address up */
 
 /* Align an address x up. pf is prefix ("" or "PA_"), sz is "4K", "2M", ... */
-#define _PAGE_ALIGN_UP(x, pf, sz)   \
-    (((x) + pf##PAGE_SIZE_##sz - 1) & ~(pf##PAGE_SIZE_##sz - 1))
+#define _PAGE_ALIGN_UP(x, pf, sz)                           \
+    ((_PAGE_TYPE_CHECK((x), pf) + pf##PAGE_SIZE_##sz - 1) & \
+     ~(pf##PAGE_SIZE_##sz - 1))
+
+/* Align a physical address x up, no type checking. sz is "4K", "2M", ... */
+#define _PA_PAGE_ALIGN_UP_NOCHK(x, sz)  \
+    (((x) + PA_PAGE_SIZE_##sz - 1) & ~(PA_PAGE_SIZE_##sz - 1))
 
 #define PAGE_ALIGN_UP4K(x)      _PAGE_ALIGN_UP((x), , 4K)
 #define PAGE_ALIGN_UP2M(x)      _PAGE_ALIGN_UP((x), , 2M)
@@ -167,11 +183,18 @@
 #define PA_PAGE_ALIGN_UP512G(x) _PAGE_ALIGN_UP((x), PA_, 512G)
 #define PA_PAGE_ALIGN_UP256T(x) _PAGE_ALIGN_UP((x), PA_, 256T)
 
+#define PA_PAGE_ALIGN_UP_NOCHK4K(x)     _PA_PAGE_ALIGN_UP_NOCHK((x), 4K)
+#define PA_PAGE_ALIGN_UP_NOCHK2M(x)     _PA_PAGE_ALIGN_UP_NOCHK((x), 2M)
+#define PA_PAGE_ALIGN_UP_NOCHK4M(x)     _PA_PAGE_ALIGN_UP_NOCHK((x), 4M)
+#define PA_PAGE_ALIGN_UP_NOCHK1G(x)     _PA_PAGE_ALIGN_UP_NOCHK((x), 1G)
+#define PA_PAGE_ALIGN_UP_NOCHK512G(x)   _PA_PAGE_ALIGN_UP_NOCHK((x), 512G)
+#define PA_PAGE_ALIGN_UP_NOCHK256T(x)   _PA_PAGE_ALIGN_UP_NOCHK((x), 256T)
+
 /* Align address (down) */
 
 /* Align an address x down. pf is prefix ("" or "PA_"), sz is "4K", "2M", ... */
 #define _PAGE_ALIGN(x, pf, sz)   \
-    ((x) & ~(pf##PAGE_SIZE_##sz - 1))
+    (_PAGE_TYPE_CHECK((x), pf) & ~(pf##PAGE_SIZE_##sz - 1))
 
 #define PAGE_ALIGN_4K(x)        _PAGE_ALIGN((x), , 4K)
 #define PAGE_ALIGN_2M(x)        _PAGE_ALIGN((x), , 2M)
@@ -195,7 +218,7 @@
 
 /* Test if x is aligned. pf is prefix ("" or "PA_"), sz is "4K", "2M", ... */
 #define _PAGE_ALIGNED(x, pf, sz)   \
-    (pf##PAGE_ALIGN_##sz(x) == x)
+    (pf##PAGE_ALIGN_##sz(x) == _PAGE_TYPE_CHECK((x), pf))
 
 #define PAGE_ALIGNED_4K(x)      _PAGE_ALIGNED((x), , 4K)
 #define PAGE_ALIGNED_2M(x)      _PAGE_ALIGNED((x), , 2M)
@@ -238,10 +261,14 @@
 #define PAE_ENTRY_SIZE     8
 
 // 4-level paging specific definitions
-#define P4L_NPLM4T  (PA_PAGE_ALIGN_UP256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
-#define P4L_NPDPT   (PA_PAGE_ALIGN_UP512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
-#define P4L_NPDT    (PA_PAGE_ALIGN_UP1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
-#define P4L_NPT     (PA_PAGE_ALIGN_UP2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
+#define P4L_NPLM4T  \
+    (PA_PAGE_ALIGN_UP_NOCHK256T(MAX_PHYS_ADDR) >> PAGE_SHIFT_256T)
+#define P4L_NPDPT   \
+    (PA_PAGE_ALIGN_UP_NOCHK512G(MAX_PHYS_ADDR) >> PAGE_SHIFT_512G)
+#define P4L_NPDT    \
+    (PA_PAGE_ALIGN_UP_NOCHK1G(MAX_PHYS_ADDR) >> PAGE_SHIFT_1G)
+#define P4L_NPT     \
+    (PA_PAGE_ALIGN_UP_NOCHK2M(MAX_PHYS_ADDR) >> PAGE_SHIFT_2M)
 
 // various paging flags
 #define _PAGE_BIT_PRESENT       0

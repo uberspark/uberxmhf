@@ -3,13 +3,14 @@
 XMHF_STL_BITMAP* xmhfstl_bitmap_create(uint32_t num_bits)
 {
 	XMHF_STL_BITMAP* result = NULL;
-	uint32_t num_pages = 0;
+	ulong_t num_pages = 0;
 
 	result = (XMHF_STL_BITMAP*)xmhf_mm_malloc(sizeof(XMHF_STL_BITMAP));
 	if(!result)
 		return NULL;
 
-	num_pages = BYTES_TO_PAGE4K(BITS_TO_BYTES(num_bits));
+	// TODO: change num_bits's type to ulong_t, then remove type cast
+	num_pages = BYTES_TO_PAGE4K((ulong_t)BITS_TO_BYTES(num_bits));
 	result->max_bits = num_bits;
 	result->mem_table = (char**)xmhf_mm_malloc(num_pages * sizeof(char*));
 	if(!result->mem_table)
@@ -23,13 +24,14 @@ XMHF_STL_BITMAP* xmhfstl_bitmap_create(uint32_t num_bits)
 
 void xmhfstl_bitmap_destroy(XMHF_STL_BITMAP* bitmap)
 {
-	uint32_t num_pages;
-	uint32_t i = 0;
+	ulong_t num_pages;
+	ulong_t i = 0;
 
 	if(!bitmap)
 		return;
 
-	num_pages = BYTES_TO_PAGE4K(BITS_TO_BYTES(bitmap->max_bits));
+	// TODO: change bitmap->max_bits's type to ulong_t, then remove type cast
+	num_pages = BYTES_TO_PAGE4K((ulong_t)BITS_TO_BYTES(bitmap->max_bits));
 	for(i = 0; i < num_pages; i++)
 	{
 		char* mem = bitmap->mem_table[i];
