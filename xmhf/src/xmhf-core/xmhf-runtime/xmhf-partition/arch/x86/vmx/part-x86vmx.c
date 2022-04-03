@@ -484,14 +484,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_TR_base = 0;
 	vcpu->vmcs.guest_TR_limit = 0;
 	vcpu->vmcs.guest_TR_selector = 0;
-#ifdef __AMD64__
 	vcpu->vmcs.guest_TR_access_rights = 0x8b; //present, 32/64-bit busy TSS
-#elif defined(__I386__)
-	// TODO: should be able to use 0x8b, not 0x83
-	vcpu->vmcs.guest_TR_access_rights = 0x83; //present, 16-bit busy TSS
-#else /* !defined(__I386__) && !defined(__AMD64__) */
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) && !defined(__AMD64__) */
 	//DR7
 	vcpu->vmcs.guest_DR7 = 0x400;
 	//RSP
