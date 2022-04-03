@@ -46,6 +46,11 @@
 
 #include <xmhf.h>
 
+/* gcc -m32 will define i386, but we do not want it */
+#ifdef i386
+#undef i386
+#endif
+
 OUTPUT_ARCH(i386)
 
 ENTRY(xmhf_runtime_entry)
