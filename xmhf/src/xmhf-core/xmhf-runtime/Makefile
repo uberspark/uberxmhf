@@ -143,8 +143,8 @@ all: runtimecomponents runtime.bin
 $(OBJECTS_PRECOMPILED): %: runtimecomponents
 $(OBJECTS_PRECOMPILED_LIBBACKENDS): %: runtimecomponents
 
-runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds
-	$(LD) -T runtime-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime.lds
+	$(LD) -T runtime.lds -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	# .palign_data and .stack are NOBITS in the ELF file (similar to .bss), but
 	# we need them in runtime.bin. So use the --set-section-flags option to
 	# force objcopy to zero them and add to runtime.bin.
@@ -155,7 +155,7 @@ runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM)-$(TAR
 	# Optional: use sparse file for runtime.bin to reduce fs space usage
 	-fallocate -d runtime.bin
 
-runtime-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds: runtime-$(TARGET_HWPLATFORM).lds.S
+runtime.lds: runtime.lds.S
 	gcc -E -x c $(ASFLAGS) $< | grep -v '^#' > $@
 
 .PHONY: clean 

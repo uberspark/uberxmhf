@@ -64,8 +64,8 @@ endif
 all: sl.bin
 
 # FIXME: ADDL_LIBS is overly general; sl/ doesn't need all of them
-sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds
-	$(LD) -T sl-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds
+	$(LD) -T sl.lds -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(CP) sl.exe sl_syms.exe
 	$(STRIP) -s sl.exe
 	$(OBJCOPY) --output-format=binary sl.exe sl.bin
@@ -74,7 +74,7 @@ sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl-$(TARGET_HWPLATFORM)-$(TARGET_SUBAR
 	-fallocate -d sl.bin
 	-fallocate -d sl_syms.exe
 
-sl-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds: sl-$(TARGET_HWPLATFORM).lds.S
+sl.lds: sl.lds.S
 	gcc -E -x c $(ASFLAGS) $< | grep -v '^#' > $@
 
 .PHONY: clean
