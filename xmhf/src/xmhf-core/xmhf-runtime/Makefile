@@ -155,7 +155,7 @@ runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime-$(TARGET_HWPLATFORM)-$(TAR
 	# Optional: use sparse file for runtime.bin to reduce fs space usage
 	-fallocate -d runtime.bin
 
-runtime-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds: runtime-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds.S
+runtime-$(TARGET_HWPLATFORM)-$(TARGET_SUBARCH).lds: runtime-$(TARGET_HWPLATFORM).lds.S
 	gcc -E -x c $(ASFLAGS) $< | grep -v '^#' > $@
 
 .PHONY: clean 

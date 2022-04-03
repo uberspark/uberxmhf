@@ -46,7 +46,18 @@
 
 #include <xmhf.h>
 
+/* gcc -m32 will define i386, but we do not want it */
+#ifdef i386
+#undef i386
+#endif /* i386 */
+
+#ifdef __I386__
+OUTPUT_ARCH(i386)
+#elif define(__AMD64__)
 OUTPUT_ARCH(i386:x86-64)
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+#error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 ENTRY(xmhf_runtime_entry)
 
