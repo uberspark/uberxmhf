@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  say-hello:
+  test-xmhf:
     machine:
       # Need nested virtualization
       # https://discuss.circleci.com/t/new-android-machine-image-now-/39467
@@ -36,17 +36,8 @@ jobs:
       - run:
           name: "Download Debian"
           command: |
-            case "<< parameters.subarch >>" in
-            i386)
-                .jenkins/download.sh cache debian11x86.qcow2
-                ;;
-            amd64)
-                .jenkins/download.sh cache debian11x64.qcow2
-                ;;
-            *)
-                echo 'Error: unknown subarch << parameters.subarch >>'; exit 1
-                ;;
-            esac
+            source .circleci/env.sh << parameters.subarch >>
+            .jenkins/download.sh cache ${qemu_image_back}
       - save_cache:
           key: debian11x86x64-20220407-<< parameters.subarch >>
           paths:
@@ -74,9 +65,9 @@ jobs:
                 --no-test-xmhf
 
 workflows:
-  say-hello-workflow:
+  test-xmhf-workflow:
     jobs:
-      - say-hello:
+      - test-xmhf:
           matrix:
             parameters:
               subarch: ["i386", "amd64"]
