@@ -11,6 +11,7 @@
 #   debug: ignored (For GitHub actions)
 #   O0: ignored (For GitHub actions)
 #   O3: enable -O3 optimization, etc. (For GitHub actions)
+#   circleci: enable --enable-optimize-nested-virt workaround for Circle CI
 #   -n: print autogen.sh and configure options, do not run them
 
 set -e
@@ -27,6 +28,7 @@ DMAP="n"
 QEMU="y"
 AMD64MEM="0x140000000"
 DRY_RUN="n"
+CIRCLE_CI="n"
 OPT=""
 
 # Determine LINUX_BASE (may not be 100% correct all the time)
@@ -101,6 +103,9 @@ while [ "$#" -gt 0 ]; do
 			# For GitHub actions
 			OPT="O3"
 			;;
+		circleci)
+			CIRCLE_CI="y"
+			;;
 		-n)
 			DRY_RUN="y"
 			;;
@@ -152,6 +157,10 @@ if [ "$OPT" == "O3" ]; then
 	# -Wno-stringop-overflow is set due to a compile bug in GCC 10 / GCC 11
 	# Reported in https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105100
 	CONF+=("--with-opt=-O3 -Wno-stringop-overflow")
+fi
+
+if [ "$CIRCLE_CI" == "y" ]; then
+	CONF+=("--enable-optimize-nested-virt")
 fi
 
 # Output configure arguments, if `-n`
