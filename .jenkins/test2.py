@@ -8,6 +8,8 @@ SSH_COMPLETED = 2
 SSH_TIMEOUT = 2
 HALT_TIMEOUT = 10
 
+println_lock = threading.Lock()
+
 def parse_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--subarch', required=True)
@@ -24,7 +26,8 @@ def parse_args():
 	return args
 
 def println(*args):
-	print('{', *args, '}')
+	with println_lock:
+		print('{', *args, '}')
 
 def reset_qemu(args):
 	'''
