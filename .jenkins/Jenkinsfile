@@ -1,0 +1,90 @@
+/*
+ * Files and directories in build environment
+ * * ./: PWD, contains XMHF64 source
+ * * ./.git: Git directory, not used directly by Jenkins
+ * * ./cache/: cache QEMU images
+ * * ./qemu/: QEMU work directory
+ * * ./tmp/: temporary directory for testing script
+ * * ./.github/build.sh: script to build XMHF in one line
+ * * ./.jenkins/Jenkinsfile: this file
+ * * ./.jenkins/test2.py: test script, was bug_063/test2.py in notes
+ * * ./.jenkins/download.sh: download QEMU images from Google Drive
+ */
+
+parameters {
+    string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64', description: '')
+}
+
+void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
+    PWD = sh(returnStdout: true, script: 'pwd').trim()
+    sh "rm -rf tmp qemu"
+    sh "mkdir tmp qemu"
+    sh "ln -s ${PWD}/cache/${qemu_image_back} qemu"
+    sh """
+        qemu-img create -f qcow2 -b ${PWD}/qemu/${qemu_image_back} \
+                        -F qcow2 ${PWD}/qemu/${qemu_image}
+    """
+    sh """
+        python3 -u ./test2.py \
+            --subarch ${subarch} \
+            --qemu-image ${PWD}/qemu/${qemu_image} \
+            --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
+            --xmhf-bin ${PWD}/ \
+            --sshpass jkl \
+            --work-dir ${PWD}/tmp/ \
+            --no-display \
+            --verbose
+    """
+}
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Logistics') {
+            steps {
+                sh "./download.sh cache"
+                dir ('xmhf64') {
+                    git branch: "${params.XMHF_BRANCH}",
+                        url: 'https://github.com/lxylxy123456/uberxmhf'
+                    script {
+                        cmt = sh(
+                            returnStdout: true,
+                            script: 'git rev-parse HEAD | head -c 9').trim()
+                        currentBuild.displayName += " ${params.XMHF_BRANCH}"
+                        currentBuild.displayName += " ${cmt}"
+                    }
+                }
+            }
+        }
+        stage('Build i386') {
+            steps {
+                dir ('xmhf64') {
+                    // sh "git clean -Xdf"
+                    sh "make clean"
+                    sh "./.github/build.sh i386"
+                }
+            }
+        }
+        stage('Test i386') {
+            steps {
+                qemu_test "i386", "debian11x86-j.qcow2", "debian11x86.qcow2"
+            }
+        }
+        stage('Build amd64') {
+            steps {
+                dir ('xmhf64') {
+                    // sh "git clean -Xdf"
+                    sh "make clean"
+                    sh "./.github/build.sh amd64"
+                }
+            }
+        }
+        stage('Test amd64') {
+            steps {
+                qemu_test "amd64", "debian11x64-j.qcow2", "debian11x64.qcow2"
+            }
+        }
+    }
+}
+
