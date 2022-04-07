@@ -1,0 +1,82 @@
+version: 2.1
+
+jobs:
+  say-hello:
+    machine:
+      # Need nested virtualization
+      # https://discuss.circleci.com/t/new-android-machine-image-now-/39467
+      image: android:2022.03.1
+    parameters:
+      subarch:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Apt-get"
+          command: "
+            sudo apt-get update && \
+            sudo apt-get -y -q install \
+                git crossbuild-essential-i386 \
+                pbuilder texinfo ruby build-essential autoconf libtool \
+                qemu-system-x86 sshpass
+          "
+      - run:
+          name: "Build"
+          command: "./.github/build.sh << parameters.subarch >>"
+      - run:
+          name: "Versions"
+          command: |
+            lscpu
+            ssh -V
+            qemu-system-x86_64 -version
+            gcc -v
+      - restore_cache:
+          keys:
+            - debian11x86x64-20220407-<< parameters.subarch >>
+      - run:
+          name: "Download Debian"
+          command: |
+            case "<< parameters.subarch >>" in
+            i386)
+                .jenkins/download.sh cache debian11x86.qcow2
+                ;;
+            amd64)
+                .jenkins/download.sh cache debian11x64.qcow2
+                ;;
+            *)
+                echo 'Error: unknown subarch << parameters.subarch >>'; exit 1
+                ;;
+            esac
+      - save_cache:
+          key: debian11x86x64-20220407-<< parameters.subarch >>
+          paths:
+            - cache/
+      - run:
+          name: "Test"
+          command: |
+            source .circleci/env.sh << parameters.subarch >>
+            rm -rf tmp qemu
+            mkdir tmp qemu
+            ln -s ${PWD}/cache/${qemu_image_back} qemu
+            qemu-img create -f qcow2 -b ${PWD}/qemu/${qemu_image_back} \
+                            -F qcow2 ${PWD}/qemu/${qemu_image}
+            sha512sum ${PWD}/qemu/${qemu_image_back}
+            python3 -u ./.jenkins/test2.py \
+                --subarch ${SUBARCH} \
+                --qemu-image ${PWD}/qemu/${qemu_image} \
+                --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
+                --xmhf-bin ${PWD}/ \
+                --sshpass jkl \
+                --work-dir ${PWD}/tmp/ \
+                --no-display \
+                --verbose \
+                --watch-serial \
+                --no-test-xmhf
+
+workflows:
+  say-hello-workflow:
+    jobs:
+      - say-hello:
+          matrix:
+            parameters:
+              subarch: ["i386", "amd64"]

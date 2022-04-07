@@ -17,6 +17,7 @@ parameters {
 
 void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
     PWD = sh(returnStdout: true, script: 'pwd').trim()
+    sh "./.jenkins/download.sh cache ${qemu_image_back}"
     sh "rm -rf tmp qemu"
     sh "mkdir tmp qemu"
     sh "ln -s ${PWD}/cache/${qemu_image_back} qemu"
@@ -44,7 +45,6 @@ pipeline {
     stages {
         stage('Logistics') {
             steps {
-                sh "./.jenkins/download.sh cache"
                 sh "git fetch origin ${params.XMHF_BRANCH}"
                 sh "git checkout ${params.XMHF_BRANCH}"
                 sh "git pull origin ${params.XMHF_BRANCH}"
