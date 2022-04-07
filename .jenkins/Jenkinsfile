@@ -58,8 +58,7 @@ pipeline {
         }
         stage('Build i386') {
             steps {
-                // sh "git clean -Xdf"
-                sh "make clean"
+                sh "git clean -Xdf"
                 sh "./.github/build.sh i386"
             }
         }
@@ -70,8 +69,7 @@ pipeline {
         }
         stage('Build amd64') {
             steps {
-                // sh "git clean -Xdf"
-                sh "make clean"
+                sh "git clean -Xdf"
                 sh "./.github/build.sh amd64"
             }
         }
