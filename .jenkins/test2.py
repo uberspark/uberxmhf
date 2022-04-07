@@ -91,7 +91,7 @@ def send_ssh(args, ssh_port, bash_script, status):
 	ssh_cmd += ['lxy@127.0.0.1', 'bash', '-c', bash_script]
 	state = None
 	if args.verbose:
-		println('send_ssh:', bash_script)
+		println('send_ssh:', repr(bash_script))
 	while True:
 		p = Popen(ssh_cmd, stdin=-1, stdout=-1, stderr=-1)
 		while True:
@@ -110,7 +110,7 @@ def send_ssh(args, ssh_port, bash_script, status):
 					status[1] = SSH_COMPLETED
 					status[2] = p.returncode
 				return
-			println('ssh:     ', line.rstrip())
+			println('ssh:     ', repr(line.rstrip()))
 			with status[0]:
 				status[1] = SSH_RUNNING
 				status[2] = time.time()
@@ -141,7 +141,7 @@ def run_ssh(bash_script, connect_timeout, run_timeout, ss):
 			state[1:] = ss[1:]
 		if args.verbose:
 			println('run_ssh:  MET = %d;' % int(time.time() - start_time),
-					'state =', state[:-1], len(state[-1]))
+					'state =', state[:3], len(state[3]))
 		if state[1] == SSH_CONNECTING:
 			if time.time() - start_time > connect_timeout:
 				return 'connect_aborted'
