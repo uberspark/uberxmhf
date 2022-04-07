@@ -33,7 +33,8 @@ void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
             --sshpass jkl \
             --work-dir ${PWD}/tmp/ \
             --no-display \
-            --verbose
+            --verbose \
+            --watch-serial
     """
 }
 

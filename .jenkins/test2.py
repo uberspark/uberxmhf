@@ -23,6 +23,9 @@ def parse_args():
 	args = parser.parse_args()
 	return args
 
+def println(*args):
+	print('{', *args, '}')
+
 def reset_qemu(args):
 	'''
 	Remove changes relative to backing qcow2 file
@@ -57,7 +60,10 @@ def spawn_qemu(args, serial_file):
 	if args.no_display:
 		qemu_args.append('-display')
 		qemu_args.append('none')
-	p = Popen(qemu_args, stdin=-1, stdout=-1, stderr=-1)
+	popen_stderr = { 'stderr': -1 }
+	if args.verbose:
+		del popen_stderr['stderr']
+	p = Popen(qemu_args, stdin=-1, stdout=-1, **popen_stderr)
 	return p
 
 def get_ssh_cmd(args, ssh_port, exe='ssh', port_opt='-p'):
@@ -79,12 +85,13 @@ def send_ssh(args, ssh_port, bash_script, status):
 	status[1] = SSH_COMPLETED (2): test finished
 	status[2] = command return code
 	status[3] = stdout lines
+	status[4] = whether abort
 	'''
 	ssh_cmd = get_ssh_cmd(args, ssh_port)
 	ssh_cmd += ['lxy@127.0.0.1', 'bash', '-c', bash_script]
 	state = None
 	if args.verbose:
-		print('send_ssh:', bash_script)
+		println('send_ssh:', bash_script)
 	while True:
 		p = Popen(ssh_cmd, stdin=-1, stdout=-1, stderr=-1)
 		while True:
@@ -103,19 +110,25 @@ def send_ssh(args, ssh_port, bash_script, status):
 					status[1] = SSH_COMPLETED
 					status[2] = p.returncode
 				return
-			print('ssh:     ', line.rstrip())
+			println('ssh:     ', line.rstrip())
 			with status[0]:
 				status[1] = SSH_RUNNING
 				status[2] = time.time()
 				status[3].append(line.strip())
+				# Check abort
+				if status[4]:
+					return
 		time.sleep(1)
 		if args.verbose:
-			print('send_ssh:  retry SSH')
+			println('send_ssh:  retry SSH', repr(bash_script))
 
 def run_ssh(bash_script, connect_timeout, run_timeout, ss):
 	'''
 	Run an ssh command with timeout control etc
 	'''
+	assert not ss
+	for i in [threading.Lock(), SSH_CONNECTING, 0, [], 0]:
+		ss.append(i)
 	ts = threading.Thread(target=send_ssh,
 							args=(args, ssh_port, bash_script, ss), daemon=True)
 	ts.start()
@@ -127,7 +140,7 @@ def run_ssh(bash_script, connect_timeout, run_timeout, ss):
 		with ss[0]:
 			state[1:] = ss[1:]
 		if args.verbose:
-			print('run_ssh:  MET = %d;' % int(time.time() - start_time),
+			println('run_ssh:  MET = %d;' % int(time.time() - start_time),
 					'state =', state[:-1], len(state[-1]))
 		if state[1] == SSH_CONNECTING:
 			if time.time() - start_time > connect_timeout:
@@ -150,7 +163,7 @@ def ssh_operations(args, ssh_port):
 	'''
 	wordsize = { 'i386': 32, 'amd64': 64 }[args.subarch]
 	# 1. test booted
-	ss = [threading.Lock(), SSH_CONNECTING, 0, []]
+	ss = []
 	stat = run_ssh('date; echo 1. test boot; ', 120, 10, ss)
 	if stat or ss[2] != 0:
 		return 'Failed to boot 1: (%s, %d, %s)' % (stat, ss[2], ss[3])
@@ -161,37 +174,37 @@ def ssh_operations(args, ssh_port):
 		os.path.join(args.xmhf_bin, 'hypervisor-x86-%s.bin.gz' % args.subarch),
 		'lxy@127.0.0.1:/tmp',
 	]
-	print('scp')
+	println('scp')
 	check_call(scp_cmd)
-	print('scp done')
+	println('scp done')
 	# 3. install
-	ss = [threading.Lock(), SSH_CONNECTING, 0, []]
+	ss = []
 	install_num = { 'i386': 86, 'amd64': 64 }[args.subarch]
 	stat = run_ssh('date; echo 3. install; ./install%d.sh' % install_num,
 					10, 20, ss)
 	if stat or ss[2] != 0:
 		return 'Failed to install: (%s, %d, %s)' % (stat, ss[2], ss[3])
 	# 4. restart
-	ss = [threading.Lock(), SSH_CONNECTING, 0, []]
+	ss = []
 	stat = run_ssh('date; echo 4. restart; touch /tmp/asdf; sudo init 6; ',
 					10, 20, ss)
 	if stat:
 		return 'Failed to restart: (%s, %d, %s)' % (stat, ss[2], ss[3])
 	# 5. make sure restart started
 	while True:
-		print('Checking restart')
-		ss = [threading.Lock(), SSH_CONNECTING, 0, []]
+		println('Checking restart')
+		ss = []
 		stat = run_ssh('date; echo 5. restart start; ls /tmp/asdf', 10, 10, ss)
 		if stat or ss[2] != 0:
-			print('Restart checked')
+			println('Restart checked')
 			break
 	# 6. test booted 2
-	ss = [threading.Lock(), SSH_CONNECTING, 0, []]
+	ss = []
 	stat = run_ssh('date; echo 6. test boot 2; [ ! -f /tmp/asdf ]', 150, 10, ss)
 	if stat or ss[2] != 0:
 		return 'Failed to boot 2: (%s, %d, %s)' % (stat, ss[2], ss[3])
 	# 7. run test
-	ss = [threading.Lock(), SSH_CONNECTING, 0, []]
+	ss = []
 	stat = run_ssh('date; echo 7. run test; ./test_args%d 7 7 7' % wordsize,
 					10, 30, ss)
 	if stat or ss[2] != 0 or 'Test pass' not in ss[3]:
