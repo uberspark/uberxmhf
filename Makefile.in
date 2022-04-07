@@ -48,6 +48,7 @@ export XMHF_TARGET_ARCH := @TARGET_ARCH@
 export TARGET_SUBARCH := @TARGET_SUBARCH@
 export AMD64_MAX_PHYS_ADDR := @AMD64_MAX_PHYS_ADDR@
 export OPT_FLAGS := @OPT_FLAGS@
+export OPTIMIZE_NESTED_VIRT := @OPTIMIZE_NESTED_VIRT@
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -226,6 +227,11 @@ endif
 ifeq ($(DEBUG_QEMU), y)
 	CFLAGS += -D__DEBUG_QEMU__
 	VFLAGS += -D__DEBUG_QEMU__
+endif
+
+ifeq ($(OPTIMIZE_NESTED_VIRT), y)
+	CFLAGS += -D__OPTIMIZE_NESTED_VIRT__
+	VFLAGS += -D__OPTIMIZE_NESTED_VIRT__
 endif
 
 ifeq ($(NESTED_PAGING), y)

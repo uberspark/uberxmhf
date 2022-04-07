@@ -89,6 +89,16 @@ AS_IF([test "x${enable_debug_qemu}" != "xno"],
       [DEBUG_QEMU=y],
       [DEBUG_QEMU=n])
 
+# Optimization when running in nested virtualization
+AC_SUBST([OPTIMIZE_NESTED_VIRT])
+AC_ARG_ENABLE([optimize_nested_virt],
+        AS_HELP_STRING([--enable-optimize-nested-virt@<:@=yes|no@:>@],
+                [enable optimization for running in nested virtualization]),
+                , [enable_optimize_nested_virt=no])
+AS_IF([test "x${enable_optimize_nested_virt}" != "xno"],
+      [OPTIMIZE_NESTED_VIRT=y],
+      [OPTIMIZE_NESTED_VIRT=n])
+
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
 AC_ARG_ENABLE([debug_serial],
