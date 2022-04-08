@@ -857,35 +857,76 @@ static void _vmx_handle_intercept_xsetbv(VCPU *vcpu, struct regs *r){
  * Return 1 if optimized, or 0 if not optimized.
  */
 static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
-	int can_optimize = 0;
 	READ_VMCS(0x4402, vcpu->vmcs.info_vmexit_reason);
 
-	if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_WRMSR) {
+	switch ((u32)vcpu->vmcs.info_vmexit_reason) {
+	case VMX_VMEXIT_WRMSR:
+		/* Only optimize WRMSR 0x6e0 (IA32_TSC_DEADLINE) */
 		if (r->ecx == 0x6e0) {
-			can_optimize = 1;
+			READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
+			READ_VMCS(0x440C, vcpu->vmcs.info_vmexit_instruction_length);
+			_vmx_handle_intercept_wrmsr(vcpu, r);
+			WRITE_VMCS(0x681E, vcpu->vmcs.guest_RIP);
+			return 1;
 		}
-	} else if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_CPUID) {
-		can_optimize = 1;
-	}
-
-	if (can_optimize) {
-		/* Read VMCS fields */
+		return 0;
+	case VMX_VMEXIT_CPUID:
+		/* Always optimize CPUID */
 		READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
 		READ_VMCS(0x440C, vcpu->vmcs.info_vmexit_instruction_length);
-		/* Call intercept handler */
-		if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_WRMSR) {
-			_vmx_handle_intercept_wrmsr(vcpu, r);
-		} else if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_CPUID) {
-			_vmx_handle_intercept_cpuid(vcpu, r);
-		} else {
-			HALT_ON_ERRORCOND(0);
-		}
-		/* Write VMCS fields */
+		_vmx_handle_intercept_cpuid(vcpu, r);
 		WRITE_VMCS(0x681E, vcpu->vmcs.guest_RIP);
-		/* Return from intercept */
 		return 1;
+	case VMX_VMEXIT_EPT_VIOLATION:
+		/* Optimize EPT violation due to LAPIC */
+		u64 gpa;
+		READ_VMCS(0x2400, vcpu->vmcs.guest_paddr);
+		gpa = vcpu->vmcs.guest_paddr;
+		if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
+			READ_VMCS(0x6400, vcpu->vmcs.info_exit_qualification);
+			READ_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
+			READ_VMCS(0x6820, vcpu->vmcs.guest_RFLAGS);
+#ifdef __I386__
+			READ_VMCS(0x201A, vcpu->vmcs.control_EPT_pointer_full);
+			READ_VMCS(0x201B, vcpu->vmcs.control_EPT_pointer_high);
+#elif defined(__AMD64__)
+			READ_VMCS(0x201A, vcpu->vmcs.control_EPT_pointer);
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+			_vmx_handle_intercept_eptviolation(vcpu, r);
+			WRITE_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
+			WRITE_VMCS(0x6820, vcpu->vmcs.guest_RFLAGS);
+			return 1;
+		}
+		return 0;
+	case VMX_VMEXIT_EXCEPTION:
+		/* Optimize debug exception (#DB) for LAPIC operation */
+		READ_VMCS(0x4404, vcpu->vmcs.info_vmexit_interrupt_information);
+		if (((u32)vcpu->vmcs.info_vmexit_interrupt_information &
+			 INTR_INFO_VECTOR_MASK) == 1) {
+			// TODO
+			READ_VMCS(0x0802, vcpu->vmcs.guest_CS_selector);
+			READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
+			READ_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
+			READ_VMCS(0x6820, vcpu->vmcs.guest_RFLAGS);
+#ifdef __I386__
+			READ_VMCS(0x201A, vcpu->vmcs.control_EPT_pointer_full);
+			READ_VMCS(0x201B, vcpu->vmcs.control_EPT_pointer_high);
+#elif defined(__AMD64__)
+			READ_VMCS(0x201A, vcpu->vmcs.control_EPT_pointer);
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+			xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+			WRITE_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
+			WRITE_VMCS(0x6820, vcpu->vmcs.guest_RFLAGS);
+			return 1;
+		}
+		return 0;
+	default:
+		return 0;
 	}
-	return 0;
 }
 
 #undef READ_VMCS
