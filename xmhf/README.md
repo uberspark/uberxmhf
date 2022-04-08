@@ -28,6 +28,7 @@ and nested (2-dimensional) paging. The framework is capable of
 running unmodified legacy multiprocessor capable OSes such as 
 Windows and Linux.  
 
+XMHF64 supports running 64-bit OS and software in XMHF.
 
 Quick start to using XMHF
 =========================
@@ -38,4 +39,9 @@ Quick start to using XMHF
 * [Verifying XMHF](doc/verifying-xmhf.md)
 * [Installing XMHF](doc/installing-xmhf.md)
 * [Debugging XMHF](doc/debugging-xmhf.md)
+
+Quick start to using XMHF64
+=========================
+
+* [Setting up XMHF64](doc/setup-xmhf64.md)
 

@@ -18,7 +18,35 @@ operating systems. A comparision is below.
 | guest OS         | i386 (no PAE) | i386 or amd64           |
 | physical memory  | 4 GiB         | >= 4 GiB (configurable) |
 
-Currently, XMHF64 is only supported for Intel CPUs. AMD CPUs are not supported.
+## Support status
+
+This section documents supported software and hardware of XMHF64
+
+### Hardware
+Real CPUs
+* Intel: supported.
+	* CPUs newer than Haswell have not been tested.
+* AMD: not supported.
+
+Hypervisors
+* QEMU / KVM: supported for Intel CPU, require `--enable-kvm` and `vmx` flag in
+  the CPU.
+* VMWare: probably supported.
+
+### Software
+In principle, any guest operating system should work, as long as it:
+* Uses 32-bit paging / PAE paging / 4-level paging (5-level paging not
+  supported).
+* Does not require hardware virtualization features, does not require TPM.
+
+The following OS are known to work:
+* Ubuntu 12.04 LTS
+* Debian 11 with kernel 5.10.0-9
+* Fedora 35
+* Windows XP
+* Windows 7
+* Windows 8.1
+* Windows 10
 
 ## Compiling XMHF
 
