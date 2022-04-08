@@ -877,7 +877,7 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		_vmx_handle_intercept_cpuid(vcpu, r);
 		WRITE_VMCS(0x681E, vcpu->vmcs.guest_RIP);
 		return 1;
-	case VMX_VMEXIT_EPT_VIOLATION:
+	case VMX_VMEXIT_EPT_VIOLATION: {
 		/* Optimize EPT violation due to LAPIC */
 		u64 gpa;
 		READ_VMCS(0x2400, vcpu->vmcs.guest_paddr);
@@ -900,6 +900,7 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			return 1;
 		}
 		return 0;
+	}
 	case VMX_VMEXIT_EXCEPTION:
 		/* Optimize debug exception (#DB) for LAPIC operation */
 		READ_VMCS(0x4404, vcpu->vmcs.info_vmexit_interrupt_information);
