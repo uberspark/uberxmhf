@@ -2,8 +2,8 @@
 
 ## Introduction
 XMHF64 is branch of XMHF that supports running XMHF in both 32-bit and 64-bit.
-32-bit is called i386 and 64-bit is called amd64. The bit width difference is
-called subarch.
+32-bit is called "i386" and 64-bit is called "amd64". This bit width difference
+is called "subarch".
 
 XMHF has 3 phases: bootloader, secureloader, and runtime. Bootloader will
 always run in i386. Secureloader and runtime will run in the subarch as
@@ -17,6 +17,8 @@ operating systems. A comparision is below.
 | runtime          | i386          | amd64                   |
 | guest OS         | i386 (no PAE) | i386 or amd64           |
 | physical memory  | 4 GiB         | >= 4 GiB (configurable) |
+
+Currently, XMHF64 is only supported for Intel CPUs. AMD CPUs are not supported.
 
 ## Compiling XMHF
 
@@ -54,12 +56,17 @@ Linux and DEB-based Linux.
 
 ### Building
 
+Building XMHF contains 3 steps: autogen, configure, and make.
+
+#### 1. Autogen
 In xmhf64 project root directory, first run autogen:
 ```sh
 ./autogen.sh
 ```
 
+#### 2. Configure
 Then run configure. Configure selects hypapp and build subarch etc.
+
 `.github/build.sh` can be used to generate configuration options. It can be
 especially helpful to figure out cross-compile options. See comments at the
 start of this file. Try the following:
@@ -69,13 +76,15 @@ start of this file. Try the following:
 ```
 
 If not using `.github/build.sh`, the usage of configure is
-```
+```sh
 ./configure --with-approot=HYPAPP [ARGUMENTS [...]]
 ```
 
-* HYPAPP is the relative path to hypapp. For example, building TrustVisor
-  should be `--with-approot=hypapps/trustvisor`
-* Depending on cross build situations, add these **mandatory** extra arguments
+Mandatory arguments
+* `--with-approot=HYPAPP`: HYPAPP is the relative path to hypapp. For example,
+  building TrustVisor should be `--with-approot=hypapps/trustvisor`
+* `--with-target-subarch=...`: Depending on cross build situations, add these
+  **mandatory** extra arguments to specify subarch of XMHF to build
 	* Build i386 XMHF on i386 (Debian / Fedora): (no extra arguments)
 	* Build amd64 XMHF on i386 ...
 		* ... Debian:
@@ -90,29 +99,49 @@ If not using `.github/build.sh`, the usage of configure is
 	  `--with-target-subarch=amd64`
 	* If these argument is not added correctly, an error message like
 	  `ld: cannot find -lgcc` may appear when building.
+
+Recommended arguments
 * The following arguments helps debugging and are highly recommended. They have
   minimum impact on XMHF's behavior.
-	* `--enable-debug-symbols`: add debug info to generated ELF files
-	* `--enable-debug-qemu`: allow XMHF to run in QEMU
+	* `--enable-debug-symbols`: add debug info to generated ELF files. With
+	  this configuration, GDB can print symbols in `*.exe` files.
+	* `--enable-debug-qemu`: allow XMHF to run in QEMU (disables some unused
+	  VMCS fields)
 * The following arguments disables certain functionalities.
 	* `--disable-drt`: disable Dynamic Root of Trust (e.g. uses Intel TXT)
 	* `--disable-dmap`: disable DMA protection (e.g. uses Intel VT-d)
-* To configure physical address supported by amd64 XMHF, use
-  `--with-amd64-max-phys-addr`.
+* `--with-amd64-max-phys-addr`: configure physical address supported by amd64
+  XMHF.
 	* For example, `--with-amd64-max-phys-addr=0x140000000` sets physical
 	  address to 5 GiB. The default is 16 GiB. When XMHF runs on a machine that
 	  has more physical memory than this value, XMHF will halt. This
 	  configuration is ignored in i386 XMHF.
-* By default, XMHF prints debug message to serial port. To print on VGA, use
-  `--disable-debug-serial --enable-debug-vga`.
 
+Other arguments
+* `--disable-debug-serial --enable-debug-vga`: print debug messages on VGA, not
+  serial port.
+* `--with-opt=<COMPILER FLAGS>`: compile XMHF with optimization. For example,
+  `--with-opt='-O3 -Wno-stringop-overflow'` adds `-O3` and
+  `-Wno-stringop-overflow` to GCC's arguments to compile in optimization `-O3`.
+  As of writing of this documentation, `-Wno-stringop-overflow` is needed due
+  to a bug in GCC: <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105100>
+* `--enable-optimize-nested-virt`: enable some risky optimizations in intercept
+  handling.
+	* When running XMHF under many levels of nested virtualization, VMREAD and
+	  VMWRITE instructions become expensive. This configuration enables
+	  manually optimized intercept handling for some cases to prevent XMHF from
+	  running too slow to boot the guest OS. However, these optimizations need
+	  to be manually maintained and may be incorrect.
+
+#### 3. Make
 After configuring, simply run Make.
-```
+```sh
 make
 ```
 
 To use multiple processors on the compiling machine, try `make -j $(nproc)`.
 
+#### Build results
 After building successfully, there should be two files, where `$(SUBARCH)` is
 `i386` or `amd64`:
 ```
@@ -149,7 +178,8 @@ GRUB 2 needs to be installed to run XMHF64. GRUB 2 will be used to launch
 XMHF64 and to launch the guest operating system. This usually requires the user
 to select different menu entries in GRUB.
 
-GRUB 2 needs to be launched by BIOS. EFI / UEFI is not supported.
+GRUB 2 needs to be launched by BIOS. EFI / UEFI is not supported. This means
+that XMHF likely does not work on disks formatted as GPT (XMHF works on MBR).
 
 The boot sequence is:
 1. The machine starts, BIOS starts running
@@ -220,7 +250,7 @@ Please following the line by line explanation of the file above to edit it
   disabled, can remove this line.
 
 After the modification is done, make it executable and update GRUB.
-```
+```sh
 chmod +x /etc/grub.d/42_xmhf_i386
 update-grub
 ```
@@ -275,7 +305,7 @@ menuentry "XMHF-i386" {
 ## Configuring BIOS
 
 This section has not been tested extensively. For Intel, the idea is to turn on
-virtualization, VT-d, TPM, and TXT.
+virtualization, VT-d, TPM, and TXT. Please see XMHF documentations.
 
 ## Running XMHF
 
