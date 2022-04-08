@@ -906,7 +906,6 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		READ_VMCS(0x4404, vcpu->vmcs.info_vmexit_interrupt_information);
 		if (((u32)vcpu->vmcs.info_vmexit_interrupt_information &
 			 INTR_INFO_VECTOR_MASK) == 1) {
-			// TODO
 			READ_VMCS(0x0802, vcpu->vmcs.guest_CS_selector);
 			READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
 			READ_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
