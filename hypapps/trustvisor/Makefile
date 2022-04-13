@@ -25,7 +25,7 @@ export CFLAGS
 export ASFLAGS
 
 .PHONY: all
-all:
+all: config.status
 	# make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd src && $(MAKE) -w all
@@ -62,3 +62,9 @@ clean:
 distclean: clean
 	$(RM) config.log config.status
 	$(RM) -rf trustvisor.pc
+
+config.status: configure
+	./configure
+
+configure: configure.ac
+	./autogen.sh
