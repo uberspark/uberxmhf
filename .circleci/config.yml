@@ -6,6 +6,7 @@ jobs:
       # Need nested virtualization
       # https://discuss.circleci.com/t/new-android-machine-image-now-/39467
       image: android:2022.03.1
+    resource_class: medium
     parameters:
       subarch:
         type: string
