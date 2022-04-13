@@ -21,14 +21,14 @@ secureloader: runtime
 	# Objective: Create an escaped ASCII string containing the SHA-1 hash of the
 	# runtime and pass it to the SL's makefile
 	cd xmhf-secureloader && $(MAKE) -w all \
-		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./components/xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+		RUNTIME_INTEGRITY_HASH=\""$(shell ( perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ./xmhf-runtime/runtime.sha1 ))"\"
 
 .PHONY: bootloader
 bootloader: secureloader runtime 
 	cd xmhf-bootloader && $(MAKE) -w all \
-		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./components/xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+		RUNTIME_INTEGRITY_HASH=\""$(shell ( perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ./xmhf-runtime/runtime.sha1 ))"\" \
+		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ./xmhf-secureloader/sl-below.sha1 ))"\" \
+		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ./xmhf-secureloader/sl-above.sha1 ))"\"
 
 xmhf-bootloader/$(INIT_BIN): bootloader
 

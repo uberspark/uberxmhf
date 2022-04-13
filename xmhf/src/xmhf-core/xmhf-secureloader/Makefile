@@ -73,6 +73,9 @@ sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds
 	-fallocate -d sl.exe
 	-fallocate -d sl.bin
 	-fallocate -d sl_syms.exe
+	# Compute sha-1 hash
+	dd if=sl.bin bs=1024 count=64 | sha1sum > sl-below.sha1
+	dd if=sl.bin bs=1024 skip=64 count=1984 | sha1sum > sl-above.sha1
 
 sl.lds: sl.lds.S
 	gcc -E -x c $(ASFLAGS) $< | grep -v '^#' > $@
@@ -84,4 +87,5 @@ clean:
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz
+	$(RM) -rf *.sha1
 

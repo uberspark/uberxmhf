@@ -154,6 +154,8 @@ runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime.lds
 		--output-format=binary runtime.exe runtime.bin
 	# Optional: use sparse file for runtime.bin to reduce fs space usage
 	-fallocate -d runtime.bin
+	# Compute sha-1 hash
+	sha1sum runtime.bin > runtime.sha1
 
 runtime.lds: runtime.lds.S
 	gcc -E -x c $(ASFLAGS) $< | grep -v '^#' > $@
@@ -164,6 +166,7 @@ clean:
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz
 	$(RM) -rf *.lds
+	$(RM) -rf *.sha1
 
 	cd xmhf-mm && $(MAKE) -w clean
 	cd xmhf-memprot && $(MAKE) -w clean
