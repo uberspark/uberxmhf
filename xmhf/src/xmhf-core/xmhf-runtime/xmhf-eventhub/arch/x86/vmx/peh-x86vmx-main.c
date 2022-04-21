@@ -907,6 +907,7 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	}
 	case VMX_VMEXIT_MONITOR_TRAP:
 		/* Optimize monitor trap for LAPIC operation */
+		if (1) {
 			READ_VMCS(0x0802, vcpu->vmcs.guest_CS_selector);
 			READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
 			READ_VMCS(0x4002, vcpu->vmcs.control_VMX_cpu_based);
