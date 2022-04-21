@@ -58,6 +58,9 @@ static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 //guest IF bit values during LAPIC emulation
 static u64 g_vmx_lapic_guest_eflags_ifmask __attribute__(( section(".data") )) = 0;
 
+//guest "Blocking by NMI" bit in Interruptibility State, for LAPIC interception
+static u32 g_vmx_lapic_guest_intr_nmimask __attribute__(( section(".data") )) = 0;
+
 /*
  * xmhf_smpguest_arch_x86vmx_quiesce() needs to access printf locks defined
  * in xmhfc-putchar.c
@@ -242,6 +245,10 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   //control in lapic_access_dbexception after a DB exception
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
 
+  //disable NMIs
+  g_vmx_lapic_guest_intr_nmimask = vcpu->vmcs.guest_interruptibility & (1U << 3);
+  vcpu->vmcs.guest_interruptibility |= (1U << 3);
+
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   assert(!g_vmx_lapic_npf_verification_pre || g_vmx_lapic_npf_verification_guesttrapping);
 #endif
@@ -370,6 +377,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   //restore guest IF
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
   vcpu->vmcs.guest_RFLAGS |= g_vmx_lapic_guest_eflags_ifmask;
+
+  //restore NMI blocking (likely enable NMIs)
+  vcpu->vmcs.guest_interruptibility |= g_vmx_lapic_guest_intr_nmimask;
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   assert(!g_vmx_lapic_db_verification_pre || g_vmx_lapic_db_verification_coreprotected);
