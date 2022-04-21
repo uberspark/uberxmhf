@@ -55,8 +55,8 @@ static u32 g_vmx_lapic_reg __attribute__(( section(".data") )) = 0;
 //the LAPIC operation that is being performed during emulation
 static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 
-//guest TF and IF bit values during LAPIC emulation
-static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") )) = 0;
+//guest IF bit values during LAPIC emulation
+static u64 g_vmx_lapic_guest_eflags_ifmask __attribute__(( section(".data") )) = 0;
 
 /*
  * xmhf_smpguest_arch_x86vmx_quiesce() needs to access printf locks defined
@@ -228,14 +228,11 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 		}
 	}
 
-  //setup #DB intercept
-  vcpu->vmcs.control_exception_bitmap |= (1UL << 1); //enable INT 1 intercept (#DB fault)
+  //setup monitor trap
+  vcpu->vmcs.control_VMX_cpu_based |= (1 << 27);
 
-  //save guest IF and TF masks
-  g_vmx_lapic_guest_eflags_tfifmask = (u32)vcpu->vmcs.guest_RFLAGS & ((u32)EFLAGS_IF | (u32)EFLAGS_TF);
-
-  //set guest TF
-  vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
+  //save guest IF mask
+  g_vmx_lapic_guest_eflags_ifmask = vcpu->vmcs.guest_RFLAGS & EFLAGS_IF;
 
   #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	g_vmx_lapic_npf_verification_guesttrapping = true;
@@ -359,8 +356,8 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 	#endif
   }
 
-  //clear #DB intercept
-  vcpu->vmcs.control_exception_bitmap &= ~(1UL << 1);
+  //clear monitor trap
+  vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 27);
 
   //remove LAPIC interception if all cores have booted up
   if(delink_lapic_interception){
@@ -370,10 +367,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
   }
 
-  //restore guest IF and TF
+  //restore guest IF
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
-  vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_TF);
-  vcpu->vmcs.guest_RFLAGS |= g_vmx_lapic_guest_eflags_tfifmask;
+  vcpu->vmcs.guest_RFLAGS |= g_vmx_lapic_guest_eflags_ifmask;
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   assert(!g_vmx_lapic_db_verification_pre || g_vmx_lapic_db_verification_coreprotected);
