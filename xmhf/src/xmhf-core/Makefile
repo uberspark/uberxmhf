@@ -30,11 +30,13 @@ bootloader: secureloader runtime
 		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ./xmhf-secureloader/sl-below.sha1 ))"\" \
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ./xmhf-secureloader/sl-above.sha1 ))"\"
 
-xmhf-bootloader/$(INIT_BIN): bootloader
-
-xmhf-secureloader/sl.bin: secureloader
-xmhf-runtime/runtime.bin: runtime
-$(HYPERVISOR_BIN_GZ): xmhf-secureloader/sl.bin xmhf-runtime/runtime.bin xmhf-bootloader/$(INIT_BIN)
+# $(HYPERVISOR_BIN_GZ) needs xmhf-bootloader/$(INIT_BIN),
+# xmhf-secureloader/sl.bin, and xmhf-runtime/runtime.bin. However, to make the
+# Makefile prerequisits correct we need to list all these files' prerequisits
+# here (e.g. xmhf-runtime/xmhf-baseplatform/bplt-data.c). So we instead make
+# $(HYPERVISOR_BIN_GZ) a phony target and always make it.
+.PHONY: $(HYPERVISOR_BIN_GZ)
+$(HYPERVISOR_BIN_GZ): runtime secureloader bootloader
 	# concatenate sl image and runtime image 
 	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > $(HYPERVISOR_BIN_GZ)
