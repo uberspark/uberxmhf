@@ -223,6 +223,8 @@ typedef struct _vcpu {
   //guest MTRR shadow MSRs
   struct _guestmtrrmsrs vmx_guestmtrrmsrs;
 
+  u32 vmx_guest_inject_nmi;     //asynchronously inject NMI to guest
+
   //guest state fields
   u32 vmx_guest_currentstate;   //current operating mode of guest
   u32 vmx_guest_nextstate;      //next operating mode of guest

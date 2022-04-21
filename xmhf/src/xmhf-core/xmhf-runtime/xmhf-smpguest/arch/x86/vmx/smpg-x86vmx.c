@@ -597,24 +597,71 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		//we are not in quiesce, inject the NMI to guest
 
 		/*
-		 * This code assumes that vcpu->vmcs.control_VMX_cpu_based is only
-		 * changed for NMI handling. Or there will be race conditions.
+		 * We want to set vcpu->vmcs.control_VMX_cpu_based, but we may be in an
+		 * exception handler that is interrupting an intercept handler using
+		 * vcpu->vmcs.control_VMX_cpu_based. This can cause race conditions.
 		 *
-		 * There is also a very unlikely race condition: if
-		 * xmhf_baseplatform_arch_x86vmx_putVMCS() reads the value from
-		 * vcpu->vmcs, then NMI happens and this function gets called,
-		 * then xmhf_baseplatform_arch_x86vmx_putVMCS() write the value
-		 * to VMCS using __vmx_vmwrite(), then
-		 * vcpu->vmcs.control_VMX_cpu_based is not updated.
+		 * We know that this function only wants to set the 22nd bit of
+		 * vcpu->vmcs.control_VMX_cpu_based.
+		 *
+		 * We observe that the intercept handlers are always having the
+		 * following logic:
+		 * 1. VMREAD reg
+		 * 2. vcpu->vmcs.control_VMX_cpu_based = reg
+		 * 3. update vcpu->vmcs.control_VMX_cpu_based
+		 * 4. reg = vcpu->vmcs.control_VMX_cpu_based
+		 * 5. VMWRITE reg
+		 *
+		 * Step 1 and 2 are in xmhf_baseplatform_arch_x86vmx_getVMCS(). Step
+		 * 3 is body of the intercept handler. Step 4 and 5 are in
+		 * xmhf_baseplatform_arch_x86vmx_putVMCS().
+		 *
+		 * To solve the problem, this function also sets
+		 * vcpu->vmx_guest_inject_nmi. After step 5,
+		 * xmhf_baseplatform_arch_x86vmx_putVMCS() checks whether
+		 * vcpu->vmx_guest_inject_nmi is set. If so, it will perform another
+		 * VMWRITE.
+		 *
+		 * So the updated logic of intercept handlers become
+		 * 1. vcpu->vmx_guest_inject_nmi = 0
+		 * 2. VMREAD reg
+		 * 3. vcpu->vmcs.control_VMX_cpu_based = reg
+		 * 4. Update vcpu->vmcs.control_VMX_cpu_based
+		 * 5. reg = vcpu->vmcs.control_VMX_cpu_based
+		 * 6. VMWRITE reg
+		 * 7. if (vcpu->vmx_guest_inject_nmi) {
+		 * 8.     VMREAD reg
+		 * 9.     set bit 22 of reg
+		 * 10.    VMWRITE reg
+		 * 11.}
+		 *
+		 * The logic of this function is (appears atomic)
+		 * 1. VMREAD reg
+		 * 2. set bit 22 of reg
+		 * 3. VMWRITE reg
+		 * 4. vcpu->vmx_guest_inject_nmi = 1
+		 *
+		 * Consider different places this function interleaves with the
+		 * intercept handler:
+		 * a. before step 2: VMREAD at step 2 gets updated value, good
+		 * b. between 2 - 6: VMREAD at step 2 gets old value, this function
+		 *    writes new value, then overwritten by VMWRITE at step 6. But the
+		 *    vmx_guest_inject_nmi flag bit will cause the intercept handler to
+		 *    set the bit in VMCS correctly.
+		 * c. between 6 - 7: this function will read the new value, good.
+		 *    then step 7 will set bit 22 again, but it does not affect
+		 *    correctness.
+		 * d. after step 7: the bit 22 will finally be set, and the change to
+		 *    the VMCS field made by the intercept handle is always preserved.
 		 */
 		//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-		/* Cannot be u32 in amd64, because VMREAD writes 64-bits */
 		// TODO: if hypapp has multiple VMCS, need to select which one to inject
+		/* Cannot be u32 in amd64, because VMREAD writes 64-bits */
 		unsigned long __control_VMX_cpu_based;
 		HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
 		__control_VMX_cpu_based |= (1U << 22);
-		vcpu->vmcs.control_VMX_cpu_based = __control_VMX_cpu_based;
 		HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
+		vcpu->vmx_guest_inject_nmi = 1;
 	}
 
 	/* Unblock NMI in hypervisor */
