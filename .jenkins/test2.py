@@ -22,8 +22,10 @@ def parse_args():
 	parser.add_argument('--sshpass', help='Password for ssh')
 	parser.add_argument('--verbose', action='store_true')
 	parser.add_argument('--watch-serial', action='store_true')
+	parser.add_argument('--skip-install', action='store_true')
 	parser.add_argument('--no-test-xmhf', action='store_true',
-						help='Skip testing XMHF in QEMU for Circle CI set-up')
+						help='Skip testing XMHF in QEMU for Circle CI set-up '
+							'(deprecated)')
 	args = parser.parse_args()
 	return args
 
@@ -167,7 +169,12 @@ class SSHOperations:
 		'''
 		Return None if successful, error message otherwise
 		'''
-		wordsize = { 'i386': 32, 'amd64': 64 }[self.args.subarch]
+		if not self.args.skip_install:
+			ans = self.ssh_operations_install()
+			if ans is not None:
+				return ans
+		return self.ssh_operations_test()
+	def ssh_operations_install(self):
 		# 1. test booted
 		ss = []
 		stat = self.run_ssh('date; echo 1. test boot; ', 120, 10, ss)
@@ -208,6 +215,7 @@ class SSHOperations:
 			if stat or ss[2] != 0:
 				println('Restart checked')
 				break
+	def ssh_operations_test(self):
 		# For Circle CI, cannot boot Debian on XMHF on KVM, so return success
 		if self.args.no_test_xmhf:
 			sleep_dur = 50
@@ -221,18 +229,20 @@ class SSHOperations:
 		if stat or ss[2] != 0:
 			return 'Failed to boot 2: (%s, %d, %s)' % (stat, ss[2], ss[3])
 		# 7. run test
-		ss = []
-		stat = self.run_ssh(
-					'date; echo 7. run test; ./test_args%d 7 7 7' % wordsize,
-					10, 30, ss)
-		if stat or ss[2] != 0 or 'Test pass' not in ss[3]:
-			return 'Test failed: (%s, %d, %s)' % (stat, ss[2], ss[3])
+		wordsizes = { 'i386': [32], 'amd64': [32, 64] }[self.args.subarch]
+		for w in wordsizes:
+			ss = []
+			cmd = 'date; echo 7. run test %d; ./test_args%d 7 7 7' % (w, w)
+			stat = self.run_ssh(cmd, 10, 30, ss)
+			if stat or ss[2] != 0 or 'Test pass' not in ss[3]:
+				return 'Test %d failed: (%s, %d, %s)' % (w, stat, ss[2], ss[3])
 		# Success
 		return None
 
 def main():
 	args = parse_args()
-	reset_qemu(args)
+	if not args.skip_install:
+		reset_qemu(args)
 	ssh_port = get_port()
 	println('Use ssh port', ssh_port)
 	serial_file = os.path.join(args.work_dir, 'serial')
