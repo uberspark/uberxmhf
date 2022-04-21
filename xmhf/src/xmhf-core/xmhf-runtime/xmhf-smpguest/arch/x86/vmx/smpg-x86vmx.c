@@ -397,6 +397,43 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 #endif
 
 }
+
+/*
+ * This function is called by WRMSR interception where ECX=0x830. Return 1 if
+ * smpguest handles this WRMSR. Return 0 if smpguest does not recognize it
+ * (should forward the write to physical x2APIC).
+ */
+int xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(VCPU *vcpu, struct regs *r){
+	switch (r->eax & 0x00000F00) {
+	case 0x500:
+		/* INIT IPI, we just void it */
+		printf("\n0x%04x:0x%08llx -> (x2APIC ICR write) INIT IPI skipped, EAX=0x%08x, EDX=0x%08x",
+				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, r->eax, r->edx);
+		return 1;
+	case 0x600:
+		/* STARTUP IPI */
+        printf("\n0x%04x:0x%08llx -> (x2APIC ICR write) STARTUP IPI detected, EAX=0x%08x, EDX=0x%08x",
+				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, r->eax, r->edx);
+		/*
+		 * In LAPIC, the destination field is bit 56-63. In x2APIC is 32-63.
+		 * As a workaround, we simply left shift the destination field in
+		 * x2APIC. The disadvantage is that this only supports 256 LAPIC IDs.
+		 */
+		HALT_ON_ERRORCOND(r->edx <= 0xff);
+		if (processSIPI(vcpu, r->eax, (r->edx << 24))) {
+			/*
+			 * Ideally the guest should only be using x2APIC and not APIC.
+			 * But we nevertheless delink LAPIC interception.
+			 */
+			printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
+			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+		}
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 //----------------------------------------------------------------------
 
 
@@ -405,31 +442,50 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 //----------------------------------------------------------------------
 
 static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
-  volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
-  volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
-  u32 icr_high_value= 0xFFUL << 24;
-  u32 prev_icr_high_value;
-  u32 delivered;
+  u32 eax, edx;
 
-  prev_icr_high_value = *icr_high;
+  /* Check whether x2APIC is enabled */
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
 
-  *icr_high = icr_high_value;    //send to all but self
-  *icr_low = 0x000C0400UL;      //send NMI
+  if (eax & (1U << 10)) {
+    /* x2APIC enabled, use it */
+    u32 eax = 0x000C0400UL;
+    u32 edx = 0xFFFFFFFFUL;
+    u32 send_pending;
+    wrmsr(IA32_X2APIC_ICR, eax, edx);
+    do {
+      rdmsr(IA32_X2APIC_ICR, &eax, &edx);
+      send_pending = eax & 0x00001000U;
+    } while (send_pending);
+  } else {
+    /* use LAPIC */
+    volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
+    volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
+    u32 icr_high_value= 0xFFUL << 24;
+    u32 prev_icr_high_value;
+    u32 delivered;
 
-  //check if IPI has been delivered successfully
-  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
+    prev_icr_high_value = *icr_high;
+
+    *icr_high = icr_high_value;    //send to all but self
+    *icr_low = 0x000C0400UL;      //send NMI
+
+    //check if IPI has been delivered successfully
+    //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
 #ifndef __XMHF_VERIFICATION__
-  do{
-	delivered = *icr_high;
-	delivered &= 0x00001000;
-  }while(delivered);
+    do {
+      // TODO: should this be icr_low?
+      delivered = *icr_high;
+      delivered &= 0x00001000;
+    } while (delivered);
 #else
-	//TODO: plug in h/w model of LAPIC, for now assume hardware just
-	//works
+    //TODO: plug in h/w model of LAPIC, for now assume hardware just
+    //works
 #endif
 
-  //restore icr high
-  *icr_high = prev_icr_high_value;
+    //restore icr high
+    *icr_high = prev_icr_high_value;
+  }
 
   //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
 }

@@ -63,12 +63,18 @@ static VCPU *_svm_and_vmx_getvcpu(void){
   //read LAPIC id of this core
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((uintptr_t)eax + (uintptr_t)LAPIC_ID);
-  lapic_id = *lapic_reg;
-  //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
-  lapic_id = lapic_id >> 24;
-  //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
+  if (eax & (1U << 10)) {
+    /* x2APIC is enabled, use it */
+    rdmsr(IA32_X2APIC_APICID, &eax, &edx);
+    lapic_id = eax;
+  } else {
+    eax &= (u32)0xFFFFF000UL;
+    lapic_reg = (u32 *)((uintptr_t)eax + (uintptr_t)LAPIC_ID);
+    lapic_id = *lapic_reg;
+    //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
+    lapic_id = lapic_id >> 24;
+    //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
+  }
 
   for(i=0; i < (int)g_midtable_numentries; i++){
     if(g_midtable[i].cpu_lapic_id == lapic_id)

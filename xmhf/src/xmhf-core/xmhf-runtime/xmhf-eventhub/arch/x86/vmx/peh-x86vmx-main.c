@@ -119,8 +119,6 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	if (old_eax == 0x1) {
 		/* Clear VMX capability */
 		r->ecx &= ~(1U << 5);
-		/* Clear x2APIC capability */
-		r->ecx &= ~(1U << 21);
 		/* Set Hypervisor Present */
 		r->ecx |= (1U << 31);
 	}
@@ -336,9 +334,6 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 
 	//printf("\nCPU(0x%02x): WRMSR 0x%08x 0x%08x%08x @ %p", vcpu->id, r->ecx, r->edx, r->eax, vcpu->vmcs.guest_RIP);
 
-	/* Disallow x2APIC MSRs */
-	HALT_ON_ERRORCOND((r->ecx & 0xffffff00U) != 0x800);
-
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
 			vcpu->vmcs.guest_SYSENTER_CS = (u32)write_data;
@@ -422,10 +417,18 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			printf("\nCPU(0x%02x): OS tries to write microcode, ignore",
 					vcpu->id);
 			break;
+		case IA32_X2APIC_ICR:
+			if (xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(vcpu, r) == 0) {
+				/* Forward to physical APIC */
+				asm volatile ("wrmsr\r\n"
+					: //no outputs
+					:"a"(r->eax), "c" (r->ecx), "d" (r->edx));
+			}
+			break;
 		default:{
 			asm volatile ("wrmsr\r\n"
-          : //no outputs
-          :"a"(r->eax), "c" (r->ecx), "d" (r->edx));
+				: //no outputs
+				:"a"(r->eax), "c" (r->ecx), "d" (r->edx));
 			break;
 		}
 	}
@@ -459,9 +462,6 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 	u64 read_result = 0;
 
 	//printf("\nCPU(0x%02x): RDMSR 0x%08x @ %p", vcpu->id, r->ecx, vcpu->vmcs.guest_RIP);
-
-	/* Disallow x2APIC MSRs */
-	HALT_ON_ERRORCOND((r->ecx & 0xffffff00U) != 0x800);
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
@@ -538,6 +538,10 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 				HALT_ON_ERRORCOND(0 && "Unexpected fail in MTRR read");
 				goto rdmsr_inject_gp;
 			}
+			break;
+		case IA32_X2APIC_ICR:
+			// TODO: we can probably just forward it to hardware x2APIC
+			HALT_ON_ERRORCOND(0 && "TODO: x2APIC ICR read not implemented");
 			break;
 		default:{
 			if (rdmsr_safe(r) != 0) {

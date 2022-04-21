@@ -100,6 +100,8 @@ void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r
 void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu, u32 unmaplapic);
 void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu,
 	struct regs *r);
+int xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(VCPU *vcpu,
+	struct regs *r);
 void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest);
 u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
 void xmhf_smpguest_arch_x86vmx_unblock_nmi(void);
