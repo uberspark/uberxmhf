@@ -884,7 +884,9 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		gpa = vcpu->vmcs.guest_paddr;
 		if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
 			READ_VMCS(0x6400, vcpu->vmcs.info_exit_qualification);
+			READ_VMCS(0x4002, vcpu->vmcs.control_VMX_cpu_based);
 			READ_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
+			READ_VMCS(0x4824, vcpu->vmcs.guest_interruptibility);
 			READ_VMCS(0x6820, vcpu->vmcs.guest_RFLAGS);
 #ifdef __I386__
 			READ_VMCS(0x201A, vcpu->vmcs.control_EPT_pointer_full);
@@ -895,20 +897,21 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 			_vmx_handle_intercept_eptviolation(vcpu, r);
+			WRITE_VMCS(0x4002, vcpu->vmcs.control_VMX_cpu_based);
 			WRITE_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
+			WRITE_VMCS(0x4824, vcpu->vmcs.guest_interruptibility);
 			WRITE_VMCS(0x6820, vcpu->vmcs.guest_RFLAGS);
 			return 1;
 		}
 		return 0;
 	}
-	case VMX_VMEXIT_EXCEPTION:
-		/* Optimize debug exception (#DB) for LAPIC operation */
-		READ_VMCS(0x4404, vcpu->vmcs.info_vmexit_interrupt_information);
-		if (((u32)vcpu->vmcs.info_vmexit_interrupt_information &
-			 INTR_INFO_VECTOR_MASK) == 1) {
+	case VMX_VMEXIT_MONITOR_TRAP:
+		/* Optimize monitor trap for LAPIC operation */
 			READ_VMCS(0x0802, vcpu->vmcs.guest_CS_selector);
 			READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
+			READ_VMCS(0x4002, vcpu->vmcs.control_VMX_cpu_based);
 			READ_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
+			READ_VMCS(0x4824, vcpu->vmcs.guest_interruptibility);
 			READ_VMCS(0x6820, vcpu->vmcs.guest_RFLAGS);
 #ifdef __I386__
 			READ_VMCS(0x201A, vcpu->vmcs.control_EPT_pointer_full);
@@ -919,7 +922,9 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 			xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+			WRITE_VMCS(0x4002, vcpu->vmcs.control_VMX_cpu_based);
 			WRITE_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
+			WRITE_VMCS(0x4824, vcpu->vmcs.guest_interruptibility);
 			WRITE_VMCS(0x6820, vcpu->vmcs.guest_RFLAGS);
 			return 1;
 		}
