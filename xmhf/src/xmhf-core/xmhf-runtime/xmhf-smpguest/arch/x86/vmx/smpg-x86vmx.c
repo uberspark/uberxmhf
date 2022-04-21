@@ -61,6 +61,9 @@ static u64 g_vmx_lapic_guest_eflags_ifmask __attribute__(( section(".data") )) =
 //guest "Blocking by NMI" bit in Interruptibility State, for LAPIC interception
 static u32 g_vmx_lapic_guest_intr_nmimask __attribute__(( section(".data") )) = 0;
 
+//guest exception bitmap during LAPIC emulation
+static u32 g_vmx_lapic_exception_bitmap __attribute__(( section(".data") )) = 0;
+
 /*
  * xmhf_smpguest_arch_x86vmx_quiesce() needs to access printf locks defined
  * in xmhfc-putchar.c
@@ -249,6 +252,11 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   g_vmx_lapic_guest_intr_nmimask = vcpu->vmcs.guest_interruptibility & (1U << 3);
   vcpu->vmcs.guest_interruptibility |= (1U << 3);
 
+  //intercept all exceptions (XMHF will panic if the guest's APIC access resuls
+  //in an exception)
+  g_vmx_lapic_exception_bitmap = vcpu->vmcs.control_exception_bitmap;
+  vcpu->vmcs.control_exception_bitmap = 0xffffffff;
+
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   assert(!g_vmx_lapic_npf_verification_pre || g_vmx_lapic_npf_verification_guesttrapping);
 #endif
@@ -380,6 +388,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
   //restore NMI blocking (likely enable NMIs)
   vcpu->vmcs.guest_interruptibility |= g_vmx_lapic_guest_intr_nmimask;
+
+  //restore exception bitmap
+  vcpu->vmcs.control_exception_bitmap = g_vmx_lapic_exception_bitmap;
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   assert(!g_vmx_lapic_db_verification_pre || g_vmx_lapic_db_verification_coreprotected);
