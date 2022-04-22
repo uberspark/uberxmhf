@@ -33,6 +33,14 @@ jobs:
             gcc -v
       - store_artifacts:
           path: xmhf/src/xmhf-core/xmhf-runtime/runtime.exe
+      - store_artifacts:
+          path: xmhf/src/xmhf-core/xmhf-bootloader/init_syms.exe
+      - store_artifacts:
+          path: xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe
+      - store_artifacts:
+          path: init-x86-amd64.bin
+      - store_artifacts:
+          path: hypervisor-x86-amd64.bin.gz
       - restore_cache:
           keys:
             - debian11x86x64-20220407-<< parameters.subarch >>
