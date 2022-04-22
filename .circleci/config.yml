@@ -31,6 +31,8 @@ jobs:
             ssh -V
             qemu-system-x86_64 -version
             gcc -v
+      - store_artifacts:
+          path: xmhf/src/xmhf-core/xmhf-runtime/runtime.exe
       - restore_cache:
           keys:
             - debian11x86x64-20220407-<< parameters.subarch >>

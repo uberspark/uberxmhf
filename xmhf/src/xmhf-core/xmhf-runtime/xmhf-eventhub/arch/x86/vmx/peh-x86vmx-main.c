@@ -865,13 +865,18 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	switch ((u32)vcpu->vmcs.info_vmexit_reason) {
 	case VMX_VMEXIT_WRMSR:
-		/* Only optimize WRMSR 0x6e0 (IA32_TSC_DEADLINE) */
-		if (r->ecx == 0x6e0) {
+		/* Only optimize WRMSR for some MSRs */
+		switch (r->ecx) {
+		case 0x6e0:	/* IA32_TSC_DEADLINE */
+			/* fallthrough */
+		case 0x80b:	/* IA32_X2APIC_EOI */
 			READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
 			READ_VMCS(0x440C, vcpu->vmcs.info_vmexit_instruction_length);
 			_vmx_handle_intercept_wrmsr(vcpu, r);
 			WRITE_VMCS(0x681E, vcpu->vmcs.guest_RIP);
 			return 1;
+		default:
+				return 0;
 		}
 		return 0;
 	case VMX_VMEXIT_CPUID:
