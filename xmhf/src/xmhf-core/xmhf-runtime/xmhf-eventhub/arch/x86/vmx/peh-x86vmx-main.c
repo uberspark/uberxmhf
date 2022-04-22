@@ -876,9 +876,8 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			WRITE_VMCS(0x681E, vcpu->vmcs.guest_RIP);
 			return 1;
 		default:
-				return 0;
+			return 0;
 		}
-		return 0;
 	case VMX_VMEXIT_CPUID:
 		/* Always optimize CPUID */
 		READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
