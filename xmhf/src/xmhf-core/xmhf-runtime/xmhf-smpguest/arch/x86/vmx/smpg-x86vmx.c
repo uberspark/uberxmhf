@@ -234,9 +234,6 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 		}
 	}
 
-  //setup #DB intercept
-  vcpu->vmcs.control_exception_bitmap |= (1UL << 1); //enable INT 1 intercept (#DB fault)
-
   //save guest IF and TF masks
   g_vmx_lapic_guest_eflags_tfifmask = (u32)vcpu->vmcs.guest_RFLAGS & ((u32)EFLAGS_IF | (u32)EFLAGS_TF);
 
@@ -373,9 +370,6 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 		value_read = nondet_u32();
 	#endif
   }
-
-  //clear #DB intercept
-  vcpu->vmcs.control_exception_bitmap &= ~(1UL << 1);
 
   //remove LAPIC interception if all cores have booted up
   if(delink_lapic_interception){
