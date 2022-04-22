@@ -233,7 +233,7 @@ class SSHOperations:
 		for w in wordsizes:
 			ss = []
 			cmd = 'date; echo 7. run test %d; ./test_args%d 7 7 7' % (w, w)
-			stat = self.run_ssh(cmd, 10, 30, ss)
+			stat = self.run_ssh(cmd, 10, 45, ss)
 			if stat or ss[2] != 0 or 'Test pass' not in ss[3]:
 				return 'Test %d failed: (%s, %d, %s)' % (w, stat, ss[2], ss[3])
 		# Success
