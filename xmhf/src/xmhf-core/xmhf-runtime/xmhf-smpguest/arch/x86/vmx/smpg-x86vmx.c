@@ -410,7 +410,7 @@ int xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(VCPU *vcpu, struct re
 		return 1;
 	case 0x600:
 		/* STARTUP IPI */
-        printf("\n0x%04x:0x%08llx -> (x2APIC ICR write) STARTUP IPI detected, EAX=0x%08x, EDX=0x%08x",
+		printf("\n0x%04x:0x%08llx -> (x2APIC ICR write) STARTUP IPI detected, EAX=0x%08x, EDX=0x%08x",
 				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, r->eax, r->edx);
 		/*
 		 * In LAPIC, the destination field is bit 56-63. In x2APIC is 32-63.
