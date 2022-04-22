@@ -911,9 +911,11 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		return 0;
 	}
-	case VMX_VMEXIT_MONITOR_TRAP:
-		/* Optimize monitor trap for LAPIC operation */
-		if (1) {
+	case VMX_VMEXIT_EXCEPTION:
+		/* Optimize debug exception (#DB) for LAPIC operation */
+		READ_VMCS(0x4404, vcpu->vmcs.info_vmexit_interrupt_information);
+		if (((u32)vcpu->vmcs.info_vmexit_interrupt_information &
+			 INTR_INFO_VECTOR_MASK) == 1) {
 			READ_VMCS(0x0802, vcpu->vmcs.guest_CS_selector);
 			READ_VMCS(0x681E, vcpu->vmcs.guest_RIP);
 			READ_VMCS(0x4004, vcpu->vmcs.control_exception_bitmap);
