@@ -72,6 +72,7 @@ static void* hptw_emhf_host_ctx_gzp(void *vctx, size_t alignment, size_t sz)
   return pagelist_get_zeroedpage(pl);
 }
 
+/* Context for EPT paging */
 int hptw_emhf_host_ctx_init(hptw_emhf_host_ctx_t *ctx, hpt_pa_t root_pa, hpt_type_t t, pagelist_t *pl)
 {
   *ctx = (hptw_emhf_host_ctx_t) {
@@ -114,6 +115,7 @@ static void* hptw_emhf_checked_guest_ctx_gzp(void *vctx, size_t alignment, size_
   return pagelist_get_zeroedpage(pl);
 }
 
+/* Context for guest paging (e.g. guest CR3) */
 int hptw_emhf_checked_guest_ctx_init(hptw_emhf_checked_guest_ctx_t *ctx,
                                      hpt_pa_t root_pa,
                                      hpt_type_t t,
