@@ -56,7 +56,7 @@ const u16 hpt_pm_sizes[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
     [HPT_TYPE_EPT]  = {0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE },
   };
 
-/* page map sizes, in bytes. note that zero index is invalid. */
+/* page map alignments, in bytes. note that zero index is invalid. */
 const u16 hpt_pm_alignments[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
   {
     [HPT_TYPE_NORM] = { 0, HPT_PM_SIZE, HPT_PM_SIZE, 0, 0},
@@ -77,6 +77,7 @@ const u8 hpt_va_idx_hi[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
     [HPT_TYPE_EPT]  = { 11, 20, 29, 38, 47},
   };
 
+/* Number of levels in the paging. */
 const u8 hpt_type_max_lvl[HPT_TYPE_NUM] =
   {
     [HPT_TYPE_NORM] = 2,
@@ -85,6 +86,7 @@ const u8 hpt_type_max_lvl[HPT_TYPE_NUM] =
     [HPT_TYPE_EPT]  = 4,
   };
 
+/* Get page map size */
 size_t hpt_pm_size(hpt_type_t t, int lvl)
 {
   size_t rv;
@@ -94,6 +96,7 @@ size_t hpt_pm_size(hpt_type_t t, int lvl)
   return rv;
 }
 
+/* Change address bits in cr3 */
 u64 hpt_cr3_set_address(hpt_type_t t, u64 cr3, hpt_pa_t a)
 {
   if (t==HPT_TYPE_NORM) {
@@ -113,6 +116,7 @@ u64 hpt_cr3_set_address(hpt_type_t t, u64 cr3, hpt_pa_t a)
   return cr3;
 }
 
+/* Get address bits in cr3 */
 hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
 {
   if (t==HPT_TYPE_NORM) {
@@ -129,19 +133,25 @@ hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
   assert(0); return (hpt_pa_t)0; /* unreachable; appeases compiler */
 }
 
+/* Change address bits in eptp */
 u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a)
 {
   assert(t == HPT_TYPE_EPT);
   return BR64_COPY_BITS_HL(eptp, a, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
 }
 
+/* Get address bits in eptp */
 hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp)
 {
   assert(t == HPT_TYPE_EPT);
   return BR64_COPY_BITS_HL(0, eptp, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
 }
 
-/* assumes lvl is valid for the given type */
+/*
+ * Check whether perms is valid for paging type t and level lvl.
+ * (e.g. HPT_TYPE_NORM does not support executable bit, so there is no RW).
+ * This function assumes lvl is valid for the given type t.
+ */
 bool hpt_prot_is_valid(hpt_type_t t, int lvl, hpt_prot_t perms)
 {
   /* consider making this a table lookup. however, if perms is passed
@@ -170,22 +180,29 @@ bool hpt_prot_is_valid(hpt_type_t t, int lvl, hpt_prot_t perms)
     : (false);
 }
 
+/* Check whether level lvl is valid for paging type t. */
 bool hpt_lvl_is_valid(hpt_type_t t, int lvl)
 {
   return lvl <= hpt_type_max_lvl[t];
 }
 
+/* Check whether paging type t is valid. */
 bool hpt_type_is_valid(hpt_type_t t)
 {
   return t < HPT_TYPE_NUM;
 }
 
+/* Get root page table level for paging type t. */
 int hpt_root_lvl(hpt_type_t t)
 {
   assert(hpt_type_is_valid(t));
   return hpt_type_max_lvl[t];
 }
 
+/*
+ * Change the user / supervisor bit (U/S) in entry.
+ * EPT does not have U/S bit, so must be accessible.
+ */
 hpt_pme_t hpt_pme_setuser(hpt_type_t t, int lvl, hpt_pme_t entry, bool user_accessible)
 {
   if (t == HPT_TYPE_NORM) {
@@ -206,6 +223,7 @@ hpt_pme_t hpt_pme_setuser(hpt_type_t t, int lvl, hpt_pme_t entry, bool user_acce
   assert(0); return 0; /* unreachable; appeases compiler */
 }
 
+/* Get the user / supervisor bit (U/S) in entry. */
 bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
   if (t == HPT_TYPE_NORM) {
@@ -224,6 +242,7 @@ bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)
   assert(0); return false; /* unreachable; appeases compiler */
 }
 
+/* Change the protection bits (R, W, X) in entry. */
 hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms)
 {
   hpt_pme_t rv=entry;
@@ -252,6 +271,7 @@ hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t per
   return rv;
 }
 
+/* Get the protection bits (R, W, X) in entry. */
 hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
   hpt_prot_t rv=HPT_PROTS_NONE;
@@ -290,6 +310,7 @@ hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry)
   return rv;
 }
 
+/* Change the bits not used by hardware in entry. */
 hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int lo, hpt_pme_t val)
 {
   hpt_pme_t rv=entry;
@@ -316,6 +337,7 @@ hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int 
   return rv;
 }
 
+/* Get the bits not used by hardware in entry. */
 hpt_pme_t hpt_pme_getunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int lo)
 {
   hpt_pme_t rv = 0ull;
@@ -336,12 +358,19 @@ hpt_pme_t hpt_pme_getunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int 
   return rv;
 }
 
+/* Get the present bit in entry. */
 bool hpt_pme_is_present(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
   /* a valid entry is present iff read access is enabled. */
   return hpt_pme_getprot(t, lvl, entry) & HPT_PROT_READ_MASK;
 }
 
+/*
+ * Check whether entry points to a page (otherwise, point to a page table).
+ * For example, in 32-bit paging, when PDE.PS = 1, it points to a 4MB page
+ * (this function returns true). When PDE.PS = 0, it points to a page table
+ * (this function returns false).
+ */
 bool hpt_pme_is_page(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
   if (t== HPT_TYPE_NORM) {
@@ -362,6 +391,7 @@ bool hpt_pme_is_page(hpt_type_t t, int lvl, hpt_pme_t entry)
   }
 }
 
+/* Get the physical address (of page / page table) pointed by entry. */
 hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
   if (t == HPT_TYPE_NORM) {
@@ -433,6 +463,7 @@ hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entry)
   }
 }
 
+/* Set the physical address (of page / page table) pointed by entry. */
 hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_pa_t addr)
 {
   if (t == HPT_TYPE_NORM) {
@@ -506,6 +537,7 @@ hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_pa_t a
   }
 }
 
+/* Set the PAT (page attribute table) bit in entry. */
 /* "internal". use hpt_pme_set_pmt instead */
 static hpt_pme_t hpt_pme_set_pat(hpt_type_t t, int lvl, hpt_pme_t pme, bool pat)
 {
@@ -543,6 +575,7 @@ static hpt_pme_t hpt_pme_set_pat(hpt_type_t t, int lvl, hpt_pme_t pme, bool pat)
   return rv;
 }
 
+/* Get the PAT (page attribute table) bit in entry. */
 /* "internal". use hpt_pme_get_pmt instead */
 static bool hpt_pme_get_pat(hpt_type_t t, int lvl, hpt_pme_t pme) __attribute__((unused));
 static bool hpt_pme_get_pat(hpt_type_t t, int lvl, hpt_pme_t pme)
@@ -577,6 +610,7 @@ static bool hpt_pme_get_pat(hpt_type_t t, int lvl, hpt_pme_t pme)
   return pme;
 }
 
+/* Get the PCD (page-level cache disable) bit in entry. */
 /* "internal". use hpt_pme_get_pmt instead */
 static bool hpt_pme_get_pcd(hpt_type_t t, int __attribute__((unused)) lvl, hpt_pme_t pme)
 {
@@ -592,6 +626,7 @@ static bool hpt_pme_get_pcd(hpt_type_t t, int __attribute__((unused)) lvl, hpt_p
   assert(0); return false; /* unreachable; appeases compiler */
 }
 
+/* Set the PCD (page-level cache disable) bit in entry. */
 /* "internal". use hpt_pme_set_pmt instead */
 static hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int __attribute__((unused)) lvl, hpt_pme_t pme, bool pcd)
 {
@@ -607,6 +642,7 @@ static hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int __attribute__((unused)) lvl, 
   assert(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */
 }
 
+/* Get the PWT (page-level write-through) bit in entry. */
 /* "internal". use hpt_pme_get_pmt instead */
 static bool hpt_pme_get_pwt(hpt_type_t t, int __attribute__((unused)) lvl, hpt_pme_t pme)
 {
@@ -622,6 +658,7 @@ static bool hpt_pme_get_pwt(hpt_type_t t, int __attribute__((unused)) lvl, hpt_p
   assert(0); return false; /* unreachable; appeases compiler */
 }
 
+/* Set the PWT (page-level write-through) bit in entry. */
 /* "internal". use hpt_pme_set_pmt instead */
 static hpt_pme_t hpt_pme_set_pwt(hpt_type_t t, int __attribute__((unused)) lvl, hpt_pme_t pme, bool pwt)
 {
@@ -637,6 +674,7 @@ static hpt_pme_t hpt_pme_set_pwt(hpt_type_t t, int __attribute__((unused)) lvl, 
   assert(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */
 }
 
+/* Get the memory type (e.g. uncached, write back) of entry. */
 /* Assumes PAT register has default values */
 hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme)
 {
@@ -665,6 +703,7 @@ hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme)
   return rv;
 }
 
+/* Set the memory type (e.g. uncached, write back) of entry. */
 /* Always clears PAT bit when applicable. */
 hpt_pmt_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_pmt_t pmt)
 {
@@ -702,6 +741,11 @@ hpt_pmt_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_pmt_t pmt)
   return rv;
 }
 
+/* 
+ * Get index in a page table for virtual address va.
+ * For example, when resolving the first level of 32-bit paging, this function
+ * returns the 31-22 bits of VA (i.e. index to PDE).
+ */
 unsigned int hpt_get_pm_idx(hpt_type_t t, int lvl, hpt_va_t va)
 {
   unsigned int lo;
@@ -715,6 +759,7 @@ unsigned int hpt_get_pm_idx(hpt_type_t t, int lvl, hpt_va_t va)
   return BR64_GET_HL(va, hi, lo);
 }
 
+/* Get a page table entry in a page table (pm) using its index (idx). */
 hpt_pme_t hpt_pm_get_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx)
 {
   HPT_UNUSED_ARGUMENT(lvl);
@@ -728,6 +773,7 @@ hpt_pme_t hpt_pm_get_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx)
   }
 }
 
+/* Set a page table entry (pme) in a page table (pm) using its index (idx). */
 void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_t pme)
 {
   HPT_UNUSED_ARGUMENT(lvl);
@@ -740,11 +786,13 @@ void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_
   }
 }
 
+/* Get page table entry in page table (pm) using virtual address (va). */
 hpt_pme_t hpt_pm_get_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va)
 {
   return hpt_pm_get_pme_by_idx(t, lvl, pm, hpt_get_pm_idx(t, lvl, va));
 }
 
+/* Set page table entry (pme) in page table (pm) using virtual address (va). */
 void hpt_pm_set_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va, hpt_pme_t pme)
 {
   hpt_pm_set_pme_by_idx(t, lvl, pm, hpt_get_pm_idx(t, lvl, va), pme);
