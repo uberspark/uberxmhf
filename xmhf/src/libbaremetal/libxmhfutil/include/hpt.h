@@ -89,12 +89,14 @@ typedef u64 hpt_prot_t; /* pme protection flags type */
 typedef u64 hpt_va_t; /* virtual address type */
 typedef u64 hpt_pa_t; /* physical address type */
 
+/* Page map object (e.g. pointer to page table with metadata) */
 typedef struct {
   hpt_pm_t pm;
   hpt_type_t t;
   int lvl;
 } hpt_pmo_t;
 
+/* Page map entry object (e.g. page table entry with metadata) */
 typedef struct {
   hpt_pme_t pme;
   hpt_type_t t;
@@ -103,6 +105,7 @@ typedef struct {
 
 #define HPT_UNUSED_ARGUMENT(x) (void)x
 
+/* Common page size */
 #define HPT_PM_SIZE 4096
 
 /* page map sizes, in bytes. note that zero index is invalid. */
@@ -117,6 +120,7 @@ extern const u16 hpt_pm_alignments[HPT_TYPE_NUM][HPT_MAX_LEVEL+1];
  */
 extern const u8 hpt_va_idx_hi[HPT_TYPE_NUM][HPT_MAX_LEVEL+1];
 
+/* Number of levels in the paging. */
 extern const u8 hpt_type_max_lvl[HPT_TYPE_NUM];
 
 size_t hpt_pm_size(hpt_type_t t, int lvl);
@@ -155,6 +159,7 @@ hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp);
 #define MIN(x, y) (((y) < (x)) ? (y) : (x))
 #endif
 
+/* Page memory types */
 typedef enum {
   HPT_PMT_UC=0, HPT_PMT_WC=1, HPT_PMT_WT=4, HPT_PMT_WP=5, HPT_PMT_WB=6
 } hpt_pmt_t;

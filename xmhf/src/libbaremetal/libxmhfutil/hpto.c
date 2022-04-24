@@ -47,51 +47,66 @@
 #include <hpt.h>
 #include "hpt_internal.h"
 
+/* Get the physical address (of page / page table) */
 hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo)
 {
   return hpt_pme_get_address(pmeo->t, pmeo->lvl, pmeo->pme);
 }
+
+/* Set the physical address (of page / page table) */
 void hpt_pmeo_set_address(hpt_pmeo_t *pmeo, hpt_pa_t addr)
 {
   pmeo->pme = hpt_pme_set_address(pmeo->t, pmeo->lvl, pmeo->pme, addr);
 }
 
+/* Get the present bit */
 bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo)
 {
   return hpt_pme_is_present(pmeo->t, pmeo->lvl, pmeo->pme);
 }
 
+/*
+ * Check whether entry points to a page (otherwise, point to a page table).
+ * For example, in 32-bit paging, when PDE.PS = 1, it points to a 4MB page
+ * (this function returns true). When PDE.PS = 0, it points to a page table
+ * (this function returns false).
+ */
 bool hpt_pmeo_is_page(const hpt_pmeo_t *pmeo)
 {
   return hpt_pme_is_page(pmeo->t, pmeo->lvl, pmeo->pme);
 }
 
+/* Change the protection bits (R, W, X) */
 void hpt_pmeo_setprot(hpt_pmeo_t *pmeo, hpt_prot_t perms)
 {
   pmeo->pme = hpt_pme_setprot(pmeo->t, pmeo->lvl, pmeo->pme, perms);
 }
 
+/* Get the protection bits (R, W, X) */
 hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo)
 {
   return hpt_pme_getprot(pmeo->t, pmeo->lvl, pmeo->pme);
 }
 
-// Set Cachable
+/* Set the memory type (e.g. uncached, write back) */
 void hpt_pmeo_setcache(hpt_pmeo_t *pmeo, hpt_pmt_t pmt)
 {
   pmeo->pme = hpt_pme_set_pmt(pmeo->t, pmeo->lvl, pmeo->pme, pmt);
 }
 
+/* Get the user / supervisor bit (U/S) */
 bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo)
 {
   return hpt_pme_getuser(pmeo->t, pmeo->lvl, pmeo->pme);
 }
 
+/* Change the user / supervisor bit (U/S) */
 void hpt_pmeo_setuser(hpt_pmeo_t *pmeo, bool user)
 {
   pmeo->pme = hpt_pme_setuser(pmeo->t, pmeo->lvl, pmeo->pme, user);
 }
 
+/* Get page table entry in page table (pm) using virtual address (va) */
 void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va)
 {
   pmeo->t = pmo->t;
@@ -99,11 +114,18 @@ void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va)
   pmeo->pme = hpt_pm_get_pme_by_va(pmo->t, pmo->lvl, pmo->pm, va);
 }
 
+/* Set page table entry (pme) in page table (pm) using virtual address (va) */
 void hpt_pmo_set_pme_by_va(hpt_pmo_t *pmo, const hpt_pmeo_t *pmeo, hpt_va_t va)
 {
   hpt_pm_set_pme_by_va(pmo->t, pmo->lvl, pmo->pm, va, pmeo->pme);
 }
 
+/*
+ * Get the physical address of virtual address (va), pmeo is the last level of
+ * page table entry.
+ * For example, in 32-bit paging with 4K pages, pmeo is the page table entry,
+ * va=0x12345678, then pa=0xabcde678.
+ */
 hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va)
 {
   hpt_pa_t base;
@@ -118,6 +140,11 @@ hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va)
   return base + offset;
 }
 
+/*
+ * Get the log2 of size region controlled by the page map entry.
+ * For example, in 32-bit paging, PDE's size is log(4M) = 22, PTE's size is
+ * log(4K) = 12.
+ */
 size_t hpt_pmeo_page_size_log_2(const hpt_pmeo_t *pmeo)
 {
   int offset_hi;
@@ -125,11 +152,20 @@ size_t hpt_pmeo_page_size_log_2(const hpt_pmeo_t *pmeo)
   return offset_hi+1;
 }
 
+/*
+ * Get the size region controlled by the page map entry.
+ * For example, in 32-bit paging, PDE's size 4M, PTE's size is 4K.
+ */
 size_t hpt_pmeo_page_size(const hpt_pmeo_t *pmeo)
 {
   return 1 << hpt_pmeo_page_size_log_2(pmeo);
 }
 
+/*
+ * Get the number of bytes from va to page boundary.
+ * For example, in 32-bit paging with 4K pages, when va=0x12345678, this
+ * function returns 0x1000 - 0x678 = 0x988.
+ */
 size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, hpt_va_t va)
 {
   size_t offset_on_page;
