@@ -56,16 +56,25 @@ typedef enum {
   HPTW_CPL3=3,
 } hptw_cpl_t;
 
-typedef hpt_pa_t (*hpt_ptr2pa_t)(void *self, void *ptr); /* translate a referencable pointer to a physical address */
-typedef void* (*hpt_pa2ptr_t)(void *self, hpt_pa_t pa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz); /* translate a physical address to a referenceable pointer */
+/* Translate a referencable pointer to a physical address */
+typedef hpt_pa_t (*hpt_ptr2pa_t)(void *self, void *ptr);
+/* Translate a physical address to a referenceable pointer */
+typedef void* (*hpt_pa2ptr_t)(void *self, hpt_pa_t pa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz);
+/* Allocate a physical page full of 0s */
 typedef void* (*hpt_get_zeroed_page_t)(void *self, size_t alignment, size_t sz);
 
+/* Context to perform page table operations */
 typedef struct {
+  /* Function to allocate new page */
   hpt_get_zeroed_page_t gzp;
+  /* Function to translate physical address to pointer */
   hpt_pa2ptr_t pa2ptr;
+  /* Function to translate pointer to physical address */
   hpt_ptr2pa_t ptr2pa;
 
+  /* Physical address of paging root (e.g. CR3, eptp) */
   hpt_pa_t root_pa;
+  /* Paging type */
   hpt_type_t t;
 } hptw_ctx_t;
 
@@ -151,7 +160,7 @@ int hptw_checked_memset_va( hptw_ctx_t *ctx,
                             int c,
                             size_t len);
 
-
+/*
 // [New MM API] memset the destination gpaddr
 // [NOTE] We should use nmm_* as much as possible, because
 // the original mm code in XMHF assume gpaddr = spaddr, which is not
@@ -165,4 +174,5 @@ extern void* nmm_access_gpaddr(hptw_ctx_t *ctx,
                      hpt_pa_t pa,
                      size_t requested_sz,
                      size_t *avail_sz);
+*/
 #endif

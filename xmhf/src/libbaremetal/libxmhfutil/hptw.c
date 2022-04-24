@@ -50,6 +50,10 @@
 
 #include "hpt_log.h"
 
+/*
+ * Get the root page map object (pmo) for context (ctx)
+ * For example, in 32-bit paging it gives the PDE pointed to by CR3
+ */
 static int hptw_get_root( hptw_ctx_t *ctx, hpt_pmo_t *pmo)
 {
   int lvl = hpt_type_max_lvl[ ctx->t];
@@ -78,6 +82,12 @@ static int hptw_get_root( hptw_ctx_t *ctx, hpt_pmo_t *pmo)
   return err;
 }
 
+/*
+ * Insert page map entry object (pmeo) to context (ctx) at virtual address (va).
+ * For example, in 32-bit paging, if pmeo is a page table entry (PTE), this
+ * function will walk the page directory to find the page table, then change
+ * the page table entry.
+ */
 int hptw_insert_pmeo(hptw_ctx_t *ctx,
                      const hpt_pmeo_t *pmeo,
                      hpt_va_t va)
@@ -96,6 +106,10 @@ int hptw_insert_pmeo(hptw_ctx_t *ctx,
   return err;
 }
 
+/*
+ * Get the page map object (pmo) at level (end_lvl) to context (ctx) at virtual
+ * address (va), allocate empty page tables if needed.
+ */
 int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
                        hptw_ctx_t *ctx,
                        int end_lvl,
@@ -140,6 +154,10 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
   return err;
 }
 
+/*
+ * Insert page map entry object (pmeo) to context (ctx) at virtual address (va),
+ * allocate empty page tables if needed.
+ */
 int hptw_insert_pmeo_alloc(hptw_ctx_t *ctx,
                            const hpt_pmeo_t *pmeo,
                            hpt_va_t va)
@@ -158,6 +176,10 @@ int hptw_insert_pmeo_alloc(hptw_ctx_t *ctx,
   return err;
 }
 
+/*
+ * Get the page map object (pmo) at level (end_lvl) to context (ctx) at virtual
+ * address (va).
+ */
 void hptw_get_pmo( hpt_pmo_t *pmo,
                    hptw_ctx_t *ctx,
                    int end_lvl,
@@ -172,6 +194,10 @@ void hptw_get_pmo( hpt_pmo_t *pmo,
   EU_VERIFYN( err); /* XXX */
 }
 
+/*
+ * Get the page map entry object (pmeo) at level (end_lvl) to context (ctx) at
+ * virtual address (va).
+ */
 void hptw_get_pmeo(hpt_pmeo_t *pmeo,
                    hptw_ctx_t *ctx,
                    int end_lvl,
@@ -182,6 +208,12 @@ void hptw_get_pmeo(hpt_pmeo_t *pmeo,
   hpt_pm_get_pmeo_by_va(pmeo, &end_pmo, va);
 }
 
+/*
+ * In context (ctx) when walking page table for virtual address (va), descent
+ * the page map object (pmo) one level down.
+ * For example, in 32-bit paging, if pmo points to a page directory when
+ * calling this function, it will point to a page table after calling.
+ */
 bool hptw_next_lvl(hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
 {
   hpt_pmeo_t pmeo;
@@ -221,10 +253,13 @@ bool hptw_next_lvl(hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
   }
 }
 
-/* returns the effective protections for the given address, which is
+/*
+ * Returns the effective protections for the given address, which is
  * the lowest permissions for the page walk. Also sets
  * *user_accessible if not NULL and if the virtual address is set
  * user-accessible.
+ * According to hardware, this is usually the logical AND for the permission
+ * bits in all levels of page map entries during the page table walk.
  */
 hpt_prot_t hptw_get_effective_prots(hptw_ctx_t *ctx,
                                     hpt_va_t va,
@@ -259,6 +294,7 @@ hpt_prot_t hptw_get_effective_prots(hptw_ctx_t *ctx,
   return prots_rv;
 }
 
+/* Set protection bits (prot) for a virtual address (va) in context (ctx) */
 void hptw_set_prot(hptw_ctx_t *ctx,
                    hpt_va_t va,
                    hpt_prot_t prot)
@@ -275,6 +311,10 @@ void hptw_set_prot(hptw_ctx_t *ctx,
   hpt_pmo_set_pme_by_va (&pmo, &pmeo, va);
 }
 
+/*
+ * Translate virtual address (va) in context (ctx) to physical address
+ * (i.e. walk the page table in software).
+ */
 hpt_pa_t hptw_va_to_pa(hptw_ctx_t *ctx,
                        hpt_va_t va)
 {
@@ -293,6 +333,13 @@ uintptr_t hptw_gpa_to_spa(hptw_ctx_t *ctx,
 	return (uintptr_t)result;
 }
 
+/*
+ * Access virtual address (va) in context (ctx) in software.
+ * return value is the physical address that can be accessed by the caller.
+ * requested_sz is the size caller wants to access.
+ * avail_sz is the size available in the same page.
+ * If avail_sz < requested_sz, the caller needs to call this function again.
+ */
 void* hptw_access_va(hptw_ctx_t *ctx,
                      hpt_va_t va,
                      size_t requested_sz,
@@ -310,6 +357,10 @@ void* hptw_access_va(hptw_ctx_t *ctx,
                      *avail_sz, HPT_PROTS_R, HPTW_CPL0, avail_sz);
 }
 
+/*
+// Note: this function may be wrong: when gpaddr = 0x12345678, this function
+// may return 0xabcde000, instead of 0xabcde678. However, this hypothesis has
+// not been tested yet.
 void* nmm_access_gpaddr(hptw_ctx_t *ctx,
                      hpt_pa_t gpaddr,
                      size_t requested_sz,
@@ -355,7 +406,17 @@ void nmm_memset_gpaddr(hptw_ctx_t *ctx,
 		set += avail_sz;
 	}
 }
+*/
 
+/*
+ * Access virtual address (va) in context (ctx) in software. Return NULL when
+ * error (e.g. invalid permission).
+ * access_type and cpl are used to check permissions when accessing va.
+ * return value is the physical address that can be accessed by the caller.
+ * requested_sz is the size caller wants to access.
+ * avail_sz is the size available in the same page.
+ * If avail_sz < requested_sz, the caller needs to call this function again.
+ */
 void* hptw_checked_access_va(hptw_ctx_t *ctx,
                              hpt_prot_t access_type,
                              hptw_cpl_t cpl,
@@ -404,6 +465,11 @@ void* hptw_checked_access_va(hptw_ctx_t *ctx,
   return rv;
 }
 
+/*
+ * Memory copy from virtual address (src_va_base) to physical address (dst),
+ * assuming privilege level at (cpl) when reading from source.
+ * Return 0 if successful, 1 if failed.
+ */
 int hptw_checked_copy_from_va(hptw_ctx_t *ctx,
                               hptw_cpl_t cpl,
                               void *dst,
@@ -427,6 +493,11 @@ int hptw_checked_copy_from_va(hptw_ctx_t *ctx,
   return 0;
 }
 
+/*
+ * Memory copy from physical address (src) to virtual address (dst_va_base),
+ * assuming privilege level at (cpl) when writing to destination.
+ * Return 0 if successful, 1 if failed.
+ */
 int hptw_checked_copy_to_va(hptw_ctx_t *ctx,
                             hptw_cpl_t cpl,
                             hpt_va_t dst_va_base,
@@ -450,6 +521,11 @@ int hptw_checked_copy_to_va(hptw_ctx_t *ctx,
   return 0;
 }
 
+/*
+ * Memory copy from virtual address (src_va_base) to virtual address
+ * (dst_va_base), assuming privilege level at (cpl) when reading / writing.
+ * Return 0 if successful, 1 if failed.
+ */
 int hptw_checked_copy_va_to_va(hptw_ctx_t *dst_ctx,
                                hptw_cpl_t dst_cpl,
                                hpt_va_t dst_va_base,
@@ -494,6 +570,11 @@ int hptw_checked_copy_va_to_va(hptw_ctx_t *dst_ctx,
   return rv;
 }
 
+/*
+ * Set memory for virtual address (dst_va_base), assuming privilege level at
+ * (cpl) when reading / writing.
+ * Return 0 if successful, 1 if failed.
+ */
 int hptw_checked_memset_va(hptw_ctx_t *ctx,
                            hptw_cpl_t cpl,
                            hpt_va_t dst_va_base,
