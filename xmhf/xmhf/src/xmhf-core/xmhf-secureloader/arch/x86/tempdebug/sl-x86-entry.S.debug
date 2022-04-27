@@ -1,0 +1,456 @@
+// EMHF secure loader component entry point
+// authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
+
+#include <xmhf.h> 
+
+///--- ALL COMMENTS BEGINNING WITH ///--- ARE RELATED TO JON'S
+///--- EFFORTS TO DEBUG SENTER SUPPORT.  LEAVING THEM IN FOR NOW.
+///--- THEY CAN BE REMOVED ONCE I HARVEST THE USEFUL DEBUG SNIPPETS
+///--- TO ANOTHER LOCATION
+
+///--- .macro OUT2VGA
+///---     movl %ecx, %eax
+///---     rol $8, %eax
+///---     call dumpal
+///---     movl %ecx, %eax
+///---     rol $16, %eax
+///---     call dumpal
+///---     movl %ecx, %eax
+///---     rol $24, %eax
+///---     call dumpal
+///---     movl %ecx, %eax
+///---     call dumpal
+///---     call aspace
+///--- .endm
+
+
+//our C main
+.extern slmain
+
+/* The first 3 pages of the SL serve different purposes depending on
+   whether the system has an AMD or Intel CPU.  On an AMD system, the
+   first four bytes of the first page comprise the SLB Header.  The
+   remainder goes to waste (3*4K-4B).
+
+   On Intel, these first three pages are used as the MLE Page Tables.
+   These are constructed in software with the txt.c:build_mle_pagetable()
+   function.  The AMD header will be clobbered in the process.
+
+   These 3 pages are placed at the very beginning of the SL (byte 0)
+   by our linker script.  Our SL is always padded to 64K in size
+   regardless of the actual size of the code or data.  The linker
+   relocation base for our SL is always 0.  The SL must be position-
+   independent. */
+
+.section .sl_header, "aw"
+    .global _mle_page_table_start
+    _mle_page_table_start:
+
+    .global _sl_header
+    _sl_header:         // AMD-specific header format for Secure Loader Block (SLB).
+    .word _sl_start     // SL entry point relative to header (bits 0-15).
+    .word 0xFFFF        // SL size including the header (bits 16-32),
+                        // i.e, 0 through 65535 inclusive = 64K
+
+
+    // Three 4K pages to hold the "MLE page tables" for an Intel-specific
+    // DRTM using GETSEC[SENTER].  See 2.2.4.1 in Intel MLE
+    // Developer's Guide (Dec. 2009 revision).
+    .align 4096      // remainder of first page
+    
+    .global g_sl_protected_dmabuffer
+    g_sl_protected_dmabuffer:
+	.fill 4096, 1, 0 // second page
+    .fill 4096, 1, 0 // third page
+    .global _mle_page_table_end
+    _mle_page_table_end:
+
+
+.section .text
+    // Make room for MLE header at beginning
+    .global _mle_hdr
+    _mle_hdr:
+    .fill TEMPORARY_MAX_MLE_HEADER_SIZE, 1, 0x90 ///XXX TODO just a guess; should really be sizeof(mle_hdr_t)
+
+    .global _sl_start
+    _sl_start:
+
+///---     // LET'S FIGURE OUT REG VALUES UPON ENTRY INTO MLE (ON INTEL)
+///---     pushl %eax
+///---     pushl %ebx
+///---     pushl %ecx
+///---     pushl %edx
+///---     pushl %edi
+///---     pushl %esi
+///---     pushl %esp
+///---     pushl %ebp
+
+
+    //Get cycle count using rdtsc; useful to evaluate how long DRTM
+    //takes
+#ifndef PERF_CRIT
+    cpuid // Serializing instruction; causes more overhead :(
+    rdtsc
+    pushl %edx
+    pushl %eax
+#endif
+    //save EAX, for AMD and the stub SENTER DRTM this contains the
+    //64K aligned physical memory address where the sl was loaded
+    //    movl %eax, %ebp
+    // AMD leaves base addr in EAX, but Intel does not.  Since both CS and SS
+    // are valid, read and align EIP to discover base addr
+
+    // Figure out our own base address and place into EAX.
+    // On AMD, this value is already in EAX.  However, on Intel
+    // it is not guaranteed to be available (*might* be in ECX;
+    // TODO is to check whether ECX value is reliable on Intel).
+    // Cross-processor solution is call/pop/align.
+    call 1f
+1:  popl %eax // put EIP into EAX
+    andl $0xffff0000, %eax // 64K-align
+    movl %eax, %ebp
+
+    // Other assumptions: common to both Intel and AMD:
+    // EFLAGS_IF=0 (GIF=0 on AMD) so we are running with no interruptions
+    // CR0.PG=0, i.e., paging is off
+
+
+    // Determine processor type to perform some low-level initialization
+    // after DRTM. On AMD CPUs, we need to clear R_INIT, DIS_A20M and
+    // CR_DPD (to enable HDT access) in VM_CR_MSR.
+sl_cpu_vendor:
+        xor    %eax, %eax
+        cpuid
+        cmpl $(INTEL_STRING_DWORD1), %ebx
+        jne sl_cpu_vendor_notintel
+        cmpl $(INTEL_STRING_DWORD2), %edx
+        jne sl_cpu_vendor_notintel
+        cmpl $(INTEL_STRING_DWORD3), %ecx
+        jne sl_cpu_vendor_notintel
+        movl $(CPU_VENDOR_INTEL), %esi
+        jmp sl_cpu_intel
+    sl_cpu_vendor_notintel:
+        cmpl $(AMD_STRING_DWORD1), %ebx
+        jne sl_cpu_vendor_unknown
+        cmpl $(AMD_STRING_DWORD2), %edx
+        jne sl_cpu_vendor_unknown
+        cmpl $(AMD_STRING_DWORD3), %ecx
+        jne sl_cpu_vendor_unknown
+        movl $(CPU_VENDOR_AMD), %esi
+        jmp sl_cpu_amd
+    sl_cpu_vendor_unknown:
+        //this should never happen, but we have a fallback in case
+        ud2
+        hlt
+
+    // If AMD CPU enable a few things that SKINIT disables.
+    // Enable HDT debugging, also clear R_INIT and DIS_A20M.
+    //XXX TODO Disable HDT debugging; represents a security vulnerability
+sl_cpu_amd:
+    movl $(VM_CR_MSR), %ecx
+    rdmsr
+    andl $(~(1<<VM_CR_DPD)), %eax
+    andl $(~(1<<VM_CR_R_INIT)), %eax
+    andl $(~(1<<VM_CR_DIS_A20M)), %eax
+    wrmsr
+
+    movl $(CPU_VENDOR_AMD), %edx
+    jmp sl_cpu_common
+
+sl_cpu_intel:
+    movl $(CPU_VENDOR_INTEL), %edx
+    jmp sl_cpu_common
+
+    // Common code from now on
+sl_cpu_common:
+    // From here on we use EBP as our base and variable accesses will be as offsets
+    // from _sl_header for position independence.
+
+    // Cross-processor challenge:
+    //   1. On AMD CS,SS are valid and DS is not.
+    //   2. On Intel CS,DS are valid and SS is not.
+    //   3. On both, CS is read-only.
+    // Solution:
+    //   1. Read memory using %cs segment-override prefix.
+    //   2. Write memory using %ss and %ds on AMD and Intel, respectively.
+    //      Processor vendor in register EDX from above CPU-specific code.
+
+
+    // Setup GDT so that CS:base=sl base, limit=64K, type=code
+    // DS,SS,ES: base=sl base, limit=64K, type=data
+    // FS and GS: base=0, limit=4G, type=data (FLAT)
+
+    //grab offset of sl_gdt_start
+    movl $(sl_gdt_start), %ebx
+    movl %ebp, %eax              //eax = sl base address
+    movl %ebp, %ecx              //ecx = sl base address
+    andl $0xFF000000, %eax       //eax = bits 24-31 of sl base address
+    andl $0x00FF0000, %ecx       //ecx = bits 16-23 of sl base address
+    shrl $16, %ecx               //bits 0-7 of ecx = bits 16-23 of sl base address
+    orl %ecx, %eax               //bits 0-7 of eax = bits 16-23 of sl base address
+                                 //bits 24-31 of eax = bits 24-31 of sl base address
+                                 //eax is now in accordance with the high 32-bits
+                                 //of a segment descriptor
+
+    // EAX now contains a mask that can be ORed against GDT entries.
+    // It contains [byte 3] [0] [0] [byte 2] of a segment descriptor's base address.
+
+    // Get high 32-bits of 64-bit GDT entry for selector 0x08 (code)
+    // and update it with the base address of the sl.
+    movl %cs:12(%ebp, %ebx), %esi // 12 = 8-byte null descriptor + skip 4 low bytes
+    andl  $0x00FFFF00, %esi       // Mask off any existing base addr bits that are set
+    orl %eax, %esi                // OR in base addr bits computed in EAX
+    // Put the updated entry back in the GDT (processor-specific)
+    cmpl $(CPU_VENDOR_AMD), %edx
+    jne 1f
+    movl %esi, %ss:12(%ebp, %ebx) // AMD
+    jmp 2f
+    1: movl %esi, %ds:12(%ebp, %ebx) // Intel
+    2:
+
+    // Get high 32-bits of 64-bit GDT entry for selector 0x10 (data)
+    // and update it with the base address of the sl.
+    movl %cs:20(%ebp, %ebx), %esi
+    andl $0x00FFFF00, %esi
+    orl %eax, %esi
+    // Put the updated entry back in the GDT (processor-specific)
+    cmpl $(CPU_VENDOR_AMD), %edx
+    jne 1f
+    movl %esi, %ss:20(%ebp, %ebx) // AMD
+    jmp 2f
+    1: movl %esi, %ds:20(%ebp, %ebx) // Intel
+    2:
+
+    // Fixup linear address of GDT pseudo-descriptor using sl load-base.
+    movl $(sl_gdt), %ebx
+    cmpl $(CPU_VENDOR_AMD), %edx
+    jne 1f
+    addl %ebp, %ss:2(%ebp, %ebx) // AMD
+    jmp 2f
+    1: addl %ebp, %ds:2(%ebp, %ebx) // Intel
+    2:
+
+    lgdt %cs:(%ebp,%ebx)
+
+    movl $(sl_gdt), %ebx
+
+///---     // VGA debugging? %ss modifier doesn't work correctly for VGA output
+///---     //goal: dump GDT to screen in hex
+///---     movl $0x0, %esi // all-time VGA offset buffer
+
+///---     call 1f   // 1. dump EIP
+///--- 1:  pop %ecx
+///---     OUT2VGA
+///---     movl $0xdeadbeef, %ecx // 2. useful to help w/ reversing, endian issues, etc
+///---     OUT2VGA
+///---     movl %esp, %ecx // 3. where is the stack?
+///---     OUT2VGA
+///---     movl %ebp, %ecx // 4. print what we're using as base address
+///---     OUT2VGA
+///---     movl %ebx, %ecx // 5. print what we're using as ebx offset
+///---     OUT2VGA
+///---     leal (%ebp, %ebx), %ecx // 6. addr of base of stuff we want to dump
+///---     OUT2VGA
+
+///---     // GDT pseudo-descriptor
+///---     movl $0, %ecx
+///---     movw %cs:(%ebp, %ebx), %cx // 7. word of GDT pseudo-descriptor
+///---     OUT2VGA
+///---     movl %cs:2(%ebp, %ebx), %ecx // 8. long of GDT pseudo-descriptor
+///---     OUT2VGA
+
+///---     // GDT itself
+///---     movl  $(sl_gdt_start), %ebx
+///---     movl %cs:(%ebp, %ebx), %ecx // 9.
+///---     OUT2VGA
+///---     movl %cs:4(%ebp, %ebx), %ecx // 10.
+///---     OUT2VGA
+///---     movl %cs:8(%ebp, %ebx), %ecx // 11.
+///---     OUT2VGA
+///---     movl %cs:12(%ebp, %ebx), %ecx // 12.
+///---     OUT2VGA
+///---     movl %cs:16(%ebp, %ebx), %ecx // 13.
+///---     OUT2VGA
+///---     movl %cs:20(%ebp, %ebx), %ecx // 14.
+///---     OUT2VGA
+///---     movl %cs:24(%ebp, %ebx), %ecx // 15.
+///---     OUT2VGA
+///---     movl %cs:28(%ebp, %ebx), %ecx // 16.
+///---     OUT2VGA
+
+///---     popl %ecx              // 17
+///---     OUT2VGA
+///---     popl %ecx              // 18
+///---     OUT2VGA
+///---     popl %ecx              // 19
+///---     OUT2VGA
+///---     popl %ecx              // 20
+///---     OUT2VGA
+///---     popl %ecx              // 21
+///---     OUT2VGA
+///---     popl %ecx              // 22
+///---     OUT2VGA
+///---     popl %ecx              // 23
+///---     OUT2VGA
+///---     popl %ecx              // 24
+///---     OUT2VGA
+///--- //1:            jmp 1b // HANG FOR NOW; WE WANT TO SEE SCREEN
+
+
+    // Far jump to reload %cs
+    jmpl $0x08, $(sl_startnew)
+
+    // We start here with our new GDT CS selector
+sl_startnew:
+	// cpu vendor is in edx, move it into esi in case PERF_CRIT
+	// is not definied, the following block will clobber edx
+	movl	%edx, %esi
+
+#ifndef PERF_CRIT
+    // we are switching stacks so we need to save our performance
+    // measurements in registers and then push them onto the new stack              
+    popl %eax
+    popl %edx              
+#endif
+              
+    // Load new segment selectors for DS, SS and ES
+    movw $0x10, %bx // XXX TODO Get rid of magic number
+    movw %bx, %ds
+    movw %bx, %es
+    movw %bx, %ss
+
+    // Load 4G flat selectors for FS and GS (used for TPM and TXT reg access)
+    movw $0x18, %bx
+    movw %bx, %fs
+    movw %bx, %gs
+
+    // Setup ESP to top of 64K (it will already be there on AMD)
+    movl $0x10000, %esp // XXX TODO Get rid of magic number
+
+/*#ifdef __INIT_LATE__
+    //setup 115200,8n1 on ttyS0 
+    call raw_serial_init
+    mov $0x3fd, %edx // control register for com1
+1:  in (%dx), %al    // read status into AL
+    test $0x20, %al  // check for ready
+    je 1b            // keep trying
+    mov $0x3f8, %edx // data register for com1
+    mov $0x40, %al   // output an @ character
+    out %al, (%dx)
+#endif*/
+
+
+#ifndef PERF_CRIT
+    // push measurements onto the new stack
+    pushl %edx
+    pushl %eax              
+#else
+    pushl $0x00000000
+    pushl $0x00000000
+#endif
+              
+    pushl %ebp			//SL base address
+    pushl %esi			//cpu vendor
+    call slmain
+
+    // We should never get here
+    spinforever:
+        jmp spinforever
+    hlt
+
+///--- //-- DEBUG STUFF -------------------------------
+///--- aspace:
+///---     movb $0x20, 0xb8000(%esi)
+///---     movb $7, 0xb8001(%esi)
+///---     addl $2, %esi // next character location on screen
+///---     ret
+
+///--- dumpal:
+///---     call  reg2hex
+///---     movb %ah, 0xb8000(%esi) // output ascii char to VGA RAM
+///---     movb $7, 0xb8001(%esi) // white on black
+///---     addl $2, %esi // next character location on screen
+///---     movb %al, 0xb8000(%esi) // output ascii char to VGA RAM
+///---     movb $7, 0xb8001(%esi) // white on black
+///---     addl $2, %esi // next character location on screen
+///---     ret
+
+///--- reg2hex:      //    convert byte in al to ascii equivalent in AX, e.g., 0x12 -> 0x3132
+///---     mov %al, %ah // duplicate byte
+///---     and $0x0f, %al // keep only low nibble
+///---     shr $4, %ah  // shift right to access high nibble
+///---     and $0x0f, %ah // keep only low nibble
+///--- low:
+///---     cmp $0xa, %al
+///---     jge lowletter
+///--- lowdigit:
+///---     add $0x30, %al // convert digit from numerical value to ASCII
+///---     jmp high
+///--- lowletter:
+///---     add $0x57, %al // convert digit from numerical value to ASCII
+
+///--- high:
+///---     cmp $0xa, %ah
+///---     jge highletter
+///--- highdigit:
+///---     add $0x30, %ah
+///---     ret
+///--- highletter:
+///---     add $0x57, %ah // - 0xa + 'a'
+///---     ret
+
+///--- nomoredebug:
+///---     jmp nomoredebug
+///--- //-- END DEBUG STUFF ---------------------------
+
+
+.section .data
+
+    //the secure loader GDT
+    sl_gdt:
+    .word    sl_gdt_end - sl_gdt_start + 1     // XXX WAS PREVIOUSLY -1 !!!
+    .long    sl_gdt_start                      // This will be fixed up to sl load-base
+    .align    16
+    sl_gdt_start:
+    .quad    0x0000000000000000                //0x00: NULL selector
+//    .quad    0x00409a000000ffff              //0x08: 64K CODE selector
+//    .quad    0x004092000000ffff              //0x10: 64K DATA selector
+    .quad    0x00cf9a000000ffff                //0x08: 4G CODE selector with sl load-base
+    .quad    0x00cf92000000ffff                //0x10: 4G DATA selector with sl load-base
+    .quad   0x00cf92000000ffff                 //0x18: 4G DATA selector with zero base
+    .quad    0x0000000000000000                //0x20: NULL selector
+    sl_gdt_end:
+
+
+// sl stack, this is just a placeholder and ensures that the linker
+// actually "allocates" the stack up until 0x10000
+.section .sl_stack
+    .fill 4096, 1, 0
+
+//this section is the input parameter section for the secure loader
+//parameters from "init" are placed here. ordering of the variables
+//MUST match that in include/target.h
+//this section is currently a pagesize in length and resides above
+//the 64K sl image
+//.section .sl_params
+
+//    .global slpb_buffer
+//    slpb_buffer:
+//    .long    SL_PARAMETER_BLOCK_MAGIC                //magic
+//    .long    0                                                                //hashSL
+//    .long 0                                                                //errorHandler
+//    .long 0                                                                //isEarlyInit
+//    .long 0                                                                //numE820Entries
+//    .fill    (SIZE_STRUCT_GRUBE820 * MAX_E820_ENTRIES), 1, 0    //grub E820 map buffer
+//    .long    0                                                                //numCPUEntries
+//    .fill (SIZE_STRUCT_PCPU * MAX_PCPU_ENTRIES), 1, 0    //cpu table buffer
+//    .long 0                                                                //size of the runtime image
+//    .long 0                                                                //guest OS boot module base
+//    .long 0                                                                //guest OS boot module size
+
+
+//----------------------------------------------------------------------
+// DEBUG CODE
+//----------------------------------------------------------------------
+
+

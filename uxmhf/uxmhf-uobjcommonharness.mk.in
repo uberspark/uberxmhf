@@ -1,0 +1,83 @@
+# common makefile for slabs
+# author: amit vasudevan (amitvasudevan@acm.org)
+export srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+
+vpath %.c $(srcdir)
+vpath %.S $(srcdir)
+vpath %.cS $(srcdir)
+vpath %.lscript $(srcdir)
+
+include $(srcdir)/../../uxmhf-common.mk
+
+export XMHF_SLAB_FULLLINK := y
+export XMHF_SLAB_TYPE := @SLABTYPE@
+export XMHF_SLAB_SUBTYPE := @SLABSUBTYPE@
+export XMHF_SLAB_MAIN := slab_main
+
+# populate slab stub type based on the slab type
+ifeq ($(XMHF_SLAB_TYPE), VfT_SLAB)
+
+    ifeq ($(XMHF_SLAB_SUBTYPE), SENTINEL)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), PRIME)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_vft.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), UAPI)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_vft.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), INIT)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_vft.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), EXCEPTION)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_vft.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), INTERCEPT)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_vft.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XCORE)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_vft.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_vft.o
+    #else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
+    #    XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_vft.o
+    else
+        #unsupported slab sub-type
+        XMHF_SLAB_STUBOBJECTS :=
+    endif
+
+
+else ifeq ($(XMHF_SLAB_TYPE), uVT_SLAB)
+
+
+    ifeq ($(XMHF_SLAB_SUBTYPE), INIT)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_uvt.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XCORE)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_uvt.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_uvt.o
+    #else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
+    #    XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_uvtg.o
+    else
+        #unsupported slab sub-type
+        XMHF_SLAB_STUBOBJECTS :=
+    endif
+
+
+else ifeq ($(XMHF_SLAB_TYPE), uVU_SLAB)
+
+
+    ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_uvu.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
+        XMHF_SLAB_STUBOBJECTS := $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabmapdef.o $(XMHF_OBJDIR)/uobjinfotable.o $(USPARK_INSTALL_LIBSDIR)/xmhfgeec_slabstubs_uvug.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XRICHGUEST)
+        XMHF_SLAB_STUBOBJECTS := 
+    else
+        #unsupported slab sub-type
+        XMHF_SLAB_STUBOBJECTS :=
+    endif
+
+
+else
+
+    #unsupported slab type
+    XMHF_SLAB_STUBOBJECTS :=
+
+endif
+
+

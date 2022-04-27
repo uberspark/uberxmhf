@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: tv_utpm
+Description: Micro-TPM used with TrustVisor
+Requires: trustvisor
+Version: 0.1
+Libs: -L${libdir} -ltv_utpm
+Cflags: -I${includedir}/trustvisor
