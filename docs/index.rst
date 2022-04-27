@@ -48,6 +48,13 @@ framework and associated components.
 
 .. toctree::
    :maxdepth: 2
+   :caption: PC Intel x86 64-bit:
+
+   pc-intel-x86_64/difference
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: Raspberry Pi3 ARMv8 32-bit:
 
    rpi3-cortex_a53-armv8_32/hw-requirements
