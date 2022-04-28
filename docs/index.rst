@@ -50,7 +50,7 @@ framework and associated components.
    :maxdepth: 2
    :caption: PC Intel x86 64-bit:
 
-   pc-intel-x86_64/difference
+   pc-intel-x86_64/introduction
    pc-intel-x86_64/hw-requirements
    pc-intel-x86_64/supported-os
    pc-intel-x86_64/build
