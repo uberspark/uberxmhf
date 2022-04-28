@@ -33,9 +33,9 @@ On 64-bit Debian, you will also need to install 32-bit libraries:
 
 .. code-block:: bash
 
-   aptitude install crossbuild-essential-i386
+   aptitude install build-essential crossbuild-essential-i386
 
-On 32-bit platforms, to compile XMHF in 64-bit, install 64-bit cross compiler:
+On 32-bit Debian, to compile XMHF in 64-bit, install 64-bit cross compiler:
 
 .. code-block:: bash
 
@@ -68,8 +68,8 @@ for tee-sdk and PAL development is having successfully run
 How do I build a uberXMHF (pc-intel-x86_64) uberapp?
 -----------------------------------------------------
 
-The method for building different uberapps (e.g., TrustVisor,
-Lockdown) is by specifying which uberapp to build using ``./configure``.
+The method for building different uberapps (e.g., TrustVisor) is by specifying
+which uberapp to build using ``./configure``.
 The following describes the sequence of steps for building a 
 uberXMHF (pc-intel-x86_64) uberapp using the helloworld 
 uberapp as a running example.

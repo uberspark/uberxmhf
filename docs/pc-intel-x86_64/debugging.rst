@@ -9,15 +9,15 @@ Terminology
 
 
 * ``host system`` -- system where the serial log is collected and examined.
-* ``target system`` -- system where uberXMHF (pc-legacy-x86_32) runs and 
+* ``target system`` -- system where uberXMHF (pc-intel-x86_64) runs and 
   ouputs debug information via the serial port.
 
 Debugging Setup
 ---------------
 
-uberXMHF (pc-legacy-x86_32) debugging is done primarily via the serial port.
-See :doc:`Installing uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/installing>` for how to pass serial
-port configuration parameters to uberXMHF (pc-legacy-x86_32). 
+uberXMHF (pc-intel-x86_64) debugging is done primarily via the serial port.
+See :doc:`Installing uberXMHF (pc-intel-x86_64) </pc-intel-x86_64/installing>` for how to pass serial
+port configuration parameters to uberXMHF (pc-intel-x86_64). 
 You can use ``dmesg | grep ttyS`` on a Linux guest OS on the target 
 system to examine the serial ports that the target system recognizes.
 
@@ -37,7 +37,7 @@ Serial Debuging without AMT
 
 * 
   On the ``target system`` ensure that you pass the correct serial port
-  configuration parameters to uberXMHF (pc-legacy-x86_32) (see :doc:`Installing uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/installing>`\ ).
+  configuration parameters to uberXMHF (pc-intel-x86_64) (see :doc:`Installing uberXMHF (pc-intel-x86_64) </pc-intel-x86_64/installing>`\ ).
   A typical non-AMT configuration parameter will be similar to this: ``serial=115200,8n1,0x3f8``
 
 * 
@@ -88,7 +88,7 @@ probably need a little adaptation on other platforms running AMT.
 
 * 
   On the ``target system`` ensure that you pass the correct serial port
-  configuration parameters to XMHF (see :doc:`Installing uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/installing>`\ ).
+  configuration parameters to XMHF (see :doc:`Installing uberXMHF (pc-intel-x86_64) </pc-intel-x86_64/installing>`\ ).
   A typical AMT serial configuration parameter will be similar to this: ``serial=115200,8n1,0x6080``
 
 * 

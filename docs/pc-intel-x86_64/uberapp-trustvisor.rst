@@ -25,7 +25,7 @@ that can be used to generate subsequent attestations to the isolation
 and execution of individual PALs, leveraging the uTPM.
 
 The implementation of TrustVisor contained herein leverages 
-uberXMHF (pc-legacy-x86_32).\ 
+uberXMHF (pc-intel-x86_64).\ 
 The original design and implementation of TrustVisor is described in:
 
 *TrustVisor: Efficient TCB Reduction and Attestation*. Jonathan
@@ -38,8 +38,8 @@ Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy, May
 Building
 --------
 
-The TrustVisor build is primarily driven from the uberXMHF (pc-legacy-x86_32) build process; 
-see :doc:`Building uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/verify-build>`. When
+The TrustVisor build is primarily driven from the uberXMHF (pc-intel-x86_64) build process; 
+see :doc:`Building uberXMHF (pc-intel-x86_64) </pc-intel-x86_64/build>`. When
 running ``configure`` , you will need to set ``--with-approot=hypapps/trustvisor`` 
 to point to the TrustVisor source code. To install trustvisor
 development headers (for :ref:`teesdk` ), please 
@@ -51,7 +51,7 @@ Installing
 ----------
 
 To *run* TrustVisor on a given machine, installation is similar to that
-of any other hypapp. See :doc:`Installing uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/installing>`.
+of any other hypapp. See :doc:`Installing uberXMHF (pc-intel-x86_64) </pc-intel-x86_64/installing>`.
 
 Note that for certain platforms (e.g., HP EliteBook 2540p), if the TPM locality
 are not properly configured, trustvisor crashes at startup when attempting to 

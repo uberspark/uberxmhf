@@ -48,6 +48,17 @@ framework and associated components.
 
 .. toctree::
    :maxdepth: 2
+   :caption: Raspberry Pi3 ARMv8 32-bit:
+
+   rpi3-cortex_a53-armv8_32/hw-requirements
+   rpi3-cortex_a53-armv8_32/supported-os
+   rpi3-cortex_a53-armv8_32/build/intro.rst
+   rpi3-cortex_a53-armv8_32/installing
+   rpi3-cortex_a53-armv8_32/debugging
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: PC Intel x86 64-bit:
 
    pc-intel-x86_64/introduction
@@ -57,18 +68,6 @@ framework and associated components.
    pc-intel-x86_64/installing   
    pc-intel-x86_64/debugging
    pc-intel-x86_64/uberapp-trustvisor
-   pc-intel-x86_64/uberapp-lockdown
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Raspberry Pi3 ARMv8 32-bit:
-
-   rpi3-cortex_a53-armv8_32/hw-requirements
-   rpi3-cortex_a53-armv8_32/supported-os
-   rpi3-cortex_a53-armv8_32/build/intro.rst
-   rpi3-cortex_a53-armv8_32/installing
-   rpi3-cortex_a53-armv8_32/debugging
 
 
 .. toctree::

@@ -41,7 +41,7 @@ Building and Installing uberXMHF (pc-intel-x86_64) binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you haven't already built and installed uberXMHF (pc-intel-x86_64), 
-see :doc:`Building uberXMHF (pc-intel-x86_64) </pc-intel-x86_64/verify-build>`
+see :doc:`Building uberXMHF (pc-intel-x86_64) </pc-intel-x86_64/build>`
 
 Booting sequence
 ^^^^^^^^^^^^^^^^
