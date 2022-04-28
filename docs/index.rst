@@ -53,7 +53,7 @@ framework and associated components.
    pc-intel-x86_64/difference
    pc-intel-x86_64/hw-requirements
    pc-intel-x86_64/supported-os
-   pc-intel-x86_64/verify-build
+   pc-intel-x86_64/build
    pc-intel-x86_64/installing   
    pc-intel-x86_64/debugging
    pc-intel-x86_64/uberapp-trustvisor

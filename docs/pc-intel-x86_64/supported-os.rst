@@ -4,16 +4,23 @@
 Supported OS
 ============
 
-In principle, any 32-bit guest operating system should be supported so 
-long as it:
+In principle, any guest operating system should work, as long as it:
 
+*
+  Uses 32-bit paging / PAE paging / 4-level paging (5-level paging is not
+  supported).
+*
+  Does not require hardware virtualization features, does not require TPM.
+*
+  Is stored in a MBR disk and booted by BIOS (GPT partition and EFI are not
+  supported).
 
-* Uses 'normal' 32-bit page tables. PAE is also supported on
-  AMD. 
+The following OS are known to work:
 
-The following guest OSes are known to work:
-
-
-* Ubuntu 12.04 LTS with kernel 3.2.0-27-generic and below
+* Ubuntu 12.04 LTS
+* Debian 11 with kernel 5.10.0-9
+* Fedora 35
 * Windows XP
-* Windows Server 2003
+* Windows 7
+* Windows 8.1
+* Windows 10
