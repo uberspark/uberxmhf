@@ -60,7 +60,8 @@ def generate_xmhf_image(args):
 	assert not os.path.exists(grub_dir)
 	os.mkdir(grub_dir)
 
-	ext4_size_mb = 127
+	# As of writing test3.py, GRUB uses less than 4M, XMHF uses less than 1M.
+	ext4_size_mb = 7
 
 	# Construct ext4
 	b_img = os.path.join(grub_dir, 'b.img')
@@ -100,9 +101,9 @@ def generate_xmhf_image(args):
 	check_call(['dd', 'if=/dev/zero', 'of=%s' % c_img, 'bs=1M',
 				'seek=%d' % (ext4_size_mb + 1), 'count=0'])
 	check_call(['dd', 'if=%s' % a_img, 'of=%s' % c_img, 'conv=sparse,notrunc',
-				'bs=1M', 'count=1'])
+				'bs=512', 'count=1M', 'iflag=count_bytes'])
 	check_call(['dd', 'if=%s' % b_img, 'of=%s' % c_img, 'conv=sparse,notrunc',
-				'bs=1M', 'seek=1'])
+				'bs=512', 'seek=1M', 'oflag=seek_bytes'])
 	return c_img
 
 def spawn_qemu(args, xmhf_img, serial_file, ssh_port):
