@@ -70,22 +70,23 @@ def generate_xmhf_image(args):
 	check_call(['/sbin/mkfs.ext4', b_img])
 	debugfs_cmds = []
 	debugfs_cmds.append('mkdir boot')
-	debugfs_cmds.append('mkdir boot/grub')
-	debugfs_cmds.append('mkdir boot/grub/i386-pc')
-	debugfs_cmds.append('write %s boot/grub/grub.cfg' %
-						os.path.join(args.boot_dir, 'grub/grub.cfg'))
-	mods_dir = os.path.join(os.path.join(args.boot_dir, 'grub/i386-pc/'))
-	for i in os.listdir(mods_dir):
-		debugfs_cmds.append('write %s boot/grub/i386-pc/%s' %
-							(os.path.join(mods_dir, i), i))
+	debugfs_cmds.append('cd boot')
 	for i in ['init-x86-%s.bin', 'hypervisor-x86-%s.bin.gz']:
 		name = i % args.subarch
 		src_pathname = os.path.join(args.xmhf_bin, name)
-		dst_pathname = os.path.join('boot', name)
-		debugfs_cmds.append('write %s %s' % (src_pathname, dst_pathname))
+		debugfs_cmds.append('write %s %s' % (src_pathname, name))
+	debugfs_cmds.append('mkdir grub')
+	debugfs_cmds.append('cd grub')
+	debugfs_cmds.append('write %s grub.cfg' %
+						os.path.join(args.boot_dir, 'grub/grub.cfg'))
 	envfile = 'grubenv-%s' % args.subarch
-	debugfs_cmds.append('write %s boot/grub/grubenv' %
+	debugfs_cmds.append('write %s grubenv' %
 						os.path.join(args.boot_dir, envfile))
+	debugfs_cmds.append('mkdir i386-pc')
+	debugfs_cmds.append('cd i386-pc')
+	mods_dir = os.path.join(os.path.join(args.boot_dir, 'grub/i386-pc/'))
+	for i in os.listdir(mods_dir):
+		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))
 	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
 	print(*debugfs_cmds, sep='\n')
 	print(*debugfs_cmds, sep='\n', file=open(cmd_file, 'w'))
