@@ -7,7 +7,8 @@
  * * ./tmp/: temporary directory for testing script
  * * ./.github/build.sh: script to build XMHF in one line
  * * ./.jenkins/Jenkinsfile: this file
- * * ./.jenkins/test2.py: test script, was bug_063/test2.py in notes
+ * * ./.jenkins/test3.py: test script
+ * * ./.jenkins/boot: files to construct a minimal GRUB
  * * ./.jenkins/download.sh: download QEMU images from Google Drive
  */
 
@@ -26,7 +27,7 @@ void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
                         -F qcow2 ${PWD}/qemu/${qemu_image}
     """
     sh """
-        python3 -u ./.jenkins/test2.py \
+        python3 -u ./.jenkins/test3.py \
             --subarch ${subarch} \
             --qemu-image ${PWD}/qemu/${qemu_image} \
             --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
@@ -35,6 +36,7 @@ void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
             --work-dir ${PWD}/tmp/ \
             --no-display \
             --verbose \
+            --boot-dir ${PWD}/.jenkins/boot \
             --watch-serial
     """
 }
