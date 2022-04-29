@@ -86,14 +86,13 @@ def generate_xmhf_image(args):
 	envfile = 'grubenv-%s' % args.subarch
 	debugfs_cmds.append('write %s boot/grub/grubenv' %
 						os.path.join(args.boot_dir, envfile))
+	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
 	print(*debugfs_cmds, sep='\n')
-	popen_stdout_stderr = { 'stdout': -1, 'stderr': -1 }
+	print(*debugfs_cmds, sep='\n', file=open(cmd_file, 'w'))
+	popen_stdout = { 'stdout': -1 }
 	if args.verbose:
-		del popen_stdout_stderr['stderr']
-		del popen_stdout_stderr['stdout']
-	p = Popen(['/sbin/debugfs', '-w', b_img], stdin=-1, **popen_stdout_stderr)
-	p.communicate(('\n'.join(debugfs_cmds) + '\n').encode())
-	assert p.returncode == 0
+		del popen_stdout['stdout']
+	check_call(['/sbin/debugfs', '-w', b_img, '-f', cmd_file], **popen_stdout)
 
 	# Concat to c.img
 	a_img = os.path.join(args.boot_dir, 'a.img')
