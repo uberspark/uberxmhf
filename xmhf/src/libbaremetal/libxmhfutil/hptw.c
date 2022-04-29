@@ -358,57 +358,6 @@ void* hptw_access_va(hptw_ctx_t *ctx,
 }
 
 /*
-// Note: this function may be wrong: when gpaddr = 0x12345678, this function
-// may return 0xabcde000, instead of 0xabcde678. However, this hypothesis has
-// not been tested yet.
-void* nmm_access_gpaddr(hptw_ctx_t *ctx,
-                     hpt_pa_t gpaddr,
-                     size_t requested_sz,
-                     size_t *out_avail_sz)
-{
-	hpt_pmeo_t pmeo;
-	size_t avail_sz;
-	void* ptr;
-	hpt_pa_t spa = 0;
-
-	hptw_get_pmeo(&pmeo, ctx, 1, gpaddr);
-	avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, gpaddr));
-	spa = hpt_pmeo_get_address(&pmeo);
-
-	ptr = ctx->pa2ptr(ctx, spa,
-	                 avail_sz, HPT_PROTS_R | HPT_PROTS_W | HPT_PROTS_X, HPTW_CPL0, &avail_sz);
-
-	if(out_avail_sz)
-		*out_avail_sz = avail_sz;
-
-	return ptr;
-}
-
-// [New MM API] memset the destination gpaddr
-// [NOTE] We should use nmm_* as much as possible, because
-// the original mm code in XMHF assume gpaddr = spaddr, which is not
-// always true.
-void nmm_memset_gpaddr(hptw_ctx_t *ctx,
-                     hpt_pa_t dst_pa_base,
-                     int c,
-                     size_t len)
-{
-	void* ptr;
-	size_t avail_sz = 0;
-	size_t set=0;
-
-	while(set < len)
-	{
-		hpt_pa_t dst_pa = dst_pa_base + set;
-		ptr = nmm_access_gpaddr(ctx, dst_pa, (len - set), &avail_sz);
-		memset(ptr, c, avail_sz);
-
-		set += avail_sz;
-	}
-}
-*/
-
-/*
  * Access virtual address (va) in context (ctx) in software. Return NULL when
  * error (e.g. invalid permission).
  * access_type and cpl are used to check permissions when accessing va.
