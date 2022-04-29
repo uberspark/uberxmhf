@@ -63,7 +63,7 @@ jobs:
             qemu-img create -f qcow2 -b ${PWD}/qemu/${qemu_image_back} \
                             -F qcow2 ${PWD}/qemu/${qemu_image}
             sha512sum ${PWD}/qemu/${qemu_image_back}
-            python3 -u ./.jenkins/test2.py \
+            python3 -u ./.jenkins/test3.py \
                 --subarch ${SUBARCH} \
                 --qemu-image ${PWD}/qemu/${qemu_image} \
                 --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
@@ -72,6 +72,7 @@ jobs:
                 --work-dir ${PWD}/tmp/ \
                 --no-display \
                 --verbose \
+                --boot-dir ${PWD}/.jenkins/boot \
                 --watch-serial \
                 --smp 2
 
