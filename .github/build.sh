@@ -5,6 +5,7 @@
 #   --drt: enable DRT (--disable-drt)
 #   --dmap: enable DMAP (--disable-dmap)
 #   --no-dbg: do not use QEMU debug workarounds (--enable-debug-qemu)
+#   --no-ucode: disable Intel microcode update (--enable-update-intel-ucode)
 #   --app APP: set hypapp, default is "hypapps/trustvisor" (--with-approot)
 #   --mem MEM: if amd64, set physical memory, default is 0x140000000 (5GiB)
 #   release: equivalent to --drt --dmap --no-dbg (For GitHub actions)
@@ -26,6 +27,7 @@ SUBARCH=""
 DRT="n"
 DMAP="n"
 QEMU="y"
+UCODE="y"
 AMD64MEM="0x140000000"
 DRY_RUN="n"
 CIRCLE_CI="n"
@@ -78,6 +80,9 @@ while [ "$#" -gt 0 ]; do
 			;;
 		--no-dbg)
 			QEMU="n"
+			;;
+		--no-ucode)
+			UCODE="n"
 			;;
 		--app)
 			APPROOT="$2"
@@ -151,6 +156,10 @@ fi
 
 if [ "$QEMU" == "y" ]; then
 	CONF+=("--enable-debug-qemu")
+fi
+
+if [ "$UCODE" == "y" ]; then
+	CONF+=("--enable-update-intel-ucode")
 fi
 
 if [ "$OPT" == "O3" ]; then
