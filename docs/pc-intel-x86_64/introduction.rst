@@ -47,6 +47,7 @@ Compared to XMHF, the main features of XMHF-64 are
 * Support DMAP in Intel
 * Allow the guest OS to change MTRR
 * Support x2APIC
+* Support Intel microcode update
 
 Bugs
 ----

@@ -183,6 +183,9 @@ Recommended arguments
 	  has more physical memory than this value, XMHF will halt. This
 	  configuration is ignored in i386 XMHF
 
+*
+  --enable-update-intel-ucode, allows the guest to perform microcode update
+
 Other arguments
 ^^^^^^^^^^^^^^^
 
