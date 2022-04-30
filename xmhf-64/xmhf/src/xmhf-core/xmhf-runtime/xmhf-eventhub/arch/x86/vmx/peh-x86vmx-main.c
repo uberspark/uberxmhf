@@ -119,8 +119,15 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	if (old_eax == 0x1) {
 		/* Clear VMX capability */
 		r->ecx &= ~(1U << 5);
-		/* Set Hypervisor Present */
+#ifndef __UPDATE_INTEL_UCODE__
+		/*
+		 * Set Hypervisor Present bit.
+		 * Fedora 35's AP will retry updating Intel microcode forever if the
+		 * update fails. So we set the hypervisor present bit to solve this
+		 * problem.
+		 */
 		r->ecx |= (1U << 31);
+#endif /* !__UPDATE_INTEL_UCODE__ */
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
@@ -414,8 +421,14 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			}
 			break;
 		case IA32_BIOS_UPDT_TRIG:
+#ifdef __UPDATE_INTEL_UCODE__
+			printf("\nCPU(0x%02x): OS tries to write microcode!", vcpu->id);
+			printf("\ngva for microcode update: 0x%016llx", write_data);
+			handle_intel_ucode_update(vcpu, write_data);
+#else /* !__UPDATE_INTEL_UCODE__ */
 			printf("\nCPU(0x%02x): OS tries to write microcode, ignore",
 					vcpu->id);
+#endif /* __UPDATE_INTEL_UCODE__ */
 			break;
 		case IA32_X2APIC_ICR:
 			if (xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(vcpu, r) == 0) {
