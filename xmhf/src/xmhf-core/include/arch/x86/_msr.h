@@ -193,6 +193,7 @@
 #define IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER        0x8000
 
 // Intel Microcode related
+#define IA32_PLATFORM_ID        0x17
 #define IA32_BIOS_UPDT_TRIG     0x79
 #define IA32_BIOS_SIGN_ID       0x8b
 

@@ -86,6 +86,9 @@ extern u32 rdmsr_safe(struct regs *r);
 //----------------------------------------------------------------------
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
+#ifdef __UPDATE_INTEL_UCODE__
+void handle_intel_ucode_update(VCPU *vcpu, u64 update_data);
+#endif /* __UPDATE_INTEL_UCODE__ */
 
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES

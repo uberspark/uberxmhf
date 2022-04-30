@@ -49,6 +49,7 @@ export TARGET_SUBARCH := @TARGET_SUBARCH@
 export AMD64_MAX_PHYS_ADDR := @AMD64_MAX_PHYS_ADDR@
 export OPT_FLAGS := @OPT_FLAGS@
 export OPTIMIZE_NESTED_VIRT := @OPTIMIZE_NESTED_VIRT@
+export UPDATE_INTEL_UCODE := @UPDATE_INTEL_UCODE@
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -232,6 +233,11 @@ endif
 ifeq ($(OPTIMIZE_NESTED_VIRT), y)
 	CFLAGS += -D__OPTIMIZE_NESTED_VIRT__
 	VFLAGS += -D__OPTIMIZE_NESTED_VIRT__
+endif
+
+ifeq ($(UPDATE_INTEL_UCODE), y)
+	CFLAGS += -D__UPDATE_INTEL_UCODE__
+	VFLAGS += -D__UPDATE_INTEL_UCODE__
 endif
 
 ifeq ($(NESTED_PAGING), y)

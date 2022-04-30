@@ -99,6 +99,16 @@ AS_IF([test "x${enable_optimize_nested_virt}" != "xno"],
       [OPTIMIZE_NESTED_VIRT=y],
       [OPTIMIZE_NESTED_VIRT=n])
 
+# Support for updating Intel microcode (a.k.a. ucode)
+AC_SUBST([UPDATE_INTEL_UCODE])
+AC_ARG_ENABLE([update_intel_ucode],
+        AS_HELP_STRING([--enable-update-intel-ucode@<:@=yes|no@:>@],
+                [enable support for updating Intel microcode]),
+                , [enable_update_intel_ucode=no])
+AS_IF([test "x${enable_update_intel_ucode}" != "xno"],
+      [UPDATE_INTEL_UCODE=y],
+      [UPDATE_INTEL_UCODE=n])
+
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
 AC_ARG_ENABLE([debug_serial],
