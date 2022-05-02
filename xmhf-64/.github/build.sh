@@ -86,11 +86,11 @@ while [ "$#" -gt 0 ]; do
 			;;
 		--app)
 			APPROOT="$2"
-			shift 2
+			shift
 			;;
 		--mem)
 			AMD64MEM="$2"
-			shift 2
+			shift
 			;;
 		release)
 			# For GitHub actions
