@@ -333,13 +333,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	#endif
 
 		//fix TSS descriptor, 18h
-#ifdef __AMD64__
 		t= (TSSENTRY *)((hva_t)(hva2sla((void *)gdt_base)) + __TRSEL );
-#elif defined(__I386__)
-		t= (TSSENTRY *)((hva_t)gdt_base + __TRSEL );
-#else /* !defined(__I386__) && !defined(__AMD64__) */
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) && !defined(__AMD64__) */
 		t->attributes1= 0x89;
 		t->limit16_19attributes2= 0x10;
 #ifdef __AMD64__
