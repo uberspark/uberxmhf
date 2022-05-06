@@ -3,3 +3,7 @@ and tests it in QEMU.
 
 This folder is currently under development.
 
+Note: the following binary files are removed temporarily:
+* boot/a.img
+* boot/grub/i386-pc/*
+
