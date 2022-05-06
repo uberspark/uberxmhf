@@ -4,6 +4,9 @@
 Installing
 ==========
 
+This section covers installing XMHF. The instructions for real hardware and
+QEMU are the same.
+
 Prerequisites
 -------------
 

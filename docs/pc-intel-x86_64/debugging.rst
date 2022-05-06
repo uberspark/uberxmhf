@@ -4,8 +4,11 @@
 Debugging
 =========
 
+Debugging in real hardware
+--------------------------
+
 Terminology
------------
+^^^^^^^^^^^
 
 
 * ``host system`` -- system where the serial log is collected and examined.
@@ -13,7 +16,7 @@ Terminology
   ouputs debug information via the serial port.
 
 Debugging Setup
----------------
+^^^^^^^^^^^^^^^
 
 uberXMHF (pc-intel-x86_64) debugging is done primarily via the serial port.
 See :doc:`Installing uberXMHF (pc-intel-x86_64) </pc-intel-x86_64/installing>` for how to pass serial
@@ -106,3 +109,51 @@ probably need a little adaptation on other platforms running AMT.
     Connect to the ``target system`` by using the following command: ``./amtterm 192.168.0.2 -p 'YourAMTpassword' | tee output-log.txt``. 
     Note: you may have to bring up the ethernet interface on the ``host system`` prior to issuing the above command. This can be done
     via ``sudo ifconfig eth0 192.168.0.1`` (assuming the ``host system`` IP is ``192.168.0.1``\ ).
+
+Debugging in QEMU
+-----------------
+
+Print debugging
+^^^^^^^^^^^^^^^
+
+Print debugging in QEMU is similar to real hardware. QEMU supports serial port
+using the ``-serial`` argument. For example, ``-serial stdio`` prints the
+serial output to the terminal. ``-serial file:FILENAME`` redirects the serial
+output to ``FILENAME``.
+
+GDB debugging
+^^^^^^^^^^^^^
+
+QEMU can act as a debug server, which accepts GDB as a client. Use
+``-gdb tcp::1234`` to let QEMU listen to port 1234, then use the GDB command
+``target remote :::1234`` to connect to QEMU.
+
+When building XMHF, ``--enable-debug-symbols`` should be used during configure
+to add symbol tables to the built ELF files.
+
+XMHF has a number of memory spaces, but GDB does not recognize memory spaces.
+So when a memory space changes, the symbol file need to be changed. Use the GDB
+command ``symbol-file`` to change symbol files.
+
+*
+  XMHF bootloader:
+  ``symbol-file xmhf/src/xmhf-core/xmhf-bootloader/init_syms.exe``
+  (paging not enabled, so physical address = virtual address)
+*
+  XMHF secureloader 1:
+  ``symbol-file -o 0x10000000 xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe``
+  (physical address = virtual address, this only happens when entering /
+  leaving secureloader)
+*
+  XMHF secureloader 2:
+  ``symbol-file -o 0 xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe``
+  (physical address = virtual address + ``__TARGET_BASE_SL``, this happens
+  during the C part of secureloader)
+*
+  XMHF runtime:
+  ``symbol-file xmhf/src/xmhf-core/xmhf-runtime/runtime.exe``
+  (physical address = virtual address)
+*
+  Guest OS: e.g. Linux may use
+  ``symbol-file usr/lib/debug/boot/vmlinux-5.10.0-10-amd64``
+
