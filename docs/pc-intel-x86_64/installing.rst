@@ -19,6 +19,49 @@ Operating Systems </pc-intel-x86_64/supported-os>`\ ).
 Lastly, configure your system to boot uberXMHF (pc-intel-x86_64) as 
 described below.
 
+Installing OS
+-------------
+
+You need to install the guest operating system on hardware. The guest operating
+system need to be able to be booted by GRUB.
+
+Installing OS on real hardware
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Many laptops are shipped with pre-installed OS. You can also install your own
+OS. Usually you can write an ISO image to a USB stick, then boot the laptop
+using the USB.
+
+Installing OS on QEMU
+^^^^^^^^^^^^^^^^^^^^^
+
+For this section, there are many alternative tutorials online. For example,
+search for "qemu install iso" in a search engine.
+
+First create a virtual disk called ``a.qcow2``
+
+.. code-block:: bash
+
+   qemu-img create -f qcow2 a.qcow2 32G
+
+Then run QEMU with the installation ISO file (Debian 11 in this example) and
+the disk just created.
+
+.. code-block:: bash
+
+   qemu-system-x86_64 -m 512M \
+       --drive media=cdrom,file=debian-11.1.0-i386-netinst.iso,index=1 \
+       --drive media=disk,file=a.qcow2,index=2 \
+       --enable-kvm -smp 4 -serial stdio -cpu Haswell,vmx=yes
+
+After installing, the cdrom argument is no longer needed.
+
+.. code-block:: bash
+
+   qemu-system-x86_64 -m 512M \
+       --drive media=disk,file=a.qcow2,index=2 \
+       --enable-kvm -smp 4 -serial stdio -cpu Haswell,vmx=yes
+
 Configure target system to boot uberXMHF
 ----------------------------------------
 
