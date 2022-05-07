@@ -54,6 +54,29 @@ def get_port():
 	else:
 		raise RuntimeError('Cannot get port')
 
+def download_grub(args):
+	'Download GRUB to args.boot_dir'
+	mods_dir = os.path.join(os.path.join(args.boot_dir, 'grub/i386-pc/'))
+	if not os.path.exists(mods_dir) or len(os.listdir(mods_dir)) < 284:
+		check_call(['mkdir', '-p', mods_dir])
+		deb_dir = os.path.join(args.work_dir, 'deb')
+		check_call(['rm', '-rf', deb_dir])
+		check_call(['mkdir', '-p', deb_dir])
+		url_dir = 'http://http.us.debian.org/debian/pool/main/g/grub2/'
+		deb_name = 'grub-pc-bin_2.04-20_amd64.deb'
+		check_call(['wget', url_dir + deb_name], cwd=deb_dir)
+		check_call(['ar', 'x', deb_name], cwd=deb_dir)
+		check_call(['tar', 'Jxf', 'data.tar.xz'], cwd=deb_dir)
+		src_dir = os.path.join(deb_dir, 'usr/lib/grub/i386-pc/')
+		count = 0
+		for i in os.listdir(src_dir):
+			if (i.endswith('.mod') or i.endswith('.o') or i.endswith('.lst') or
+				i in ('boot.img', 'core.img', 'modinfo.sh')):
+				check_call(['cp', os.path.join(src_dir, i), mods_dir])
+				count += 1
+		assert count >= 284
+	return mods_dir
+
 def generate_xmhf_image(args):
 	grub_dir = os.path.join(args.work_dir, 'grub')
 	check_call(['rm', '-rf', grub_dir])
@@ -84,11 +107,10 @@ def generate_xmhf_image(args):
 						os.path.join(args.boot_dir, envfile))
 	debugfs_cmds.append('mkdir i386-pc')
 	debugfs_cmds.append('cd i386-pc')
-	mods_dir = os.path.join(os.path.join(args.boot_dir, 'grub/i386-pc/'))
+	mods_dir = download_grub(args)
 	for i in os.listdir(mods_dir):
 		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))
 	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
-	print(*debugfs_cmds, sep='\n')
 	print(*debugfs_cmds, sep='\n', file=open(cmd_file, 'w'))
 	popen_stdout = { 'stdout': -1 }
 	if args.verbose:
