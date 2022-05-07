@@ -128,6 +128,10 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 		 */
 		r->ecx |= (1U << 31);
 #endif /* !__UPDATE_INTEL_UCODE__ */
+#ifdef __OPTIMIZE_NESTED_VIRT__
+		/* Clear x2APIC capability (looks not stable in Circle CI) */
+		r->ecx &= ~(1U << 21);
+#endif /* __OPTIMIZE_NESTED_VIRT__ */
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
