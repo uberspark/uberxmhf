@@ -1,5 +1,7 @@
 # Setting up XMHF64
 
+Note: this file is deprecated. Documents are managed in uberxmhf repo.
+
 ## Introduction
 XMHF64 is branch of XMHF that supports running XMHF in both 32-bit and 64-bit.
 32-bit is called "i386" and 64-bit is called "amd64". This bit width difference
