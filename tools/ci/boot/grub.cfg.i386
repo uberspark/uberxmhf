@@ -1,0 +1,19 @@
+set default="0"
+menuentry_id_option=""
+terminal_input console
+terminal_output console
+set timeout_style=menu
+set timeout=0
+
+set menu_color_normal=cyan/blue
+set menu_color_highlight=white/blue
+
+menuentry "XMHF-i386" {
+	set root='(hd0,msdos1)'		# point to file system for /
+	set kernel='/boot/init-x86-i386.bin'
+	set boot_drive='0x81'	# should point to where grub is installed
+	echo "Loading ${kernel}..."
+	multiboot ${kernel} serial=115200,8n1,0x3f8 boot_drive=${boot_drive}
+	module /boot/hypervisor-x86-i386.bin.gz
+	module --nounzip (hd1)+1	# should point to where grub is installed
+}

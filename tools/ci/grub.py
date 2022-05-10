@@ -63,10 +63,8 @@ def generate_xmhf_image(args):
 	debugfs_cmds.append('mkdir grub')
 	debugfs_cmds.append('cd grub')
 	debugfs_cmds.append('write %s grub.cfg' %
-						os.path.join(args.boot_dir, 'grub/grub.cfg'))
-	envfile = 'grubenv-%s' % args.subarch
-	debugfs_cmds.append('write %s grubenv' %
-						os.path.join(args.boot_dir, envfile))
+						os.path.join(args.boot_dir,
+									'grub.cfg.%s' % args.subarch))
 	debugfs_cmds.append('mkdir i386-pc')
 	debugfs_cmds.append('cd i386-pc')
 	mods_dir = download_grub(args)
