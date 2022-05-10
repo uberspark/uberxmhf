@@ -63,18 +63,21 @@ jobs:
             qemu-img create -f qcow2 -b ${PWD}/qemu/${qemu_image_back} \
                             -F qcow2 ${PWD}/qemu/${qemu_image}
             sha512sum ${PWD}/qemu/${qemu_image_back}
+            python3 -u ./.jenkins/grub.py \
+                --subarch ${SUBARCH} \
+                --xmhf-bin ${PWD}/ \
+                --work-dir ${PWD}/tmp/ \
+                --verbose \
+                --boot-dir ${PWD}/.jenkins/boot
             python3 -u ./.jenkins/test3.py \
                 --subarch ${SUBARCH} \
                 --qemu-image ${PWD}/qemu/${qemu_image} \
                 --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
-                --xmhf-bin ${PWD}/ \
-                --sshpass jkl \
                 --work-dir ${PWD}/tmp/ \
                 --no-display \
+                --sshpass jkl \
                 --verbose \
-                --boot-dir ${PWD}/.jenkins/boot \
-                --watch-serial \
-                --smp 2
+                --watch-serial
 
 workflows:
   test-xmhf-workflow:
