@@ -5,12 +5,12 @@
  * * ./cache/: cache QEMU images
  * * ./qemu/: QEMU work directory
  * * ./tmp/: temporary directory for testing script
- * * ./.github/build.sh: script to build XMHF in one line
- * * ./.jenkins/Jenkinsfile: this file
- * * ./.jenkins/test3.py: test script
- * * ./.jenkins/grub.py: script to generate a minimal GRUB image
- * * ./.jenkins/boot: files to construct a minimal GRUB
- * * ./.jenkins/download.sh: download QEMU images from Google Drive
+ * * ./tools/ci/build.sh: script to build XMHF in one line
+ * * ./tools/ci/Jenkinsfile: this file
+ * * ./tools/ci/test3.py: test script
+ * * ./tools/ci/grub.py: script to generate a minimal GRUB image
+ * * ./tools/ci/boot: files to construct a minimal GRUB
+ * * ./tools/ci/download.sh: download QEMU images from Google Drive
  */
 
 parameters {
@@ -19,7 +19,7 @@ parameters {
 
 void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
     PWD = sh(returnStdout: true, script: 'pwd').trim()
-    sh "./.jenkins/download.sh cache ${qemu_image_back}"
+    sh "./tools/ci/download.sh cache ${qemu_image_back}"
     sh "rm -rf tmp qemu"
     sh "mkdir tmp qemu"
     sh "ln -s ${PWD}/cache/${qemu_image_back} qemu"
@@ -28,15 +28,15 @@ void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
                         -F qcow2 ${PWD}/qemu/${qemu_image}
     """
     sh """
-        python3 -u ./.jenkins/grub.py \
+        python3 -u ./tools/ci/grub.py \
             --subarch ${subarch} \
             --xmhf-bin ${PWD}/ \
             --work-dir ${PWD}/tmp/ \
             --verbose \
-            --boot-dir ${PWD}/.jenkins/boot
+            --boot-dir ${PWD}/tools/ci/boot
     """
     sh """
-        python3 -u ./.jenkins/test3.py \
+        python3 -u ./tools/ci/test3.py \
             --subarch ${subarch} \
             --qemu-image ${PWD}/qemu/${qemu_image} \
             --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
@@ -69,7 +69,7 @@ pipeline {
         stage('Build i386') {
             steps {
                 sh "git clean -Xdf"
-                sh "./.github/build.sh i386"
+                sh "./tools/ci/build.sh i386"
             }
         }
         stage('Test i386') {
@@ -80,7 +80,7 @@ pipeline {
         stage('Build amd64') {
             steps {
                 sh "git clean -Xdf"
-                sh "./.github/build.sh amd64"
+                sh "./tools/ci/build.sh amd64"
             }
         }
         stage('Test amd64') {

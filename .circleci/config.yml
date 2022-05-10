@@ -23,7 +23,7 @@ jobs:
           "
       - run:
           name: "Build"
-          command: "./.github/build.sh << parameters.subarch >> circleci"
+          command: "./tools/ci/build.sh << parameters.subarch >> circleci"
       - run:
           name: "Versions"
           command: |
@@ -47,8 +47,8 @@ jobs:
       - run:
           name: "Download Debian"
           command: |
-            source .circleci/env.sh << parameters.subarch >>
-            .jenkins/download.sh cache ${qemu_image_back}
+            source ./tools/ci/circleci_env.sh << parameters.subarch >>
+            ./tools/ci/download.sh cache ${qemu_image_back}
       - save_cache:
           key: debian11x86x64-20220407-<< parameters.subarch >>
           paths:
@@ -56,20 +56,20 @@ jobs:
       - run:
           name: "Test"
           command: |
-            source .circleci/env.sh << parameters.subarch >>
+            source ./tools/ci/circleci_env.sh << parameters.subarch >>
             rm -rf tmp qemu
             mkdir tmp qemu
             ln -s ${PWD}/cache/${qemu_image_back} qemu
             qemu-img create -f qcow2 -b ${PWD}/qemu/${qemu_image_back} \
                             -F qcow2 ${PWD}/qemu/${qemu_image}
             sha512sum ${PWD}/qemu/${qemu_image_back}
-            python3 -u ./.jenkins/grub.py \
+            python3 -u ./tools/ci/grub.py \
                 --subarch ${SUBARCH} \
                 --xmhf-bin ${PWD}/ \
                 --work-dir ${PWD}/tmp/ \
                 --verbose \
-                --boot-dir ${PWD}/.jenkins/boot
-            python3 -u ./.jenkins/test3.py \
+                --boot-dir ${PWD}/tools/ci/boot
+            python3 -u ./tools/ci/test3.py \
                 --subarch ${SUBARCH} \
                 --qemu-image ${PWD}/qemu/${qemu_image} \
                 --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
