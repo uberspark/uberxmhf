@@ -2,8 +2,8 @@
 	Generate a small MBR image that boots XMHF.
 '''
 
-from subprocess import check_call
-import argparse, os
+from subprocess import Popen, check_call
+import argparse, os, re
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -48,7 +48,7 @@ def generate_xmhf_image(args):
 	# As of writing test3.py, GRUB uses less than 4M, XMHF uses less than 1M.
 	ext4_size_mb = 7
 
-	# Construct ext4
+	# Construct ext4, prepare command file
 	b_img = os.path.join(grub_dir, 'b.img')
 	check_call(['dd', 'if=/dev/zero', 'of=%s' % b_img, 'bs=1M',
 				'seek=%d' % ext4_size_mb, 'count=0'])
@@ -72,10 +72,22 @@ def generate_xmhf_image(args):
 		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))
 	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
 	print(*debugfs_cmds, sep='\n', file=open(cmd_file, 'w'))
-	popen_stdout = { 'stdout': -1 }
+
+	# Run debugfs on debugfs.cmd
+	popen_stdio = { 'stdout': -1, 'stderr': -1 }
 	if args.verbose:
-		del popen_stdout['stdout']
-	check_call(['/sbin/debugfs', '-w', b_img, '-f', cmd_file], **popen_stdout)
+		del popen_stdio['stdout']
+	p = Popen(['/sbin/debugfs', '-w', b_img, '-f', cmd_file], **popen_stdio)
+	debugfs_stdout, debugfs_stderr = p.communicate(b'')
+	assert p.returncode == 0
+	errs = debugfs_stderr.decode().strip()
+	# debugfs will not return non-zero code when error. So we parse stderr to
+	# determine whether an error happens. We assume that when there are no
+	# errors, only a line with version information is printed. For example,
+	# 'debugfs 1.46.3 (27-Jul-2021)\n'
+	if not re.fullmatch('debugfs [^\n]+', errs):
+		print(errs)
+		raise Exception('debugfs likely failed')
 
 	# Concat to c.img
 	a_img = os.path.join(args.boot_dir, 'a.img')
