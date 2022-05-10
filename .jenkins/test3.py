@@ -23,6 +23,7 @@ def parse_args():
 	parser.add_argument('--verbose', action='store_true')
 	parser.add_argument('--watch-serial', action='store_true')
 	parser.add_argument('--skip-reset-qemu', action='store_true')
+	parser.add_argument('--skip-test', action='store_true')
 	parser.add_argument('--boot-dir', required=True,
 						help='Contain /boot and MBR image to generate GRUB')
 	args = parser.parse_args()
@@ -265,6 +266,8 @@ def main():
 	println('Use ssh port', ssh_port)
 	serial_file = os.path.join(args.work_dir, 'serial')
 	xmhf_img = generate_xmhf_image(args)
+	if args.skip_test:
+		return 0
 	p = spawn_qemu(args, xmhf_img, serial_file, ssh_port)
 
 	# Simple workaround to watch serial output
