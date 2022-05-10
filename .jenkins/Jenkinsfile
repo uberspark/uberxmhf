@@ -40,7 +40,6 @@ void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
             --subarch ${subarch} \
             --qemu-image ${PWD}/qemu/${qemu_image} \
             --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
-            --xmhf-bin ${PWD}/ \
             --work-dir ${PWD}/tmp/ \
             --no-display \
             --sshpass jkl \
