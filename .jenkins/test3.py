@@ -192,7 +192,7 @@ def main():
 	ssh_port = get_port()
 	println('Use ssh port', ssh_port)
 	serial_file = os.path.join(args.work_dir, 'serial')
-	xmhf_img = generate_xmhf_image(args)
+	xmhf_img = os.path.join(args.work_dir, 'grub/c.img')
 	p = spawn_qemu(args, xmhf_img, serial_file, ssh_port)
 
 	# Simple workaround to watch serial output

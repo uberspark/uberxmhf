@@ -73,7 +73,6 @@ def generate_xmhf_image(args):
 	for i in os.listdir(mods_dir):
 		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))
 	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
-	print(*debugfs_cmds, sep='\n', file=open(cmd_file, 'w'))
 	popen_stdout = { 'stdout': -1 }
 	if args.verbose:
 		del popen_stdout['stdout']
@@ -90,4 +89,11 @@ def generate_xmhf_image(args):
 				'bs=512', 'seek=1M', 'oflag=seek_bytes'])
 	return c_img
 
+def main():
+	xmhf_img = generate_xmhf_image(args)
+	assert xmhf_img == os.path.join(args.work_dir, 'grub/c.img')
+	return 0
+
+if __name__ == '__main__':
+	exit(main())
 
