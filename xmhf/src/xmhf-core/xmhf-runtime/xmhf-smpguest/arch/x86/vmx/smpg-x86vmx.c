@@ -117,24 +117,36 @@ static u32 have_all_cores_recievedSIPI(void){
 }
 
 //---SIPI processing logic------------------------------------------------------
+// send SIPI to a single CPU
+static void processSIPIcpu(VCPU *vcpu, VCPU *dest_vcpu, u32 icr_low_value) {
+  HALT_ON_ERRORCOND( dest_vcpu != (VCPU *)0 );
+  printf("\nCPU(0x%02x): found AP to pass SIPI; id=0x%02x, vcpu=0x%08x",
+      vcpu->id, dest_vcpu->id, (uintptr_t)dest_vcpu);
+
+  //send the sipireceived flag to trigger the AP to start the HVM
+  if(dest_vcpu->sipireceived){
+    printf("\nCPU(0x%02x): destination CPU #0x%02x has already received SIPI, ignoring",
+            vcpu->id, dest_vcpu->id);
+  }else{
+    dest_vcpu->sipivector = (u8)icr_low_value;
+    dest_vcpu->sipireceived = 1;
+    printf("\nCPU(0x%02x): Sent SIPI command to AP, should awaken it!",
+            vcpu->id);
+  }
+}
+
+//dest_lapic_id is "Destination Field" in ICR (bit 63-56 in XAPIC, bit 63-32 in
+//x2APIC). This is ignored when icr_low_value
 //return 1 if lapic interception has to be discontinued, typically after
 //all aps have received their SIPI, else 0
-static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
-  //we assume that destination is always physical and
-  //specified via top 8 bits of icr_high_value
-  u32 dest_lapic_id;
+static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 dest_lapic_id){
   VCPU *dest_vcpu = (VCPU *)0;
+  int i;
 
-  HALT_ON_ERRORCOND( (icr_low_value & 0x000C0000) == 0x0 );
-
-  dest_lapic_id= icr_high_value >> 24;
-
-  printf("\nCPU(0x%02x): %s, dest_lapic_id is 0x%02x",
-		vcpu->id, __FUNCTION__, dest_lapic_id);
-
-  //find the vcpu entry of the core with dest_lapic_id
-  {
-    int i;
+  if ((icr_low_value & 0x000C0000) == 0x0) {
+    printf("\nCPU(0x%02x): %s, dest_lapic_id is 0x%02x",
+            vcpu->id, __FUNCTION__, dest_lapic_id);
+    //find the vcpu entry of the core with dest_lapic_id
     for(i=0; i < (int)g_midtable_numentries; i++){
       if(g_midtable[i].cpu_lapic_id == dest_lapic_id){
         dest_vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
@@ -142,28 +154,26 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
         break;
       }
     }
-
-    HALT_ON_ERRORCOND( dest_vcpu != (VCPU *)0 );
+    processSIPIcpu(vcpu, dest_vcpu, icr_low_value);
+  } else {
+    // make sure that the IPI is not sending to self
+    HALT_ON_ERRORCOND( (icr_low_value & 0x000C0000) == 0x000C0000 );
+    printf("\nCPU(0x%02x): %s, sending to All Excluding Self",
+            vcpu->id, __FUNCTION__);
+    //send the interrupt to all CPUs but self
+    for(i=0; i < (int)g_midtable_numentries; i++){
+      dest_vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
+      if (dest_vcpu->id == vcpu->id) {
+        continue;
+      }
+      processSIPIcpu(vcpu, dest_vcpu, icr_low_value);
+    }
   }
 
-  printf("\nCPU(0x%02x): found AP to pass SIPI; id=0x%02x, vcpu=0x%08x",
-      vcpu->id, dest_vcpu->id, (uintptr_t)dest_vcpu);
-
-
-  //send the sipireceived flag to trigger the AP to start the HVM
-  if(dest_vcpu->sipireceived){
-    printf("\nCPU(0x%02x): destination CPU #0x%02x has already received SIPI, ignoring", vcpu->id, dest_vcpu->id);
-  }else{
-		dest_vcpu->sipivector = (u8)icr_low_value;
-  	dest_vcpu->sipireceived = 1;
-  	printf("\nCPU(0x%02x): Sent SIPI command to AP, should awaken it!",
-               vcpu->id);
-  }
-
-	if(have_all_cores_recievedSIPI())
-		return 1;	//all cores have received SIPI, we can discontinue LAPIC interception
-	else
-		return 0;	//some cores are still to receive SIPI, continue LAPIC interception
+  if(have_all_cores_recievedSIPI())
+    return 1; //all cores have received SIPI, we can discontinue LAPIC interception
+  else
+    return 0; //some cores are still to receive SIPI, continue LAPIC interception
 }
 
 
@@ -342,7 +352,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 			g_vmx_lapic_db_verification_coreprotected = true;
 			#endif
 		#else
-			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
+			//we assume that destination is always physical and
+			//specified via top 8 bits of icr_high_value
+			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high >> 24);
 		#endif
       }else{
         #ifndef __XMHF_VERIFICATION__
@@ -418,7 +430,7 @@ int xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(VCPU *vcpu, struct re
 		 * x2APIC. The disadvantage is that this only supports 256 LAPIC IDs.
 		 */
 		HALT_ON_ERRORCOND(r->edx <= 0xff);
-		if (processSIPI(vcpu, r->eax, (r->edx << 24))) {
+		if (processSIPI(vcpu, r->eax, r->edx)) {
 			/*
 			 * Ideally the guest should only be using x2APIC and not APIC.
 			 * But we nevertheless delink LAPIC interception.
