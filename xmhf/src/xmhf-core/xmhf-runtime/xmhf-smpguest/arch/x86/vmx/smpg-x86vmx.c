@@ -461,12 +461,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
     /* x2APIC enabled, use it */
     u32 eax = 0x000C0400UL;
     u32 edx = 0xFFFFFFFFUL;
-    u32 send_pending;
     wrmsr(IA32_X2APIC_ICR, eax, edx);
-    do {
-      rdmsr(IA32_X2APIC_ICR, &eax, &edx);
-      send_pending = eax & 0x00001000U;
-    } while (send_pending);
   } else {
     /* use LAPIC */
     volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
