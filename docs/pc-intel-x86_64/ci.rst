@@ -124,8 +124,8 @@ External dependencies
 QEMU images
 ^^^^^^^^^^^
 
-Two QEMU images of Debian are downloaded to run the Jenkins and Circle CI.
-See ``xmhf-64/tools/ci/download.sh`` for details.
+Two QEMU images of Debian are downloaded from Google Drive to run the Jenkins
+and Circle CI. See ``xmhf-64/tools/ci/download.sh`` for details.
 
 * `debian11x86.qcow2 <https://drive.google.com/uc?id=1T1Yw8cBa2zo1fWSZIkry0aOuz2pZS6Tl>`_ is 2.9G
 * `debian11x64.qcow2 <https://drive.google.com/uc?id=1WntdHCKNmuJ5I34xqriokMlSAC3KcqL->`_ is 3.3G
@@ -137,5 +137,5 @@ cached.
 GRUB
 ^^^^
 
-GRUB modules are downloaded from `http://http.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.04-20_amd64.deb <http://http.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.04-20_amd64.deb>`_. (948K)
+GRUB modules are downloaded from Debian's packages mirror at `http://http.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.04-20_amd64.deb <http://http.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.04-20_amd64.deb>`_. (948K)
 
