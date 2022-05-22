@@ -8,6 +8,7 @@
 #   --no-ucode: disable Intel microcode update (--enable-update-intel-ucode)
 #   --app APP: set hypapp, default is "hypapps/trustvisor" (--with-approot)
 #   --mem MEM: if amd64, set physical memory, default is 0x140000000 (5GiB)
+#   --no-x2apic: hide x2APIC to workaround a bug (--enable-hide-x2apic)
 #   release: equivalent to --drt --dmap --no-dbg (For GitHub actions)
 #   debug: ignored (For GitHub actions)
 #   O0: ignored (For GitHub actions)
@@ -31,6 +32,7 @@ UCODE="y"
 AMD64MEM="0x140000000"
 DRY_RUN="n"
 CIRCLE_CI="n"
+NO_X2APIC="n"
 OPT=""
 
 # Determine LINUX_BASE (may not be 100% correct all the time)
@@ -91,6 +93,9 @@ while [ "$#" -gt 0 ]; do
 		--mem)
 			AMD64MEM="$2"
 			shift
+			;;
+		--no-x2apic)
+			NO_X2APIC="y"
 			;;
 		release)
 			# For GitHub actions
@@ -166,6 +171,10 @@ if [ "$OPT" == "O3" ]; then
 	# -Wno-stringop-overflow is set due to a compile bug in GCC 10 / GCC 11
 	# Reported in https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105100
 	CONF+=("--with-opt=-O3 -Wno-stringop-overflow")
+fi
+
+if [ "$NO_X2APIC" == "y" ]; then
+	CONF+=("--enable-hide-x2apic")
 fi
 
 if [ "$CIRCLE_CI" == "y" ]; then

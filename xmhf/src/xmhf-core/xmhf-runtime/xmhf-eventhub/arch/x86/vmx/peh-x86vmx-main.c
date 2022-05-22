@@ -119,6 +119,10 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	if (old_eax == 0x1) {
 		/* Clear VMX capability */
 		r->ecx &= ~(1U << 5);
+#ifndef __HIDE_X2APIC__
+		/* Clear x2APIC capability (not stable in Circle CI and HP 840) */
+		r->ecx &= ~(1U << 21);
+#endif /* !__HIDE_X2APIC__ */
 #ifndef __UPDATE_INTEL_UCODE__
 		/*
 		 * Set Hypervisor Present bit.
@@ -128,10 +132,6 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 		 */
 		r->ecx |= (1U << 31);
 #endif /* !__UPDATE_INTEL_UCODE__ */
-#ifdef __OPTIMIZE_NESTED_VIRT__
-		/* Clear x2APIC capability (looks not stable in Circle CI) */
-		r->ecx &= ~(1U << 21);
-#endif /* __OPTIMIZE_NESTED_VIRT__ */
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
@@ -446,6 +446,9 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			asm volatile ("wrmsr\r\n"
 				: //no outputs
 				:"a"(r->eax), "c" (r->ecx), "d" (r->edx));
+//			asm volatile ("wrmsr\r\n"
+//				: //no outputs
+//				:"a"(r->eax), "c" (r->ecx), "d" (r->edx));
 			break;
 		}
 	}

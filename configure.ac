@@ -89,6 +89,15 @@ AS_IF([test "x${enable_debug_qemu}" != "xno"],
       [DEBUG_QEMU=y],
       [DEBUG_QEMU=n])
 
+AC_SUBST([HIDE_X2APIC])
+AC_ARG_ENABLE([hide_x2apic],
+        AS_HELP_STRING([--enable-hide-x2apic@<:@=yes|no@:>@],
+                [remove x2APIC from CPUID (workaround bug in x2APIC EOI)]),
+                , [enable_hide_x2apic=no])
+AS_IF([test "x${enable_hide_x2apic}" != "xno"],
+      [HIDE_X2APIC=y],
+      [HIDE_X2APIC=n])
+
 # Optimization when running in nested virtualization
 AC_SUBST([OPTIMIZE_NESTED_VIRT])
 AC_ARG_ENABLE([optimize_nested_virt],
