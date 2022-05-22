@@ -67,15 +67,20 @@ Installing prerequisits for XMHF
 Follow :doc:`Building </pc-intel-x86_64/build>`\ to install packages to build
 XMHF (e.g. ``apt-get install build-essential crossbuild-essential-i386``).
 
-We also need to install Python 3 and
-`gdown <https://pypi.org/project/gdown/>`_. First install ``python3-pip`` using
-``apt-get`` (on Debian) or ``dnf`` (on Fedora).
-
-Then install gdown using pip.
+Install extra packages needed by the pipeline:
+Python 3, `gdown <https://pypi.org/project/gdown/>`_, and sshpass. For Fedora,
+change ``apt-get`` below to ``dnf``.
 
 .. code-block:: bash
 
+   sudo apt-get install python3-pip sshpass
    python3 -m pip install gdown
+
+The Jenkins user needs to run KVM. So add it to the ``kvm`` group
+
+.. code-block:: bash
+
+   sudo usermod -aG kvm jenkins
 
 Creating a Pipeline for XMHF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
