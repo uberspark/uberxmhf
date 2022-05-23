@@ -118,6 +118,16 @@ AS_IF([test "x${enable_update_intel_ucode}" != "xno"],
       [UPDATE_INTEL_UCODE=y],
       [UPDATE_INTEL_UCODE=n])
 
+# Support for nested virtualization
+AC_SUBST([NESTED_VIRTUALIZATION])
+AC_ARG_ENABLE([update_intel_ucode],
+        AS_HELP_STRING([--enable-nested-virtualization@<:@=yes|no@:>@],
+                [enable support for updating Intel microcode]),
+                , [enable_nested_virtualization=no])
+AS_IF([test "x${enable_nested_virtualization}" != "xno"],
+      [NESTED_VIRTUALIZATION=y],
+      [NESTED_VIRTUALIZATION=n])
+
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
 AC_ARG_ENABLE([debug_serial],

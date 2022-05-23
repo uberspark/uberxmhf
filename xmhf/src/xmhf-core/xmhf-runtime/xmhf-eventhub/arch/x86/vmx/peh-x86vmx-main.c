@@ -117,8 +117,10 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
           :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
           :"a"(r->eax), "c" (r->ecx));
 	if (old_eax == 0x1) {
+#ifndef __NESTED_VIRTUALIZATION__
 		/* Clear VMX capability */
 		r->ecx &= ~(1U << 5);
+#endif /* !__NESTED_VIRTUALIZATION__ */
 #ifndef __HIDE_X2APIC__
 		/* Clear x2APIC capability (not stable in Circle CI and HP 840) */
 		r->ecx &= ~(1U << 21);

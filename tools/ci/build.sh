@@ -9,6 +9,7 @@
 #   --app APP: set hypapp, default is "hypapps/trustvisor" (--with-approot)
 #   --mem MEM: if amd64, set physical memory, default is 0x140000000 (5GiB)
 #   --no-x2apic: hide x2APIC to workaround a bug (--enable-hide-x2apic)
+#   --nv: enable nested virtualization (--enable-nested-virtualization)
 #   release: equivalent to --drt --dmap --no-dbg (For GitHub actions)
 #   debug: ignored (For GitHub actions)
 #   O0: ignored (For GitHub actions)
@@ -33,6 +34,7 @@ AMD64MEM="0x140000000"
 DRY_RUN="n"
 CIRCLE_CI="n"
 NO_X2APIC="n"
+NV="n"
 OPT=""
 
 # Determine LINUX_BASE (may not be 100% correct all the time)
@@ -96,6 +98,9 @@ while [ "$#" -gt 0 ]; do
 			;;
 		--no-x2apic)
 			NO_X2APIC="y"
+			;;
+		--nv)
+			NV="y"
 			;;
 		release)
 			# For GitHub actions
@@ -179,6 +184,10 @@ fi
 
 if [ "$CIRCLE_CI" == "y" ]; then
 	CONF+=("--enable-optimize-nested-virt")
+fi
+
+if [ "$NV" == "y" ]; then
+	CONF+=("--enable-nested-virtualization")
 fi
 
 # Output configure arguments, if `-n`

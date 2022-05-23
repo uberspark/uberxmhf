@@ -51,6 +51,7 @@ export OPT_FLAGS := @OPT_FLAGS@
 export HIDE_X2APIC := @HIDE_X2APIC@
 export OPTIMIZE_NESTED_VIRT := @OPTIMIZE_NESTED_VIRT@
 export UPDATE_INTEL_UCODE := @UPDATE_INTEL_UCODE@
+export NESTED_VIRTUALIZATION := @NESTED_VIRTUALIZATION@
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -244,6 +245,11 @@ endif
 ifeq ($(UPDATE_INTEL_UCODE), y)
 	CFLAGS += -D__UPDATE_INTEL_UCODE__
 	VFLAGS += -D__UPDATE_INTEL_UCODE__
+endif
+
+ifeq ($(NESTED_VIRTUALIZATION), y)
+	CFLAGS += -D__NESTED_VIRTUALIZATION__
+	VFLAGS += -D__NESTED_VIRTUALIZATION__
 endif
 
 ifeq ($(NESTED_PAGING), y)
