@@ -118,6 +118,9 @@ target system (see :doc:`Installing uberXMHF (pc-intel-x86_64) </pc-intel-x86_64
 Build configuration options
 ---------------------------
 
+To change configuration options, run ``make distclean`` before executing the
+new ``./configure`` command. Otherwise the build may fail.
+
 Mandatory arguments
 ^^^^^^^^^^^^^^^^^^^
 
@@ -164,6 +167,10 @@ Recommended arguments
 *
   --enable-debug-symbols, adds debug info to generated ELF files. With this
   configuration, GDB can print symbols in ``*.exe`` files.
+
+*
+  --enable-debug-qemu, allows XMHF to run in QEMU (disables some unused VMCS
+  fields)
 
 *
   --disable-drt, disables Dynamic Root-of-Trust (DRT); optional, useful for builds 
