@@ -64,14 +64,6 @@
     __vmx_start_hvm:
 
     //save GPRs
-    pushq   %r15
-    pushq   %r14
-    pushq   %r13
-    pushq   %r12
-    pushq   %r11
-    pushq   %r10
-    pushq   %r9
-    pushq   %r8
     pushq   %rax
     pushq   %rcx
     pushq   %rdx
@@ -80,6 +72,14 @@
     pushq   %rbp
     pushq   %rsi
     pushq   %rdi
+    pushq   %r8
+    pushq   %r9
+    pushq   %r10
+    pushq   %r11
+    pushq   %r12
+    pushq   %r13
+    pushq   %r14
+    pushq   %r15
 
     //real-mode setup just like the BIOS
     movl $0x0, %eax
@@ -96,6 +96,14 @@
     //if we get here then some error happened during the launch
 
     //restore stack frame for a return from this procedure
+    popq    %r15
+    popq    %r14
+    popq    %r13
+    popq    %r12
+    popq    %r11
+    popq    %r10
+    popq    %r9
+    popq    %r8
     popq    %rdi
     popq    %rsi
     popq    %rbp
@@ -104,14 +112,6 @@
     popq    %rdx
     popq    %rcx
     popq    %rax
-    popq    %r8
-    popq    %r9
-    popq    %r10
-    popq    %r11
-    popq    %r12
-    popq    %r13
-    popq    %r14
-    popq    %r15
 
     //there are two possible causes of failure, VMFailInvalid or
     //VMFailValid (VM instruction error field contains the error code)

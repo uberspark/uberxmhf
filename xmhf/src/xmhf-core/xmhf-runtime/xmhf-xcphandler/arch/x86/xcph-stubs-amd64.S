@@ -71,14 +71,6 @@
     XtRtmIdtStub&vector&:
 
         // push GPR values on stack to construct struct regs *r
-        pushq   %r15
-        pushq   %r14
-        pushq   %r13
-        pushq   %r12
-        pushq   %r11
-        pushq   %r10
-        pushq   %r9
-        pushq   %r8
         pushq   %rax
         pushq   %rcx
         pushq   %rdx
@@ -87,15 +79,31 @@
         pushq   %rbp
         pushq   %rsi
         pushq   %rdi
+        pushq   %r8
+        pushq   %r9
+        pushq   %r10
+        pushq   %r11
+        pushq   %r12
+        pushq   %r13
+        pushq   %r14
+        pushq   %r15
 
         /* We want %rsp to be the value before the first push */
-        addq $(12 * 8), 24(%rsp)
+        addq $(12 * 8), 88(%rsp)
 
         movq    %rsp, %rsi          // RSI (second argument) = struct regs *
         movq    $0x&vector&, %rdi   // RDI (first argument) = vector
         call    xmhf_xcphandler_hub // call C-land hub
 
         // push GPR values, except RSP
+        popq    %r15
+        popq    %r14
+        popq    %r13
+        popq    %r12
+        popq    %r11
+        popq    %r10
+        popq    %r9
+        popq    %r8
         popq    %rdi
         popq    %rsi
         popq    %rbp
@@ -104,14 +112,6 @@
         popq    %rdx
         popq    %rcx
         popq    %rax
-        popq    %r8
-        popq    %r9
-        popq    %r10
-        popq    %r11
-        popq    %r12
-        popq    %r13
-        popq    %r14
-        popq    %r15
 
         /* If the exception puts an error code on the stack, ignore it */
         .if &skip_err_code&

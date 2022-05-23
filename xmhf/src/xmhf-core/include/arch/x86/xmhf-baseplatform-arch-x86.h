@@ -605,14 +605,13 @@ static inline void VCPU_gpdpte_set(VCPU *vcpu, u64 pdptes[4]) {
 enum CPU_Reg_Sel
 {
     CPU_REG_AX,
-    CPU_REG_BX,
     CPU_REG_CX,
     CPU_REG_DX,
-    CPU_REG_SI,
-    CPU_REG_DI,
+    CPU_REG_BX,
     CPU_REG_SP,
     CPU_REG_BP,
-
+    CPU_REG_SI,
+    CPU_REG_DI,
 #ifdef __AMD64__
     CPU_REG_R8,
     CPU_REG_R9,
@@ -640,13 +639,13 @@ static inline ulong_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
     {
 #ifdef __AMD64__
         case CPU_REG_AX: return r->rax;
-        case CPU_REG_BX: return r->rbx;
         case CPU_REG_CX: return r->rcx;
         case CPU_REG_DX: return r->rdx;
+        case CPU_REG_BX: return r->rbx;
+        /* CPU_REG_SP is managed by VCPU_grsp() */
+        case CPU_REG_BP: return r->rbp;
         case CPU_REG_SI: return r->rsi;
         case CPU_REG_DI: return r->rdi;
-        case CPU_REG_BP: return r->rbp;
-
         case CPU_REG_R8: return r->r8;
         case CPU_REG_R9: return r->r9;
         case CPU_REG_R10: return r->r10;
@@ -657,12 +656,13 @@ static inline ulong_t VCPU_reg_get(VCPU *vcpu, struct regs* r,
         case CPU_REG_R15: return r->r15;
 #elif defined(__I386__)
         case CPU_REG_AX: return r->eax;
-        case CPU_REG_BX: return r->ebx;
         case CPU_REG_CX: return r->ecx;
         case CPU_REG_DX: return r->edx;
+        case CPU_REG_BX: return r->ebx;
+        /* CPU_REG_SP is managed by VCPU_grsp() */
+        case CPU_REG_BP: return r->ebp;
         case CPU_REG_SI: return r->esi;
         case CPU_REG_DI: return r->edi;
-        case CPU_REG_BP: return r->ebp;
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
@@ -688,13 +688,13 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
     {
 #ifdef __AMD64__
         case CPU_REG_AX: r->rax = val; break;
-        case CPU_REG_BX: r->rbx = val; break;
         case CPU_REG_CX: r->rcx = val; break;
         case CPU_REG_DX: r->rdx = val; break;
+        case CPU_REG_BX: r->rbx = val; break;
+        /* CPU_REG_SP is managed by VCPU_grsp_set() */
+        case CPU_REG_BP: r->rbp = val; break;
         case CPU_REG_SI: r->rsi = val; break;
         case CPU_REG_DI: r->rdi = val; break;
-        case CPU_REG_BP: r->rbp = val; break;
-
         case CPU_REG_R8: r->r8 = val; break;
         case CPU_REG_R9: r->r9 = val; break;
         case CPU_REG_R10: r->r10 = val; break;
@@ -705,12 +705,13 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
         case CPU_REG_R15: r->r15 = val; break;
 #elif defined(__I386__)
         case CPU_REG_AX: r->eax = val; break;
-        case CPU_REG_BX: r->ebx = val; break;
         case CPU_REG_CX: r->ecx = val; break;
         case CPU_REG_DX: r->edx = val; break;
+        case CPU_REG_BX: r->ebx = val; break;
+        /* CPU_REG_SP is managed by VCPU_grsp_set() */
+        case CPU_REG_BP: r->ebp = val; break;
         case CPU_REG_SI: r->esi = val; break;
         case CPU_REG_DI: r->edi = val; break;
-        case CPU_REG_BP: r->ebp = val; break;
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */

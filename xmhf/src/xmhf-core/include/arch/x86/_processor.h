@@ -158,6 +158,14 @@
 struct regs
 {
 #ifdef __AMD64__
+  u64 r15;
+  u64 r14;
+  u64 r13;
+  u64 r12;
+  u64 r11;
+  u64 r10;
+  u64 r9;
+  u64 r8;
   union { u64 rdi; u32 edi; } __attribute__ ((packed));
   union { u64 rsi; u32 esi; } __attribute__ ((packed));
   union { u64 rbp; u32 ebp; } __attribute__ ((packed));
@@ -166,14 +174,6 @@ struct regs
   union { u64 rdx; u32 edx; } __attribute__ ((packed));
   union { u64 rcx; u32 ecx; } __attribute__ ((packed));
   union { u64 rax; u32 eax; } __attribute__ ((packed));
-  u64 r8;
-  u64 r9;
-  u64 r10;
-  u64 r11;
-  u64 r12;
-  u64 r13;
-  u64 r14;
-  u64 r15;
 #elif defined(__I386__)
   u32 edi;
   u32 esi;
