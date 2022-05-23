@@ -19,7 +19,7 @@ A (partial) list of packages to install on Ubuntu / Debian:
 
 .. code-block:: bash
 
-   aptitude install pbuilder texinfo ruby build-essential autoconf libtool
+   apt-get install pbuilder texinfo ruby build-essential autoconf libtool
 
 A (partial) list of packages to install on Fedora:
 
@@ -33,7 +33,7 @@ On 64-bit Debian, you will also need to install 32-bit libraries:
 
 .. code-block:: bash
 
-   aptitude install build-essential crossbuild-essential-i386
+   apt-get install build-essential crossbuild-essential-i386
 
 On 32-bit Debian, to compile XMHF in 64-bit, install 64-bit cross compiler:
 

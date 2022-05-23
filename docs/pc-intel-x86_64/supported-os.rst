@@ -35,7 +35,7 @@ We have tested XMHF + TrustVisor + pal_demo on the following configurations.
 |       |     |                   |               +-------+-------------------+
 | XMHF  | DRT | Operating System  | Application   | HP    | QEMU              |
 +=======+=====+===================+===============+=======+===================+
-|  \*   | \*  | Ubuntu 12.04 i386 | pal_demo i386 | good  | good (no DRT)     |
+|  \*   | \#  | Ubuntu 12.04 i386 | pal_demo i386 | good  | good (no DRT)     |
 +-------+     +-------------------+---------------+       |                   |
 |  \*   |     | Debian 11 i386    | pal_demo i386 |       |                   |
 +-------+     +-------------------+---------------+       |                   |
@@ -64,7 +64,7 @@ Column explanations
   XMHF: subarch of XMHF secureloader and runtime. amd64 for 64-bit, \* for
   32-bit and 64-bit.
 *
-  DRT: \* for both DRT enabled and DRT disabled. For QEMU only DRT disabled.
+  DRT: \# for both DRT enabled and DRT disabled. For QEMU only DRT disabled.
 *
   Operating System: operating system and subarch.
 *

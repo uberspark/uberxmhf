@@ -21,7 +21,7 @@
 		* xmhf-64: support x2APIC
 		* xmhf-64: support Intel microcode update
 
-	* Bug fixes
+	* Logic Fixes
 		* xmhf-64: check `grube820list_numentries` in `dealwithE820()` to
 		  prevent possible buffer overflow
 		* xmhf-64: fix Makefile dependencies problems

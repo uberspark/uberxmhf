@@ -26,6 +26,6 @@ physical memory  4 GiB            >= 4 GiB (configurable)
 Compared to XMHF, XMHF-64 supports more guest operating system features, such
 as PAE paging, 64-bit mode, x2APIC, MTRR change. It also supports later
 compiler versions and can be compiled with optimization (e.g. GCC's ``-O3``).
-Some bugs found in XMHF are fixed in XMHF-64. However, XMHF-64 is not formally
-verified yet.
+XMHF-64 also adds various other logic refinements and fixes to XMHF. However,
+XMHF-64 is not formally verified yet.
 
