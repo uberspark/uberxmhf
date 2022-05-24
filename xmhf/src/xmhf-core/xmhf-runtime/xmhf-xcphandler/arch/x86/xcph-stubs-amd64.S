@@ -89,7 +89,7 @@
         pushq   %r15
 
         /* We want %rsp to be the value before the first push */
-        addq $(12 * 8), 88(%rsp)
+        addq $(4 * 8), 88(%rsp)
 
         movq    %rsp, %rsi          // RSI (second argument) = struct regs *
         movq    $0x&vector&, %rdi   // RDI (first argument) = vector
