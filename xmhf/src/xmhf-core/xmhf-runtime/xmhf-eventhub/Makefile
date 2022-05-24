@@ -12,6 +12,9 @@ ifeq ($(UPDATE_INTEL_UCODE), y)
 C_SOURCES += ./arch/x86/vmx/peh-x86vmx-ucode.c
 C_SOURCES += ./arch/x86/vmx/peh-x86vmx-ucode-data.c
 endif
+ifeq ($(NESTED_VIRTUALIZATION), y)
+C_SOURCES += ./arch/x86/vmx/peh-x86vmx-nested.c
+endif
 
 # targets
 include ../runtime.mk

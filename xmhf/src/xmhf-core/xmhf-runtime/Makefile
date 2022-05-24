@@ -31,6 +31,9 @@ ifeq ($(UPDATE_INTEL_UCODE), y)
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-ucode.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-ucode-data.o
 endif
+ifeq ($(NESTED_VIRTUALIZATION), y)
+OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-nested.o
+endif
 
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/smpg-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/smpg-x86.o
