@@ -49,6 +49,78 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 
+union _vmx_decode_m64_inst_info {
+	struct {
+		u32 scaling: 2;
+		u32 undefined6_2: 5;
+		u32 address_size: 3;
+		u32 zero_10: 1;
+		u32 undefined14_11: 4;
+		u32 segment_register: 3;
+		u32 index_reg: 4;
+		u32 index_reg_invalid: 1;
+		u32 base_reg: 4;
+		u32 base_reg_invalid: 1;
+		u32 undefined_31_28: 4;
+	};
+	u32 raw;
+};
+
+/*
+ * Given a segment index, return the segment offset
+ * TODO: do we need to check access rights?
+ */
+static u64 _vmx_decode_seg(u32 seg, VCPU *vcpu)
+{
+	switch (seg) {
+		case 0: return vcpu->vmcs.guest_ES_base;
+		case 1: return vcpu->vmcs.guest_CS_base;
+		case 2: return vcpu->vmcs.guest_SS_base;
+		case 3: return vcpu->vmcs.guest_DS_base;
+		case 4: return vcpu->vmcs.guest_FS_base;
+		case 5: return vcpu->vmcs.guest_GS_base;
+		default:
+			HALT_ON_ERRORCOND(0 && "Unexpected segment");
+			return 0;
+	}
+}
+
+/*
+ * Decode the operand for instructions that take one m64 operand. Following
+ * Table 26-13. Format of the VM-Exit Instruction-Information Field as Used
+ * for VMCLEAR, VMPTRLD, VMPTRST, VMXON, XRSTORS, and XSAVES in Intel's
+ * System Programming Guide, Order Number 325384
+ */
+static u64 _vmx_decode_m64(VCPU *vcpu, struct regs *r)
+{
+	union _vmx_decode_m64_inst_info inst_info;
+	u64 ans = 0;
+	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
+	HALT_ON_ERRORCOND(inst_info.zero_10 == 0);
+	ans = _vmx_decode_seg(inst_info.segment_register, vcpu);
+	ans += vcpu->vmcs.info_exit_qualification;
+	if (!inst_info.base_reg_invalid) {
+		ans += *_vmx_decode_reg(inst_info.base_reg, vcpu, r);
+	}
+	if (!inst_info.index_reg_invalid) {
+		ans += *_vmx_decode_reg(inst_info.index_reg, vcpu, r) << inst_info.scaling;
+	}
+	switch (inst_info.address_size) {
+	case 0:	/* 16-bit */
+		ans &= 0xffffULL;
+		break;
+	case 1:	/* 32-bit */
+		ans &= 0xffffffffULL;
+		break;
+	case 2:	/* 64-bit */
+		break;
+	default:
+		HALT_ON_ERRORCOND(0 && "Unexpected address size");
+		break;
+	}
+	return ans;
+}
+
 // TODO: also need to virtualize VMCALL
 
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct regs *r)
@@ -101,7 +173,9 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxoff(VCPU *vcpu, struct re
 
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct regs *r)
 {
-	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
+	u64 addr = _vmx_decode_m64(vcpu, r);
+	// TODO: access 8 bytes at addr, in guest's paging
+	printf("\nCPU(0x%02x): %s(): addr=%p", vcpu->id, __func__, addr);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
