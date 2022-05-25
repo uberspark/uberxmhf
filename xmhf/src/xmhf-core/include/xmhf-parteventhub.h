@@ -102,7 +102,7 @@ uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r);
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair);
-int guestmem_copy_g2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+void guestmem_copy_g2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						void *dst, hpt_va_t src, size_t len);
 #ifdef __UPDATE_INTEL_UCODE__
 void handle_intel_ucode_update(VCPU *vcpu, u64 update_data);

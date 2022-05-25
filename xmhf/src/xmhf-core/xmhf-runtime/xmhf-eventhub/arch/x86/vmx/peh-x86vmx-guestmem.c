@@ -114,10 +114,11 @@ void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair)
 }
 
 /* Copy from dst (guest virtual address) to src (hypervisor address) */
-int guestmem_copy_g2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+void guestmem_copy_g2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						void *dst, hpt_va_t src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->guest_ctx;
-	return hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
+	int result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
+	HALT_ON_ERRORCOND(result == 0);
 }
 
