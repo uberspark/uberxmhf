@@ -163,7 +163,6 @@ void handle_intel_ucode_update(VCPU *vcpu, u64 update_data)
 	u64 va_header = update_data - sizeof(intel_ucode_update_t);
 	u8 *copy_area;
 	intel_ucode_update_t *header;
-	int result;
 	size_t size;
 	guestmem_init(vcpu, &ctx_pair);
 	HALT_ON_ERRORCOND(vcpu->idx < UCODE_TOTAL_SIZE_MAX);
@@ -171,16 +170,14 @@ void handle_intel_ucode_update(VCPU *vcpu, u64 update_data)
 	/* Copy header of microcode update */
 	header = (intel_ucode_update_t *) copy_area;
 	size = sizeof(intel_ucode_update_t);
-	result = guestmem_copy_g2h(&ctx_pair, 0, header, va_header, size);
-	HALT_ON_ERRORCOND(result == 0);
+	guestmem_copy_g2h(&ctx_pair, 0, header, va_header, size);
 	printf("\nCPU(0x%02x): date(mmddyyyy)=%08x, dsize=%d, tsize=%d",
 			vcpu->id, header->date, header->data_size, header->total_size);
 	/* If the following check fails, increase UCODE_TOTAL_SIZE_MAX */
 	HALT_ON_ERRORCOND(header->total_size <= UCODE_TOTAL_SIZE_MAX);
 	/* Copy the rest of of microcode update */
 	size = header->total_size - size;
-	result = guestmem_copy_g2h(&ctx_pair, 0, &header->update_data, update_data,
-								size);
+	guestmem_copy_g2h(&ctx_pair, 0, &header->update_data, update_data, size);
 	/* Check the hash of the update */
 	if (!ucode_check_sha1(header)) {
 		printf("\nCPU(0x%02x): Unrecognized microcode update, HALT!", vcpu->id);
