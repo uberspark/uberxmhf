@@ -92,52 +92,6 @@ typedef struct __attribute__ ((packed)) {
 	intel_ucode_ext_sign_t signatures[0];
 } intel_ucode_ext_sign_table_t;
 
-typedef struct {
-	hptw_ctx_t guest_ctx;
-	hptw_ctx_t host_ctx;
-} ucode_hptw_ctx_pair_t;
-
-static hpt_pa_t ucode_host_ctx_ptr2pa(void *vctx, void *ptr)
-{
-	(void)vctx;
-	return hva2spa(ptr);
-}
-
-static void* ucode_host_ctx_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
-{
-	(void)vctx;
-	(void)access_type;
-	(void)cpl;
-	*avail_sz = sz;
-	return spa2hva(spa);
-}
-
-static hpt_pa_t ucode_guest_ctx_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
-{
-	return hva2gpa(ptr);
-}
-
-static void* ucode_guest_ctx_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
-{
-	ucode_hptw_ctx_pair_t *ctx_pair = vctx;
-
-	return hptw_checked_access_va(&ctx_pair->host_ctx,
-									access_type,
-									cpl,
-									gpa,
-									sz,
-									avail_sz);
-}
-
-static void* ucode_ctx_unimplemented(void *vctx, size_t alignment, size_t sz)
-{
-	(void)vctx;
-	(void)alignment;
-	(void)sz;
-	HALT_ON_ERRORCOND(0 && "Not implemented");
-	return NULL;
-}
-
 /*
  * Check SHA-1 hash of the update
  * Return 1 if the update is recognized, 0 otherwise
@@ -205,36 +159,19 @@ static int ucode_check_processor(intel_ucode_update_t *header)
  */
 void handle_intel_ucode_update(VCPU *vcpu, u64 update_data)
 {
-	hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
-	ucode_hptw_ctx_pair_t ctx_pair = {
-		.guest_ctx = {
-			.ptr2pa = ucode_guest_ctx_ptr2pa,
-			.pa2ptr = ucode_guest_ctx_pa2ptr,
-			.gzp = ucode_ctx_unimplemented,
-			.root_pa = hpt_cr3_get_address(guest_t, vcpu->vmcs.guest_CR3),
-			.t = guest_t,
-		},
-		.host_ctx = {
-			.ptr2pa = ucode_host_ctx_ptr2pa,
-			.pa2ptr = ucode_host_ctx_pa2ptr,
-			.gzp = ucode_ctx_unimplemented,
-			.root_pa = hpt_eptp_get_address(HPT_TYPE_EPT,
-											vcpu->vmcs.control_EPT_pointer),
-			.t = HPT_TYPE_EPT,
-		}
-	};
-	hptw_ctx_t *ctx = &ctx_pair.guest_ctx;
+	guestmem_hptw_ctx_pair_t ctx_pair;
 	u64 va_header = update_data - sizeof(intel_ucode_update_t);
 	u8 *copy_area;
 	intel_ucode_update_t *header;
 	int result;
 	size_t size;
+	guestmem_init(vcpu, &ctx_pair);
 	HALT_ON_ERRORCOND(vcpu->idx < UCODE_TOTAL_SIZE_MAX);
 	copy_area = ucode_copy_area + UCODE_TOTAL_SIZE_MAX * vcpu->idx;
 	/* Copy header of microcode update */
 	header = (intel_ucode_update_t *) copy_area;
 	size = sizeof(intel_ucode_update_t);
-	result = hptw_checked_copy_from_va(ctx, 0, header, va_header, size);
+	result = guestmem_copy_g2h(&ctx_pair, 0, header, va_header, size);
 	HALT_ON_ERRORCOND(result == 0);
 	printf("\nCPU(0x%02x): date(mmddyyyy)=%08x, dsize=%d, tsize=%d",
 			vcpu->id, header->date, header->data_size, header->total_size);
@@ -242,8 +179,8 @@ void handle_intel_ucode_update(VCPU *vcpu, u64 update_data)
 	HALT_ON_ERRORCOND(header->total_size <= UCODE_TOTAL_SIZE_MAX);
 	/* Copy the rest of of microcode update */
 	size = header->total_size - size;
-	result = hptw_checked_copy_from_va(ctx, 0, &header->update_data,
-										update_data, size);
+	result = guestmem_copy_g2h(&ctx_pair, 0, &header->update_data, update_data,
+								size);
 	/* Check the hash of the update */
 	if (!ucode_check_sha1(header)) {
 		printf("\nCPU(0x%02x): Unrecognized microcode update, HALT!", vcpu->id);

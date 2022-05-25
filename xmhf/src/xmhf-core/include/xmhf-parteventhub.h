@@ -52,6 +52,14 @@
 
 #ifndef __ASSEMBLY__
 
+#include <hptw.h>
+#include <hpt_emhf.h>
+
+typedef struct {
+	hptw_ctx_t guest_ctx;
+	hptw_ctx_t host_ctx;
+} guestmem_hptw_ctx_pair_t;
+
 //XXX: FIX this
 //extern u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
@@ -86,6 +94,9 @@ extern u32 rdmsr_safe(struct regs *r);
 //----------------------------------------------------------------------
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
+void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair);
+int guestmem_copy_g2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+						void *dst, hpt_va_t src, size_t len);
 #ifdef __UPDATE_INTEL_UCODE__
 void handle_intel_ucode_update(VCPU *vcpu, u64 update_data);
 #endif /* __UPDATE_INTEL_UCODE__ */
