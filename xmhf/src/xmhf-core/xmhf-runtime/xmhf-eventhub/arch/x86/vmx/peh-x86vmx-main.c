@@ -108,6 +108,33 @@ uintptr_t * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 
+/*
+ * Inject an exception to guest
+ *
+ * The interception handler should return soon after calling this function.
+ * Especially, guest RIP should not be increased.
+ *
+ * vector: exception vector
+ * has_ec: whether the exception has error code (0 or 1)
+ * errcode: value of error code
+ */
+void _vmx_inject_exception(VCPU *vcpu, u32 vector, u32 has_ec, u32 errcode)
+{
+	union {
+		struct _vmx_event_injection st;
+		uint32_t ui;
+	} injection_info;
+	HALT_ON_ERRORCOND(vector < 32);
+	HALT_ON_ERRORCOND(has_ec <= 1);
+	injection_info.ui = 0;
+	injection_info.st.vector = vector;  /* e.g. #UD, #GP */
+	injection_info.st.type = 0x3;       /* Hardware Exception */
+	injection_info.st.errorcode = has_ec;
+	injection_info.st.valid = 1;
+	vcpu->vmcs.control_VM_entry_interruption_information = injection_info.ui;
+	vcpu->vmcs.control_VM_entry_exception_errorcode = errcode;
+}
+
 
 //---intercept handler (CPUID)--------------------------------------------------
 static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
@@ -423,7 +450,8 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 				 * case injecting #GP is the correct action.
 				 */
 				HALT_ON_ERRORCOND(0 && "Unexperienced fail in MTRR write");
-				goto wrmsr_inject_gp;
+				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+				return;
 			}
 			break;
 		case IA32_BIOS_UPDT_TRIG:
@@ -458,24 +486,6 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	//printf("\nCPU(0x%02x): WRMSR end", vcpu->id);
 	return;
-
-wrmsr_inject_gp:
-	{
-		/* Inject a Hardware exception #GP */
-		union {
-			struct _vmx_event_injection st;
-			uint32_t ui;
-		} injection_info;
-		injection_info.ui = 0;
-		injection_info.st.vector = 0xd;     /* #GP */
-		injection_info.st.type = 0x3;       /* Hardware Exception */
-		injection_info.st.errorcode = 1;    /* Deliver error code */
-		injection_info.st.valid = 1;
-		vcpu->vmcs.control_VM_entry_interruption_information = injection_info.ui;
-		vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-		/* Do not increase guest RIP */
-		return;
-	}
 }
 
 //---intercept handler (RDMSR)--------------------------------------------------
@@ -558,7 +568,8 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 				 * fail. Please make sure injecting #GP is the correct action.
 				 */
 				HALT_ON_ERRORCOND(0 && "Unexpected fail in MTRR read");
-				goto rdmsr_inject_gp;
+				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+				return;
 			}
 			break;
 		case IA32_X2APIC_ICR:
@@ -567,7 +578,8 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			break;
 		default:{
 			if (rdmsr_safe(r) != 0) {
-				goto rdmsr_inject_gp;
+				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+				return;
 			}
 			goto no_assign_read_result;
 		}
@@ -590,24 +602,6 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 no_assign_read_result:
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	return;
-
-rdmsr_inject_gp:
-	{
-		/* Inject a Hardware exception #GP */
-		union {
-			struct _vmx_event_injection st;
-			uint32_t ui;
-		} injection_info;
-		injection_info.ui = 0;
-		injection_info.st.vector = 0xd;     /* #GP */
-		injection_info.st.type = 0x3;       /* Hardware Exception */
-		injection_info.st.errorcode = 1;    /* Deliver error code */
-		injection_info.st.valid = 1;
-		vcpu->vmcs.control_VM_entry_interruption_information = injection_info.ui;
-		vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-		/* Do not increase guest RIP */
-		return;
-	}
 }
 
 
