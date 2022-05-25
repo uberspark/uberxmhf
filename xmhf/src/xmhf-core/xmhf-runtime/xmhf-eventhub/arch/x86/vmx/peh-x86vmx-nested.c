@@ -179,6 +179,12 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 		((_vmx_get_guest_efer(vcpu) & (1ULL << EFER_LMA)) && !VCPU_g64(vcpu))) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_operation) {
+		u64 vcr0 = (vcpu->vmcs.guest_CR0 & ~vcpu->vmcs.control_CR0_mask) |
+				(vcpu->vmcs.control_CR0_shadow & vcpu->vmcs.control_CR0_mask);
+		u64 vcr4 = (vcpu->vmcs.guest_CR4 & ~vcpu->vmcs.control_CR4_mask) |
+				(vcpu->vmcs.control_CR4_shadow & vcpu->vmcs.control_CR4_mask);
+		printf("\nCR0 0x%08llx 0x%08llx 0x%08llx", vcr0, vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR], vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR]);
+		printf("\nCR4 0x%08llx 0x%08llx 0x%08llx", vcr4, vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR], vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR]);
 		/*
 		 * Note: A20M mode is not tested here.
 		 *
@@ -189,14 +195,10 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 		// TODO: should not use control_CR0_shadow, but should also consider
 		//       control_CR0_shadow and control_CR0_mask
 		if ((vcpu->vmcs.guest_CS_selector & 0x3) != 0 ||
-			(~vcpu->vmcs.control_CR0_shadow &
-			 vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]) != 0 ||
-			(vcpu->vmcs.control_CR0_shadow &
-			 ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR]) != 0 ||
-			(~vcpu->vmcs.control_CR4_shadow &
-			 vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]) != 0 ||
-			(vcpu->vmcs.control_CR4_shadow &
-			 ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR]) != 0) {
+			(~vcr0 & vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]) != 0 ||
+			(vcr0 & ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR]) != 0 ||
+			(~vcr4 & vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]) != 0 ||
+			(vcr4 & ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR]) != 0) {
 			_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 		} else {
 			u64 addr = _vmx_decode_m64(vcpu, r);
