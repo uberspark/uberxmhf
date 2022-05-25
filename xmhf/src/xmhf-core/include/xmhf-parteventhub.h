@@ -93,6 +93,7 @@ extern u32 rdmsr_safe(struct regs *r);
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 void _vmx_inject_exception(VCPU *vcpu, u32 vector, u32 has_ec, u32 errcode);
+u64 _vmx_get_guest_efer(VCPU *vcpu);
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair);

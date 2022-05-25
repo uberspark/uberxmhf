@@ -135,6 +135,13 @@ void _vmx_inject_exception(VCPU *vcpu, u32 vector, u32 has_ec, u32 errcode)
 	vcpu->vmcs.control_VM_entry_exception_errorcode = errcode;
 }
 
+u64 _vmx_get_guest_efer(VCPU *vcpu)
+{
+	msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[0];
+	HALT_ON_ERRORCOND(efer->index == MSR_EFER);
+	return efer->data;
+}
+
 
 //---intercept handler (CPUID)--------------------------------------------------
 static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
@@ -754,9 +761,8 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 #ifdef __AMD64__
 		u32 value = vcpu->vmcs.control_VM_entry_controls;
 		u32 lme, pae;
-		msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[0];
-		HALT_ON_ERRORCOND(efer->index == MSR_EFER);
-		lme = (cr0_value & CR0_PG) && (efer->data & (0x1U << EFER_LME));
+		u64 efer = _vmx_get_guest_efer(vcpu);
+		lme = (cr0_value & CR0_PG) && (efer & (0x1U << EFER_LME));
 		value &= ~(1U << 9);
 		value |= lme << 9;
 		vcpu->vmcs.control_VM_entry_controls = value;
