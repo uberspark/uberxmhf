@@ -231,6 +231,12 @@ typedef struct _vcpu {
   u32 vmx_guest_unrestricted;   //this is 1 if the CPU VMX implementation supports unrestricted guest execution
   struct _vmx_vmcsfields vmcs;   //the VMCS fields
 
+#ifdef __NESTED_VIRTUALIZATION__
+  /* Whether this VCPU is currently inside VMX operation */
+  u32 vmx_nested_is_vmx_operation;
+  /* If in VMX operation, address of VMXON pointer */
+  gpa_t vmx_nested_vmxon_pointer;
+#endif /* !__NESTED_VIRTUALIZATION__ */
 } VCPU;
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))

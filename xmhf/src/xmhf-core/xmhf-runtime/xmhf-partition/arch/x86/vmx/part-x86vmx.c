@@ -583,6 +583,11 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_CR4_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];
 	vcpu->vmcs.control_CR4_shadow = 0;
 
+#ifdef __NESTED_VIRTUALIZATION__
+	vcpu->vmx_nested_is_vmx_operation = 0;
+	vcpu->vmx_nested_vmxon_pointer = 0;
+#endif /* !__NESTED_VIRTUALIZATION__ */
+
 	//flush guest TLB to start with
 	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 }
