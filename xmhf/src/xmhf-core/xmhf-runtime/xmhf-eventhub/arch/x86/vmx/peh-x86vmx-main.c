@@ -766,25 +766,24 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		value &= ~(1U << 9);
 		value |= lme << 9;
 		vcpu->vmcs.control_VM_entry_controls = value;
-
 		pae = (cr0_value & CR0_PG) && (!lme) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
-		/*
-		 * TODO: If PAE, need to walk EPT and retrieve values for guest_PDPTE*
-		 *
-		 * The idea is something like the following, but need to make sure
-		 * the guest OS is allowed to access relevant memory (by walking EPT):
-		 * u64 *pdptes = (u64 *)(uintptr_t)(vcpu->vmcs.guest_CR3 & ~0x1FUL);
-		 * vcpu->vmcs.guest_PDPTE0 = pdptes[0];
-		 * vcpu->vmcs.guest_PDPTE1 = pdptes[1];
-		 * vcpu->vmcs.guest_PDPTE2 = pdptes[2];
-		 * vcpu->vmcs.guest_PDPTE3 = pdptes[3];
-		 */
 #elif defined(__I386__)
 		u32 pae = (cr0_value & CR0_PG) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
-		HALT_ON_ERRORCOND(!pae);
+		/* If PAE, need to walk EPT and retrieve values for guest_PDPTE* */
+		if (pae) {
+			guestmem_hptw_ctx_pair_t ctx_pair;
+			u64 pdptes[4];
+			u64 addr = vcpu->vmcs.guest_CR3 & ~0x1FUL;
+			guestmem_init(vcpu, &ctx_pair);
+			guestmem_copy_gp2h(&ctx_pair, 0, pdptes, addr, 8);
+			vcpu->vmcs.guest_PDPTE0 = pdptes[0];
+			vcpu->vmcs.guest_PDPTE1 = pdptes[1];
+			vcpu->vmcs.guest_PDPTE2 = pdptes[2];
+			vcpu->vmcs.guest_PDPTE3 = pdptes[3];
+		}
 	}
 
 	//flush mappings

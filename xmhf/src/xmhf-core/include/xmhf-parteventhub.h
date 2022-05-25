@@ -97,7 +97,9 @@ u64 _vmx_get_guest_efer(VCPU *vcpu);
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair);
-void guestmem_copy_g2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+void guestmem_copy_gv2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+						void *dst, hpt_va_t src, size_t len);
+void guestmem_copy_gp2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						void *dst, hpt_va_t src, size_t len);
 #ifdef __UPDATE_INTEL_UCODE__
 void handle_intel_ucode_update(VCPU *vcpu, u64 update_data);
