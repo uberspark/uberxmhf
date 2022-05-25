@@ -179,17 +179,42 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 		((_vmx_get_guest_efer(vcpu) & (1ULL << EFER_LMA)) && !VCPU_g64(vcpu))) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_operation) {
-		// TODO: perform checks (CPL > 0, ...)
-		u64 addr = _vmx_decode_m64(vcpu, r);
-		gpa_t vmxon_ptr;
-		guestmem_hptw_ctx_pair_t ctx_pair;
-		HALT_ON_ERRORCOND(0 && "Checks not implemented");
-		guestmem_init(vcpu, &ctx_pair);
-		guestmem_copy_gv2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
-		HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(vmxon_ptr));
-		vcpu->vmx_nested_is_vmx_operation = 1;
-		vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
-		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+		/*
+		 * Note: A20M mode is not tested here.
+		 *
+		 * Note: IA32_FEATURE_CONTROL is not tested here, because running XMHF
+		 * already requires entering VMX operation in physical CPU. This may
+		 * need to be updated if IA32_FEATURE_CONTROL is virtualized.
+		 */
+		// TODO: should not use control_CR0_shadow, but should also consider
+		//       control_CR0_shadow and control_CR0_mask
+		if ((vcpu->vmcs.guest_CS_selector & 0x3) != 0 ||
+			(~vcpu->vmcs.control_CR0_shadow &
+			 vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]) != 0 ||
+			(vcpu->vmcs.control_CR0_shadow &
+			 ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR]) != 0 ||
+			(~vcpu->vmcs.control_CR4_shadow &
+			 vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]) != 0 ||
+			(vcpu->vmcs.control_CR4_shadow &
+			 ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR]) != 0) {
+			_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+		} else {
+			u64 addr = _vmx_decode_m64(vcpu, r);
+			gpa_t vmxon_ptr;
+			guestmem_hptw_ctx_pair_t ctx_pair;
+			guestmem_init(vcpu, &ctx_pair);
+			guestmem_copy_gv2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
+			HALT_ON_ERRORCOND(0 && "Checks not implemented");
+			if (!PA_PAGE_ALIGNED_4K(vmxon_ptr)) {
+				// TODO: VMfailInvalid
+			} else {
+				// TODO: current-VMCS pointer := FFFFFFFF_FFFFFFFFH;
+				vcpu->vmx_nested_is_vmx_operation = 1;
+				vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
+				// TODO: VMsucceed
+			}
+			vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+		}
 	} else {
 		/* This may happen if guest tries nested virtualization */
 		printf("\nNot implemented, HALT!");
