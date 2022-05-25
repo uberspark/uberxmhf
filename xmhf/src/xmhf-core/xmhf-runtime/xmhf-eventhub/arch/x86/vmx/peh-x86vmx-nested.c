@@ -174,8 +174,11 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxoff(VCPU *vcpu, struct re
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct regs *r)
 {
 	u64 addr = _vmx_decode_m64(vcpu, r);
-	// TODO: access 8 bytes at addr, in guest's paging
-	printf("\nCPU(0x%02x): %s(): addr=%p", vcpu->id, __func__, addr);
+	u64 vmxon_ptr;
+	guestmem_hptw_ctx_pair_t ctx_pair;
+	guestmem_init(vcpu, &ctx_pair);
+	guestmem_copy_g2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
+	printf("\nCPU(0x%02x): %s(): addr=%p, addr=%p", vcpu->id, __func__, addr, vmxon_ptr);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
