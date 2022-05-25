@@ -174,21 +174,22 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxoff(VCPU *vcpu, struct re
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct regs *r)
 {
 	if ((vcpu->vmcs.guest_CR0 & CR0_PE) == 0 ||
-		(vcpu->vmcs.guest_CR0 & CR4_VMXE) == 0 ||
-		(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) == 0 /* TODO ||
-		... */ ) {
+		(vcpu->vmcs.guest_CR4 & CR4_VMXE) == 0 ||
+		(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ||
+		((_vmx_get_guest_efer(vcpu) & (1ULL << EFER_LMA)) && !VCPU_g64(vcpu))) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
-	}
-	if (!vcpu->vmx_nested_is_vmx_operation) {
+	} else if (!vcpu->vmx_nested_is_vmx_operation) {
+		// TODO: perform checks (CPL > 0, ...)
 		u64 addr = _vmx_decode_m64(vcpu, r);
 		gpa_t vmxon_ptr;
 		guestmem_hptw_ctx_pair_t ctx_pair;
+		HALT_ON_ERRORCOND(0 && "Checks not implemented");
 		guestmem_init(vcpu, &ctx_pair);
-		guestmem_copy_g2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
+		guestmem_copy_gv2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
 		HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(vmxon_ptr));
 		vcpu->vmx_nested_is_vmx_operation = 1;
 		vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
-		HALT_ON_ERRORCOND(0 && "Not implemented");
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	} else {
 		/* This may happen if guest tries nested virtualization */
 		printf("\nNot implemented, HALT!");
