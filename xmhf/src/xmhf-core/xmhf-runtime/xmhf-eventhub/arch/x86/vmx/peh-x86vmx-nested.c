@@ -183,8 +183,6 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 				(vcpu->vmcs.control_CR0_shadow & vcpu->vmcs.control_CR0_mask);
 		u64 vcr4 = (vcpu->vmcs.guest_CR4 & ~vcpu->vmcs.control_CR4_mask) |
 				(vcpu->vmcs.control_CR4_shadow & vcpu->vmcs.control_CR4_mask);
-		printf("\nCR0 0x%08llx 0x%08llx 0x%08llx", vcr0, vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR], vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR]);
-		printf("\nCR4 0x%08llx 0x%08llx 0x%08llx", vcr4, vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR], vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR]);
 		/*
 		 * Note: A20M mode is not tested here.
 		 *
