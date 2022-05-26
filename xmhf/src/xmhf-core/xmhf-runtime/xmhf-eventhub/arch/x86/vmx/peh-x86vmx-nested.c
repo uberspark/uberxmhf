@@ -49,6 +49,10 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 
+#define VMX_INST_RFLAGS_MASK \
+	((u64) (EFLAGS_CF | EFLAGS_PF | EFLAGS_AF | EFLAGS_ZF | EFLAGS_SF | \
+			EFLAGS_OF))
+
 union _vmx_decode_m64_inst_info {
 	struct {
 		u32 scaling: 2;
@@ -121,6 +125,29 @@ static u64 _vmx_decode_m64(VCPU *vcpu, struct regs *r)
 	return ans;
 }
 
+/* The VMsucceed pseudo-function in SDM "29.2 CONVENTIONS" */
+static void _vmx_nested_vm_succeed(VCPU *vcpu)
+{
+	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
+}
+
+#if 0
+static void _vmx_nested_vm_fail_valid(VCPU *vcpu, u32 error_number)
+{
+	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
+	vcpu->vmcs.guest_RFLAGS |= EFLAGS_ZF;
+	/* TODO: set error_number */
+	HALT_ON_ERRORCOND(0);
+	(void) error_number;
+}
+#endif
+
+static void _vmx_nested_vm_fail_invalid(VCPU *vcpu)
+{
+	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
+	vcpu->vmcs.guest_RFLAGS |= EFLAGS_CF;
+}
+
 // TODO: also need to virtualize VMCALL
 
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct regs *r)
@@ -190,8 +217,6 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 		 * already requires entering VMX operation in physical CPU. This may
 		 * need to be updated if IA32_FEATURE_CONTROL is virtualized.
 		 */
-		// TODO: should not use control_CR0_shadow, but should also consider
-		//       control_CR0_shadow and control_CR0_mask
 		if ((vcpu->vmcs.guest_CS_selector & 0x3) != 0 ||
 			(~vcr0 & vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]) != 0 ||
 			(vcr0 & ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR]) != 0 ||
@@ -204,14 +229,21 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 			guestmem_hptw_ctx_pair_t ctx_pair;
 			guestmem_init(vcpu, &ctx_pair);
 			guestmem_copy_gv2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
-			HALT_ON_ERRORCOND(0 && "Checks not implemented");
 			if (!PA_PAGE_ALIGNED_4K(vmxon_ptr)) {
-				// TODO: VMfailInvalid
+				_vmx_nested_vm_fail_invalid(vcpu);
 			} else {
-				// TODO: current-VMCS pointer := FFFFFFFF_FFFFFFFFH;
-				vcpu->vmx_nested_is_vmx_operation = 1;
-				vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
-				// TODO: VMsucceed
+				u32 rev;
+				u64 basic_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+				guestmem_copy_gp2h(&ctx_pair, 0, &rev, vmxon_ptr, sizeof(rev));
+				if ((rev & (1U << 31)) ||
+					(rev != ((u32) basic_msr & 0x7fffffffU))) {
+					_vmx_nested_vm_fail_invalid(vcpu);
+				} else {
+					// TODO: current-VMCS pointer := FFFFFFFF_FFFFFFFFH;
+					vcpu->vmx_nested_is_vmx_operation = 1;
+					vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
+					_vmx_nested_vm_succeed(vcpu);
+				}
 			}
 			vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 		}
