@@ -153,10 +153,10 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	if (old_eax == 0x1) {
 		/* Clear VMX capability */
 		r->ecx &= ~(1U << 5);
-#ifndef __HIDE_X2APIC__
+#ifdef __HIDE_X2APIC__
 		/* Clear x2APIC capability (not stable in Circle CI and HP 840) */
 		r->ecx &= ~(1U << 21);
-#endif /* !__HIDE_X2APIC__ */
+#endif /* __HIDE_X2APIC__ */
 #ifndef __UPDATE_INTEL_UCODE__
 		/*
 		 * Set Hypervisor Present bit.
