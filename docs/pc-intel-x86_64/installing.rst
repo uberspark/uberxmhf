@@ -209,8 +209,8 @@ After the modification is done, make sure it is executable and update GRUB.
 
 .. code-block:: bash
 
-   chmod +x /etc/grub.d/42_xmhf_i386
-   update-grub
+   sudo chmod +x /etc/grub.d/42_xmhf_i386
+   sudo update-grub
 
 Multiple disks
 ^^^^^^^^^^^^^^
