@@ -93,6 +93,8 @@ void xmhf_runtime_entry(void);
 //EMHF runtime main function; gets control in the context of each core
 void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit);
 
+void xmhf_runtime_shutdown(VCPU *vcpu, struct regs *r);
+
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------

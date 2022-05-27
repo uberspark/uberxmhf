@@ -150,6 +150,10 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	asm volatile ("cpuid\r\n"
           :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
           :"a"(r->eax), "c" (r->ecx));
+	
+	// Use the registers returned by <xmhf_app_handlecpuid>
+	xmhf_app_handlecpuid(vcpu, r, old_eax);
+
 	if (old_eax == 0x1) {
 		/* Clear VMX capability */
 		r->ecx &= ~(1U << 5);
@@ -399,7 +403,8 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		case MSR_IA32_PAT: /* fallthrough */
 		case MSR_K6_STAR: {
 			u32 found = 0;
-			for (u32 i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count; i++) {
+            u32 i = 0;
+			for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count; i++) {
 				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
 				if (entry->index == r->ecx) {
 					entry->data = write_data;
@@ -520,7 +525,8 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		case MSR_IA32_PAT: /* fallthrough */
 		case MSR_K6_STAR: {
 			u32 found = 0;
-			for (u32 i = 0; i < vcpu->vmcs.control_VM_exit_MSR_store_count; i++) {
+            u32 i = 0;
+			for (i = 0; i < vcpu->vmcs.control_VM_exit_MSR_store_count; i++) {
 				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
 				if (entry->index == r->ecx) {
 					read_result = entry->data;
@@ -965,6 +971,59 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 #endif /* __OPTIMIZE_NESTED_VIRT__ */
 
+u32 xmhf_parteventhub_arch_x86vmx_print_guest(VCPU *vcpu, struct regs *r)
+{
+	(void)r;
+
+#ifdef __AMD64__
+	if (vcpu->vmcs.control_VM_entry_controls & (1U << 9)) 
+	{
+		// amd64 mode
+		printf("\n	CPU(0x%02x): RFLAGS=0x%016llx",
+				vcpu->id, vcpu->vmcs.guest_RFLAGS);
+		printf("\n	SS:RSP =0x%04x:0x%016llx",
+				(u16)vcpu->vmcs.guest_SS_selector,
+				vcpu->vmcs.guest_RSP);
+		printf("\n	CS:RIP =0x%04x:0x%016llx",
+				(u16)vcpu->vmcs.guest_CS_selector,
+				vcpu->vmcs.guest_RIP);
+		printf("\n	IDTR base:limit=0x%016llx:0x%04x",
+				vcpu->vmcs.guest_IDTR_base,
+				(u16)vcpu->vmcs.guest_IDTR_limit);
+		printf("\n	GDTR base:limit=0x%016llx:0x%04x",
+				vcpu->vmcs.guest_GDTR_base,
+				(u16)vcpu->vmcs.guest_GDTR_limit);
+		if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
+			printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
+				vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
+		}
+		HALT();
+	}
+
+#elif !defined(__I386__)
+	#error "Unsupported Arch"
+#endif /* !defined(__I386__) */
+	// i386 mode
+	printf("\n	CPU(0x%02x): EFLAGS=0x%08x",
+			vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
+	printf("\n	SS:ESP =0x%04x:0x%08x",
+			(u16)vcpu->vmcs.guest_SS_selector,
+			(u32)vcpu->vmcs.guest_RSP);
+	printf("\n	CS:EIP =0x%04x:0x%08x",
+			(u16)vcpu->vmcs.guest_CS_selector,
+			(u32)vcpu->vmcs.guest_RIP);
+	printf("\n	IDTR base:limit=0x%08x:0x%04x",
+			(u32)vcpu->vmcs.guest_IDTR_base,
+			(u16)vcpu->vmcs.guest_IDTR_limit);
+	printf("\n	GDTR base:limit=0x%08x:0x%04x",
+			(u32)vcpu->vmcs.guest_GDTR_base,
+			(u16)vcpu->vmcs.guest_GDTR_limit);
+	if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
+		printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
+			vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
+	}
+	HALT();
+}
 
 //---hvm_intercept_handler------------------------------------------------------
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
@@ -1034,9 +1093,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case VMX_VMEXIT_INIT:{
-			printf("\n***** VMEXIT_INIT xmhf_app_handleshutdown\n");
-			xmhf_app_handleshutdown(vcpu, r);
-			printf("\nCPU(0x%02x): Fatal, xmhf_app_handleshutdown returned. Halting!", vcpu->id);
+			printf("\n***** VMEXIT_INIT xmhf_runtime_shutdown\n");
+			xmhf_runtime_shutdown(vcpu, r);
+			printf("\nCPU(0x%02x): Fatal, xmhf_runtime_shutdown returned. Halting!", vcpu->id);
 			HALT();
 		}
 		break;
@@ -1075,6 +1134,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 						(unsigned long)vcpu->vmcs.info_vmexit_interrupt_information);
 					printf("\nerrorcode=0x%08lx",
 						(unsigned long)vcpu->vmcs.info_vmexit_interrupt_error_code);
+
+					xmhf_parteventhub_arch_x86vmx_print_guest(vcpu, r);
 					HALT();
 			}
 		}
@@ -1102,7 +1163,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
 					INTR_TYPE_NMI |
 					INTR_INFO_VALID_MASK;
-				printf("\nCPU(0x%02x): inject NMI", vcpu->id);
+				//printf("\nCPU(0x%02x): inject NMI", vcpu->id);
 			}
 		}
 		break;
@@ -1171,8 +1232,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", vcpu->id);
-					xmhf_app_handleshutdown(vcpu, r);
-				printf("\nCPU(0x%02x): warning, xmhf_app_handleshutdown returned!", vcpu->id);
+					xmhf_runtime_shutdown(vcpu, r);
+				printf("\nCPU(0x%02x): warning, xmhf_runtime_shutdown returned!", vcpu->id);
 				printf("\nCPU(0x%02x): HALTING!", vcpu->id);
 				HALT();
 			}else{
@@ -1197,25 +1258,6 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				printf("\nCPU(0x%02x): Unhandled intercept in long mode: %d (0x%08x)",
 						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
 						(u32)vcpu->vmcs.info_vmexit_reason);
-				printf("\n	CPU(0x%02x): RFLAGS=0x%016llx",
-						vcpu->id, vcpu->vmcs.guest_RFLAGS);
-				printf("\n	SS:RSP =0x%04x:0x%016llx",
-						(u16)vcpu->vmcs.guest_SS_selector,
-						vcpu->vmcs.guest_RSP);
-				printf("\n	CS:RIP =0x%04x:0x%016llx",
-						(u16)vcpu->vmcs.guest_CS_selector,
-						vcpu->vmcs.guest_RIP);
-				printf("\n	IDTR base:limit=0x%016llx:0x%04x",
-						vcpu->vmcs.guest_IDTR_base,
-						(u16)vcpu->vmcs.guest_IDTR_limit);
-				printf("\n	GDTR base:limit=0x%016llx:0x%04x",
-						vcpu->vmcs.guest_GDTR_base,
-						(u16)vcpu->vmcs.guest_GDTR_limit);
-				if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
-					printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
-						vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
-				}
-				HALT();
 			}
 #elif !defined(__I386__)
     #error "Unsupported Arch"
@@ -1224,24 +1266,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			printf("\nCPU(0x%02x): Unhandled intercept: %d (0x%08x)",
 					vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
 					(u32)vcpu->vmcs.info_vmexit_reason);
-			printf("\n	CPU(0x%02x): EFLAGS=0x%08x",
-					vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
-			printf("\n	SS:ESP =0x%04x:0x%08x",
-					(u16)vcpu->vmcs.guest_SS_selector,
-					(u32)vcpu->vmcs.guest_RSP);
-			printf("\n	CS:EIP =0x%04x:0x%08x",
-					(u16)vcpu->vmcs.guest_CS_selector,
-					(u32)vcpu->vmcs.guest_RIP);
-			printf("\n	IDTR base:limit=0x%08x:0x%04x",
-					(u32)vcpu->vmcs.guest_IDTR_base,
-					(u16)vcpu->vmcs.guest_IDTR_limit);
-			printf("\n	GDTR base:limit=0x%08x:0x%04x",
-					(u32)vcpu->vmcs.guest_GDTR_base,
-					(u16)vcpu->vmcs.guest_GDTR_limit);
-			if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
-				printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
-					vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
-			}
+			xmhf_parteventhub_arch_x86vmx_print_guest(vcpu, r);
 			HALT();
 		}
 	} //end switch((u32)vcpu->vmcs.info_vmexit_reason)

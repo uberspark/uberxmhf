@@ -596,6 +596,11 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
   /* flush TLB for page table modifications to take effect */
   xmhf_memprot_flushmappings(vcpu);
 
+#ifdef __DMAP__
+    /* Disable device accesses to these memory (via IOMMU) */
+	xmhf_dmaprot_invalidate_cache();
+#endif /* __DMAP__ */
+
   /* initialize Micro-TPM instance */
   utpm_init_instance(&whitelist_new.utpm);
 

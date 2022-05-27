@@ -54,6 +54,7 @@ typedef enum {
   HPTW_CPL1=1,
   HPTW_CPL2=2,
   HPTW_CPL3=3,
+  INVALID_CPL=0xFFFFFFFF,
 } hptw_cpl_t;
 
 /* Translate a referencable pointer to a physical address */

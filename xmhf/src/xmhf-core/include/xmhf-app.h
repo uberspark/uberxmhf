@@ -91,6 +91,7 @@ extern u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 extern void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
 extern u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_SUCCESS if handled, else APP_ERROR
 extern u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val);	//returns APP_SUCCESS if allow MTRR change
+extern void xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r, uint32_t fn);
 
 #endif	//__ASSEMBLY__
 

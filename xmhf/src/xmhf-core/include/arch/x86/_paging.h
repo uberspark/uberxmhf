@@ -67,6 +67,9 @@
     #error "Unsupported Arch"
 #endif
 
+#define ADDR64_PAGE_MASK_4K     0xFFFFFFFFFFFFF000ULL
+#define ADDR64_PAGE_OFFSET_4K     0xFFFULL
+
 // page sizes
 #define PAGE_SHIFT_4K   12
 #define PAGE_SHIFT_2M   21
@@ -152,7 +155,7 @@
 
 /* Check whether x's type satisfies prefix pf ("" or "PA_") */
 #define _PAGE_TYPE_CHECK(x, pf) \
-    ({ _Static_assert(sizeof(x) == sizeof(pf##PAGE_SIZE_4K)); (x); })
+    ({ _Static_assert(sizeof(x) == sizeof(pf##PAGE_SIZE_4K), "type size mismatch!"); (x); })
 
 /* Align address up */
 

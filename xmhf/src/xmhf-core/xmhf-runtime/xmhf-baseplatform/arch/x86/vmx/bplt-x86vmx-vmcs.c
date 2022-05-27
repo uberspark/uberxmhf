@@ -192,6 +192,7 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 }
 
 void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
+    u32 i = 0;
 
 #define DUMP_VCPU_PRINT_INT16(x) \
     printf("\nCPU(0x%02x): " #x "=0x%08x", vcpu->id, (x));
@@ -224,7 +225,7 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT64(vcpu->npt_asid);
     DUMP_VCPU_PRINT_INT64(vcpu->npt_vaddr_pts);
     DUMP_VCPU_PRINT_INT64(vcpu->svm_vaddr_iobitmap);
-    for (u32 i = 0; i < IA32_VMX_MSRCOUNT; i++) {
+    for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
         DUMP_VCPU_PRINT_INT64_INDEX(vcpu->vmx_msrs, i);
     }
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efer);

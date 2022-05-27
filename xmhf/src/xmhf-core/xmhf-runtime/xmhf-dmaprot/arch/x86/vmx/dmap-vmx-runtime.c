@@ -100,7 +100,8 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
     ptphysaddr = vtd_pts_paddr;
 
     // ensure PDPT, PDTs and PTs are all page-aligned
-    HALT_ON_ERRORCOND(!(pml4tphysaddr & 0x00000FFFUL) && !(pdptphysaddr & 0x00000FFFUL) && !(pdtphysaddr & 0x00000FFFUL) && !((ptphysaddr & 0x00000FFFUL)));
+    HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(pml4tphysaddr) && PA_PAGE_ALIGNED_4K(pdptphysaddr) && 
+        PA_PAGE_ALIGNED_4K(pdtphysaddr) && PA_PAGE_ALIGNED_4K(ptphysaddr));
 
     // initialize our local variables
     l_vtd_pml4t_paddr = vtd_pml4t_paddr;
@@ -159,11 +160,11 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
 // in our implementation, every CE will point to a single PDPT type paging
 // structure for the whole system
 static bool _vtd_setupRETCET(struct dmap_vmx_cap *vtd_cap,
-                             uintptr_t vtd_pml4t_paddr, uintptr_t vtd_pdpt_paddr,
-                             uintptr_t vtd_ret_paddr, uintptr_t vtd_ret_vaddr,
-                             uintptr_t vtd_cet_paddr, uintptr_t vtd_cet_vaddr)
+                             spa_t vtd_pml4t_paddr, spa_t vtd_pdpt_paddr,
+                             spa_t vtd_ret_paddr, hva_t vtd_ret_vaddr,
+                             spa_t vtd_cet_paddr, hva_t vtd_cet_vaddr)
 {
-    uintptr_t retphysaddr, cetphysaddr;
+    spa_t retphysaddr, cetphysaddr;
     u32 i, j;
     u64 *value;
 
@@ -176,7 +177,7 @@ static bool _vtd_setupRETCET(struct dmap_vmx_cap *vtd_cap,
     cetphysaddr = vtd_cet_paddr;
 
     // sanity check that pdpt base address is page-aligned
-    HALT_ON_ERRORCOND(!(vtd_pdpt_paddr & 0x00000FFFUL));
+    HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(vtd_pml4t_paddr) && PA_PAGE_ALIGNED_4K(vtd_pdpt_paddr));
 
     // initialize RET
     for (i = 0; i < PCI_BUS_MAX; i++)
@@ -195,7 +196,7 @@ static bool _vtd_setupRETCET(struct dmap_vmx_cap *vtd_cap,
     // initialize CET
     for (i = 0; i < PCI_BUS_MAX; i++)
     {
-        for (j = 0; j < PCI_BUS_MAX; j++)
+        for (j = 0; j < (PCI_DEVICE_MAX * PCI_FUNCTION_MAX); j++)
         {
             value = (u64 *)(vtd_cet_vaddr + (i * PAGE_SIZE_4K) + (j * 16));
 
@@ -259,7 +260,7 @@ static u32 vmx_eap_initialize(
     //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
-    printf("\n%s: RSDP at %08x", __FUNCTION__, status);
+    printf("\n%s: RSDP at %lx", __FUNCTION__, status);
 
     // [Superymk] Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
     if (rsdp.revision == 0) // ACPI v1
@@ -283,7 +284,7 @@ static u32 vmx_eap_initialize(
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
 
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
-    printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes",
+    printf("\n%s: RSDT at %lx, len=%u bytes, hdrlen=%u bytes",
            __FUNCTION__, rsdt_xsdt_vaddr, rsdt.length, sizeof(ACPI_RSDT));
 
     // get the RSDT entry list
@@ -291,7 +292,7 @@ static u32 vmx_eap_initialize(
     HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)),
                                      sizeof(rsdtentries[0]) * num_rsdtentries);
-    printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
+    printf("\n%s: RSDT entry list at %lx, len=%u", __FUNCTION__,
            (rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)), num_rsdtentries);
 
     // find the VT-d DMAR table in the list (if any)
@@ -310,11 +311,11 @@ static u32 vmx_eap_initialize(
         return 0;
 
     dmaraddrphys = rsdtentries[i]; // DMAR table physical memory address;
-    printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
+    printf("\n%s: DMAR at %llx", __FUNCTION__, dmaraddrphys);
 
     i = 0;
     remappingstructuresaddrphys = dmaraddrphys + sizeof(VTD_DMAR);
-    printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
+    printf("\n%s: remapping structures at %llx", __FUNCTION__, remappingstructuresaddrphys);
 
     while (i < (dmar.length - sizeof(VTD_DMAR)))
     {
@@ -327,7 +328,7 @@ static u32 vmx_eap_initialize(
         switch (type)
         {
         case 0: // DRHD
-            printf("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructures_vaddr + i), length);
+            printf("\nDRHD at %lx, len=%u bytes", (remappingstructures_vaddr + i), length);
             HALT_ON_ERRORCOND(vtd_num_drhd < VTD_MAX_DRHD);
             xmhf_baseplatform_arch_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructures_vaddr + i), length);
             vtd_num_drhd++;
@@ -390,11 +391,11 @@ static u32 vmx_eap_initialize(
                                        vtd_pdts_paddr, vtd_pdts_vaddr, vtd_pts_paddr, vtd_pts_vaddr, machine_low_spa, machine_high_spa);
         if (!status2)
         {
-            printf("\n%s: setup VT-d page tables (pdpt=%08x, pdts=%08x, pts=%08x) error! Halting!", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
+            printf("\n%s: setup VT-d page tables (pdpt=%llx, pdts=%llx, pts=%llx) error! Halting!", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
             HALT();
         }
 
-        printf("\n%s: setup VT-d page tables (pdpt=%08x, pdts=%08x, pts=%08x).", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
+        printf("\n%s: setup VT-d page tables (pdpt=%llx, pdts=%llx, pts=%llx).", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
     }
 
     // initialize VT-d RET and CET
@@ -402,26 +403,14 @@ static u32 vmx_eap_initialize(
         status2 = _vtd_setupRETCET(&g_vtd_cap, vtd_pml4t_paddr, vtd_pdpt_paddr, vtd_ret_paddr, vtd_ret_vaddr, vtd_cet_paddr, vtd_cet_vaddr);
         if (!status2)
         {
-            printf("\n%s: setup VT-d RET (%08x) and CET (%08x) error! Halting!", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+            printf("\n%s: setup VT-d RET (%llx) and CET (%llx) error! Halting!", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
             HALT();
         }
 
-        printf("\n%s: setup VT-d RET (%08x) and CET (%08x).", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+        printf("\n%s: setup VT-d RET (%llx) and CET (%llx).", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
     }
 
 #endif //__XMHF_VERIFICATION__
-
-#ifndef __XMHF_VERIFICATION__
-    // initialize all DRHD units
-    for (i = 0; i < vtd_num_drhd; i++)
-    {
-        printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
-        _vtd_drhd_initialize(&vtd_drhd[i], vtd_ret_paddr);
-    }
-#else
-    printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
-    _vtd_drhd_initialize(&vtd_drhd[0], vtd_ret_paddr);
-#endif
 
     // zap VT-d presence in ACPI table...
     // TODO: we need to be a little elegant here. eventually need to setup
@@ -516,12 +505,54 @@ static void _vtd_invalidatecaches(void)
 
 ////////////////////////////////////////////////////////////////////////
 // GLOBALS
-
-#define PAE_get_pdptindex(x) ((x) >> 30)
-#define PAE_get_pdtindex(x) (((x) << 2) >> 23)
-#define PAE_get_ptindex(x) (((x) << 11) >> 23)
 #define PAE_get_pdtaddress(x) ((u32)((u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL))
 #define PAE_get_ptaddress(x) ((u32)((u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL))
+
+u32 xmhf_dmaprot_arch_x86_vmx_enable(spa_t protectedbuffer_paddr,
+                                         hva_t protectedbuffer_vaddr, size_t protectedbuffer_size)
+{
+    u32 i = 0;
+    // Vt-d bootstrap has minimal DMA translation setup and protects entire
+    // system memory. Relax this by instantiating a complete DMA translation
+    // structure at a page granularity and protecting only the SL and Runtime
+    uintptr_t vmx_eap_vtd_pml4t_paddr;
+    uintptr_t vmx_eap_vtd_pdpt_paddr;
+    uintptr_t vmx_eap_vtd_pdts_paddr;
+    uintptr_t vmx_eap_vtd_pts_paddr;
+    uintptr_t vmx_eap_vtd_ret_paddr;
+
+    (void)protectedbuffer_vaddr;
+    HALT_ON_ERRORCOND(protectedbuffer_size >= SIZE_G_RNTM_DMAPROT_BUFFER);
+
+    // The VT-d page table created here is a partial one. If 4-level PT is used, then there is only one PML4 entry instead
+    // of 512 entries. This is sufficient because the lower 3-level PT covers 0 - 512GB physical memory space
+    vmx_eap_vtd_pml4t_paddr = protectedbuffer_paddr;
+    vmx_eap_vtd_pdpt_paddr = vmx_eap_vtd_pml4t_paddr + PAGE_SIZE_4K;
+    vmx_eap_vtd_pdts_paddr = vmx_eap_vtd_pdpt_paddr + PAGE_SIZE_4K;
+    vmx_eap_vtd_pts_paddr = vmx_eap_vtd_pdts_paddr + (PAGE_SIZE_4K * DMAPROT_VMX_P4L_NPDT);
+    vmx_eap_vtd_ret_paddr = vmx_eap_vtd_pts_paddr + (PAGE_SIZE_4K * DMAPROT_VMX_P4L_NPDT * PAE_PTRS_PER_PDT);
+
+    
+#ifndef __XMHF_VERIFICATION__
+    // initialize all DRHD units
+    for (i = 0; i < vtd_num_drhd; i++)
+    {
+        printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+        _vtd_drhd_initialize(&vtd_drhd[i], vmx_eap_vtd_ret_paddr);
+    }
+#else
+    printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+    _vtd_drhd_initialize(&vtd_drhd[0], vmx_eap_vtd_ret_paddr);
+#endif
+
+    // Clear VT-d caches
+    _vtd_invalidatecaches();
+
+    // success
+    printf("\n%s: success, leaving...", __FUNCTION__);
+
+    return 1;
+}
 
 //"normal" DMA protection initialization to setup required
 // structures for DMA protection
@@ -545,8 +576,8 @@ u32 xmhf_dmaprot_arch_x86_vmx_initialize(spa_t protectedbuffer_paddr,
     // of 512 entries. This is sufficient because the lower 3-level PT covers 0 - 512GB physical memory space
     vmx_eap_vtd_pml4t_paddr = protectedbuffer_paddr;
     vmx_eap_vtd_pml4t_vaddr = protectedbuffer_vaddr;
-    vmx_eap_vtd_pdpt_paddr = protectedbuffer_paddr + PAGE_SIZE_4K;
-    vmx_eap_vtd_pdpt_vaddr = protectedbuffer_vaddr + PAGE_SIZE_4K;
+    vmx_eap_vtd_pdpt_paddr = vmx_eap_vtd_pml4t_paddr + PAGE_SIZE_4K;
+    vmx_eap_vtd_pdpt_vaddr = vmx_eap_vtd_pml4t_vaddr + PAGE_SIZE_4K;
     vmx_eap_vtd_pdts_paddr = vmx_eap_vtd_pdpt_paddr + PAGE_SIZE_4K;
     vmx_eap_vtd_pdts_vaddr = vmx_eap_vtd_pdpt_vaddr + PAGE_SIZE_4K;
     vmx_eap_vtd_pts_paddr = vmx_eap_vtd_pdts_paddr + (PAGE_SIZE_4K * DMAPROT_VMX_P4L_NPDT);
@@ -594,9 +625,6 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size)
         pt[ptindex] &= ~((u64)VTD_READ | (u64)VTD_WRITE);
     }
 #endif
-
-    // flush the caches
-    _vtd_invalidatecaches();
 }
 
 // DMA unprotect a given region of memory

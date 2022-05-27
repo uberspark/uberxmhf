@@ -78,3 +78,9 @@ void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r)
 {
   tv_app_handleshutdown(vcpu, r);
 }
+
+// Detect the presence of TrustVisor
+void xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r, uint32_t fn)
+{
+	(void)vcpu;(void)r;(void)fn;
+}

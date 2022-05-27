@@ -62,6 +62,17 @@ u32 xmhf_dmaprot_initialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr
 	return xmhf_dmaprot_arch_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size);
 }
 
+// Enable the DMA protection HW
+// [NOTE] This function must be separated from <xmhf_dmaprot_initialize>. Otherwise, misconfigured devices can have a 
+// chance to modify XMHF binary between the function <xmhf_dmaprot_initialize> and <xmhf_dmaprot_protect> inside 
+// <xmhf_runtime_entry>
+//return 1 on success 0 on failure
+u32 xmhf_dmaprot_enable(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size)
+{
+    return xmhf_dmaprot_arch_enable(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size);
+}
+
 //DMA protect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
 void xmhf_dmaprot_protect(spa_t start_paddr, size_t size){
