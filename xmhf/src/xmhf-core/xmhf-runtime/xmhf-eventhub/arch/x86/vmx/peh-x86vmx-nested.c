@@ -150,6 +150,63 @@ static void _vmx_nested_vm_fail_invalid(VCPU *vcpu)
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_CF;
 }
 
+/*
+ * Calculate virtual guest CR0
+ *
+ * Note: vcpu->vmcs.guest_CR0 is the CR0 on physical CPU when VMX non-root mode.
+ * For bits in CR0 that are masked, use the CR0 shadow.
+ * For other bits, use guest_CR0
+ */
+static u64 _vmx_guest_get_guest_cr0(VCPU *vcpu) {
+	return ((vcpu->vmcs.guest_CR0 & ~vcpu->vmcs.control_CR0_mask) |
+			(vcpu->vmcs.control_CR0_shadow & vcpu->vmcs.control_CR0_mask));
+}
+
+/*
+ * Calculate virtual guest CR4
+ *
+ * Note: vcpu->vmcs.guest_CR4 is the CR4 on physical CPU when VMX non-root mode.
+ * For bits in CR4 that are masked, use the CR4 shadow.
+ * For other bits, use guest_CR4
+ */
+static u64 _vmx_guest_get_guest_cr4(VCPU *vcpu) {
+	return ((vcpu->vmcs.guest_CR4 & ~vcpu->vmcs.control_CR4_mask) |
+			(vcpu->vmcs.control_CR4_shadow & vcpu->vmcs.control_CR4_mask));
+}
+
+/*
+ * Check for conditions that should result in #UD
+ *
+ * Always check:
+ *   (CR0.PE = 0) or (RFLAGS.VM = 1) or (IA32_EFER.LMA = 1 and CS.L = 0)
+ * Check for VMXON:
+ *   (CR4.VMXE = 0)
+ * Check for other than VMXON:
+ *   (not in VMX operation)
+ * Not checked:
+ *   (register operand)
+ *
+ * Return whether should inject #UD to guest
+ */
+static u32 _vmx_nested_check_ud(VCPU *vcpu, int is_vmxon)
+{
+	if ((_vmx_guest_get_guest_cr0(vcpu) & CR0_PE) == 0 ||
+		(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ||
+		((_vmx_get_guest_efer(vcpu) & (1ULL << EFER_LMA)) && !VCPU_g64(vcpu))) {
+		return 1;
+	}
+	if (is_vmxon) {
+		if ((_vmx_guest_get_guest_cr4(vcpu) & CR4_VMXE) == 0) {
+			return 1;
+		}
+	} else {
+		if (!vcpu->vmx_nested_is_vmx_operation) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 // TODO: also need to virtualize VMCALL
 
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct regs *r)
@@ -202,16 +259,11 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxoff(VCPU *vcpu, struct re
 
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct regs *r)
 {
-	if ((vcpu->vmcs.guest_CR0 & CR0_PE) == 0 ||
-		(vcpu->vmcs.guest_CR4 & CR4_VMXE) == 0 ||
-		(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ||
-		((_vmx_get_guest_efer(vcpu) & (1ULL << EFER_LMA)) && !VCPU_g64(vcpu))) {
+	if (_vmx_nested_check_ud(vcpu, 1)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_operation) {
-		u64 vcr0 = (vcpu->vmcs.guest_CR0 & ~vcpu->vmcs.control_CR0_mask) |
-				(vcpu->vmcs.control_CR0_shadow & vcpu->vmcs.control_CR0_mask);
-		u64 vcr4 = (vcpu->vmcs.guest_CR4 & ~vcpu->vmcs.control_CR4_mask) |
-				(vcpu->vmcs.control_CR4_shadow & vcpu->vmcs.control_CR4_mask);
+		u64 vcr0 = _vmx_guest_get_guest_cr0(vcpu);
+		u64 vcr4 = _vmx_guest_get_guest_cr4(vcpu);
 		/*
 		 * Note: A20M mode is not tested here.
 		 *
