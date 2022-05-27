@@ -49,6 +49,8 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 
+#define CUR_VMCS_PTR_INVALID 0xffffffffffffffffULL
+
 #define VMX_INST_RFLAGS_MASK \
 	((u64) (EFLAGS_CF | EFLAGS_PF | EFLAGS_AF | EFLAGS_ZF | EFLAGS_SF | \
 			EFLAGS_OF))
@@ -239,9 +241,10 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 					(rev != ((u32) basic_msr & 0x7fffffffU))) {
 					_vmx_nested_vm_fail_invalid(vcpu);
 				} else {
-					// TODO: current-VMCS pointer := FFFFFFFF_FFFFFFFFH;
 					vcpu->vmx_nested_is_vmx_operation = 1;
 					vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
+					vcpu->vmx_nested_is_vmx_root_operation = 1;
+					vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
 					_vmx_nested_vm_succeed(vcpu);
 				}
 			}
