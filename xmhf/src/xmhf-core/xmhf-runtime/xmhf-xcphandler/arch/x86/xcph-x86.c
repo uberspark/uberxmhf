@@ -153,6 +153,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             uintptr_t exception_cs, exception_rip, exception_rflags;
             u32 error_code_available = 0;
             hva_t *found = NULL;
+            hva_t *i = NULL;
 
             // skip error code on stack if applicable
             if (vector == CPU_EXCEPTION_DF ||
@@ -184,7 +185,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 
-            for (hva_t *i = (hva_t *)_begin_xcph_table;
+            for (i = (hva_t *)_begin_xcph_table;
                  i < (hva_t *)_end_xcph_table; i += 3) {
                 if (i[0] == vector && i[1] == exception_rip) {
                     found = i;

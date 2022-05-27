@@ -135,7 +135,8 @@ static u32 _vmx_mtrr_checkdeftype(u64 msrval, u32 *pe, u32 *pfe, u32 *ptype) {
 
 /* Check whether a fixed MTRR is valid (e.g. IA32_MTRR_FIX64K_00000) */
 static u32 _vmx_mtrr_checkfixed(u64 msrval) {
-	for (u32 i = 0; i < 8; i++) {
+	u32 i = 0;
+    for (i = 0; i < 8; i++) {
 		if (!_vmx_mtrr_checktype((u8) (msrval >> (i * 8)))) {
 			return 0;
 		}
@@ -165,6 +166,7 @@ static u32 _vmx_mtrr_checkvariable(VCPU *vcpu, u64 baseval, u64 maskval) {
 static void _vmx_gathermemorytypes(VCPU *vcpu){
  	u32 eax, ebx, ecx, edx;
 	u32 num_vmtrrs=0;	//number of variable length MTRRs supported by the CPU
+    u32 i = 0;
 
 	//0. sanity check
   	//check MTRR support
@@ -218,12 +220,12 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 	}
 
 	// Fill guest MTRR shadow MSRs
-	for (u32 i = 0; i < NUM_FIXED_MTRRS; i++) {
+	for (i = 0; i < NUM_FIXED_MTRRS; i++) {
 		u64 val = rdmsr64(fixed_mtrr_prop[i].msr);
 		HALT_ON_ERRORCOND(_vmx_mtrr_checkfixed(val));
 		vcpu->vmx_guestmtrrmsrs.fix_mtrrs[i] = val;
 	}
-	for (u32 i = 0; i < num_vmtrrs; i++) {
+	for (i = 0; i < num_vmtrrs; i++) {
 		u64 baseval = rdmsr64(IA32_MTRR_PHYSBASE0 + 2 * i);
 		u64 maskval = rdmsr64(IA32_MTRR_PHYSMASK0 + 2 * i);
 		HALT_ON_ERRORCOND(_vmx_mtrr_checkvariable(vcpu, baseval, maskval));
@@ -248,13 +250,15 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 //
 static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 	u32 prev_type = MTRR_TYPE_RESV;
+    u32 i = 0;
+
 	/* If MTRRs not enabled, return UC */
 	if (!vcpu->vmx_ept_mtrr_enable) {
 		return MTRR_TYPE_UC;
 	}
 	/* If fixed MTRRs are enabled, and addr < 1M, use them */
 	if (pagebaseaddr < 0x100000ULL && vcpu->vmx_ept_fixmtrr_enable) {
-		for (u32 i = 0; i < NUM_FIXED_MTRRS; i++) {
+		for (i = 0; i < NUM_FIXED_MTRRS; i++) {
 			struct _fixed_mtrr_prop_t *prop = &fixed_mtrr_prop[i];
 			if (pagebaseaddr < prop->end) {
 				u32 index = (prop->start - pagebaseaddr) / prop->step;
@@ -268,7 +272,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 		HALT_ON_ERRORCOND(0 && "Unknown fixed MTRR");
 	}
 	/* Compute variable MTRRs */
-	for (u32 i = 0; i < vcpu->vmx_guestmtrrmsrs.var_count; i++) {
+	for (i = 0; i < vcpu->vmx_guestmtrrmsrs.var_count; i++) {
 		u64 base = vcpu->vmx_guestmtrrmsrs.var_mtrrs[i].base;
 		u64 mask = vcpu->vmx_guestmtrrmsrs.var_mtrrs[i].mask;
 		u32 cur_type = base & 0xFFU;
@@ -316,8 +320,9 @@ static void _vmx_setupEPT(VCPU *vcpu){
 	u64 p_table = hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables);
 	// TODO: for amd64, likely can use 1G / 2M pages.
 	// If so, also need to change _vmx_getmemorytypeforphysicalpage()
+    gpa_t paddr = 0;
 
-	for (gpa_t paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PA_PAGE_SIZE_4K) {
+	for (paddr = 0; paddr < MAX_PHYS_ADDR; paddr += PA_PAGE_SIZE_4K) {
 		if (PA_PAGE_ALIGNED_512G(paddr)) {
 			/* Create PML4E */
 			gpa_t i = paddr >> PAGE_SHIFT_512G;
@@ -365,9 +370,11 @@ static void _vmx_setupEPT(VCPU *vcpu){
  */
 static void _vmx_updateEPT_memtype(VCPU *vcpu, u64 start, u64 end){
 	u64 *p_entry = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+    u64 paddr = 0;
+
 	HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(start));
 	HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(end));
-	for (u64 paddr = start; paddr < end; paddr += PA_PAGE_SIZE_4K) {
+	for (paddr = start; paddr < end; paddr += PA_PAGE_SIZE_4K) {
 		u64 i = paddr / PA_PAGE_SIZE_4K;
 		u64 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, paddr);
 		HALT_ON_ERRORCOND(memorytype == 0 || memorytype == 1 ||
@@ -382,6 +389,8 @@ static void _vmx_updateEPT_memtype(VCPU *vcpu, u64 start, u64 end){
  * return non-zero if unsuccessful read (should report error to guest OS)
  */
 u32 xmhf_memprot_arch_x86vmx_mtrr_read(VCPU *vcpu, u32 msr, u64 *val) {
+    u32 i = 0;
+
 	if (msr == IA32_MTRR_DEF_TYPE) {
 		/* Default type register */
 		*val = vcpu->vmx_guestmtrrmsrs.def_type;
@@ -399,7 +408,7 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_read(VCPU *vcpu, u32 msr, u64 *val) {
 		return 0;
 	} else {
 		/* Fixed MTRR */
-		for (u32 i = 0; i < NUM_FIXED_MTRRS; i++) {
+		for (i = 0; i < NUM_FIXED_MTRRS; i++) {
 			if (fixed_mtrr_prop[i].msr == msr) {
 				*val = vcpu->vmx_guestmtrrmsrs.fix_mtrrs[i];
 				return 0;
@@ -483,10 +492,12 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 	} else {
 		/* Fixed MTRR */
 		u32 found = 0;
+        u32 i = 0;
+
 		if (!_vmx_mtrr_checkfixed(val)) {
 			return 1;
 		}
-		for (u32 i = 0; i < NUM_FIXED_MTRRS; i++) {
+		for (i = 0; i < NUM_FIXED_MTRRS; i++) {
 			if (fixed_mtrr_prop[i].msr == msr) {
 				if (val == vcpu->vmx_guestmtrrmsrs.fix_mtrrs[i]) {
 					/* No change to MSR value */

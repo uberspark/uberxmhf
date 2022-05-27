@@ -159,10 +159,14 @@ void xmhf_runtime_entry(void){
 	xmhf_debug_init((char *)&rpb->RtmUartConfig);
 	printf("\nruntime initializing...");
 
-  	//initialize basic platform elements
+  // initialize memory management
+	xmhf_mm_init();
+	printf("\nmemory management initialized");
+
+  //initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
-    //[debug] dump E820 and MP table
+  //[debug] dump E820 and MP table
  	#ifndef __XMHF_VERIFICATION__
  	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
 	{
@@ -201,15 +205,25 @@ void xmhf_runtime_entry(void){
 				protectedbuffer_size = xmhf_dmaprot_getbuffersize(DMAPROT_PHY_ADDR_SPACE_SIZE); // ADDR_512GB
 				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
 
+                xmhf_iommu_init();
+
 				printf("\nRuntime: Re-initializing DMA protection (physical address space size:0x%llX)...", DMAPROT_PHY_ADDR_SPACE_SIZE);
 				if(!xmhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
 					printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
 					HALT();
 				}
 
-				//protect SL and runtime memory regions
+				// Protect SL and runtime memory regions
 				xmhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
 				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
+
+                // Enable DMA protection
+                if(!xmhf_dmaprot_enable(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
+					printf("\nRuntime: Unable to enable DMA protection. HALT!");
+					HALT();
+				}
+
+                xmhf_dmaprot_invalidate_cache();
 		}
 
 #else //!__DMAP__
@@ -299,10 +313,30 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   xmhf_smpguest_initialize(vcpu);
 #endif
 
+#if defined (__DMAP__)
+  // [TODO][Superymk] Ugly hack: HP2540p's GPU does not work properly if not invoking <xmhf_dmaprot_invalidate_cache> 
+  // in <xmhf_runtime_main>.
+  xmhf_dmaprot_invalidate_cache();
+#endif
+
   //start partition (guest)
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
   xmhf_partition_start(vcpu);
 
   printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
   HALT();
+}
+
+void xmhf_runtime_shutdown(VCPU *vcpu, struct regs *r)
+{
+  xmhf_app_handleshutdown(vcpu, r);
+
+  // Finalize sub-systems
+#if defined (__DMAP__)
+  xmhf_iommu_fini();
+#endif // __DMAP__
+  xmhf_mm_fini();
+
+  // Reboot
+  xmhf_baseplatform_reboot(vcpu);
 }

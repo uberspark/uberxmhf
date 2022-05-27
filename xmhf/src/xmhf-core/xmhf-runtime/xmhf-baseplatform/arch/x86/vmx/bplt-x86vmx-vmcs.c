@@ -65,16 +65,6 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
         HALT();
       }
     }
-    /*
-     * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
-     * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
-     */
-    if (vcpu->vmx_guest_inject_nmi) {
-        unsigned long __control_VMX_cpu_based;
-        HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
-        __control_VMX_cpu_based |= (1U << 22);
-        HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
-    }
 }
 
 void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
@@ -113,11 +103,6 @@ void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
 // routine takes CPU VMCS and stores it in vcpu vmcsfields
 void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
     unsigned int i;
-    /*
-     * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
-     * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
-     */
-    vcpu->vmx_guest_inject_nmi = 0;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
         u32 encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
         u32 offset = g_vmx_vmcsrwfields_encodings[i].fieldoffset;
@@ -192,6 +177,7 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 }
 
 void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
+    u32 i = 0;
 
 #define DUMP_VCPU_PRINT_INT16(x) \
     printf("\nCPU(0x%02x): " #x "=0x%08x", vcpu->id, (x));
@@ -224,7 +210,7 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT64(vcpu->npt_asid);
     DUMP_VCPU_PRINT_INT64(vcpu->npt_vaddr_pts);
     DUMP_VCPU_PRINT_INT64(vcpu->svm_vaddr_iobitmap);
-    for (u32 i = 0; i < IA32_VMX_MSRCOUNT; i++) {
+    for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
         DUMP_VCPU_PRINT_INT64_INDEX(vcpu->vmx_msrs, i);
     }
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efer);

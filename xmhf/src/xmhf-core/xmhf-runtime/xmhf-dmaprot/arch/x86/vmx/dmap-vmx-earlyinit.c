@@ -23,10 +23,10 @@ static u32 vtd_num_drhd = 0; // total number of DMAR h/w units
 // we ensure that every entry in the RET is 0 which means that the DRHD will
 // not allow any DMA requests for PCI bus 0-255 (Sec 3.3.2, IVTD Spec. v1.2)
 // we zero out the CET just for sanity
-static void _vtd_setupRETCET_bootstrap(uintptr_t vtd_ret_paddr, uintptr_t vtd_ret_vaddr, uintptr_t vtd_cet_paddr, uintptr_t vtd_cet_vaddr)
+static void _vtd_setupRETCET_bootstrap(spa_t vtd_ret_paddr, hva_t vtd_ret_vaddr, spa_t vtd_cet_paddr, hva_t vtd_cet_vaddr)
 {
     // sanity check that RET and CET are page-aligned
-    HALT_ON_ERRORCOND(!(vtd_ret_paddr & 0x00000FFFUL) && !(vtd_cet_paddr & 0x00000FFFUL));
+    HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(vtd_ret_paddr) && PA_PAGE_ALIGNED_4K(vtd_cet_paddr));
 
     // zero out CET, we dont require it for bootstrapping
     memset((void *)vtd_cet_vaddr, 0, PAGE_SIZE_4K);

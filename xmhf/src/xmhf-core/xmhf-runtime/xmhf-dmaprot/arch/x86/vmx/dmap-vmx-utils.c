@@ -1,17 +1,11 @@
 // author: Miao Yu
 
 #include <xmhf.h>
+#include "dmap-vmx-internal.h"
 #include "../../../iommu-pt.h"
 
 extern void* vtd_cet; // cet holds all its structures in the memory linearly
 extern struct dmap_vmx_cap g_vtd_cap;
-
-#define NUM_PT_ENTRIES      512 // The number of page table entries in each level
-
-#define PAE_get_pml4tindex(x)    ((x) >> 39) & (NUM_PT_ENTRIES - 1)
-#define PAE_get_pdptindex(x)    ((x) >> 30) & (NUM_PT_ENTRIES - 1)
-#define PAE_get_pdtindex(x)     ( (x) >> 21) & (NUM_PT_ENTRIES - 1)
-#define PAE_get_ptindex(x)      ( (x) >> 12 ) & (NUM_PT_ENTRIES - 1)
 
 
 //! Invalidate the IOMMU PageTable corresponding to <pt_info>
@@ -110,10 +104,10 @@ static void* __vtd_get_nextlvl_pt(IOMMU_PT_INFO* pt_info, void* pt_base, uint32_
 			return NULL;
 		}
 
-		*p_pte = (hva2spa(nextlvl_pt) & PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE);
+		*p_pte = (hva2spa(nextlvl_pt) & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE);
 	}
 
-	return spa2hva(*p_pte & PAGE_MASK_4K);
+	return spa2hva(*p_pte & ADDR64_PAGE_MASK_4K);
 
 }
 
@@ -166,11 +160,11 @@ bool iommu_vmx_map(IOMMU_PT_INFO* pt_info, gpa_t gpa, spa_t spa, uint32_t flags)
 	// Step 5. Map spa
 	if(flags == DMA_ALLOW_ACCESS)
 	{
-        ((uint64_t*)pt)[pt_idx] = (spa & PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE);
+        ((uint64_t*)pt)[pt_idx] = (spa & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE);
 	}
     else if (flags == DMA_DENY_ACCESS)
 	{
-        ((uint64_t*)pt)[pt_idx] = (spa & PAGE_MASK_4K) & (uint64_t)0xfffffffe; // remove the present bit
+        ((uint64_t*)pt)[pt_idx] = (spa & ADDR64_PAGE_MASK_4K) & (uint64_t)0xfffffffe; // remove the present bit
 	}
 
 
@@ -188,12 +182,12 @@ static bool __x86vmx_bind_cet(DEVICEDESC* device, iommu_pt_t pt_id, spa_t iommu_
     if(g_vtd_cap.sagaw & 0x4)
     {
         // Preferred to use 4-level PT
-        *(value + 1) = (uint64_t)0x0000000000000002ULL | (((uint64_t)pt_id & 0xFFFF) << 8); //domain:<pt_id>, aw=48 bits, 4 level pt
+        *(value + 1) = (uint64_t)0x0000000000000002ULL | (((uint64_t)pt_id & 0xFFFFULL) << 8); //domain:<pt_id>, aw=48 bits, 4 level pt
     }
     else if(g_vtd_cap.sagaw & 0x2)
     {
         // If no 4-level PT, then try 3-level PT
-        *(value + 1) = (uint64_t)0x0000000000000001ULL | (((uint64_t)pt_id & 0xFFFF) << 8); //domain:<pt_id>, aw=39 bits, 3 level pt
+        *(value + 1) = (uint64_t)0x0000000000000001ULL | (((uint64_t)pt_id & 0xFFFFULL) << 8); //domain:<pt_id>, aw=39 bits, 3 level pt
     }
     else
     {

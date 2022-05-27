@@ -34,6 +34,6 @@ extern bool iommu_vmx_bind_device(IOMMU_PT_INFO* pt_info, DEVICEDESC* device);
 
 /// Bind the untrusted OS's default IOMMU PT to a device
 extern bool iommu_vmx_unbind_device(DEVICEDESC* device);
-#endif // __ASSEMBLY__
 
+#endif // __ASSEMBLY__
 #endif // XMHF_DMAP

@@ -1,5 +1,18 @@
+// author: Miao Yu [Superymk]
+#ifndef XMHF_DMAP_VMX_INTERNAL_H
+#define XMHF_DMAP_VMX_INTERNAL_H
+
 #include <xmhf.h>
 
+#define NUM_PT_ENTRIES      512 // The number of page table entries in each level
+
+#define PAE_get_pml4tindex(x)    ((x) >> 39) & (NUM_PT_ENTRIES - 1)
+#define PAE_get_pdptindex(x)    ((x) >> 30) & (NUM_PT_ENTRIES - 1)
+#define PAE_get_pdtindex(x)     ( (x) >> 21) & (NUM_PT_ENTRIES - 1)
+#define PAE_get_ptindex(x)      ( (x) >> 12 ) & (NUM_PT_ENTRIES - 1)
+
+
+#ifndef __ASSEMBLY__
 extern struct dmap_vmx_cap g_vtd_cap;
 
 //vt-d register access function
@@ -19,3 +32,6 @@ extern bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vm
 //steps that need to be followed to initialize a DRHD unit!. we use our
 //common sense instead...:p
 extern void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr);
+
+#endif // __ASSEMBLY__
+#endif // XMHF_DMAP_VMX_INTERNAL_H
