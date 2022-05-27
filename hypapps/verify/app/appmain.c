@@ -144,6 +144,13 @@ void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 	xmhf_baseplatform_reboot(vcpu);
 }
 
+//handles CPUID invokation
+//for now allow default behavior
+void xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r, uint32_t fn)
+{
+	(void)vcpu;(void)r;(void)fn;
+}
+
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
 u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
