@@ -1150,7 +1150,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			/* Clear NMI windowing */
 			vcpu->vmcs.control_VMX_cpu_based &= ~(1U << 22);
 			/* Check whether the CPU can handle NMI */
-			if (vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI) {
+			if (vcpu->vmcs.control_exception_bitmap & (1U << CPU_EXCEPTION_NMI)) {
 				/*
 				 * TODO: hypapp has chosen to intercept NMI so callback.
 				 * Currently not implemented. One way is to drop the NMI
