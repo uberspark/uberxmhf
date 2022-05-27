@@ -49,6 +49,57 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 
+/* VMCALL executed in VMX root operation */
+#define VM_INST_ERRNO_VMCALL_IN_VMXROOT 1
+/* VMCLEAR with invalid physical address */
+#define VM_INST_ERRNO_VMCLEAR_INVALID_PHY_ADDR 2
+/* VMCLEAR with VMXON pointer */
+#define VM_INST_ERRNO_VMCLEAR_VMXON_PTR 3
+/* VMLAUNCH with non-clear VMCS */
+#define VM_INST_ERRNO_VMLAUNCH_NONCLEAR_VMCS 4
+/* VMRESUME with non-launched VMCS */
+#define VM_INST_ERRNO_VMRESUME_NONLAUNCH_VMCS 5
+/* VMRESUME after VMXOFF (VMXOFF and VMXON between VMLAUNCH and VMRESUME) */
+#define VM_INST_ERRNO_VMLAUNCH_AFTER_VMXOFF 6
+/* VM entry with invalid control field(s) */
+#define VM_INST_ERRNO_VMENTRY_INVALID_CTRL 7
+/* VM entry with invalid host-state field(s) */
+#define VM_INST_ERRNO_VMENTRY_INVALID_HOST 8
+/* VMPTRLD with invalid physical address */
+#define VM_INST_ERRNO_VMPTRLD_INVALID_PHY_ADDR 9
+/* VMPTRLD with VMXON pointer */
+#define VM_INST_ERRNO_VMPTRLD_VMXON_PTR 10
+/* VMPTRLD with incorrect VMCS revision identifier */
+#define VM_INST_ERRNO_VMPTRLD_WITH_INCORRECT_VMCS_REV_ID 11
+/* VMREAD/VMWRITE from/to unsupported VMCS component */
+#define VM_INST_ERRNO_VMRDWR_UNSUPP_VMCS_COMP 12
+/* VMWRITE to read-only VMCS component */
+#define VM_INST_ERRNO_VMWRITE_RO_VMCS_COMP 13
+/* VMXON executed in VMX root operation */
+#define VM_INST_ERRNO_VMXON_IN_VMXROOT 15
+/* VM entry with invalid executive-VMCS pointer */
+#define VM_INST_ERRNO_VMENTRY_INVALID_EXEC_VMCS_PTR 16
+/* VM entry with non-launched executive VMCS */
+#define VM_INST_ERRNO_VMENTRY_NONLAUNCH_EXEC_VMCS 17
+/* VM entry with executive-VMCS pointer not VMXON pointer */
+#define VM_INST_ERRNO_VMENTRY_EXEC_VMCS_PTR_NOT_VMXON_PTR 18
+/* VMCALL with non-clear VMCS */
+#define VM_INST_ERRNO_VMCALL_NONCLEAR_VMCS 19
+/* VMCALL with invalid VM-exit control fields */
+#define VM_INST_ERRNO_VMCALL_INVALID_VMEXIT_CTRL 20
+/* VMCALL with incorrect MSEG revision identifier */
+#define VM_INST_ERRNO_VMCALL_INCORRECT_MSEG_REV_ID 22
+/* VMXOFF under dual-monitor treatment of SMIs and SMM */
+#define VM_INST_ERRNO_VMXOFF_UNDER_DUAL_MONITOR_SMI_SMM 23
+/* VMCALL with invalid SMM-monitor features */
+#define VM_INST_ERRNO_VMCALL_INVALID_SMM_MONITOR_FEATURE 24
+/* VM entry with invalid VM-execution control fields in executive VMCS */
+#define VM_INST_ERRNO_VMENTRY_INVALID_VMEXEC_CTRL_FIELD_EXEC_VMCS 25
+/* VM entry with events blocked by MOV SS */
+#define VM_INST_ERRNO_VMENTRY_EVENT_BLOCK_MOVSS 26
+/* Invalid operand to INVEPT/INVVPID */
+#define VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID 28
+
 #define CUR_VMCS_PTR_INVALID 0xffffffffffffffffULL
 
 #define VMX_INST_RFLAGS_MASK \
@@ -133,21 +184,51 @@ static void _vmx_nested_vm_succeed(VCPU *vcpu)
 	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
 }
 
-#if 0
 static void _vmx_nested_vm_fail_valid(VCPU *vcpu, u32 error_number)
 {
 	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_ZF;
-	/* TODO: set error_number */
+	/* TODO: set error_number, using vcpu->vmx_nested_current_vmcs_pointer */
 	HALT_ON_ERRORCOND(0);
 	(void) error_number;
 }
-#endif
 
 static void _vmx_nested_vm_fail_invalid(VCPU *vcpu)
 {
 	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_CF;
+}
+
+static void _vmx_nested_vm_fail(VCPU *vcpu, u32 error_number)
+{
+	if (vcpu->vmx_nested_current_vmcs_pointer != CUR_VMCS_PTR_INVALID) {
+		_vmx_nested_vm_fail_valid(vcpu, error_number);
+	} else {
+		_vmx_nested_vm_fail_invalid(vcpu);
+	}
+}
+
+/*
+ * Check whether addr sets any bit beyond the physical-address width for VMX
+ *
+ * If IA32_VMX_BASIC[48] = 1, the address is limited to 32-bits.
+ */
+static u32 _vmx_check_physical_addr_width(VCPU *vcpu, u64 addr) {
+	u32 eax, ebx, ecx, edx;
+	u64 paddrmask;
+	/* Check whether CPUID 0x80000008 is supported */
+	cpuid(0x80000000U, &eax, &ebx, &ecx, &edx);
+	HALT_ON_ERRORCOND(eax >= 0x80000008U);
+	/* Compute paddrmask from CPUID.80000008H:EAX[7:0] (max phy addr) */
+	cpuid(0x80000008U, &eax, &ebx, &ecx, &edx);
+	eax &= 0xFFU;
+	HALT_ON_ERRORCOND(eax >= 32 && eax < 64);
+	paddrmask = (1ULL << eax) - 0x1ULL;
+	if (vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 48)) {
+		paddrmask &= (1ULL << 32);
+	}
+	// TODO: paddrmask can be cached, maybe move code to part-*.c
+	return (addr & ~paddrmask) == 0;
 }
 
 /*
@@ -229,9 +310,9 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct r
 		guestmem_hptw_ctx_pair_t ctx_pair;
 		guestmem_init(vcpu, &ctx_pair);
 		guestmem_copy_gv2h(&ctx_pair, 0, &vmcs_ptr, addr, sizeof(vmcs_ptr));
-		if (!PA_PAGE_ALIGNED_4K(vmcs_ptr)) {
-			// TODO: vmfail
-			HALT_ON_ERRORCOND(0 && "Not implemented");
+		if (!PA_PAGE_ALIGNED_4K(vmcs_ptr) ||
+			!_vmx_check_physical_addr_width(vcpu, vmcs_ptr)) {
+			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMCLEAR_INVALID_PHY_ADDR);
 		} else {
 			// TODO
 			HALT_ON_ERRORCOND(0 && "Not implemented");
@@ -307,7 +388,8 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 			guestmem_hptw_ctx_pair_t ctx_pair;
 			guestmem_init(vcpu, &ctx_pair);
 			guestmem_copy_gv2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
-			if (!PA_PAGE_ALIGNED_4K(vmxon_ptr)) {
+			if (!PA_PAGE_ALIGNED_4K(vmxon_ptr) ||
+				!_vmx_check_physical_addr_width(vcpu, vmxon_ptr)) {
 				_vmx_nested_vm_fail_invalid(vcpu);
 			} else {
 				u32 rev;
