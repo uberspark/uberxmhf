@@ -313,6 +313,8 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct r
 		if (!PA_PAGE_ALIGNED_4K(vmcs_ptr) ||
 			!_vmx_check_physical_addr_width(vcpu, vmcs_ptr)) {
 			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMCLEAR_INVALID_PHY_ADDR);
+		} else if (vmcs_ptr == vmx_nested_vmxon_pointer) {
+			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMCLEAR_VMXON_PTR);
 		} else {
 			// TODO
 			HALT_ON_ERRORCOND(0 && "Not implemented");
