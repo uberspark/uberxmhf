@@ -174,6 +174,11 @@ static u64 _vmx_guest_get_guest_cr4(VCPU *vcpu) {
 			(vcpu->vmcs.control_CR4_shadow & vcpu->vmcs.control_CR4_mask));
 }
 
+/* Get CPL of guest */
+static u32 _vmx_guest_get_cpl(VCPU *vcpu) {
+	return (vcpu->vmcs.guest_CS_selector & 0x3);
+}
+
 /*
  * Check for conditions that should result in #UD
  *
@@ -211,8 +216,27 @@ static u32 _vmx_nested_check_ud(VCPU *vcpu, int is_vmxon)
 
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct regs *r)
 {
-	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
-	HALT_ON_ERRORCOND(0 && "Not implemented");
+	if (_vmx_nested_check_ud(vcpu, 0)) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		// TODO: VMEXIT
+		HALT_ON_ERRORCOND(0 && "Not implemented");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+	} else {
+		u64 addr = _vmx_decode_m64(vcpu, r);
+		gpa_t vmcs_ptr;
+		guestmem_hptw_ctx_pair_t ctx_pair;
+		guestmem_init(vcpu, &ctx_pair);
+		guestmem_copy_gv2h(&ctx_pair, 0, &vmcs_ptr, addr, sizeof(vmcs_ptr));
+		if (!PA_PAGE_ALIGNED_4K(vmcs_ptr)) {
+			// TODO: vmfail
+			HALT_ON_ERRORCOND(0 && "Not implemented");
+		} else {
+			// TODO
+			HALT_ON_ERRORCOND(0 && "Not implemented");
+		}
+	}
 }
 
 void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmlaunch(VCPU *vcpu, struct regs *r)
@@ -271,7 +295,7 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct reg
 		 * already requires entering VMX operation in physical CPU. This may
 		 * need to be updated if IA32_FEATURE_CONTROL is virtualized.
 		 */
-		if ((vcpu->vmcs.guest_CS_selector & 0x3) != 0 ||
+		if (_vmx_guest_get_cpl(vcpu) > 0 ||
 			(~vcr0 & vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]) != 0 ||
 			(vcr0 & ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR]) != 0 ||
 			(~vcr4 & vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]) != 0 ||
