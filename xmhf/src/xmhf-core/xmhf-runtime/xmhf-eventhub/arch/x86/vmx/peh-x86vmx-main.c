@@ -1034,6 +1034,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 #endif /* __OPTIMIZE_NESTED_VIRT__ */
 	//read VMCS from physical CPU/core
 #ifndef __XMHF_VERIFICATION__
+    /*
+     * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
+     * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
+     */
+    vcpu->vmx_guest_inject_nmi = 0;
 	xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
@@ -1290,6 +1295,16 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//write updated VMCS back to CPU
 #ifndef __XMHF_VERIFICATION__
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+    /*
+     * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
+     * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
+     */
+    if (vcpu->vmx_guest_inject_nmi) {
+        unsigned long __control_VMX_cpu_based;
+        HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
+        __control_VMX_cpu_based |= (1U << 22);
+        HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
+    }
 #endif // __XMHF_VERIFICATION__
 
 
