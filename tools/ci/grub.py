@@ -7,9 +7,12 @@ import argparse, os, re
 
 def parse_args():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--subarch', required=True)
-	parser.add_argument('--xmhf-bin', required=True)
-	parser.add_argument('--work-dir', required=True)
+	parser.add_argument('--subarch', required=True,
+						help='i386 or amd64 for XMHF, or windows for Windows')
+	parser.add_argument('--xmhf-bin', required=False,
+						help='Directory that contains XMHF binaries')
+	parser.add_argument('--work-dir', required=True,
+						help='Place to generate GRUB')
 	parser.add_argument('--verbose', action='store_true')
 	parser.add_argument('--boot-dir', required=True,
 						help='Contain /boot and MBR image to generate GRUB')
@@ -56,10 +59,15 @@ def generate_xmhf_image(args):
 	debugfs_cmds = []
 	debugfs_cmds.append('mkdir boot')
 	debugfs_cmds.append('cd boot')
-	for i in ['init-x86-%s.bin', 'hypervisor-x86-%s.bin.gz']:
-		name = i % args.subarch
-		src_pathname = os.path.join(args.xmhf_bin, name)
-		debugfs_cmds.append('write %s %s' % (src_pathname, name))
+	if args.subarch in ['i386', 'amd64']:
+		for i in ['init-x86-%s.bin', 'hypervisor-x86-%s.bin.gz']:
+			name = i % args.subarch
+			src_pathname = os.path.join(args.xmhf_bin, name)
+			debugfs_cmds.append('write %s %s' % (src_pathname, name))
+	elif args.subarch == 'windows':
+		pass
+	else:
+		raise Exception('Unknown subarch: %s' % repr(args.subarch))
 	debugfs_cmds.append('mkdir grub')
 	debugfs_cmds.append('cd grub')
 	debugfs_cmds.append('write %s grub.cfg' %

@@ -1,0 +1,33 @@
+set default="0"
+menuentry_id_option=""
+terminal_input console
+terminal_output console
+set timeout_style=menu
+set timeout=0
+
+set menu_color_normal=cyan/blue
+set menu_color_highlight=white/blue
+
+menuentry 'Windows' {
+	insmod part_msdos
+	insmod ntfs
+	if [ "${root}" = "hd0,msdos1" ] ; then
+		set new_root='hd1,msdos1'
+	fi
+	if [ "${root}" = "hd1,msdos1" ] ; then
+		set new_root='hd2,msdos1'
+	fi
+	if [ "${root}" = "hd2,msdos1" ] ; then
+		set new_root='hd3,msdos1'
+	fi
+	if [ "${root}" = "hd3,msdos1" ] ; then
+		set new_root='hd4,msdos1'
+	fi
+	if [ "${root}" = "hd4,msdos1" ] ; then
+		set new_root='hd5,msdos1'
+	fi
+	set root="$new_root"
+	parttool ${root} hidden-
+	drivemap -s (hd0) ${root}
+	chainloader +1
+}
