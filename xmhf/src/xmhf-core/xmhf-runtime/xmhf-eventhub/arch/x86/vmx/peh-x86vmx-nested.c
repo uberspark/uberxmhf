@@ -123,6 +123,9 @@ union _vmx_decode_m64_inst_info {
 	u32 raw;
 };
 
+/* A blank page in memory for VMCLEAR */
+static u8 blank_page[PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
+
 /*
  * Given a segment index, return the segment offset
  * TODO: do we need to check access rights?
@@ -316,9 +319,21 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct r
 		} else if (vmcs_ptr == vcpu->vmx_nested_vmxon_pointer) {
 			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMCLEAR_VMXON_PTR);
 		} else {
-			// TODO
-			HALT_ON_ERRORCOND(0 && "Not implemented");
+			/*
+			 * We do not distinguish a VMCS that is "Inactive, Not Current,
+			 * Clear" from a VMCS that is "Inactive" with other states. This is
+			 * because we do not track inactive guests. As a result, we expect
+			 * guest hypervisors to VMCLEAR before and after using a VMCS.
+			 * SDM says that the launch state of VMCS should be set to clear,
+			 * but we do nothing here.
+			 */
+			guestmem_copy_h2gp(&ctx_pair, 0, vmcs_ptr, blank_page, PAGE_SIZE_4K);
+			if (vmcs_ptr == vcpu->vmx_nested_current_vmcs_pointer) {
+				vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
+			}
+			_vmx_nested_vm_succeed(vcpu);
 		}
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	}
 }
 
