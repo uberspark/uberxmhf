@@ -1,0 +1,41 @@
+name: Build PAL demo
+
+on: ["push", "pull_request"]
+
+jobs:
+  pal_demo:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target_arch:
+          - 'i386'
+          - 'amd64'
+        os:
+          - 'linux'
+          - 'windows'
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: apt-get
+      run: |
+        sudo apt-get update && \
+        sudo apt-get install \
+                      build-essential crossbuild-essential-i386 gcc-mingw-w64 \
+                      -y
+    - name: Build
+      run: |
+        ./tools/ci/build_pal_demo.sh ${{ matrix.os }} ${{ matrix.target_arch }}
+    - name: Release
+      uses: actions/upload-artifact@v2
+      with:
+        name: pal_demo-${{ matrix.os }}-${{ matrix.target_arch }}
+        path: |
+          hypapps/trustvisor/pal_demo/main
+          hypapps/trustvisor/pal_demo/test
+          hypapps/trustvisor/pal_demo/test_args
+          hypapps/trustvisor/pal_demo/main.exe
+          hypapps/trustvisor/pal_demo/test.exe
+          hypapps/trustvisor/pal_demo/test_args.exe
+
