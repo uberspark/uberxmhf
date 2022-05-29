@@ -32,8 +32,9 @@ ifeq ($(UPDATE_INTEL_UCODE), y)
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-ucode.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-ucode-data.o
 endif
+
 ifeq ($(NESTED_VIRTUALIZATION), y)
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-nested.o
+OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-handler.o
 endif
 
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/smpg-interface.o
@@ -135,6 +136,10 @@ RUNTIME_COMPONENTS += xmhf-debug
 RUNTIME_COMPONENTS += xmhf-xmhfcbackend
 #XMHF startup component
 RUNTIME_COMPONENTS += xmhf-startup
+ifeq ($(NESTED_VIRTUALIZATION), y)
+#XMHF nested virtualization component
+RUNTIME_COMPONENTS += xmhf-nested
+endif
 
 # targets
 .PHONY: runtimecomponents $(RUNTIME_COMPONENTS)
@@ -188,3 +193,4 @@ clean:
 	cd xmhf-debug && $(MAKE) -w clean
 	cd xmhf-xmhfcbackend && $(MAKE) -w clean
 	cd xmhf-startup && $(MAKE) -w clean
+	cd xmhf-nested && $(MAKE) -w clean

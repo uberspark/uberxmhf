@@ -115,17 +115,6 @@ void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 #ifdef __UPDATE_INTEL_UCODE__
 void handle_intel_ucode_update(VCPU *vcpu, u64 update_data);
 #endif /* __UPDATE_INTEL_UCODE__ */
-#ifdef __NESTED_VIRTUALIZATION__
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct regs *r);
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmlaunch(VCPU *vcpu, struct regs *r);
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmptrld(VCPU *vcpu, struct regs *r);
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmptrst(VCPU *vcpu, struct regs *r);
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmread(VCPU *vcpu, struct regs *r);
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmresume(VCPU *vcpu, struct regs *r);
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmwrite(VCPU *vcpu, struct regs *r);
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxoff(VCPU *vcpu, struct regs *r);
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct regs *r);
-#endif /* !__NESTED_VIRTUALIZATION__ */
 
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES
