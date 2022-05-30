@@ -148,8 +148,8 @@ static vmcs12_info_t
 cpu_active_vmcs12[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS];
 
 /* The VMCS02's in each CPU */
-// TODO: static u8 cpu_vmcs02[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][PAGE_SIZE_4K]
-// TODO: __attribute__((section(".bss.palign_data")));
+static u8 cpu_vmcs02[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][PAGE_SIZE_4K]
+__attribute__((section(".bss.palign_data")));
 
 /*
  * Given a segment index, return the segment offset
@@ -322,11 +322,13 @@ static u32 _vmx_nested_check_ud(VCPU *vcpu, int is_vmxon)
 }
 
 /* Clear list of active VMCS12's tracked */
-static void active_vmcs12_init(VCPU *vcpu)
+static void active_vmcs12_array_init(VCPU *vcpu)
 {
 	int i;
 	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
+		uintptr_t vmcs02_ptr = (uintptr_t) cpu_vmcs02[vcpu->idx][i];
 		cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr = CUR_VMCS_PTR_INVALID;
+		cpu_active_vmcs12[vcpu->idx][i].vmcs02_ptr = (spa_t) vmcs02_ptr;
 	}
 }
 
@@ -345,6 +347,20 @@ static vmcs12_info_t *find_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr)
 		}
 	}
 	return NULL;
+}
+
+/* Add a new VMCS12 to the array of actives. Initializes underlying VMCS02 */
+static void new_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr, u32 rev)
+{
+	vmcs12_info_t *vmcs12_info;
+	HALT_ON_ERRORCOND(vmcs_ptr != CUR_VMCS_PTR_INVALID);
+	vmcs12_info = find_active_vmcs12(vcpu, CUR_VMCS_PTR_INVALID);
+	if (vmcs12_info == NULL) {
+		HALT_ON_ERRORCOND(0 && "Too many active VMCS's");
+	}
+	vmcs12_info->vmcs12_ptr = vmcs_ptr;
+	HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
+	*(u32 *)(uintptr_t)vmcs12_info->vmcs02_ptr = rev;
 }
 
 /*
@@ -441,8 +457,10 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 				_vmx_nested_vm_fail
 					(vcpu, VM_INST_ERRNO_VMPTRLD_WITH_INCORRECT_VMCS_REV_ID);
 			} else {
-				// TODO: look up active table
-				HALT_ON_ERRORCOND(0 && "Not implemented");
+				vmcs12_info_t *vmcs12_info = find_active_vmcs12(vcpu, vmcs_ptr);
+				if (vmcs12_info == NULL) {
+					new_active_vmcs12(vcpu, vmcs_ptr, rev);
+				}
 				vcpu->vmx_nested_current_vmcs_pointer = vmcs_ptr;
 				_vmx_nested_vm_succeed(vcpu);
 			}
@@ -532,7 +550,7 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU *vcpu, struct regs *r)
 					vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
 					vcpu->vmx_nested_is_vmx_root_operation = 1;
 					vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
-					active_vmcs12_init(vcpu);
+					active_vmcs12_array_init(vcpu);
 					_vmx_nested_vm_succeed(vcpu);
 				}
 			}
