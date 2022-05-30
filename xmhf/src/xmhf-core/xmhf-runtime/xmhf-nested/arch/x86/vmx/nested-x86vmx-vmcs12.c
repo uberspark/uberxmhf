@@ -50,16 +50,35 @@
 #include <xmhf.h>
 #include "nested-x86vmx-vmcs12.h"
 
-int xmhf_nested_arch_x86vmx_vmcs_readable(struct nested_vmcs12 *vmcs12, void *field) {
-	switch (field - (void *) vmcs12) {
+/*
+ * Given a VMCS field encoding (used in VMREAD and VMWRITE)
+ * Return index of the field in struct nested_vmcs12
+ * Return (size_t)(-1) when not found
+ */
+size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding)
+{
+	switch (encoding) {
+#define DECLARE_FIELD_16(encoding, name, extra) \
+		case encoding: return offsetof(struct nested_vmcs12, name);
+#define DECLARE_FIELD_32(enc, name, extra) DECLARE_FIELD_16(enc, name, extra)
+#define DECLARE_FIELD_64(enc, name, extra) DECLARE_FIELD_16(enc, name, extra)
+#define DECLARE_FIELD_NW(enc, name, extra) DECLARE_FIELD_16(enc, name, extra)
+#include "nested-x86vmx-vmcs12-fields.h"
+	default:
+		printf("\nWarning: unknown encoding requested: 0x%04lx", encoding);
+		return (size_t)(-1);
+	}
+}
+
+
+int xmhf_nested_arch_x86vmx_vmcs_readable(size_t offset)
+{
+	switch (offset) {
 #define DECLARE_FIELD_16(encoding, name, extra) \
 		case offsetof(struct nested_vmcs12, name): return 1;
-#define DECLARE_FIELD_32(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 1;
-#define DECLARE_FIELD_64(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 1;
-#define DECLARE_FIELD_NW(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 1;
+#define DECLARE_FIELD_32(enc, name, extra) DECLARE_FIELD_16(enc, name, extra)
+#define DECLARE_FIELD_64(enc, name, extra) DECLARE_FIELD_16(enc, name, extra)
+#define DECLARE_FIELD_NW(enc, name, extra) DECLARE_FIELD_16(enc, name, extra)
 #include "nested-x86vmx-vmcs12-fields.h"
 	default:
 		HALT_ON_ERRORCOND(0 && "Unknown guest VMCS field");
@@ -67,29 +86,29 @@ int xmhf_nested_arch_x86vmx_vmcs_readable(struct nested_vmcs12 *vmcs12, void *fi
 	}
 }
 
-int xmhf_nested_arch_x86vmx_vmcs_writable(struct nested_vmcs12 *vmcs12, void *field) {
-	switch (field - (void *) vmcs12) {
+int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset)
+{
+	switch (offset) {
 #define DECLARE_FIELD_16_RO(encoding, name, extra) \
 		case offsetof(struct nested_vmcs12, name): return 0;
 #define DECLARE_FIELD_32_RO(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 0;
+		DECLARE_FIELD_16_RO(encoding, name, extra)
 #define DECLARE_FIELD_64_RO(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 0;
+		DECLARE_FIELD_16_RO(encoding, name, extra)
 #define DECLARE_FIELD_NW_RO(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 0;
+		DECLARE_FIELD_16_RO(encoding, name, extra)
 #define DECLARE_FIELD_16_RW(encoding, name, extra) \
 		case offsetof(struct nested_vmcs12, name): return 1;
 #define DECLARE_FIELD_32_RW(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 1;
+		DECLARE_FIELD_16_RW(encoding, name, extra)
 #define DECLARE_FIELD_64_RW(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 1;
+		DECLARE_FIELD_16_RW(encoding, name, extra)
 #define DECLARE_FIELD_NW_RW(encoding, name, extra) \
-		case offsetof(struct nested_vmcs12, name): return 1;
+		DECLARE_FIELD_16_RW(encoding, name, extra)
 #include "nested-x86vmx-vmcs12-fields.h"
 	default:
 		HALT_ON_ERRORCOND(0 && "Unknown guest VMCS field");
 		return -1;
 	}
 }
-// TODO
 

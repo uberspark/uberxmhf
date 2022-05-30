@@ -60,6 +60,7 @@ struct nested_vmcs12 {
 #include "nested-x86vmx-vmcs12-fields.h"
 };
 
-int xmhf_nested_arch_x86vmx_vmcs_readable(struct nested_vmcs12 *vmcs12, void *field);
-int xmhf_nested_arch_x86vmx_vmcs_writable(struct nested_vmcs12 *vmcs12, void *field);
+size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);
+int xmhf_nested_arch_x86vmx_vmcs_readable(size_t offset);
+int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset);
 

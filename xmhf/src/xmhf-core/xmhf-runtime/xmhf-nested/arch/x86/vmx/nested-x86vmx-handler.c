@@ -138,6 +138,8 @@ typedef struct vmcs12_info {
 	gpa_t vmcs12_ptr;
 	/* Pointer to VMCS02 in host */
 	spa_t vmcs02_ptr;
+	/* Content of VMCS12, stored in XMHF's format */
+	struct nested_vmcs12 vmcs12_value;
 } vmcs12_info_t;
 
 /* A blank page in memory for VMCLEAR */
@@ -364,6 +366,21 @@ static void new_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr, u32 rev)
 }
 
 /*
+ * Find VMCS12 pointed by current VMCS pointer.
+ * It is illegal to call this function with a invalid current VMCS pointer.
+ * This function will never return NULL.
+ */
+static vmcs12_info_t *find_current_vmcs12(VCPU *vcpu)
+{
+	vmcs12_info_t *ans;
+	gpa_t vmcs_ptr = vcpu->vmx_nested_current_vmcs_pointer;
+	HALT_ON_ERRORCOND(vmcs_ptr != CUR_VMCS_PTR_INVALID);
+	ans = find_active_vmcs12(vcpu, vmcs_ptr);
+	HALT_ON_ERRORCOND(ans == NULL);
+	return ans;
+}
+
+/*
  * Virtualize fields in VCPU that tracks nested virtualization information
  */
 void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
@@ -477,12 +494,7 @@ void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU *vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 {
-	struct nested_vmcs12 vmcs12;
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
-	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_readable(&vmcs12, &vmcs12.info_vminstr_error));
-	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_readable(&vmcs12, &vmcs12.control_vpid));
-	HALT_ON_ERRORCOND(!xmhf_nested_arch_x86vmx_vmcs_writable(&vmcs12, &vmcs12.info_vminstr_error));
-	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_writable(&vmcs12, &vmcs12.control_vpid));
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
@@ -494,13 +506,29 @@ void xmhf_nested_arch_x86vmx_handle_vmresume(VCPU *vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 {
-	struct nested_vmcs12 vmcs12;
-	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
-	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_readable(&vmcs12, &vmcs12.info_vminstr_error));
-	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_readable(&vmcs12, &vmcs12.control_vpid));
-	HALT_ON_ERRORCOND(!xmhf_nested_arch_x86vmx_vmcs_writable(&vmcs12, &vmcs12.info_vminstr_error));
-	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_writable(&vmcs12, &vmcs12.control_vpid));
-	HALT_ON_ERRORCOND(0 && "Not implemented");
+	if (_vmx_nested_check_ud(vcpu, 0)) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		/* Note: Currently does not support 1-setting of "VMCS shadowing" */
+		// TODO: VMEXIT
+		HALT_ON_ERRORCOND(0 && "Not implemented");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+	} else {
+		if (vcpu->vmx_nested_current_vmcs_pointer == CUR_VMCS_PTR_INVALID) {
+			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
+			_vmx_nested_vm_fail_invalid(vcpu);
+		} else {
+			printf("\nII=0x%08x", vcpu->vmcs.info_vmx_instruction_information);
+			printf("\nEQ=0x%016x", vcpu->vmcs.info_exit_qualification);
+			HALT_ON_ERRORCOND(0 && "Not implemented");
+			(void)r;find_current_vmcs12(vcpu);
+
+			// vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
+			// size_t offset xmhf_nested_arch_x86vmx_vmcs_field_find(0/0);
+		}
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	}
 }
 
 void xmhf_nested_arch_x86vmx_handle_vmxoff(VCPU *vcpu, struct regs *r)
