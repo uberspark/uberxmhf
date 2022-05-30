@@ -646,7 +646,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 				unsigned long code=5;
 				HALT_ON_ERRORCOND(__vmx_vmread(0x4400, &code));
 			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%lx. HALT!", vcpu->id, code);
-			    xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+			    xmhf_baseplatform_arch_x86vmx_dump_vcpu(vcpu);
 				break;
 			}
 	}

@@ -784,10 +784,7 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
 // routine takes CPU VMCS and stores it in vcpu vmcsfields
 void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
 
-//--debug: dumpVMCS dumps VMCS contents
-void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
-
-//--debug: dump_vcpu dumps vcpu contents (more verbose than dumpVMCS)
+//--debug: dump_vcpu dumps vcpu contents (including VMCS)
 void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu);
 
 //VMX specific platform reboot

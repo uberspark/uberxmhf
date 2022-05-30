@@ -1046,7 +1046,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): VM-ENTRY error: reason=0x%08x, qualification=0x%016llx",
 			vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
 			(u64)vcpu->vmcs.info_exit_qualification);
-		xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+		xmhf_baseplatform_arch_x86vmx_dump_vcpu(vcpu);
 		HALT();
 	}
 
