@@ -87,5 +87,6 @@ clean:
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz
+	$(RM) -rf *.lds
 	$(RM) -rf *.sha1
 
