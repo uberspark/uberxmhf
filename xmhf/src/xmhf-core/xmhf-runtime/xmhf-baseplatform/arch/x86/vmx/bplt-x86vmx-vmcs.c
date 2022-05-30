@@ -184,12 +184,16 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     u32 i = 0;
 
 #define DUMP_VCPU_PRINT_INT16(x) \
+    { _Static_assert(sizeof(x) == sizeof(u16), "incorrct size"); } \
     printf("\nCPU(0x%02x): " #x "=0x%04x", (u32) vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT32(x) \
+    { _Static_assert(sizeof(x) == sizeof(u32), "incorrct size"); } \
     printf("\nCPU(0x%02x): " #x "=0x%08x", vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT64(x) \
+    { _Static_assert(sizeof(x) == sizeof(u64), "incorrct size"); } \
     printf("\nCPU(0x%02x): " #x "=0x%016lx", vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT64_INDEX(x, i) \
+    { _Static_assert(sizeof((x)[i]) == sizeof(u64), "incorrct size"); } \
     printf("\nCPU(0x%02x): " #x "[%x]=0x%016lx", vcpu->id, (i), (x)[i]);
 #ifdef __AMD64__
 #define DUMP_VCPU_PRINT_INTNW(x) DUMP_VCPU_PRINT_INT64(x)
@@ -202,11 +206,11 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
 #ifdef __AMD64__
     DUMP_VCPU_PRINT_INT64(vcpu->rsp);
 #elif defined(__I386__)
-    DUMP_VCPU_PRINT_INT64(vcpu->esp);
+    DUMP_VCPU_PRINT_INT32(vcpu->esp);
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
-    DUMP_VCPU_PRINT_INT64(vcpu->sipi_page_vaddr);
+    DUMP_VCPU_PRINT_INTNW(vcpu->sipi_page_vaddr);
     DUMP_VCPU_PRINT_INT32(vcpu->id);
     DUMP_VCPU_PRINT_INT32(vcpu->idx);
     DUMP_VCPU_PRINT_INT32(vcpu->sipivector);
@@ -214,28 +218,28 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->cpu_vendor);
     DUMP_VCPU_PRINT_INT32(vcpu->isbsp);
     DUMP_VCPU_PRINT_INT32(vcpu->quiesced);
-    DUMP_VCPU_PRINT_INT64(vcpu->hsave_vaddr_ptr);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcb_vaddr_ptr);
-    DUMP_VCPU_PRINT_INT64(vcpu->npt_vaddr_ptr);
-    DUMP_VCPU_PRINT_INT64(vcpu->npt_vaddr_pdts);
-    DUMP_VCPU_PRINT_INT64(vcpu->npt_asid);
-    DUMP_VCPU_PRINT_INT64(vcpu->npt_vaddr_pts);
-    DUMP_VCPU_PRINT_INT64(vcpu->svm_vaddr_iobitmap);
+    DUMP_VCPU_PRINT_INTNW(vcpu->hsave_vaddr_ptr);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcb_vaddr_ptr);
+    DUMP_VCPU_PRINT_INTNW(vcpu->npt_vaddr_ptr);
+    DUMP_VCPU_PRINT_INTNW(vcpu->npt_vaddr_pdts);
+    DUMP_VCPU_PRINT_INT32(vcpu->npt_asid);
+    DUMP_VCPU_PRINT_INTNW(vcpu->npt_vaddr_pts);
+    DUMP_VCPU_PRINT_INTNW(vcpu->svm_vaddr_iobitmap);
     for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
         DUMP_VCPU_PRINT_INT64_INDEX(vcpu->vmx_msrs, i);
     }
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efer);
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efcr);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vmxonregion_vaddr);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vmcs_vaddr);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vaddr_iobitmap);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vaddr_msr_area_host);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vaddr_msr_area_guest);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vaddr_msrbitmaps);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vaddr_ept_pml4_table);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vaddr_ept_pdp_table);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vaddr_ept_pd_tables);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_vaddr_ept_p_tables);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vmxonregion_vaddr);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vmcs_vaddr);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_iobitmap);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_msr_area_host);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_msr_area_guest);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_msrbitmaps);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_ept_pml4_table);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_ept_pdp_table);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_ept_pd_tables);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_ept_p_tables);
     // Skip: vmx_ept_memorytypes
     // Skip: vmx_guestmtrrmsrs
     DUMP_VCPU_PRINT_INT32(vcpu->vmx_guest_currentstate);
