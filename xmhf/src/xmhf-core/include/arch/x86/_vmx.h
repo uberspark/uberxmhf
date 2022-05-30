@@ -357,22 +357,11 @@ enum EPTViolationCode
 #define EPT_GPA_OFFSET_LO 0
 
 enum {
-	TASK_SWITCH_CALL = 0,
+  TASK_SWITCH_CALL = 0,
   TASK_SWITCH_IRET = 1,
   TASK_SWITCH_JMP = 2,
   TASK_SWITCH_GATE = 3,
 };
-
-
-typedef struct {
-	u16 sel;
-	u64 base;
-	u32 limit;
-	union{
-		segment_desc_accessrights ar;
-		u32 aru32;
-	};
-} __attribute__ ((packed)) segment_desc;
 
 
 typedef struct msr_entry {
@@ -380,24 +369,6 @@ typedef struct msr_entry {
 	u32 reserved;
 	u64 data;
 } __attribute__((packed)) msr_entry_t;
-
-
-typedef struct {
-  u32 id;
-  u32 vmxonSize;
-  u32 physicalAddressWidth;
-  u32 vmcsMemoryType;
-  u32 ioCapability;
-  u64 cr0fixed0;
-  u64 cr0fixed1;
-  u64 cr4fixed0;
-  u64 cr4fixed1;
-  u64 pinbasedctls;
-  u64 procbasedctls;
-  u64 procbasedctls2;
-u64 exitctls;
-u64 entryctls;
-}__attribute__ ((packed)) VMXINFO;
 
 
 //VMX VMCS fields
@@ -665,13 +636,13 @@ struct _vmx_vmcsrofields_encodings	{
  unsigned int  encoding;
  unsigned int  fieldoffset;
  unsigned int  membersize;
-} __attribute__((packed));
+};
 
 struct _vmx_vmcsrwfields_encodings	{
  unsigned int  encoding;
  unsigned int  fieldoffset;
  unsigned int  membersize;
-} __attribute__((packed));
+};
 
 /* VM-Entry Interruption-Information Field */
 struct _vmx_event_injection {
