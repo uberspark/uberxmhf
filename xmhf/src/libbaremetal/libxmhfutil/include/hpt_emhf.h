@@ -131,7 +131,7 @@ static inline void hpt_emhf_set_root_pm(VCPU *vcpu, hpt_pm_t root)
 }
 
 static inline hpt_type_t hpt_emhf_get_guest_hpt_type(VCPU *vcpu) {
-  u64 cr4 = VCPU_gcr4(vcpu);
+  ulong_t cr4 = VCPU_gcr4(vcpu);
   if (!(cr4 & CR4_PAE)) {
     return HPT_TYPE_NORM;
   } else if (!(VCPU_glm(vcpu))) {

@@ -690,8 +690,8 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
 //---CR0 access handler-------------------------------------------------
 static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
-	u64 cr0_value, old_cr0;
-	u64 fixed_1_fields;
+	ulong_t cr0_value, old_cr0;
+	ulong_t fixed_1_fields;
 
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 
@@ -723,7 +723,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	 * way we do not need to calculate the VMCS fields in hypervisor.
 	 */
 	if ((old_cr0 ^ cr0_value) & CR0_PG) {
-		u64 pg_pe_mask = (CR0_PG | CR0_PE);
+		ulong_t pg_pe_mask = (CR0_PG | CR0_PE);
 		/* Make sure that CR0.PG and CR0.PE are not masked */
 		if (!(pg_pe_mask & vcpu->vmcs.control_CR0_mask)) {
 			/*
@@ -803,7 +803,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 //---CR4 access handler---------------------------------------------------------
 static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
   if(tofrom == VMX_CRX_ACCESS_TO){
-	u64 cr4_proposed_value;
+	ulong_t cr4_proposed_value;
 
 	cr4_proposed_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 
@@ -1048,7 +1048,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): VM-ENTRY error: reason=0x%08x, qualification=0x%016llx",
 			vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
 			(u64)vcpu->vmcs.info_exit_qualification);
-		xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+		xmhf_baseplatform_arch_x86vmx_dump_vcpu(vcpu);
 		HALT();
 	}
 

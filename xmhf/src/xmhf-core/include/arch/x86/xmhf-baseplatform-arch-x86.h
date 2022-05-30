@@ -461,7 +461,7 @@ static inline void VCPU_grsp_set(VCPU *vcpu, u64 val)
   }
 }
 
-static inline u64 VCPU_gcr0(VCPU *vcpu)
+static inline ulong_t VCPU_gcr0(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return vcpu->vmcs.guest_CR0;
@@ -473,7 +473,7 @@ static inline u64 VCPU_gcr0(VCPU *vcpu)
   }
 }
 
-static inline void VCPU_gcr0_set(VCPU *vcpu, u64 cr0)
+static inline void VCPU_gcr0_set(VCPU *vcpu, ulong_t cr0)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     vcpu->vmcs.guest_CR0 = cr0;
@@ -507,7 +507,7 @@ static inline void VCPU_gcr3_set(VCPU *vcpu, u64 cr3)
   }
 }
 
-static inline u64 VCPU_gcr4(VCPU *vcpu)
+static inline ulong_t VCPU_gcr4(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return vcpu->vmcs.guest_CR4;
@@ -519,7 +519,7 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
   }
 }
 
-static inline void VCPU_gcr4_set(VCPU *vcpu, u64 cr4)
+static inline void VCPU_gcr4_set(VCPU *vcpu, ulong_t cr4)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     vcpu->vmcs.guest_CR4 = cr4;
@@ -797,10 +797,7 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
 // routine takes CPU VMCS and stores it in vcpu vmcsfields
 void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
 
-//--debug: dumpVMCS dumps VMCS contents
-void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
-
-//--debug: dump_vcpu dumps vcpu contents (more verbose than dumpVMCS)
+//--debug: dump_vcpu dumps vcpu contents (including VMCS)
 void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu);
 
 //VMX specific platform reboot
