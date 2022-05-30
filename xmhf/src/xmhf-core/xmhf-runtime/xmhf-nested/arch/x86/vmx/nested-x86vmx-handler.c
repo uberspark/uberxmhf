@@ -586,17 +586,14 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 			} else {
 				/* Note: Currently does not support VMCS shadowing */
 				vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
-//				ulong_t value;
-// TODO
-				HALT_ON_ERRORCOND(0 && "Not implemented VMREAD");
-				(void) vmcs12_info;
-				(void) size;
-//				xmhf_nested_arch_x86vmx_vmcs_read(&vmcs12_info->vmcs12_value,
-//													offset, value, size);
+				ulong_t value = xmhf_nested_arch_x86vmx_vmcs_read
+					(&vmcs12_info->vmcs12_value, offset, size);
 				if (value_mem_reg) {
-					
+					*(ulong_t *)pvalue = value;
 				} else {
-					
+					guestmem_hptw_ctx_pair_t ctx_pair;
+					guestmem_init(vcpu, &ctx_pair);
+					guestmem_copy_h2gv(&ctx_pair, 0, pvalue, &value, size);
 				}
 				_vmx_nested_vm_succeed(vcpu);
 			}

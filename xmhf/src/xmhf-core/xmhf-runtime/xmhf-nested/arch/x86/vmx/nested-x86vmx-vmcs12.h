@@ -63,6 +63,8 @@ struct nested_vmcs12 {
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);
 int xmhf_nested_arch_x86vmx_vmcs_readable(size_t offset);
 int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset);
+ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
+											size_t offset, size_t size);
 void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 										size_t offset, ulong_t value,
 										size_t size);
