@@ -326,9 +326,9 @@ static void active_vmcs12_array_init(VCPU *vcpu)
 {
 	int i;
 	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
-		uintptr_t vmcs02_ptr = (uintptr_t) cpu_vmcs02[vcpu->idx][i];
+		spa_t vmcs02_ptr = hva2spa(cpu_vmcs02[vcpu->idx][i]);
 		cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr = CUR_VMCS_PTR_INVALID;
-		cpu_active_vmcs12[vcpu->idx][i].vmcs02_ptr = (spa_t) vmcs02_ptr;
+		cpu_active_vmcs12[vcpu->idx][i].vmcs02_ptr = vmcs02_ptr;
 	}
 }
 
@@ -360,7 +360,7 @@ static void new_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr, u32 rev)
 	}
 	vmcs12_info->vmcs12_ptr = vmcs_ptr;
 	HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
-	*(u32 *)(uintptr_t)vmcs12_info->vmcs02_ptr = rev;
+	*(u32 *)spa2hva(vmcs12_info->vmcs02_ptr) = rev;
 }
 
 /*
