@@ -266,8 +266,10 @@ static size_t _vmx_decode_vmread_vmwrite(VCPU *vcpu, struct regs *r,
 	} else {
 		_vmx_decode_mem_operand(vcpu, r, &value, size);
 	}
-	*pencoding = encoding;
-	*pvalue = value;
+	*pencoding = 0;
+	*pvalue = 0;
+	memcpy(pencoding, &encoding, size);
+	memcpy(pvalue, &value, size);
 	return size;
 }
 
@@ -580,12 +582,26 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else {
 			ulong_t encoding, value;
-			_vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding, &value);
-			HALT_ON_ERRORCOND(0 && "Not implemented");
-			(void)r;find_current_vmcs12(vcpu);
-
-			// vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
-			// size_t offset xmhf_nested_arch_x86vmx_vmcs_field_find(0/0);
+			size_t size = _vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding,
+													&value);
+			size_t offset = xmhf_nested_arch_x86vmx_vmcs_field_find(encoding);
+			if (offset == (size_t) (-1)) {
+				_vmx_nested_vm_fail_valid
+					(vcpu, VM_INST_ERRNO_VMRDWR_UNSUPP_VMCS_COMP);
+			} else if (!xmhf_nested_arch_x86vmx_vmcs_writable(offset)) {
+				/*
+				 * Note: currently not supporting writing to VM-exit
+				 * information field
+				 */
+				_vmx_nested_vm_fail_valid
+					(vcpu, VM_INST_ERRNO_VMWRITE_RO_VMCS_COMP);
+			} else {
+				/* Note: Currently does not support VMCS shadowing */
+				vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
+				xmhf_nested_arch_x86vmx_vmcs_write(&vmcs12_info->vmcs12_value,
+													offset, value, size);
+				_vmx_nested_vm_succeed(vcpu);
+			}
 		}
 		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	}
