@@ -44,10 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// peh-x86vmx-nested.c
+// nested-x86vmx-handler.c
 // Intercept handlers for nested virtualization
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
+#include "nested-x86vmx-vmcs12.h"
 
 /* VMCALL executed in VMX root operation */
 #define VM_INST_ERRNO_VMCALL_IN_VMXROOT 1
@@ -356,7 +357,12 @@ void xmhf_nested_arch_x86vmx_handle_vmlaunch(VCPU *vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 {
+	struct nested_vmcs12 vmcs12;
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
+	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_readable(&vmcs12, &vmcs12.info_vminstr_error));
+	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_readable(&vmcs12, &vmcs12.control_vpid));
+	HALT_ON_ERRORCOND(!xmhf_nested_arch_x86vmx_vmcs_writable(&vmcs12, &vmcs12.info_vminstr_error));
+	HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_vmcs_writable(&vmcs12, &vmcs12.control_vpid));
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
