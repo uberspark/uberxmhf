@@ -110,37 +110,27 @@
 	((u64) (EFLAGS_CF | EFLAGS_PF | EFLAGS_AF | EFLAGS_ZF | EFLAGS_SF | \
 			EFLAGS_OF))
 
-union _vmx_decode_m64_inst_info {
-	struct {
-		u32 scaling: 2;
-		u32 undefined6_2: 5;
-		u32 address_size: 3;
-		u32 zero_10: 1;
-		u32 undefined14_11: 4;
-		u32 segment_register: 3;
-		u32 index_reg: 4;
-		u32 index_reg_invalid: 1;
-		u32 base_reg: 4;
-		u32 base_reg_invalid: 1;
-		u32 undefined_31_28: 4;
-	};
-	u32 raw;
-};
-
-union _vmx_decode_vmread_vmwrite_inst_info {
+/*
+ * This structure follows Table 26-14. Format of the VM-Exit
+ * Instruction-Information Field as Used for VMREAD and VMWRITE in Intel's
+ * System Programming Guide, Order Number 325384. It covers all structures in
+ * Table 26-13. Format of the VM-Exit Instruction-Information Field as Used
+ * for VMCLEAR, VMPTRLD, VMPTRST, VMXON, XRSTORS, and XSAVES.
+ */
+union _vmx_decode_vm_inst_info {
 	struct {
 		u32 scaling: 2;
 		u32 undefined2: 1;
-		u32 reg1: 4;
+		u32 reg1: 4;			/* Undefined in Table 26-13. */
 		u32 address_size: 3;
-		u32 mem_reg: 1;
+		u32 mem_reg: 1;			/* Cleared to 0 in Table 26-13. */
 		u32 undefined14_11: 4;
 		u32 segment_register: 3;
 		u32 index_reg: 4;
 		u32 index_reg_invalid: 1;
 		u32 base_reg: 4;
 		u32 base_reg_invalid: 1;
-		u32 reg2: 4;
+		u32 reg2: 4;			/* Undefined in Table 26-13. */
 	};
 	u32 raw;
 };
@@ -191,6 +181,46 @@ static u64 _vmx_decode_seg(u32 seg, VCPU *vcpu)
 }
 
 /*
+ * Access size bytes of memory referenced in memory operand of instruction.
+ * The memory content in the guest is returned in dst.
+ */
+static void _vmx_decode_mem_operand(VCPU *vcpu, struct regs *r, void *dst,
+									size_t size)
+{
+	union _vmx_decode_vm_inst_info inst_info;
+	guestmem_hptw_ctx_pair_t ctx_pair;
+	u64 addr;
+	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
+	addr = _vmx_decode_seg(inst_info.segment_register, vcpu);
+	addr += vcpu->vmcs.info_exit_qualification;
+	if (!inst_info.base_reg_invalid) {
+		addr += *_vmx_decode_reg(inst_info.base_reg, vcpu, r);
+	}
+	if (!inst_info.index_reg_invalid) {
+		uintptr_t *index_reg = _vmx_decode_reg(inst_info.index_reg, vcpu, r);
+		addr += *index_reg << inst_info.scaling;
+	}
+	switch (inst_info.address_size) {
+	case 0:	/* 16-bit */
+		addr &= 0xffffULL;
+		size = sizeof(u16);
+		break;
+	case 1:	/* 32-bit */
+		addr &= 0xffffffffULL;
+		size = sizeof(u32);
+		break;
+	case 2:	/* 64-bit */
+		size = sizeof(u64);
+		break;
+	default:
+		HALT_ON_ERRORCOND(0 && "Unexpected address size");
+		break;
+	}
+	guestmem_init(vcpu, &ctx_pair);
+	guestmem_copy_gv2h(&ctx_pair, 0, dst, addr, size);
+}
+
+/*
  * Decode the operand for instructions that take one m64 operand. Following
  * Table 26-13. Format of the VM-Exit Instruction-Information Field as Used
  * for VMCLEAR, VMPTRLD, VMPTRST, VMXON, XRSTORS, and XSAVES in Intel's
@@ -198,46 +228,29 @@ static u64 _vmx_decode_seg(u32 seg, VCPU *vcpu)
  */
 static u64 _vmx_decode_m64(VCPU *vcpu, struct regs *r)
 {
-	union _vmx_decode_m64_inst_info inst_info;
+	union _vmx_decode_vm_inst_info inst_info;
 	u64 ans = 0;
 	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
-	HALT_ON_ERRORCOND(inst_info.zero_10 == 0);
-	ans = _vmx_decode_seg(inst_info.segment_register, vcpu);
-	ans += vcpu->vmcs.info_exit_qualification;
-	if (!inst_info.base_reg_invalid) {
-		ans += *_vmx_decode_reg(inst_info.base_reg, vcpu, r);
-	}
-	if (!inst_info.index_reg_invalid) {
-		ans += *_vmx_decode_reg(inst_info.index_reg, vcpu, r) << inst_info.scaling;
-	}
-	switch (inst_info.address_size) {
-	case 0:	/* 16-bit */
-		ans &= 0xffffULL;
-		break;
-	case 1:	/* 32-bit */
-		ans &= 0xffffffffULL;
-		break;
-	case 2:	/* 64-bit */
-		break;
-	default:
-		HALT_ON_ERRORCOND(0 && "Unexpected address size");
-		break;
-	}
+	HALT_ON_ERRORCOND(inst_info.mem_reg == 0);
+	_vmx_decode_mem_operand(vcpu, r, &ans, sizeof(ans));
 	return ans;
 }
 
 /*
  * Decode the operand for instructions for VMREAD and VMWRITE. Following
  * Table 26-14. Format of the VM-Exit Instruction-Information Field as Used for
- * VMREAD and VMWRITE in Intel's System Programming Guide, Order Number 325384
+ * VMREAD and VMWRITE in Intel's System Programming Guide, Order Number 325384.
+ * Return operand size in bytes (4 or 8, depending on guest mode).
  */
-static void _vmx_decode_vmread_vmwrite(VCPU *vcpu, struct regs *r,
+static size_t _vmx_decode_vmread_vmwrite(VCPU *vcpu, struct regs *r,
 										int is_vmwrite, ulong_t *pencoding,
 										ulong_t *pvalue)
 {
-	union _vmx_decode_vmread_vmwrite_inst_info inst_info;
+	union _vmx_decode_vm_inst_info inst_info;
 	ulong_t encoding;
-	ulong_t value;
+	ulong_t value = 0;
+	size_t size = (VCPU_g64(vcpu) ? sizeof(u64) : sizeof(u32));
+	HALT_ON_ERRORCOND(size == (VCPU_glm(vcpu) ? sizeof(u64) : sizeof(u32)));
 	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
 	if (is_vmwrite) {
 		encoding = *_vmx_decode_reg(inst_info.reg2, vcpu, r);
@@ -251,36 +264,11 @@ static void _vmx_decode_vmread_vmwrite(VCPU *vcpu, struct regs *r,
 			value = *_vmx_decode_reg(inst_info.reg2, vcpu, r);
 		}
 	} else {
-		u64 addr = _vmx_decode_seg(inst_info.segment_register, vcpu);
-		addr += vcpu->vmcs.info_exit_qualification;
-		if (!inst_info.base_reg_invalid) {
-			addr += *_vmx_decode_reg(inst_info.base_reg, vcpu, r);
-		}
-		if (!inst_info.index_reg_invalid) {
-			addr += (*_vmx_decode_reg(inst_info.index_reg, vcpu, r) <<
-						inst_info.scaling);
-		}
-		switch (inst_info.address_size) {
-		case 0:	/* 16-bit */
-			addr &= 0xffffULL;
-			break;
-		case 1:	/* 32-bit */
-			addr &= 0xffffffffULL;
-			break;
-		case 2:	/* 64-bit */
-			break;
-		default:
-			HALT_ON_ERRORCOND(0 && "Unexpected address size");
-			break;
-		}
-		value = addr;	// TODO: reference guest memory
-		HALT_ON_ERRORCOND(0);
+		_vmx_decode_mem_operand(vcpu, r, &value, size);
 	}
 	*pencoding = encoding;
 	*pvalue = value;
-	// TODO: temp code
-	printf("\nII=0x%08x", vcpu->vmcs.info_vmx_instruction_information);
-	printf("\nEQ=0x%016x", vcpu->vmcs.info_exit_qualification);
+	return size;
 }
 
 /* The VMsucceed pseudo-function in SDM "29.2 CONVENTIONS" */
@@ -479,17 +467,14 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		u64 addr = _vmx_decode_m64(vcpu, r);
-		gpa_t vmcs_ptr;
-		guestmem_hptw_ctx_pair_t ctx_pair;
-		guestmem_init(vcpu, &ctx_pair);
-		guestmem_copy_gv2h(&ctx_pair, 0, &vmcs_ptr, addr, sizeof(vmcs_ptr));
+		gpa_t vmcs_ptr = _vmx_decode_m64(vcpu, r);
 		if (!PA_PAGE_ALIGNED_4K(vmcs_ptr) ||
 			!_vmx_check_physical_addr_width(vcpu, vmcs_ptr)) {
 			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMCLEAR_INVALID_PHY_ADDR);
 		} else if (vmcs_ptr == vcpu->vmx_nested_vmxon_pointer) {
 			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMCLEAR_VMXON_PTR);
 		} else {
+			guestmem_hptw_ctx_pair_t ctx_pair;
 			/*
 			 * We do not distinguish a VMCS that is "Inactive, Not Current,
 			 * Clear" from a VMCS that is "Inactive" with other states. This is
@@ -504,6 +489,7 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)
 			if (vmcs12_info != NULL) {
 				vmcs12_info->vmcs12_ptr = CUR_VMCS_PTR_INVALID;
 			}
+			guestmem_init(vcpu, &ctx_pair);
 			guestmem_copy_h2gp(&ctx_pair, 0, vmcs_ptr, blank_page, PAGE_SIZE_4K);
 			if (vmcs_ptr == vcpu->vmx_nested_current_vmcs_pointer) {
 				vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
@@ -530,11 +516,7 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		u64 addr = _vmx_decode_m64(vcpu, r);
-		gpa_t vmcs_ptr;
-		guestmem_hptw_ctx_pair_t ctx_pair;
-		guestmem_init(vcpu, &ctx_pair);
-		guestmem_copy_gv2h(&ctx_pair, 0, &vmcs_ptr, addr, sizeof(vmcs_ptr));
+		gpa_t vmcs_ptr = _vmx_decode_m64(vcpu, r);
 		if (!PA_PAGE_ALIGNED_4K(vmcs_ptr) ||
 			!_vmx_check_physical_addr_width(vcpu, vmcs_ptr)) {
 			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMPTRLD_INVALID_PHY_ADDR);
@@ -543,6 +525,8 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 		} else {
 			u32 rev;
 			u64 basic_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+			guestmem_hptw_ctx_pair_t ctx_pair;
+			guestmem_init(vcpu, &ctx_pair);
 			guestmem_copy_gp2h(&ctx_pair, 0, &rev, vmcs_ptr, sizeof(rev));
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			if ((rev & (1U << 31)) ||
@@ -634,17 +618,15 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU *vcpu, struct regs *r)
 			(vcr4 & ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR]) != 0) {
 			_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 		} else {
-			u64 addr = _vmx_decode_m64(vcpu, r);
-			gpa_t vmxon_ptr;
-			guestmem_hptw_ctx_pair_t ctx_pair;
-			guestmem_init(vcpu, &ctx_pair);
-			guestmem_copy_gv2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
+			gpa_t vmxon_ptr = _vmx_decode_m64(vcpu, r);
 			if (!PA_PAGE_ALIGNED_4K(vmxon_ptr) ||
 				!_vmx_check_physical_addr_width(vcpu, vmxon_ptr)) {
 				_vmx_nested_vm_fail_invalid(vcpu);
 			} else {
 				u32 rev;
 				u64 basic_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+				guestmem_hptw_ctx_pair_t ctx_pair;
+				guestmem_init(vcpu, &ctx_pair);
 				guestmem_copy_gp2h(&ctx_pair, 0, &rev, vmxon_ptr, sizeof(rev));
 				if ((rev & (1U << 31)) ||
 					(rev != ((u32) basic_msr & 0x7fffffffU))) {
