@@ -203,14 +203,11 @@ static void _vmx_decode_mem_operand(VCPU *vcpu, struct regs *r, void *dst,
 	switch (inst_info.address_size) {
 	case 0:	/* 16-bit */
 		addr &= 0xffffULL;
-		size = sizeof(u16);
 		break;
 	case 1:	/* 32-bit */
 		addr &= 0xffffffffULL;
-		size = sizeof(u32);
 		break;
 	case 2:	/* 64-bit */
-		size = sizeof(u64);
 		break;
 	default:
 		HALT_ON_ERRORCOND(0 && "Unexpected address size");
