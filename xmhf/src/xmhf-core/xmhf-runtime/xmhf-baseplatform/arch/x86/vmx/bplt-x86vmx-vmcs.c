@@ -71,6 +71,35 @@ void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
                                                  u32 size) {
     unsigned long value;
     HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
+    switch ((encoding >> 13) & 0x3) {
+    case 0: /* 16-bit */
+        HALT_ON_ERRORCOND(size == sizeof(u16));
+        *(u16 *)addr = (u16)value;
+        break;
+    case 1: /* 64-bit */
+#ifdef __AMD64__
+        HALT_ON_ERRORCOND(size == sizeof(u64));
+        /* Disallow high access */
+        HALT_ON_ERRORCOND((encoding & 0x1) == 0x0);
+        *(u64 *)addr = value;
+#elif defined(__I386__)
+        HALT_ON_ERRORCOND(size == sizeof(u32));
+        *(u32 *)addr = value;
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+        break;
+    case 2: /* 32-bit */
+        HALT_ON_ERRORCOND(size == sizeof(u32));
+        *(u32 *)addr = (u32)value;
+        break;
+    case 3: /* natural width */
+        HALT_ON_ERRORCOND(size == sizeof(ulong_t));
+        *(ulong_t *)addr = value;
+        break;
+    default:
+        HALT();
+    }
 #ifdef __AMD64__
     /* Read 64-bit fields using 1 VMREAD instruction (different from x86) */
     switch ((encoding >> 13) & 0x3) {
