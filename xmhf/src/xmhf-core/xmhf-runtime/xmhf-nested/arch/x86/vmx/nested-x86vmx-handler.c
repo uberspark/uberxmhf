@@ -274,6 +274,64 @@ static size_t _vmx_decode_vmread_vmwrite(VCPU *vcpu, struct regs *r,
 	return size;
 }
 
+/* Clear list of active VMCS12's tracked */
+static void active_vmcs12_array_init(VCPU *vcpu)
+{
+	int i;
+	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
+		spa_t vmcs02_ptr = hva2spa(cpu_vmcs02[vcpu->idx][i]);
+		cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr = CUR_VMCS_PTR_INVALID;
+		cpu_active_vmcs12[vcpu->idx][i].vmcs02_ptr = vmcs02_ptr;
+	}
+}
+
+/*
+ * Look up vmcs_ptr in list of active VMCS12's tracked in the current CPU.
+ * A return value of 0 means the VMCS is not active.
+ * A VMCS is defined to be active if this function returns non-zero.
+ * When vmcs_ptr = CUR_VMCS_PTR_INVALID, a empty slot is returned.
+ */
+static vmcs12_info_t *find_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr)
+{
+	int i;
+	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
+		if (cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr == vmcs_ptr) {
+			return &cpu_active_vmcs12[vcpu->idx][i];
+		}
+	}
+	return NULL;
+}
+
+/* Add a new VMCS12 to the array of actives. Initializes underlying VMCS02 */
+static void new_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr, u32 rev)
+{
+	vmcs12_info_t *vmcs12_info;
+	HALT_ON_ERRORCOND(vmcs_ptr != CUR_VMCS_PTR_INVALID);
+	vmcs12_info = find_active_vmcs12(vcpu, CUR_VMCS_PTR_INVALID);
+	if (vmcs12_info == NULL) {
+		HALT_ON_ERRORCOND(0 && "Too many active VMCS's");
+	}
+	vmcs12_info->vmcs12_ptr = vmcs_ptr;
+	HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
+	*(u32 *)spa2hva(vmcs12_info->vmcs02_ptr) = rev;
+	memset(&vmcs12_info->vmcs12_value, 0, sizeof(vmcs12_info->vmcs12_value));
+}
+
+/*
+ * Find VMCS12 pointed by current VMCS pointer.
+ * It is illegal to call this function with a invalid current VMCS pointer.
+ * This function will never return NULL.
+ */
+static vmcs12_info_t *find_current_vmcs12(VCPU *vcpu)
+{
+	vmcs12_info_t *ans;
+	gpa_t vmcs_ptr = vcpu->vmx_nested_current_vmcs_pointer;
+	HALT_ON_ERRORCOND(vmcs_ptr != CUR_VMCS_PTR_INVALID);
+	ans = find_active_vmcs12(vcpu, vmcs_ptr);
+	HALT_ON_ERRORCOND(ans != NULL);
+	return ans;
+}
+
 /* The VMsucceed pseudo-function in SDM "29.2 CONVENTIONS" */
 static void _vmx_nested_vm_succeed(VCPU *vcpu)
 {
@@ -282,11 +340,13 @@ static void _vmx_nested_vm_succeed(VCPU *vcpu)
 
 static void _vmx_nested_vm_fail_valid(VCPU *vcpu, u32 error_number)
 {
+	vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
 	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_ZF;
-	/* TODO: set error_number, using vcpu->vmx_nested_current_vmcs_pointer */
-	HALT_ON_ERRORCOND(0);
-	(void) error_number;
+	xmhf_nested_arch_x86vmx_vmcs_write(
+		&vmcs12_info->vmcs12_value,
+		offsetof(struct nested_vmcs12, info_vminstr_error), error_number,
+		sizeof(error_number));
 }
 
 static void _vmx_nested_vm_fail_invalid(VCPU *vcpu)
@@ -387,64 +447,6 @@ static u32 _vmx_nested_check_ud(VCPU *vcpu, int is_vmxon)
 		}
 	}
 	return 0;
-}
-
-/* Clear list of active VMCS12's tracked */
-static void active_vmcs12_array_init(VCPU *vcpu)
-{
-	int i;
-	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
-		spa_t vmcs02_ptr = hva2spa(cpu_vmcs02[vcpu->idx][i]);
-		cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr = CUR_VMCS_PTR_INVALID;
-		cpu_active_vmcs12[vcpu->idx][i].vmcs02_ptr = vmcs02_ptr;
-	}
-}
-
-/*
- * Look up vmcs_ptr in list of active VMCS12's tracked in the current CPU.
- * A return value of 0 means the VMCS is not active.
- * A VMCS is defined to be active if this function returns non-zero.
- * When vmcs_ptr = CUR_VMCS_PTR_INVALID, a empty slot is returned.
- */
-static vmcs12_info_t *find_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr)
-{
-	int i;
-	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
-		if (cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr == vmcs_ptr) {
-			return &cpu_active_vmcs12[vcpu->idx][i];
-		}
-	}
-	return NULL;
-}
-
-/* Add a new VMCS12 to the array of actives. Initializes underlying VMCS02 */
-static void new_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr, u32 rev)
-{
-	vmcs12_info_t *vmcs12_info;
-	HALT_ON_ERRORCOND(vmcs_ptr != CUR_VMCS_PTR_INVALID);
-	vmcs12_info = find_active_vmcs12(vcpu, CUR_VMCS_PTR_INVALID);
-	if (vmcs12_info == NULL) {
-		HALT_ON_ERRORCOND(0 && "Too many active VMCS's");
-	}
-	vmcs12_info->vmcs12_ptr = vmcs_ptr;
-	HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
-	*(u32 *)spa2hva(vmcs12_info->vmcs02_ptr) = rev;
-	memset(&vmcs12_info->vmcs12_value, 0, sizeof(vmcs12_info->vmcs12_value));
-}
-
-/*
- * Find VMCS12 pointed by current VMCS pointer.
- * It is illegal to call this function with a invalid current VMCS pointer.
- * This function will never return NULL.
- */
-static vmcs12_info_t *find_current_vmcs12(VCPU *vcpu)
-{
-	vmcs12_info_t *ans;
-	gpa_t vmcs_ptr = vcpu->vmx_nested_current_vmcs_pointer;
-	HALT_ON_ERRORCOND(vmcs_ptr != CUR_VMCS_PTR_INVALID);
-	ans = find_active_vmcs12(vcpu, vmcs_ptr);
-	HALT_ON_ERRORCOND(ans != NULL);
-	return ans;
 }
 
 /*
