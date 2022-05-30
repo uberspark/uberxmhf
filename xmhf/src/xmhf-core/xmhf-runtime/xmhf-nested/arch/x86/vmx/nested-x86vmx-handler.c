@@ -165,7 +165,7 @@ __attribute__((section(".bss.palign_data")));
  * Given a segment index, return the segment offset
  * TODO: do we need to check access rights?
  */
-static u64 _vmx_decode_seg(u32 seg, VCPU *vcpu)
+static uintptr_t _vmx_decode_seg(u32 seg, VCPU *vcpu)
 {
 	switch (seg) {
 		case 0: return vcpu->vmcs.guest_ES_base;
@@ -184,12 +184,10 @@ static u64 _vmx_decode_seg(u32 seg, VCPU *vcpu)
  * Access size bytes of memory referenced in memory operand of instruction.
  * The memory content in the guest is returned in dst.
  */
-static void _vmx_decode_mem_operand(VCPU *vcpu, struct regs *r, void *dst,
-									size_t size)
+static gva_t _vmx_decode_mem_operand(VCPU *vcpu, struct regs *r)
 {
 	union _vmx_decode_vm_inst_info inst_info;
-	guestmem_hptw_ctx_pair_t ctx_pair;
-	u64 addr;
+	gva_t addr;
 	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
 	addr = _vmx_decode_seg(inst_info.segment_register, vcpu);
 	addr += vcpu->vmcs.info_exit_qualification;
@@ -202,19 +200,24 @@ static void _vmx_decode_mem_operand(VCPU *vcpu, struct regs *r, void *dst,
 	}
 	switch (inst_info.address_size) {
 	case 0:	/* 16-bit */
-		addr &= 0xffffULL;
+		addr &= 0xffffUL;
 		break;
 	case 1:	/* 32-bit */
-		addr &= 0xffffffffULL;
+		/* This case may happen if 32-bit guest hypervisor runs in AMD64 XMHF */
+		addr &= 0xffffffffUL;
 		break;
 	case 2:	/* 64-bit */
+#ifdef __I386__
+		HALT_ON_ERRORCOND(0 && "Unexpected 64-bit address size in i386");
+#elif !defined(__AMD64__)
+    #error "Unsupported Arch"
+#endif /* __I386__ */
 		break;
 	default:
 		HALT_ON_ERRORCOND(0 && "Unexpected address size");
 		break;
 	}
-	guestmem_init(vcpu, &ctx_pair);
-	guestmem_copy_gv2h(&ctx_pair, 0, dst, addr, size);
+	return addr;
 }
 
 /*
@@ -223,14 +226,12 @@ static void _vmx_decode_mem_operand(VCPU *vcpu, struct regs *r, void *dst,
  * for VMCLEAR, VMPTRLD, VMPTRST, VMXON, XRSTORS, and XSAVES in Intel's
  * System Programming Guide, Order Number 325384
  */
-static u64 _vmx_decode_m64(VCPU *vcpu, struct regs *r)
+static gva_t _vmx_decode_m64(VCPU *vcpu, struct regs *r)
 {
 	union _vmx_decode_vm_inst_info inst_info;
-	u64 ans = 0;
 	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
 	HALT_ON_ERRORCOND(inst_info.mem_reg == 0);
-	_vmx_decode_mem_operand(vcpu, r, &ans, sizeof(ans));
-	return ans;
+	return _vmx_decode_mem_operand(vcpu, r);
 }
 
 /*
@@ -238,35 +239,38 @@ static u64 _vmx_decode_m64(VCPU *vcpu, struct regs *r)
  * Table 26-14. Format of the VM-Exit Instruction-Information Field as Used for
  * VMREAD and VMWRITE in Intel's System Programming Guide, Order Number 325384.
  * Return operand size in bytes (4 or 8, depending on guest mode).
+ * When the value comes from a memory operand, put 0 in pvalue_mem_reg and
+ * put the guest virtual address to ppvalue. When the value comes from a
+ * register operand, put 1 in pvalue_mem_reg and put the host virtual address
+ * to ppvalue.
  */
 static size_t _vmx_decode_vmread_vmwrite(VCPU *vcpu, struct regs *r,
 										int is_vmwrite, ulong_t *pencoding,
-										ulong_t *pvalue)
+										uintptr_t *ppvalue, int *pvalue_mem_reg)
 {
 	union _vmx_decode_vm_inst_info inst_info;
-	ulong_t encoding;
-	ulong_t value = 0;
+	ulong_t *encoding;
 	size_t size = (VCPU_g64(vcpu) ? sizeof(u64) : sizeof(u32));
 	HALT_ON_ERRORCOND(size == (VCPU_glm(vcpu) ? sizeof(u64) : sizeof(u32)));
 	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
 	if (is_vmwrite) {
-		encoding = *_vmx_decode_reg(inst_info.reg2, vcpu, r);
+		encoding = _vmx_decode_reg(inst_info.reg2, vcpu, r);
 	} else {
-		encoding = *_vmx_decode_reg(inst_info.reg1, vcpu, r);
-	}
-	if (inst_info.mem_reg) {
-		if (is_vmwrite) {
-			value = *_vmx_decode_reg(inst_info.reg1, vcpu, r);
-		} else {
-			value = *_vmx_decode_reg(inst_info.reg2, vcpu, r);
-		}
-	} else {
-		_vmx_decode_mem_operand(vcpu, r, &value, size);
+		encoding = _vmx_decode_reg(inst_info.reg1, vcpu, r);
 	}
 	*pencoding = 0;
-	*pvalue = 0;
-	memcpy(pencoding, &encoding, size);
-	memcpy(pvalue, &value, size);
+	memcpy(pencoding, encoding, size);
+	if (inst_info.mem_reg) {
+		*pvalue_mem_reg = 1;
+		if (is_vmwrite) {
+			*ppvalue = (hva_t) _vmx_decode_reg(inst_info.reg1, vcpu, r);
+		} else {
+			*ppvalue = (hva_t) _vmx_decode_reg(inst_info.reg2, vcpu, r);
+		}
+	} else {
+		*pvalue_mem_reg = 0;
+		*ppvalue = _vmx_decode_mem_operand(vcpu, r);
+	}
 	return size;
 }
 
@@ -466,14 +470,17 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		gpa_t vmcs_ptr = _vmx_decode_m64(vcpu, r);
+		gva_t addr = _vmx_decode_m64(vcpu, r);
+		gpa_t vmcs_ptr;
+		guestmem_hptw_ctx_pair_t ctx_pair;
+		guestmem_init(vcpu, &ctx_pair);
+		guestmem_copy_gv2h(&ctx_pair, 0, &vmcs_ptr, addr, sizeof(vmcs_ptr));
 		if (!PA_PAGE_ALIGNED_4K(vmcs_ptr) ||
 			!_vmx_check_physical_addr_width(vcpu, vmcs_ptr)) {
 			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMCLEAR_INVALID_PHY_ADDR);
 		} else if (vmcs_ptr == vcpu->vmx_nested_vmxon_pointer) {
 			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMCLEAR_VMXON_PTR);
 		} else {
-			guestmem_hptw_ctx_pair_t ctx_pair;
 			/*
 			 * We do not distinguish a VMCS that is "Inactive, Not Current,
 			 * Clear" from a VMCS that is "Inactive" with other states. This is
@@ -488,7 +495,6 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)
 			if (vmcs12_info != NULL) {
 				vmcs12_info->vmcs12_ptr = CUR_VMCS_PTR_INVALID;
 			}
-			guestmem_init(vcpu, &ctx_pair);
 			guestmem_copy_h2gp(&ctx_pair, 0, vmcs_ptr, blank_page, PAGE_SIZE_4K);
 			if (vmcs_ptr == vcpu->vmx_nested_current_vmcs_pointer) {
 				vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
@@ -515,7 +521,11 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		gpa_t vmcs_ptr = _vmx_decode_m64(vcpu, r);
+		gva_t addr = _vmx_decode_m64(vcpu, r);
+		gpa_t vmcs_ptr;
+		guestmem_hptw_ctx_pair_t ctx_pair;
+		guestmem_init(vcpu, &ctx_pair);
+		guestmem_copy_gv2h(&ctx_pair, 0, &vmcs_ptr, addr, sizeof(vmcs_ptr));
 		if (!PA_PAGE_ALIGNED_4K(vmcs_ptr) ||
 			!_vmx_check_physical_addr_width(vcpu, vmcs_ptr)) {
 			_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMPTRLD_INVALID_PHY_ADDR);
@@ -524,8 +534,6 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 		} else {
 			u32 rev;
 			u64 basic_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
-			guestmem_hptw_ctx_pair_t ctx_pair;
-			guestmem_init(vcpu, &ctx_pair);
 			guestmem_copy_gp2h(&ctx_pair, 0, &rev, vmcs_ptr, sizeof(rev));
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			if ((rev & (1U << 31)) ||
@@ -566,9 +574,11 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else {
-			ulong_t encoding, value;
+			ulong_t encoding;
+			uintptr_t pvalue;
+			int value_mem_reg;
 			size_t size = _vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding,
-													&value);
+													&pvalue, &value_mem_reg);
 			size_t offset = xmhf_nested_arch_x86vmx_vmcs_field_find(encoding);
 			if (offset == (size_t) (-1)) {
 				_vmx_nested_vm_fail_valid
@@ -576,12 +586,18 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 			} else {
 				/* Note: Currently does not support VMCS shadowing */
 				vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
+//				ulong_t value;
 // TODO
 				HALT_ON_ERRORCOND(0 && "Not implemented VMREAD");
 				(void) vmcs12_info;
 				(void) size;
 //				xmhf_nested_arch_x86vmx_vmcs_read(&vmcs12_info->vmcs12_value,
 //													offset, value, size);
+				if (value_mem_reg) {
+					
+				} else {
+					
+				}
 				_vmx_nested_vm_succeed(vcpu);
 			}
 		}
@@ -610,9 +626,11 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else {
-			ulong_t encoding, value;
+			ulong_t encoding;
+			uintptr_t pvalue;
+			int value_mem_reg;
 			size_t size = _vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding,
-													&value);
+													&pvalue, &value_mem_reg);
 			size_t offset = xmhf_nested_arch_x86vmx_vmcs_field_find(encoding);
 			if (offset == (size_t) (-1)) {
 				_vmx_nested_vm_fail_valid
@@ -627,6 +645,14 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 			} else {
 				/* Note: Currently does not support VMCS shadowing */
 				vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
+				ulong_t value;
+				if (value_mem_reg) {
+					value = *(ulong_t *)pvalue;
+				} else {
+					guestmem_hptw_ctx_pair_t ctx_pair;
+					guestmem_init(vcpu, &ctx_pair);
+					guestmem_copy_gv2h(&ctx_pair, 0, &value, pvalue, size);
+				}
 				xmhf_nested_arch_x86vmx_vmcs_write(&vmcs12_info->vmcs12_value,
 													offset, value, size);
 				_vmx_nested_vm_succeed(vcpu);
@@ -663,15 +689,17 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU *vcpu, struct regs *r)
 			(vcr4 & ~vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR]) != 0) {
 			_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 		} else {
-			gpa_t vmxon_ptr = _vmx_decode_m64(vcpu, r);
+			gva_t addr = _vmx_decode_m64(vcpu, r);
+			gpa_t vmxon_ptr;
+			guestmem_hptw_ctx_pair_t ctx_pair;
+			guestmem_init(vcpu, &ctx_pair);
+			guestmem_copy_gv2h(&ctx_pair, 0, &vmxon_ptr, addr, sizeof(vmxon_ptr));
 			if (!PA_PAGE_ALIGNED_4K(vmxon_ptr) ||
 				!_vmx_check_physical_addr_width(vcpu, vmxon_ptr)) {
 				_vmx_nested_vm_fail_invalid(vcpu);
 			} else {
 				u32 rev;
 				u64 basic_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
-				guestmem_hptw_ctx_pair_t ctx_pair;
-				guestmem_init(vcpu, &ctx_pair);
 				guestmem_copy_gp2h(&ctx_pair, 0, &rev, vmxon_ptr, sizeof(rev));
 				if ((rev & (1U << 31)) ||
 					(rev != ((u32) basic_msr & 0x7fffffffU))) {
