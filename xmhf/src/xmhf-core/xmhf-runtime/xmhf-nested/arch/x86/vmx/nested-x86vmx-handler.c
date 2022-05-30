@@ -50,6 +50,9 @@
 #include <xmhf.h>
 #include "nested-x86vmx-vmcs12.h"
 
+/* Maximum number of active VMCS per CPU */
+#define VMX_NESTED_MAX_ACTIVE_VMCS 10
+
 /* VMCALL executed in VMX root operation */
 #define VM_INST_ERRNO_VMCALL_IN_VMXROOT 1
 /* VMCLEAR with invalid physical address */
@@ -124,8 +127,29 @@ union _vmx_decode_m64_inst_info {
 	u32 raw;
 };
 
+/* Format of an active VMCS12 tracked by a CPU */
+typedef struct vmcs12_info {
+	/*
+	 * Pointer to VMCS12 in guest.
+	 *
+	 * When a VMCS is invalid, this field is CUR_VMCS_PTR_INVALID, and all
+	 * other fields are undefined.
+	 */
+	gpa_t vmcs12_ptr;
+	/* Pointer to VMCS02 in host */
+	spa_t vmcs02_ptr;
+} vmcs12_info_t;
+
 /* A blank page in memory for VMCLEAR */
 static u8 blank_page[PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
+
+/* Track all active VMCS12's in each CPU */
+static vmcs12_info_t
+cpu_active_vmcs12[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS];
+
+/* The VMCS02's in each CPU */
+// TODO: static u8 cpu_vmcs02[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][PAGE_SIZE_4K]
+// TODO: __attribute__((section(".bss.palign_data")));
 
 /*
  * Given a segment index, return the segment offset
@@ -297,6 +321,32 @@ static u32 _vmx_nested_check_ud(VCPU *vcpu, int is_vmxon)
 	return 0;
 }
 
+/* Clear list of active VMCS12's tracked */
+static void active_vmcs12_init(VCPU *vcpu)
+{
+	int i;
+	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
+		cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr = CUR_VMCS_PTR_INVALID;
+	}
+}
+
+/*
+ * Look up vmcs_ptr in list of active VMCS12's tracked in the current CPU.
+ * A return value of 0 means the VMCS is not active.
+ * A VMCS is defined to be active if this function returns non-zero.
+ * When vmcs_ptr = CUR_VMCS_PTR_INVALID, a empty slot is returned.
+ */
+static vmcs12_info_t *find_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr)
+{
+	int i;
+	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
+		if (cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr == vmcs_ptr) {
+			return &cpu_active_vmcs12[vcpu->idx][i];
+		}
+	}
+	return NULL;
+}
+
 /*
  * Virtualize fields in VCPU that tracks nested virtualization information
  */
@@ -336,9 +386,15 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)
 			 * Clear" from a VMCS that is "Inactive" with other states. This is
 			 * because we do not track inactive guests. As a result, we expect
 			 * guest hypervisors to VMCLEAR before and after using a VMCS.
-			 * SDM says that the launch state of VMCS should be set to clear,
-			 * but we do nothing here.
+			 * However, we cannot check whether the GUEST does so.
+			 *
+			 * SDM says that the launch state of VMCS should be set to clear.
+			 * Here, we remove the VMCS from the list of active VMCS's we track.
 			 */
+			vmcs12_info_t *vmcs12_info = find_active_vmcs12(vcpu, vmcs_ptr);
+			if (vmcs12_info != NULL) {
+				vmcs12_info->vmcs12_ptr = CUR_VMCS_PTR_INVALID;
+			}
 			guestmem_copy_h2gp(&ctx_pair, 0, vmcs_ptr, blank_page, PAGE_SIZE_4K);
 			if (vmcs_ptr == vcpu->vmx_nested_current_vmcs_pointer) {
 				vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
@@ -437,6 +493,7 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU *vcpu, struct regs *r)
 					vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
 					vcpu->vmx_nested_is_vmx_root_operation = 1;
 					vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
+					active_vmcs12_init(vcpu);
 					_vmx_nested_vm_succeed(vcpu);
 				}
 			}
