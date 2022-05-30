@@ -298,7 +298,7 @@ static u32 _vmx_nested_check_ud(VCPU *vcpu, int is_vmxon)
 
 // TODO: also need to virtualize VMCALL
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)
 {
 	if (_vmx_nested_check_ud(vcpu, 0)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
@@ -337,49 +337,49 @@ void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(VCPU *vcpu, struct r
 	}
 }
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmlaunch(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmlaunch(VCPU *vcpu, struct regs *r)
 {
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmptrld(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 {
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmptrst(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU *vcpu, struct regs *r)
 {
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmread(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 {
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmresume(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmresume(VCPU *vcpu, struct regs *r)
 {
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmwrite(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 {
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxoff(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmxoff(VCPU *vcpu, struct regs *r)
 {
 	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
-void xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU *vcpu, struct regs *r)
 {
 	if (_vmx_nested_check_ud(vcpu, 1)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);

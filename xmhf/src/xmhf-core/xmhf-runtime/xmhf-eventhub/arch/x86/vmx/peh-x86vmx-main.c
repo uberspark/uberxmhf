@@ -1091,47 +1091,47 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 #ifdef __NESTED_VIRTUALIZATION__
 		case VMX_VMEXIT_VMCLEAR:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmclear(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmclear(vcpu, r);
 		}
 		break;
 
 		case VMX_VMEXIT_VMLAUNCH:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmlaunch(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmlaunch(vcpu, r);
 		}
 		break;
 
 		case VMX_VMEXIT_VMPTRLD:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmptrld(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmptrld(vcpu, r);
 		}
 		break;
 
 		case VMX_VMEXIT_VMPTRST:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmptrst(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmptrst(vcpu, r);
 		}
 		break;
 
 		case VMX_VMEXIT_VMREAD:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmread(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmread(vcpu, r);
 		}
 		break;
 
 		case VMX_VMEXIT_VMRESUME:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmresume(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmresume(vcpu, r);
 		}
 		break;
 
 		case VMX_VMEXIT_VMWRITE:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmwrite(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmwrite(vcpu, r);
 		}
 		break;
 
 		case VMX_VMEXIT_VMXOFF:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxoff(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmxoff(vcpu, r);
 		}
 		break;
 
 		case VMX_VMEXIT_VMXON:{
-			xmhf_parteventhub_arch_x86vmx_handle_intercept_vmxon(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmxon(vcpu, r);
 		}
 		break;
 #endif /* !__NESTED_VIRTUALIZATION__ */
