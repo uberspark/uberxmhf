@@ -51,17 +51,16 @@
 struct nested_vmcs12 {
 #define DECLARE_FIELD_16(encoding, name, extra) \
 	u16 name;
-#define DECLARE_FIELD_32(encoding, name, extra) \
-	u32 name;
 #define DECLARE_FIELD_64(encoding, name, extra) \
 	u64 name;
+#define DECLARE_FIELD_32(encoding, name, extra) \
+	u32 name;
 #define DECLARE_FIELD_NW(encoding, name, extra) \
 	ulong_t name;
 #include "nested-x86vmx-vmcs12-fields.h"
 };
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);
-int xmhf_nested_arch_x86vmx_vmcs_readable(size_t offset);
 int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset);
 ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
 											size_t offset, size_t size);

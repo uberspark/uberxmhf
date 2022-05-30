@@ -57,21 +57,21 @@
  #endif
 #endif
 
-#ifndef DECLARE_FIELD_32_RO
- #ifdef DECLARE_FIELD_32
-  #define DECLARE_FIELD_32_RO(encoding, name, extra) \
-          DECLARE_FIELD_32(encoding, name, extra)
- #else
-  #define DECLARE_FIELD_32_RO(encoding, name, extra)
- #endif
-#endif
-
 #ifndef DECLARE_FIELD_64_RO
  #ifdef DECLARE_FIELD_64
   #define DECLARE_FIELD_64_RO(encoding, name, extra) \
           DECLARE_FIELD_64(encoding, name, extra)
  #else
   #define DECLARE_FIELD_64_RO(encoding, name, extra)
+ #endif
+#endif
+
+#ifndef DECLARE_FIELD_32_RO
+ #ifdef DECLARE_FIELD_32
+  #define DECLARE_FIELD_32_RO(encoding, name, extra) \
+          DECLARE_FIELD_32(encoding, name, extra)
+ #else
+  #define DECLARE_FIELD_32_RO(encoding, name, extra)
  #endif
 #endif
 
@@ -92,21 +92,21 @@
  #endif
 #endif
 
-#ifndef DECLARE_FIELD_32_RW
- #ifdef DECLARE_FIELD_32
-  #define DECLARE_FIELD_32_RW(encoding, name, extra) \
-          DECLARE_FIELD_32(encoding, name, extra)
- #else
-  #define DECLARE_FIELD_32_RW(encoding, name, extra)
- #endif
-#endif
-
 #ifndef DECLARE_FIELD_64_RW
  #ifdef DECLARE_FIELD_64
   #define DECLARE_FIELD_64_RW(encoding, name, extra) \
           DECLARE_FIELD_64(encoding, name, extra)
  #else
   #define DECLARE_FIELD_64_RW(encoding, name, extra)
+ #endif
+#endif
+
+#ifndef DECLARE_FIELD_32_RW
+ #ifdef DECLARE_FIELD_32
+  #define DECLARE_FIELD_32_RW(encoding, name, extra) \
+          DECLARE_FIELD_32(encoding, name, extra)
+ #else
+  #define DECLARE_FIELD_32_RW(encoding, name, extra)
  #endif
 #endif
 
@@ -317,24 +317,24 @@ DECLARE_FIELD_NW_RW(0x6C1A, host_SSP, UNDEFINED)
 DECLARE_FIELD_NW_RW(0x6C1C, host_IA32_INTERRUPT_SSP_TABLE_ADDR, UNDEFINED)
 
 #undef DECLARE_FIELD_16_RO
-#undef DECLARE_FIELD_32_RO
 #undef DECLARE_FIELD_64_RO
+#undef DECLARE_FIELD_32_RO
 #undef DECLARE_FIELD_NW_RO
 #undef DECLARE_FIELD_16_RW
-#undef DECLARE_FIELD_32_RW
 #undef DECLARE_FIELD_64_RW
+#undef DECLARE_FIELD_32_RW
 #undef DECLARE_FIELD_NW_RW
 
 #ifdef DECLARE_FIELD_16
 #undef DECLARE_FIELD_16
 #endif
 
-#ifdef DECLARE_FIELD_32
-#undef DECLARE_FIELD_32
-#endif
-
 #ifdef DECLARE_FIELD_64
 #undef DECLARE_FIELD_64
+#endif
+
+#ifdef DECLARE_FIELD_32
+#undef DECLARE_FIELD_32
 #endif
 
 #ifdef DECLARE_FIELD_NW
