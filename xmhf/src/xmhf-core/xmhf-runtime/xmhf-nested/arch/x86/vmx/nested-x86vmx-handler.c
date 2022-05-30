@@ -127,6 +127,24 @@ union _vmx_decode_m64_inst_info {
 	u32 raw;
 };
 
+union _vmx_decode_vmread_vmwrite_inst_info {
+	struct {
+		u32 scaling: 2;
+		u32 undefined2: 1;
+		u32 reg1: 4;
+		u32 address_size: 3;
+		u32 mem_reg: 1;
+		u32 undefined14_11: 4;
+		u32 segment_register: 3;
+		u32 index_reg: 4;
+		u32 index_reg_invalid: 1;
+		u32 base_reg: 4;
+		u32 base_reg_invalid: 1;
+		u32 reg2: 4;
+	};
+	u32 raw;
+};
+
 /* Format of an active VMCS12 tracked by a CPU */
 typedef struct vmcs12_info {
 	/*
@@ -206,6 +224,63 @@ static u64 _vmx_decode_m64(VCPU *vcpu, struct regs *r)
 		break;
 	}
 	return ans;
+}
+
+/*
+ * Decode the operand for instructions for VMREAD and VMWRITE. Following
+ * Table 26-14. Format of the VM-Exit Instruction-Information Field as Used for
+ * VMREAD and VMWRITE in Intel's System Programming Guide, Order Number 325384
+ */
+static void _vmx_decode_vmread_vmwrite(VCPU *vcpu, struct regs *r,
+										int is_vmwrite, ulong_t *pencoding,
+										ulong_t *pvalue)
+{
+	union _vmx_decode_vmread_vmwrite_inst_info inst_info;
+	ulong_t encoding;
+	ulong_t value;
+	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
+	if (is_vmwrite) {
+		encoding = *_vmx_decode_reg(inst_info.reg2, vcpu, r);
+	} else {
+		encoding = *_vmx_decode_reg(inst_info.reg1, vcpu, r);
+	}
+	if (inst_info.mem_reg) {
+		if (is_vmwrite) {
+			value = *_vmx_decode_reg(inst_info.reg1, vcpu, r);
+		} else {
+			value = *_vmx_decode_reg(inst_info.reg2, vcpu, r);
+		}
+	} else {
+		u64 addr = _vmx_decode_seg(inst_info.segment_register, vcpu);
+		addr += vcpu->vmcs.info_exit_qualification;
+		if (!inst_info.base_reg_invalid) {
+			addr += *_vmx_decode_reg(inst_info.base_reg, vcpu, r);
+		}
+		if (!inst_info.index_reg_invalid) {
+			addr += (*_vmx_decode_reg(inst_info.index_reg, vcpu, r) <<
+						inst_info.scaling);
+		}
+		switch (inst_info.address_size) {
+		case 0:	/* 16-bit */
+			addr &= 0xffffULL;
+			break;
+		case 1:	/* 32-bit */
+			addr &= 0xffffffffULL;
+			break;
+		case 2:	/* 64-bit */
+			break;
+		default:
+			HALT_ON_ERRORCOND(0 && "Unexpected address size");
+			break;
+		}
+		value = addr;	// TODO: reference guest memory
+		HALT_ON_ERRORCOND(0);
+	}
+	*pencoding = encoding;
+	*pvalue = value;
+	// TODO: temp code
+	printf("\nII=0x%08x", vcpu->vmcs.info_vmx_instruction_information);
+	printf("\nEQ=0x%016x", vcpu->vmcs.info_exit_qualification);
 }
 
 /* The VMsucceed pseudo-function in SDM "29.2 CONVENTIONS" */
@@ -363,6 +438,7 @@ static void new_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr, u32 rev)
 	vmcs12_info->vmcs12_ptr = vmcs_ptr;
 	HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
 	*(u32 *)spa2hva(vmcs12_info->vmcs02_ptr) = rev;
+	memset(&vmcs12_info->vmcs12_value, 0, sizeof(vmcs12_info->vmcs12_value));
 }
 
 /*
@@ -519,8 +595,8 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else {
-			printf("\nII=0x%08x", vcpu->vmcs.info_vmx_instruction_information);
-			printf("\nEQ=0x%016x", vcpu->vmcs.info_exit_qualification);
+			ulong_t encoding, value;
+			_vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding, &value);
 			HALT_ON_ERRORCOND(0 && "Not implemented");
 			(void)r;find_current_vmcs12(vcpu);
 
