@@ -123,6 +123,7 @@ void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
 }
 
 //--debug: dumpVMCS dumps VMCS contents-----------------------------------------
+// TODO: deprecated
 void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
   		printf("\nGuest State follows:");
 		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
@@ -183,13 +184,20 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     u32 i = 0;
 
 #define DUMP_VCPU_PRINT_INT16(x) \
-    printf("\nCPU(0x%02x): " #x "=0x%08x", vcpu->id, (x));
+    printf("\nCPU(0x%02x): " #x "=0x%04x", (u32) vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT32(x) \
     printf("\nCPU(0x%02x): " #x "=0x%08x", vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT64(x) \
     printf("\nCPU(0x%02x): " #x "=0x%016lx", vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT64_INDEX(x, i) \
     printf("\nCPU(0x%02x): " #x "[%x]=0x%016lx", vcpu->id, (i), (x)[i]);
+#ifdef __AMD64__
+#define DUMP_VCPU_PRINT_INTNW(x) DUMP_VCPU_PRINT_INT64(x)
+#elif defined(__I386__)
+#define DUMP_VCPU_PRINT_INTNW(x) DUMP_VCPU_PRINT_INT32(x)
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 #ifdef __AMD64__
     DUMP_VCPU_PRINT_INT64(vcpu->rsp);
@@ -250,15 +258,15 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_exception_errorcode);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_instruction_length);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_Task_PRivilege_Threshold);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR0_mask);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR4_mask);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR0_shadow);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR4_shadow);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR0_mask);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR4_mask);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR0_shadow);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR4_shadow);
 #ifndef __DEBUG_QEMU__
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR3_target0);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR3_target1);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR3_target2);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_CR3_target3);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR3_target0);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR3_target1);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR3_target2);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR3_target3);
 #endif /* !__DEBUG_QEMU__ */
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_IO_BitmapA_address);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_IO_BitmapB_address);
@@ -272,46 +280,46 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_TSC_offset);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_virtual_APIC_page_address);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_EPT_pointer);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_CR0);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_CR3);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_CR4);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_FS_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_GS_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_TR_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_GDTR_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_IDTR_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_SYSENTER_ESP);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_SYSENTER_EIP);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_RSP);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.host_RIP);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_CR0);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_CR3);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_CR4);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_FS_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_GS_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_TR_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_GDTR_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_IDTR_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_SYSENTER_ESP);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_SYSENTER_EIP);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_RSP);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_RIP);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_SYSENTER_CS);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_ES_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_CS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_SS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_DS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_FS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_GS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_TR_selector);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_CR0);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_CR3);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_CR4);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_ES_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_CS_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_SS_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_DS_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_FS_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_GS_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_LDTR_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_TR_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_GDTR_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_IDTR_base);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_DR7);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_RSP);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_RIP);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_RFLAGS);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_pending_debug_x);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_SYSENTER_ESP);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_SYSENTER_EIP);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_ES_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_CS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_SS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_DS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_FS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_GS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_TR_selector);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_CR0);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_CR3);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_CR4);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_ES_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_CS_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_SS_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_DS_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_FS_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_GS_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_LDTR_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_TR_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_GDTR_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_IDTR_base);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_DR7);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_RSP);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_RIP);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_RFLAGS);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_pending_debug_x);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_SYSENTER_ESP);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_SYSENTER_EIP);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_ES_limit);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_CS_limit);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SS_limit);
@@ -336,14 +344,14 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SMBASE);
 #endif /* !__DEBUG_QEMU__ */
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SYSENTER_CS);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_ES_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_CS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_DS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_FS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_GS_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_LDTR_selector);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_TR_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_ES_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_CS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_SS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_DS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_FS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_GS_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_LDTR_selector);
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_TR_selector);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_VMCS_link_pointer);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_IA32_DEBUGCTL);
     DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_paddr);
@@ -359,18 +367,19 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_IDT_vectoring_error_code);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmexit_instruction_length);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmx_instruction_information);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_exit_qualification);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_exit_qualification);
 #ifndef __DEBUG_QEMU__
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_IO_RCX);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_IO_RSI);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_IO_RDI);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_IO_RIP);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_IO_RCX);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_IO_RSI);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_IO_RDI);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_IO_RIP);
 #endif /* !__DEBUG_QEMU__ */
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.info_guest_linear_address);
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_guest_linear_address);
 
 #undef DUMP_VCPU_PRINT_INT16
 #undef DUMP_VCPU_PRINT_INT32
 #undef DUMP_VCPU_PRINT_INT64
 #undef DUMP_VCPU_PRINT_INT64_INDEX
+#undef DUMP_VCPU_PRINT_INTNW
 
 }
