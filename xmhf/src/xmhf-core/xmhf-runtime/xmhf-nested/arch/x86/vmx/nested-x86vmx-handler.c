@@ -556,8 +556,40 @@ void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU *vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 {
-	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
-	HALT_ON_ERRORCOND(0 && "Not implemented");
+	if (_vmx_nested_check_ud(vcpu, 0)) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		/* Note: Currently does not support 1-setting of "VMCS shadowing" */
+		// TODO: VMEXIT
+		HALT_ON_ERRORCOND(0 && "Not implemented");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+	} else {
+		if (vcpu->vmx_nested_current_vmcs_pointer == CUR_VMCS_PTR_INVALID) {
+			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
+			_vmx_nested_vm_fail_invalid(vcpu);
+		} else {
+			ulong_t encoding, value;
+			size_t size = _vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding,
+													&value);
+			size_t offset = xmhf_nested_arch_x86vmx_vmcs_field_find(encoding);
+			if (offset == (size_t) (-1)) {
+				_vmx_nested_vm_fail_valid
+					(vcpu, VM_INST_ERRNO_VMRDWR_UNSUPP_VMCS_COMP);
+			} else {
+				/* Note: Currently does not support VMCS shadowing */
+				vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
+// TODO
+				HALT_ON_ERRORCOND(0 && "Not implemented VMREAD");
+				(void) vmcs12_info;
+				(void) size;
+//				xmhf_nested_arch_x86vmx_vmcs_read(&vmcs12_info->vmcs12_value,
+//													offset, value, size);
+				_vmx_nested_vm_succeed(vcpu);
+			}
+		}
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	}
 }
 
 void xmhf_nested_arch_x86vmx_handle_vmresume(VCPU *vcpu, struct regs *r)
