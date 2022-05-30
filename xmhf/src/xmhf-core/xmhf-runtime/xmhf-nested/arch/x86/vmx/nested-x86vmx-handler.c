@@ -442,7 +442,7 @@ static vmcs12_info_t *find_current_vmcs12(VCPU *vcpu)
 	gpa_t vmcs_ptr = vcpu->vmx_nested_current_vmcs_pointer;
 	HALT_ON_ERRORCOND(vmcs_ptr != CUR_VMCS_PTR_INVALID);
 	ans = find_active_vmcs12(vcpu, vmcs_ptr);
-	HALT_ON_ERRORCOND(ans == NULL);
+	HALT_ON_ERRORCOND(ans != NULL);
 	return ans;
 }
 
