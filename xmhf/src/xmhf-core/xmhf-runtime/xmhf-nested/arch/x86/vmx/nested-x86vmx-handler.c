@@ -296,6 +296,17 @@ static u32 _vmx_nested_check_ud(VCPU *vcpu, int is_vmxon)
 	return 0;
 }
 
+/*
+ * Virtualize fields in VCPU that tracks nested virtualization information
+ */
+void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
+{
+	vcpu->vmx_nested_is_vmx_operation = 0;
+	vcpu->vmx_nested_vmxon_pointer = 0;
+	vcpu->vmx_nested_is_vmx_root_operation = 0;
+	vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
+}
+
 // TODO: also need to virtualize VMCALL
 
 void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)

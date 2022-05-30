@@ -64,6 +64,8 @@
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 
+void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu);
+
 void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmlaunch(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r);
