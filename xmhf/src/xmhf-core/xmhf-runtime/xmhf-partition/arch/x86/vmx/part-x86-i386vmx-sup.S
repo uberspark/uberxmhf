@@ -63,14 +63,9 @@
     .global __vmx_start_hvm
     __vmx_start_hvm:
 
-    //real-mode setup just like the BIOS
-    movl $0x0, %eax
-    movl $0x0, %ebx
-    movl $0x0, %ecx
-    movl 4(%esp), %edx  // First argument to this function
-    movl $0x0, %ebp
-    movl $0x0, %esi
-    movl $0x0, %edi
+    //set up registers
+    movl    4(%esp), %esp
+    popal
 
     //attempt to instantiate the HVM
     vmlaunch

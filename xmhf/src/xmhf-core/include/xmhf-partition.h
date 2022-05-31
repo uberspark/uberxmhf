@@ -118,7 +118,7 @@ void xmhf_partition_arch_x86vmx_start(VCPU *vcpu);
 
 //low-level HVM start routine (part-x86vmx-sup.S)
 /* 32-bit EDX in i386, 64-bit RDX in amd64 */
-u32 __vmx_start_hvm(uint32_t rdx);
+u32 __vmx_start_hvm(struct regs *r);
 
 //report error when VMLAUNCH or VMRESUME fails
 void __vmx_vmentry_fail_callback(ulong_t is_resume, ulong_t valid);

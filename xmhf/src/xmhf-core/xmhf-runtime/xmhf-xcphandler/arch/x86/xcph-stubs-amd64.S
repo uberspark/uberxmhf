@@ -95,7 +95,7 @@
         movq    $0x&vector&, %rdi   // RDI (first argument) = vector
         call    xmhf_xcphandler_hub // call C-land hub
 
-        // push GPR values, except RSP
+        // pop GPR values, except RSP
         popq    %r15
         popq    %r14
         popq    %r13

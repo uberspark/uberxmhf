@@ -609,18 +609,18 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer == 0xFFFFFFFFFFFFFFFFULL );
 
   {
-    /*
-     * For BSP, use boot drive number (usually RDX=0x80 for frist HDD).
-     * For AP, use RDX=0x000n06xx (Intel's spec on processor state after INIT).
-     */
-    uintptr_t rdx = (uintptr_t)rpb->XtGuestOSBootDrive;
-    if (!vcpu->isbsp) {
-        u32 _eax, _ebx, _ecx, _edx;
-        cpuid(0x80000001U, &_eax, &_ebx, &_ecx, &_edx);
-        rdx = 0x00000600UL | (0x000f0000UL & _eax);
+    struct regs r;
+    memset(&r, 0, sizeof(r));
+    if (vcpu->isbsp) {
+      /* For BSP, DL = boot drive number (usually EDX=0x80 for frist HDD). */
+      r.edx = (u32) rpb->XtGuestOSBootDrive;
+    } else {
+      /* For AP, EDX=0x000n06xx (Intel's spec on processor state after INIT) */
+      u32 _eax, _ebx, _ecx, _edx;
+      cpuid(0x80000001U, &_eax, &_ebx, &_ecx, &_edx);
+      r.edx = 0x00000600U | (0x000f0000U & _eax);
     }
-    // TODO: argument should be struct regs, not just rdx
-    __vmx_start_hvm(rdx);
+    __vmx_start_hvm(&r);
     HALT_ON_ERRORCOND(0 && "__vmx_start_hvm() should never return");
   }
 }
