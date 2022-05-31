@@ -140,6 +140,21 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 										size_t size)
 {
 	switch (offset) {
+#define DECLARE_FIELD_16_RO(encoding, name, extra) \
+	case offsetof(struct nested_vmcs12, name): \
+		HALT_ON_ERRORCOND(0 && "Write to read-only VMCS field"); \
+		break;
+#define DECLARE_FIELD_64_RO(encoding, name, extra) \
+	case offsetof(struct nested_vmcs12, name): \
+		HALT_ON_ERRORCOND(0 && "Write to read-only VMCS field"); \
+		break; \
+	case offsetof(struct nested_vmcs12, name) + 4: \
+		HALT_ON_ERRORCOND(0 && "Write to read-only VMCS field"); \
+		break;
+#define DECLARE_FIELD_32_RO(encoding, name, extra) \
+		DECLARE_FIELD_16_RO(encoding, name, extra)
+#define DECLARE_FIELD_NW_RO(encoding, name, extra) \
+		DECLARE_FIELD_16_RO(encoding, name, extra)
 #define DECLARE_FIELD_16_RW(encoding, name, extra) \
 	case offsetof(struct nested_vmcs12, name): \
 		HALT_ON_ERRORCOND(size >= sizeof(u16)); \
