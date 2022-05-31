@@ -388,6 +388,19 @@ static u32 _vmx_check_physical_addr_width(VCPU *vcpu, u64 addr) {
 }
 
 /*
+ * Perform VMENTRY. Never returns if succeed. If controls / host state check
+ * fails, return error code for _vmx_nested_vm_fail().
+ */
+static u32 _vmx_vmentry(VCPU *vcpu, int is_vmresume)
+{
+	(void) vcpu;
+	(void) is_vmresume;
+	HALT_ON_ERRORCOND(0);
+	// TODO
+	return 0;
+}
+
+/*
  * Calculate virtual guest CR0
  *
  * Note: vcpu->vmcs.guest_CR0 is the CR0 on physical CPU when VMX non-root mode.
@@ -507,10 +520,33 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)
 	}
 }
 
-void xmhf_nested_arch_x86vmx_handle_vmlaunch(VCPU *vcpu, struct regs *r)
+void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU *vcpu,
+														struct regs *r,
+														int is_vmresume)
 {
-	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
-	HALT_ON_ERRORCOND(0 && "Not implemented");
+	(void) r;
+	if (_vmx_nested_check_ud(vcpu, 0)) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		// TODO: VMEXIT
+		HALT_ON_ERRORCOND(0 && "Not implemented");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+	} else {
+		if (vcpu->vmx_nested_current_vmcs_pointer == CUR_VMCS_PTR_INVALID) {
+			_vmx_nested_vm_fail_invalid(vcpu);
+		} else if (vcpu->vmcs.guest_interruptibility & (1U << 1)) {
+			/* Blocking by MOV SS */
+			_vmx_nested_vm_fail_valid
+				(vcpu, VM_INST_ERRNO_VMENTRY_EVENT_BLOCK_MOVSS);
+		} else {
+			// TODO: don't do the following
+			/* Note: the launch state of VMCS will be checked by hardware */
+			u32 error_number = _vmx_vmentry(vcpu, is_vmresume);
+			_vmx_nested_vm_fail_valid(vcpu, error_number);
+		}
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	}
 }
 
 void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
@@ -602,12 +638,6 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 		}
 		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	}
-}
-
-void xmhf_nested_arch_x86vmx_handle_vmresume(VCPU *vcpu, struct regs *r)
-{
-	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
-	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
 void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)

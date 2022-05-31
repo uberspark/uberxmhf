@@ -1096,7 +1096,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case VMX_VMEXIT_VMLAUNCH:{
-			xmhf_nested_arch_x86vmx_handle_vmlaunch(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(vcpu, r, 0);
 		}
 		break;
 
@@ -1116,7 +1116,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case VMX_VMEXIT_VMRESUME:{
-			xmhf_nested_arch_x86vmx_handle_vmresume(vcpu, r);
+			xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(vcpu, r, 1);
 		}
 		break;
 

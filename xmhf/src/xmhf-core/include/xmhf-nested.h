@@ -67,11 +67,12 @@
 void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu);
 
 void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r);
-void xmhf_nested_arch_x86vmx_handle_vmlaunch(VCPU *vcpu, struct regs *r);
+void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU *vcpu,
+														struct regs *r,
+														int is_vmresume);
 void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r);
-void xmhf_nested_arch_x86vmx_handle_vmresume(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmxoff(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU *vcpu, struct regs *r);
