@@ -146,6 +146,8 @@ typedef struct vmcs12_info {
 	gpa_t vmcs12_ptr;
 	/* Pointer to VMCS02 in host */
 	spa_t vmcs02_ptr;
+	/* Whether this VMCS has launched */
+	int launched;
 	/* Content of VMCS12, stored in XMHF's format */
 	struct nested_vmcs12 vmcs12_value;
 } vmcs12_info_t;
@@ -314,6 +316,7 @@ static void new_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr, u32 rev)
 	vmcs12_info->vmcs12_ptr = vmcs_ptr;
 	HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
 	*(u32 *)spa2hva(vmcs12_info->vmcs02_ptr) = rev;
+	vmcs12_info->launched = 0;
 	memset(&vmcs12_info->vmcs12_value, 0, sizeof(vmcs12_info->vmcs12_value));
 }
 
@@ -391,13 +394,16 @@ static u32 _vmx_check_physical_addr_width(VCPU *vcpu, u64 addr) {
  * Perform VMENTRY. Never returns if succeed. If controls / host state check
  * fails, return error code for _vmx_nested_vm_fail().
  */
-static u32 _vmx_vmentry(VCPU *vcpu, int is_vmresume)
+static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 {
 	(void) vcpu;
-	(void) is_vmresume;
 	HALT_ON_ERRORCOND(0);
 	// TODO
-	return 0;
+	if ("success") {
+		vmcs12_info->launched = 1;
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -540,9 +546,15 @@ void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU *vcpu,
 			_vmx_nested_vm_fail_valid
 				(vcpu, VM_INST_ERRNO_VMENTRY_EVENT_BLOCK_MOVSS);
 		} else {
-			// TODO: don't do the following
-			/* Note: the launch state of VMCS will be checked by hardware */
-			u32 error_number = _vmx_vmentry(vcpu, is_vmresume);
+			vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
+			u32 error_number;
+			if (!is_vmresume && vmcs12_info->launched) {
+				error_number = VM_INST_ERRNO_VMLAUNCH_NONCLEAR_VMCS;
+			} else if (is_vmresume && !vmcs12_info->launched) {
+				error_number = VM_INST_ERRNO_VMRESUME_NONLAUNCH_VMCS;
+			} else {
+				error_number = _vmx_vmentry(vcpu, vmcs12_info);
+			}
 			_vmx_nested_vm_fail_valid(vcpu, error_number);
 		}
 		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
