@@ -51,7 +51,7 @@
 
 //----------------------------------------------------------------------
 //globals referenced
-	.extern xmhf_parteventhub_arch_x86vmx_intercept_handler
+    .extern xmhf_parteventhub_arch_x86vmx_intercept_handler
 
 //----------------------------------------------------------------------
 // xmhf_parteventhub_entry_x86vmx
@@ -60,20 +60,22 @@
 .section .text
 .global xmhf_parteventhub_arch_x86vmx_entry
 xmhf_parteventhub_arch_x86vmx_entry:
-	//step-1: save all CPU GPRs
-	pushal
+    // Currently esp points to VCPU
 
-	//step-2: grab VCPU *
-	movl 32(%esp), %esi
+    //step-1: save all CPU GPRs
+    pushal
 
-   	//step-4: get hold of pointer to saved GPR on stack
-   	movl %esp, %eax
+    //step-2: grab VCPU *
+    movl 32(%esp), %esi
 
-	//step-5: invoke "C" event handler
-   	//1st argument is VCPU * followed by pointer to saved GPRs
-	pushl %eax
-	pushl %esi
-	call xmhf_parteventhub_arch_x86vmx_intercept_handler
+    //step-4: get hold of pointer to saved GPR on stack
+    movl %esp, %eax
+
+    //step-5: invoke "C" event handler
+    //1st argument is VCPU * followed by pointer to saved GPRs
+    pushl %eax
+    pushl %esi
+    call xmhf_parteventhub_arch_x86vmx_intercept_handler
     addl $0x08, %esp
 
     //step-6; restore all CPU GPRs
