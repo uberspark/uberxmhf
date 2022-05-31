@@ -55,7 +55,7 @@
 //---function to obtain the vcpu of the currently executing core----------------
 // XXX: TODO, move this into baseplatform as backend
 // note: this always returns a valid VCPU pointer
-static VCPU *_svm_and_vmx_getvcpu(void){
+VCPU *_svm_and_vmx_getvcpu(void){
   int i;
   u32 eax, edx, *lapic_reg;
   u32 lapic_id;
