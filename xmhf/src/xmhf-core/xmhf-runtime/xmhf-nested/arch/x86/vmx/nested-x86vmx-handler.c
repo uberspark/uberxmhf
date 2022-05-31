@@ -346,10 +346,7 @@ static void _vmx_nested_vm_fail_valid(VCPU *vcpu, u32 error_number)
 	vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
 	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_ZF;
-	xmhf_nested_arch_x86vmx_vmcs_write(
-		&vmcs12_info->vmcs12_value,
-		offsetof(struct nested_vmcs12, info_vminstr_error), error_number,
-		sizeof(error_number));
+	vmcs12_info->vmcs12_value.info_vminstr_error = error_number;
 }
 
 static void _vmx_nested_vm_fail_invalid(VCPU *vcpu)
