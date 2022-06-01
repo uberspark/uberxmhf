@@ -22,9 +22,9 @@ OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/vmx/memp-x86vmx-data.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/svm/memp-x86svm.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/svm/memp-x86svm-data.o
 
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/svm/peh-x86-$(TARGET_SUBARCH)svm-entry.o
+OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/svm/peh-x86svm-entry.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/svm/peh-x86svm-main.o
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86-$(TARGET_SUBARCH)vmx-entry.o
+OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-entry.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-main.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86-safemsr.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-guestmem.o
@@ -95,9 +95,9 @@ OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/part-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/part-x86.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86svm.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86-$(TARGET_SUBARCH)svm-sup.o
+OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86svm-sup.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86-$(TARGET_SUBARCH)vmx-sup.o
+OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
 OBJECTS_PRECOMPILED += ./xmhf-startup/runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-startup/rntm-data.o

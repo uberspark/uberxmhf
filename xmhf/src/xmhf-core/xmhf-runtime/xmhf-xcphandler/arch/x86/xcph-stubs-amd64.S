@@ -71,47 +71,14 @@
     XtRtmIdtStub&vector&:
 
         // push GPR values on stack to construct struct regs *r
-        pushq   %rax
-        pushq   %rcx
-        pushq   %rdx
-        pushq   %rbx
-        pushq   %rsp
-        pushq   %rbp
-        pushq   %rsi
-        pushq   %rdi
-        pushq   %r8
-        pushq   %r9
-        pushq   %r10
-        pushq   %r11
-        pushq   %r12
-        pushq   %r13
-        pushq   %r14
-        pushq   %r15
-
-        /* We want %rsp to be the value before the first push */
-        addq $(4 * 8), 88(%rsp)
+        PUSHAQ
 
         movq    %rsp, %rsi          // RSI (second argument) = struct regs *
         movq    $0x&vector&, %rdi   // RDI (first argument) = vector
         call    xmhf_xcphandler_hub // call C-land hub
 
-        // push GPR values, except RSP
-        popq    %r15
-        popq    %r14
-        popq    %r13
-        popq    %r12
-        popq    %r11
-        popq    %r10
-        popq    %r9
-        popq    %r8
-        popq    %rdi
-        popq    %rsi
-        popq    %rbp
-        leaq    8(%rsp), %rsp
-        popq    %rbx
-        popq    %rdx
-        popq    %rcx
-        popq    %rax
+        // pop GPR values, except RSP
+        POPAQ
 
         /* If the exception puts an error code on the stack, ignore it */
         .if &skip_err_code&
@@ -161,7 +128,7 @@ XtRtmEmitIdtStub 1f 0
     //EMHF interrupt descriptor table
     .global xmhf_xcphandler_idt
     xmhf_xcphandler_idt:
-    .word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start
+    .word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start - 1
     .quad xmhf_xcphandler_idt_start
     .align 16
     .global xmhf_xcphandler_idt_start

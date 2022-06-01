@@ -84,6 +84,9 @@ void xmhf_xcphandler_hub(uintptr_t vector, struct regs *r);
 //----------------------------------------------------------------------
 // generic arch. interfaces
 
+//obtain the vcpu of the currently executing core
+VCPU *_svm_and_vmx_getvcpu(void);
+
 //initialize EMHF core exception handlers
 void xmhf_xcphandler_arch_initialize(void);
 

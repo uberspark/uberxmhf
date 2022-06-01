@@ -118,7 +118,11 @@ void xmhf_partition_arch_x86vmx_start(VCPU *vcpu);
 
 //low-level HVM start routine (part-x86vmx-sup.S)
 /* 32-bit EDX in i386, 64-bit RDX in amd64 */
-u32 __vmx_start_hvm(uint32_t rdx);
+void __vmx_vmentry_vmlaunch(struct regs *r);
+void __vmx_vmentry_vmresume(struct regs *r);
+
+//report error when VMLAUNCH or VMRESUME fails
+void __vmx_vmentry_fail_callback(ulong_t is_resume, ulong_t valid);
 
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);

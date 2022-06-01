@@ -613,38 +613,20 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer == 0xFFFFFFFFFFFFFFFFULL );
 
   {
-    u32 errorcode;
-    /*
-     * For BSP, use boot drive number (usually RDX=0x80 for frist HDD).
-     * For AP, use RDX=0x000n06xx (Intel's spec on processor state after INIT).
-     */
-    uintptr_t rdx = (uintptr_t)rpb->XtGuestOSBootDrive;
-    if (!vcpu->isbsp) {
-        u32 _eax, _ebx, _ecx, _edx;
-        cpuid(0x80000001U, &_eax, &_ebx, &_ecx, &_edx);
-        rdx = 0x00000600UL | (0x000f0000UL & _eax);
+    struct regs r;
+    memset(&r, 0, sizeof(r));
+    if (vcpu->isbsp) {
+      /* For BSP, DL = boot drive number (usually EDX=0x80 for frist HDD). */
+      r.edx = (u32) rpb->XtGuestOSBootDrive;
+    } else {
+      /* For AP, EDX=0x000n06xx (Intel's spec on processor state after INIT) */
+      u32 _eax, _ebx, _ecx, _edx;
+      cpuid(0x80000001U, &_eax, &_ebx, &_ecx, &_edx);
+      r.edx = 0x00000600U | (0x000f0000U & _eax);
     }
-    errorcode=__vmx_start_hvm(rdx);
-    HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
-    //get CPU VMCS into VCPU structure
-    xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
-
-    switch(errorcode){
-			case 0:	//no error code, VMCS pointer is invalid
-			    printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", vcpu->id);
-				break;
-			case 1:{//error code available, so dump it
-				unsigned long code=5;
-				HALT_ON_ERRORCOND(__vmx_vmread(0x4400, &code));
-			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%lx. HALT!", vcpu->id, code);
-			    xmhf_baseplatform_arch_x86vmx_dump_vcpu(vcpu);
-				break;
-			}
-	}
-    HALT();
+    __vmx_vmentry_vmlaunch(&r);
+    HALT_ON_ERRORCOND(0 && "__vmx_vmentry_vmlaunch() should never return");
   }
-
-  HALT();
 }
 
 
@@ -697,6 +679,42 @@ void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
 	//for halting the core as something really bad happened!
 #endif
 
+}
+
+/*
+ * Report error when VMLAUNCH or VMRESUME fails
+ * When VMLAUNCH fails, is_resume = 0; VMRESUME fails, is_resume = 1.
+ * When hardware returns VMfailInvalid, valid = 0;
+ * When hardware returns VMfailValid, valid = 1;
+ * When hardware performs invalid behavior, valid = 2.
+ * This function never returns.
+ */
+void __vmx_vmentry_fail_callback(ulong_t is_resume, ulong_t valid)
+{
+	const char *inst_name = is_resume ? "VMRESUME" : "VMLAUNCH";
+	VCPU *vcpu = _svm_and_vmx_getvcpu();
+	switch (valid) {
+	case 0:
+		printf("\nCPU(0x%02x): %s error: VMCS pointer invalid? HALT!",
+				vcpu->id, inst_name);
+		break;
+	case 1:
+		{
+			unsigned long code;
+			HALT_ON_ERRORCOND(__vmx_vmread(0x4400, &code));
+			printf("\nCPU(0x%02x): %s error; code=0x%lx.", vcpu->id, inst_name,
+					code);
+		}
+		xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
+		xmhf_baseplatform_arch_x86vmx_dump_vcpu(vcpu);
+		printf("\nCPU(0x%02x): HALT!", vcpu->id);
+		break;
+	default:
+		printf("\nCPU(0x%02x): %s error: neither VMfailInvalid nor VMfailValid?"
+				" HALT!", vcpu->id, inst_name);
+		break;
+	}
+	HALT();
 }
 
 //set legacy I/O protection for the partition

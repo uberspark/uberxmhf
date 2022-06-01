@@ -54,78 +54,78 @@
 
 .section .text
 
-//----------------------------------------------------------------------
-// start HVM on a given physical core
-// on success: this function will not return
-// on failure: 1 if a valid error code is present, 0 if no error code,
-// 2 if invalid error info. (should never happen)
-//----------------------------------------------------------------------
-    .global __vmx_start_hvm
-    __vmx_start_hvm:
+/*
+ * Template for performing VM entry.
+ * inst is the instruction for VM entry (VMLAUNCH or VMRESUME).
+ * is_vmresume an integer indicating whether inst is VMRESUME.
+ */
 
-    //save GPRs
-    pushq   %rax
-    pushq   %rcx
-    pushq   %rdx
-    pushq   %rbx
-    pushq   %rsp
-    pushq   %rbp
-    pushq   %rsi
-    pushq   %rdi
-    pushq   %r8
-    pushq   %r9
-    pushq   %r10
-    pushq   %r11
-    pushq   %r12
-    pushq   %r13
-    pushq   %r14
-    pushq   %r15
+.altmacro
+.macro __vmx_vmentry_template inst is_vmresume
 
-    //real-mode setup just like the BIOS
-    movl $0x0, %eax
-    movl $0x0, %ebx
-    movl $0x0, %ecx
-    movq %rdi, %rdx	// First argument to this function
-    movl $0x0, %ebp
-    movl $0x0, %esi
-    movl $0x0, %edi
+.global __vmx_vmentry_&inst
 
-    //attempt to instantiate the HVM
-    vmlaunch
+__vmx_vmentry_&inst:
+
+    //set up registers
+#ifdef __AMD64__
+    movq    %rdi, %rsp
+    POPAQ
+#elif defined(__I386__)
+    movl    4(%esp), %esp
+    popal
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+
+    //perform VM entry
+    inst
 
     //if we get here then some error happened during the launch
-
-    //restore stack frame for a return from this procedure
-    popq    %r15
-    popq    %r14
-    popq    %r13
-    popq    %r12
-    popq    %r11
-    popq    %r10
-    popq    %r9
-    popq    %r8
-    popq    %rdi
-    popq    %rsi
-    popq    %rbp
-    popq    %rsp
-    popq    %rbx
-    popq    %rdx
-    popq    %rcx
-    popq    %rax
 
     //there are two possible causes of failure, VMFailInvalid or
     //VMFailValid (VM instruction error field contains the error code)
     //check which happened and return appropriate value in eax
-    jc __vmx_start_hvm_failinvalid
+    jc      0f
+    jnz     2f
 
-    jnz __vmx_start_hvm_undefinedimplementation
-    movl $0x1, %eax
-    ret                 //return 1 as we have error code
+    movl    $0x1, %eax      // VMfailInvalid
+    jmp     3f
 
-__vmx_start_hvm_undefinedimplementation:
-    movl $0x2, %eax     //violation of VMLAUNCH specs., handle it anyways
-    ret
+2:
+    movl    $0x2, %eax      // VMsucceed (violation of specs)
+    jmp     3f
 
-__vmx_start_hvm_failinvalid:
-    xorl %eax, %eax     //return 0 as we have no error code available
-    ret
+0:
+    xorl    %eax, %eax      // VMfailValid
+
+3:
+    /*
+     * Call C function __vmx_vmentry_fail_callback() to report error to user.
+     * 1st argument is 0 for VMLAUNCH, 1 for VMRESUME.
+     * 2nd argument is 0 for VMfailValid, 1 for VMfailInvalid, 2 for VMsucceed.
+     */
+#ifdef __AMD64__
+    movl    %eax, %esi
+    movl    $&is_vmresume&, %edi
+#elif defined(__I386__)
+    pushl   %eax
+    pushl   $&is_vmresume&
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+
+    call    __vmx_vmentry_fail_callback
+
+    /* Should never return. If returned, enter infinite loop. */
+1:  hlt
+    jmp     1b
+
+.endm
+
+/* Define __vmx_vmentry_vmlaunch() */
+__vmx_vmentry_template vmlaunch 0
+
+/* Define __vmx_vmentry_vmresume() */
+__vmx_vmentry_template vmresume 1
+

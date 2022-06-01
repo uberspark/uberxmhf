@@ -53,46 +53,46 @@
 
 .altmacro
 .macro XtRtmEmitIdtStub vector skip_err_code
-	.section .text
+    .section .text
 
-	//notes:
-	//1. we only handle exceptions (0-31) and nothing else
-	//2. descriptor type for all exception handlers are 0x8E
-	//   i.e., they are all interrupt gates, so when we get called
-	//   EFLAGS.IF = 0 (interrupts disabled)
-	//3. there are no stack switches as everything in the hypervisor
-	//	 is CPL=0
-	//4. stack layout is as follows when we enter
-	//	 EFLAGS	(32-bits)
-	//   CS		(32-bits)
-	//	 EIP	(32-bits)
-	//	 error-code (32-bits, depends on the exception)
+    //notes:
+    //1. we only handle exceptions (0-31) and nothing else
+    //2. descriptor type for all exception handlers are 0x8E
+    //   i.e., they are all interrupt gates, so when we get called
+    //   EFLAGS.IF = 0 (interrupts disabled)
+    //3. there are no stack switches as everything in the hypervisor
+    //   is CPL=0
+    //4. stack layout is as follows when we enter
+    //   EFLAGS (32-bits)
+    //   CS     (32-bits)
+    //   EIP    (32-bits)
+    //   error-code (32-bits, depends on the exception)
 
-	XtRtmIdtStub&vector&:
+    XtRtmIdtStub&vector&:
 
-		//push GPR values on stack to construct a
-		//struct regs *r
-		pushal
+        //push GPR values on stack to construct a
+        //struct regs *r
+        pushal
 
-		movw	$(__DS), %ax
-		movw	%ax, %ds			//load DS
-		movl 	%esp, %eax			//EAX = struct regs *
+        movw    $(__DS), %ax
+        movw    %ax, %ds            //load DS
+        movl    %esp, %eax          //EAX = struct regs *
 
-		pushl 	%eax				//struct regs *r
-		pushl	$0x&vector&			//vector
-		call	xmhf_xcphandler_hub	//call C-land hub
-		addl  	$0x08, %esp			//remove params from stack
+        pushl   %eax                //struct regs *r
+        pushl   $0x&vector&         //vector
+        call    xmhf_xcphandler_hub //call C-land hub
+        addl    $0x08, %esp         //remove params from stack
 
-		//restore GPRs
-		popal
+        //restore GPRs
+        popal
 
-		/* If the exception puts an error code on the stack, ignore it */
-		.if &skip_err_code&
-		leal    4(%esp), %esp
-		.endif
+        /* If the exception puts an error code on the stack, ignore it */
+        .if &skip_err_code&
+        leal    4(%esp), %esp
+        .endif
 
-		//return from exception
-		iretl
+        //return from exception
+        iretl
 
 .endm
 
@@ -131,50 +131,50 @@ XtRtmEmitIdtStub 1f 0
 
 
 .section .data
-	//EMHF interrupt descriptor table
-	.global xmhf_xcphandler_idt
-	xmhf_xcphandler_idt:
-	.word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start - 1
-	.long xmhf_xcphandler_idt_start
-	.align 16
-	.global xmhf_xcphandler_idt_start
-	xmhf_xcphandler_idt_start:
-	.fill	1024, 1, 0
-	xmhf_xcphandler_idt_end:
+    //EMHF interrupt descriptor table
+    .global xmhf_xcphandler_idt
+    xmhf_xcphandler_idt:
+    .word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start - 1
+    .long xmhf_xcphandler_idt_start
+    .align 16
+    .global xmhf_xcphandler_idt_start
+    xmhf_xcphandler_idt_start:
+    .fill   1024, 1, 0
+    xmhf_xcphandler_idt_end:
 
 
-	.align 16
-	.global xmhf_xcphandler_exceptionstubs
-	xmhf_xcphandler_exceptionstubs:
-	.long XtRtmIdtStub0
-	.long XtRtmIdtStub1
-	.long XtRtmIdtStub2
-	.long XtRtmIdtStub3
-	.long XtRtmIdtStub4
-	.long XtRtmIdtStub5
-	.long XtRtmIdtStub6
-	.long XtRtmIdtStub7
-	.long XtRtmIdtStub8
-	.long XtRtmIdtStub9
-	.long XtRtmIdtStuba
-	.long XtRtmIdtStubb
-	.long XtRtmIdtStubc
-	.long XtRtmIdtStubd
-	.long XtRtmIdtStube
-	.long XtRtmIdtStubf
-	.long XtRtmIdtStub10
-	.long XtRtmIdtStub11
-	.long XtRtmIdtStub12
-	.long XtRtmIdtStub13
-	.long XtRtmIdtStub14
-	.long XtRtmIdtStub15
-	.long XtRtmIdtStub16
-	.long XtRtmIdtStub17
-	.long XtRtmIdtStub18
-	.long XtRtmIdtStub19
-	.long XtRtmIdtStub1a
-	.long XtRtmIdtStub1b
-	.long XtRtmIdtStub1c
-	.long XtRtmIdtStub1d
-	.long XtRtmIdtStub1e
-	.long XtRtmIdtStub1f
+    .align 16
+    .global xmhf_xcphandler_exceptionstubs
+    xmhf_xcphandler_exceptionstubs:
+    .long XtRtmIdtStub0
+    .long XtRtmIdtStub1
+    .long XtRtmIdtStub2
+    .long XtRtmIdtStub3
+    .long XtRtmIdtStub4
+    .long XtRtmIdtStub5
+    .long XtRtmIdtStub6
+    .long XtRtmIdtStub7
+    .long XtRtmIdtStub8
+    .long XtRtmIdtStub9
+    .long XtRtmIdtStuba
+    .long XtRtmIdtStubb
+    .long XtRtmIdtStubc
+    .long XtRtmIdtStubd
+    .long XtRtmIdtStube
+    .long XtRtmIdtStubf
+    .long XtRtmIdtStub10
+    .long XtRtmIdtStub11
+    .long XtRtmIdtStub12
+    .long XtRtmIdtStub13
+    .long XtRtmIdtStub14
+    .long XtRtmIdtStub15
+    .long XtRtmIdtStub16
+    .long XtRtmIdtStub17
+    .long XtRtmIdtStub18
+    .long XtRtmIdtStub19
+    .long XtRtmIdtStub1a
+    .long XtRtmIdtStub1b
+    .long XtRtmIdtStub1c
+    .long XtRtmIdtStub1d
+    .long XtRtmIdtStub1e
+    .long XtRtmIdtStub1f
