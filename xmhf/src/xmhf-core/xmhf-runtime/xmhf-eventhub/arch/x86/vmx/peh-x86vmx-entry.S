@@ -75,9 +75,9 @@ xmhf_parteventhub_arch_x86vmx_entry:
     /* grab VCPU * */
     movl 32(%esp), %edi
     /* get hold of pointer to saved GPR on stack, put to 2nd argument */
-    pushl %esp
+    pushl   %esp
     /* put VCPU * to 1st argument */
-    pushl %edi
+    pushl   %edi
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
@@ -85,21 +85,18 @@ xmhf_parteventhub_arch_x86vmx_entry:
     /* invoke "C" event handler */
     call xmhf_parteventhub_arch_x86vmx_intercept_handler
 
+    /* prepare arguments to __vmx_vmentry_vmresume() */
 #ifdef __AMD64__
-    /* restore all CPU GPRs */
-    POPAQ
+    movq    %rsp, %rdi
 #elif defined(__I386__)
-    /* adjust ESP following i386 calling convention */
-    addl $0x08, %esp
-    /* restore all CPU GPRs */
-    popal
+    addl    $0x08, %esp
+    pushl   %esp
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 
-    //resume partition
-    vmresume
+    call    __vmx_vmentry_vmresume
 
-    //if we get here then vm resume failed, just bail out with a BP exception
-    int $0x03
-    hlt
+    /* Should never return. If returned, enter infinite loop. */
+1:  hlt
+    jmp     1b

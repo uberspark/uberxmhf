@@ -114,7 +114,10 @@ __vmx_vmentry_&inst:
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
+
     call    __vmx_vmentry_fail_callback
+
+    /* Should never return. If returned, enter infinite loop. */
 1:  hlt
     jmp     1b
 
