@@ -1029,6 +1029,13 @@ u32 xmhf_parteventhub_arch_x86vmx_print_guest(VCPU *vcpu, struct regs *r)
 
 //---hvm_intercept_handler------------------------------------------------------
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
+#ifdef __NESTED_VIRTUALIZATION__
+	if (vcpu->vmx_nested_is_vmx_operation &&
+		!vcpu->vmx_nested_is_vmx_root_operation) {
+		// TODO: need different handler for VMX non-root operation
+		HALT_ON_ERRORCOND(0 && "VMX non-root handler not implemented");
+	}
+#endif /* !__NESTED_VIRTUALIZATION__ */
 #ifdef __OPTIMIZE_NESTED_VIRT__
 	if (_optimize_x86vmx_intercept_handler(vcpu, r)) {
 		return 1;

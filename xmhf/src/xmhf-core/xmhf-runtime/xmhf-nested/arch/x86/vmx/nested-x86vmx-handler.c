@@ -394,6 +394,33 @@ static u32 _vmx_check_physical_addr_width(VCPU *vcpu, u64 addr) {
 static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 {
 	(void) vcpu;
+	/* TODO: Check settings of VMX controls and host-state area */
+
+	/* Translate VMCS12 to VMCS02 */
+	HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs02_ptr));
+
+	/* Start VMCS translation */
+	// Note: VIRTUAL PROCESSOR IDENTIFIERS (VPIDS) not supported yet
+	// Need to multiplex vmcs12_info->vmcs12_value.control_vpid
+	{
+		u16 control_vpid = vmcs12_info->vmcs12_value.control_vpid;
+		control_vpid = 0;
+		HALT_ON_ERRORCOND(__vmx_vmwrite(0x0000, control_vpid));
+	}
+
+	// TODO
+
+	/*
+		Features notes
+		* "enable VPID" not supported (currently ignore control_vpid in VMCS12)
+		* "VMCS shadowing" not supported (logic not written)
+		* writing to VM-exit information field not supported
+	 */
+
+	/* End VMCS translation */
+
+	/* When a problem happens, translate back to L1 guest */
+	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void*)vcpu->vmx_vmcs_vaddr)));
 	HALT_ON_ERRORCOND(0);
 	// TODO
 	if ("success") {
