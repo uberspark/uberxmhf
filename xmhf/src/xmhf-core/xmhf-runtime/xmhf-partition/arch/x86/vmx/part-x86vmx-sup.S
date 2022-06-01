@@ -54,14 +54,18 @@
 
 .section .text
 
-//----------------------------------------------------------------------
-// start HVM on a given physical core
-// on success: this function will not return
-// on failure: 1 if a valid error code is present, 0 if no error code,
-// 2 if invalid error info. (should never happen)
-//----------------------------------------------------------------------
-    .global __vmx_start_hvm
-    __vmx_start_hvm:
+/*
+ * Template for performing VM entry.
+ * inst is the instruction for VM entry (VMLAUNCH or VMRESUME).
+ * is_vmresume an integer indicating whether inst is VMRESUME.
+ */
+
+.altmacro
+.macro __vmx_vmentry_template inst is_vmresume
+
+.global __vmx_vmentry_&inst
+
+__vmx_vmentry_&inst:
 
     //set up registers
 #ifdef __AMD64__
@@ -82,21 +86,20 @@
     //there are two possible causes of failure, VMFailInvalid or
     //VMFailValid (VM instruction error field contains the error code)
     //check which happened and return appropriate value in eax
-    jc __vmx_start_hvm_failinvalid
+    jc      0f
+    jnz     2f
 
-    jnz __vmx_start_hvm_undefinedimplementation
     movl    $0x1, %eax      // VMfailInvalid
-    jmp     __vmx_start_hvm_fail
+    jmp     3f
 
-__vmx_start_hvm_undefinedimplementation:
+2:
     movl    $0x2, %eax      // VMsucceed (violation of specs)
-    jmp     __vmx_start_hvm_fail
+    jmp     3f
 
-__vmx_start_hvm_failinvalid:
+0:
     xorl    %eax, %eax      // VMfailValid
-    jmp     __vmx_start_hvm_fail
 
-__vmx_start_hvm_fail:
+3:
     /*
      * Call C function __vmx_vmentry_fail_callback() to report error to user.
      * 1st argument is 0 for VMLAUNCH, 1 for VMRESUME.
@@ -114,3 +117,12 @@ __vmx_start_hvm_fail:
     call    __vmx_vmentry_fail_callback
 1:  hlt
     jmp     1b
+
+.endm
+
+/* Define __vmx_vmentry_vmlaunch() */
+__vmx_vmentry_template vmlaunch 0
+
+/* Define __vmx_vmentry_vmresume() */
+__vmx_vmentry_template vmresume 1
+
