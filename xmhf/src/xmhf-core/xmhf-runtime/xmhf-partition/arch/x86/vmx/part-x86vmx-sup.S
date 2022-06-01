@@ -107,10 +107,10 @@ __vmx_vmentry_&inst:
      */
 #ifdef __AMD64__
     movl    %eax, %esi
-    movl    $0, %edi
+    movl    $&is_vmresume&, %edi
 #elif defined(__I386__)
     pushl   %eax
-    pushl   $0
+    pushl   $&is_vmresume&
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
