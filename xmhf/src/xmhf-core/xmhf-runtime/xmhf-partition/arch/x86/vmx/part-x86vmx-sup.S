@@ -64,9 +64,15 @@
     __vmx_start_hvm:
 
     //set up registers
+#ifdef __AMD64__
     movq    %rdi, %rsp
-    // pop GPR values, except RSP
     POPAQ
+#elif defined(__I386__)
+    movl    4(%esp), %esp
+    popal
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
     //attempt to instantiate the HVM
     vmlaunch
@@ -91,8 +97,15 @@ __vmx_start_hvm_failinvalid:
     jmp     __vmx_start_hvm_fail
 
 __vmx_start_hvm_fail:
+#ifdef __AMD64__
     movl    %eax, %esi
     movl    $0, %edi
+#elif defined(__I386__)
+    pushl   %eax
+    pushl   $0
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
     call    __vmx_vmentry_fail_callback
 1:  hlt
     jmp     1b
