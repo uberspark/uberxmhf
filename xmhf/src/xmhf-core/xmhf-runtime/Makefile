@@ -90,9 +90,9 @@ OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/part-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/part-x86.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86svm.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86-$(TARGET_SUBARCH)svm-sup.o
+OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86svm-sup.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86-$(TARGET_SUBARCH)vmx-sup.o
+OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
 OBJECTS_PRECOMPILED += ./xmhf-startup/runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-startup/rntm-data.o
