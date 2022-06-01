@@ -78,8 +78,8 @@ __vmx_vmentry_&inst:
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 
-    //attempt to instantiate the HVM
-    vmlaunch
+    //perform VM entry
+    inst
 
     //if we get here then some error happened during the launch
 
