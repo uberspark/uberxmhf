@@ -60,22 +60,42 @@
 .section .text
 .global xmhf_parteventhub_arch_x86vmx_entry
 xmhf_parteventhub_arch_x86vmx_entry:
-    // Currently rsp points to VCPU
+    // Currently esp / rsp points to VCPU
 
-    //step-1: save all CPU GPRs
+#ifdef __AMD64__
+    /* save all CPU GPRs */
     PUSHAQ
-
-    //step-2: grab VCPU *, put to 1st argument
+    /* grab VCPU *, put to 1st argument */
     movq 128(%rsp), %rdi
-
-    //step-4: get hold of pointer to saved GPR on stack, put to 2nd argument
+    /* get hold of pointer to saved GPR on stack, put to 2nd argument */
     movq %rsp, %rsi
+#elif defined(__I386__)
+    /* save all CPU GPRs */
+    pushal
+    /* grab VCPU * */
+    movl 32(%esp), %edi
+    /* get hold of pointer to saved GPR on stack, put to 2nd argument */
+    pushl %esp
+    /* put VCPU * to 1st argument */
+    pushl %edi
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
-    //step-5: invoke "C" event handler
+    /* invoke "C" event handler */
     call xmhf_parteventhub_arch_x86vmx_intercept_handler
 
-    //step-6; restore all CPU GPRs
+#ifdef __AMD64__
+    /* restore all CPU GPRs */
     POPAQ
+#elif defined(__I386__)
+    /* adjust ESP following i386 calling convention */
+    addl $0x08, %esp
+    /* restore all CPU GPRs */
+    popal
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
 
     //resume partition
     vmresume
