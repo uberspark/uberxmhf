@@ -128,7 +128,7 @@ XtRtmEmitIdtStub 1f 0
     //EMHF interrupt descriptor table
     .global xmhf_xcphandler_idt
     xmhf_xcphandler_idt:
-    .word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start
+    .word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start - 1
     .quad xmhf_xcphandler_idt_start
     .align 16
     .global xmhf_xcphandler_idt_start
