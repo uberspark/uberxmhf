@@ -144,6 +144,56 @@
 //extended control registers
 #define XCR_XFEATURE_ENABLED_MASK       0x00000000
 
+#if defined(__ASSEMBLY__) && defined(__AMD64__)
+
+/*
+ * Intel hardware supports PUSHAL in 32-bits, but not a similar instruction
+ * in 64-bits. Here we define an assembly macro to do this. Both PUSHAL and
+ * PUSHAQ follow struct regs.
+ */
+#define PUSHAQ \
+        pushq   %rax; \
+        pushq   %rcx; \
+        pushq   %rdx; \
+        pushq   %rbx; \
+        pushq   %rsp; \
+        pushq   %rbp; \
+        pushq   %rsi; \
+        pushq   %rdi; \
+        pushq   %r8; \
+        pushq   %r9; \
+        pushq   %r10; \
+        pushq   %r11; \
+        pushq   %r12; \
+        pushq   %r13; \
+        pushq   %r14; \
+        pushq   %r15; \
+        addl	$(4*8), 11*8(%rsp);
+
+/*
+ * Intel hardware supports POPAL in 32-bits, but not a similar instruction
+ * in 64-bits. Here we define an assembly macro to do this. Both POPAL and
+ * POPAQ follow struct regs.
+ */
+#define POPAQ \
+        popq    %r15; \
+        popq    %r14; \
+        popq    %r13; \
+        popq    %r12; \
+        popq    %r11; \
+        popq    %r10; \
+        popq    %r9; \
+        popq    %r8; \
+        popq    %rdi; \
+        popq    %rsi; \
+        popq    %rbp; \
+        leaq    8(%rsp), %rsp; \
+        popq    %rbx; \
+        popq    %rdx; \
+        popq    %rcx; \
+        popq    %rax;
+
+#endif /* defined(__ASSEMBLY__) && defined(__AMD64__) */
 
 #ifndef __ASSEMBLY__
 
