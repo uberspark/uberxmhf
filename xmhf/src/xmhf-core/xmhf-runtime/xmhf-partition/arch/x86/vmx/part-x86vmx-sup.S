@@ -97,6 +97,11 @@ __vmx_start_hvm_failinvalid:
     jmp     __vmx_start_hvm_fail
 
 __vmx_start_hvm_fail:
+    /*
+     * Call C function __vmx_vmentry_fail_callback() to report error to user.
+     * 1st argument is 0 for VMLAUNCH, 1 for VMRESUME.
+     * 2nd argument is 0 for VMfailValid, 1 for VMfailInvalid, 2 for VMsucceed.
+     */
 #ifdef __AMD64__
     movl    %eax, %esi
     movl    $0, %edi
