@@ -417,79 +417,19 @@ struct _vmx_vmcsfields {
   ulong_t   control_CR3_target3;
 #endif /* !__DEBUG_QEMU__ */
   // Full 64-bit Control fields
-  union {
-    u64     control_IO_BitmapA_address;
-    struct {
-      u32   control_IO_BitmapA_address_full;
-      u32   control_IO_BitmapA_address_high;
-    };
-  };
-  union {
-    u64     control_IO_BitmapB_address;
-    struct {
-      u32   control_IO_BitmapB_address_full;
-      u32   control_IO_BitmapB_address_high;
-    };
-  };
-  union {
-    u64     control_MSR_Bitmaps_address;
-    struct {
-      u32   control_MSR_Bitmaps_address_full;
-      u32   control_MSR_Bitmaps_address_high;
-    };
-  };
-  union {
-    u64     control_VM_exit_MSR_store_address;
-    struct {
-      u32   control_VM_exit_MSR_store_address_full;
-      u32   control_VM_exit_MSR_store_address_high;
-    };
-  };
-  union {
-    u64     control_VM_exit_MSR_load_address;
-    struct {
-      u32   control_VM_exit_MSR_load_address_full;
-      u32   control_VM_exit_MSR_load_address_high;
-    };
-  };
-  union {
-    u64     control_VM_entry_MSR_load_address;
-    struct {
-      u32   control_VM_entry_MSR_load_address_full;
-      u32   control_VM_entry_MSR_load_address_high;
-    };
-  };
+  u64       control_IO_BitmapA_address;
+  u64       control_IO_BitmapB_address;
+  u64       control_MSR_Bitmaps_address;
+  u64       control_VM_exit_MSR_store_address;
+  u64       control_VM_exit_MSR_load_address;
+  u64       control_VM_entry_MSR_load_address;
 #ifndef __DEBUG_QEMU__
-  union {
-    u64     control_Executive_VMCS_pointer;
-    struct {
-      u32   control_Executive_VMCS_pointer_full;
-      u32   control_Executive_VMCS_pointer_high;
-    };
-  };
+  u64       control_Executive_VMCS_pointer;
 #endif /* !__DEBUG_QEMU__ */
-  union {
-    u64     control_TSC_offset;
-    struct {
-      u32   control_TSC_offset_full;
-      u32   control_TSC_offset_high;
-    };
-  };
-  union {
-    u64     control_virtual_APIC_page_address;
-    struct {
-      u32   control_virtual_APIC_page_address_full;
-      u32   control_virtual_APIC_page_address_high;
-    };
-  };
+  u64       control_TSC_offset;
+  u64       control_virtual_APIC_page_address;
 #if defined(__NESTED_PAGING__)
-  union {
-    u64     control_EPT_pointer;
-    struct {
-      u32   control_EPT_pointer_full;
-      u32   control_EPT_pointer_high;
-    };
-  };
+  u64       control_EPT_pointer;
 #endif
   // Natural 64-bit Host-State fields
   ulong_t   host_CR0;
@@ -570,56 +510,14 @@ struct _vmx_vmcsfields {
   u16       guest_LDTR_selector;
   u16       guest_TR_selector;
   // Full 64-bit Guest-State fields
-  union {
-    u64     guest_VMCS_link_pointer;
-    struct {
-      u32   guest_VMCS_link_pointer_full;
-      u32   guest_VMCS_link_pointer_high;
-    };
-  };
-  union {
-    u64     guest_IA32_DEBUGCTL;
-    struct {
-      u32   guest_IA32_DEBUGCTL_full;
-      u32   guest_IA32_DEBUGCTL_high;
-    };
-  };
+  u64       guest_VMCS_link_pointer;
+  u64       guest_IA32_DEBUGCTL;
 #if defined(__NESTED_PAGING__)
-  union {
-    u64     guest_paddr;
-    struct {
-      u32   guest_paddr_full;
-      u32   guest_paddr_high;
-    };
-  };
-  union {
-    u64     guest_PDPTE0;
-    struct {
-      u32   guest_PDPTE0_full;
-      u32   guest_PDPTE0_high;
-    };
-  };
-  union {
-    u64     guest_PDPTE1;
-    struct {
-      u32   guest_PDPTE1_full;
-      u32   guest_PDPTE1_high;
-    };
-  };
-  union {
-    u64     guest_PDPTE2;
-    struct {
-      u32   guest_PDPTE2_full;
-      u32   guest_PDPTE2_high;
-    };
-  };
-  union {
-    u64     guest_PDPTE3;
-    struct {
-      u32   guest_PDPTE3_full;
-      u32   guest_PDPTE3_high;
-    };
-  };
+  u64       guest_paddr;
+  u64       guest_PDPTE0;
+  u64       guest_PDPTE1;
+  u64       guest_PDPTE2;
+  u64       guest_PDPTE3;
 #endif
   //Read-Only Fields
   u32       info_vminstr_error;
@@ -685,6 +583,38 @@ static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
 	return status;
 }
 
+/* Write 16-bit VMCS field, never fails */
+static inline void __vmx_vmwrite16(unsigned long encoding, u16 value) {
+	HALT_ON_ERRORCOND((encoding >> 12) == 0UL);
+	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
+}
+
+/* Write 64-bit VMCS field, never fails */
+static inline void __vmx_vmwrite64(unsigned long encoding, u64 value) {
+	HALT_ON_ERRORCOND((encoding >> 12) == 2UL);
+	HALT_ON_ERRORCOND((encoding & 0x1) == 0x0);
+#ifdef __AMD64__
+	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
+#elif defined(__I386__)
+	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
+	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding + 1, value >> 32));
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+}
+
+/* Write 32-bit VMCS field, never fails */
+static inline void __vmx_vmwrite32(unsigned long encoding, u32 value) {
+	HALT_ON_ERRORCOND((encoding >> 12) == 4UL);
+	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
+}
+
+/* Write natural width (NW) VMCS field, never fails */
+static inline void __vmx_vmwriteNW(unsigned long encoding, ulong_t value) {
+	HALT_ON_ERRORCOND((encoding >> 12) == 6UL);
+	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
+}
+
 static inline u32 __vmx_vmread(unsigned long encoding, unsigned long *value){
 	u32 status;
 	__asm__ __volatile__("vmread %2, %0 \r\n"
@@ -697,6 +627,57 @@ static inline u32 __vmx_vmread(unsigned long encoding, unsigned long *value){
 	  : "r"(encoding)
 	  : "cc");
 	return status;
+}
+
+/* Read 16-bit VMCS field, never fails */
+static inline u16 __vmx_vmread16(unsigned long encoding) {
+	unsigned long value;
+	HALT_ON_ERRORCOND((encoding >> 12) == 0UL);
+	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
+	HALT_ON_ERRORCOND(value == (unsigned long)(u16)value);
+	return value;
+}
+
+static inline u64 __vmx_vmread64(unsigned long encoding) {
+#ifdef __AMD64__
+	unsigned long value;
+	HALT_ON_ERRORCOND((encoding >> 12) == 2UL);
+	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
+	return value;
+#elif defined(__I386__)
+	union {
+		struct {
+			unsigned long low, high;
+		};
+		u64 full;
+	} ans;
+	_Static_assert(sizeof(u32) == sizeof(unsigned long));
+	HALT_ON_ERRORCOND((encoding >> 12) == 2UL);
+	HALT_ON_ERRORCOND((encoding & 0x1) == 0x0);
+	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &ans.low));
+	HALT_ON_ERRORCOND(__vmx_vmread(encoding + 1, &ans.high));
+	return ans.full;
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+}
+
+/* Read 32-bit VMCS field, never fails */
+static inline u32 __vmx_vmread32(unsigned long encoding) {
+	unsigned long value;
+	HALT_ON_ERRORCOND((encoding >> 12) == 4UL);
+	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
+	HALT_ON_ERRORCOND(value == (unsigned long)(u32)value);
+	return value;
+}
+
+/* Read natural width (NW) VMCS field, never fails */
+static inline ulong_t __vmx_vmreadNW(unsigned long encoding) {
+	unsigned long value;
+	HALT_ON_ERRORCOND((encoding >> 12) == 6UL);
+	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
+	HALT_ON_ERRORCOND(value == (unsigned long)(ulong_t)value);
+	return value;
 }
 
 static inline u32 __vmx_vmclear(u64 vmcs){

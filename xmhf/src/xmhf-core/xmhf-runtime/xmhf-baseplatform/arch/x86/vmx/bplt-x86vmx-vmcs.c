@@ -52,51 +52,78 @@
 
 #include <xmhf.h>
 
+static void xmhf_baseplatform_arch_x86vmx_write_field(u32 encoding, void *addr,
+                                                      u32 size) {
+    switch ((encoding >> 13) & 0x3) {
+    case 0: {
+        /* 16-bit */
+        HALT_ON_ERRORCOND(size == sizeof(u16));
+        __vmx_vmwrite16(encoding, *(u16 *)addr);
+        break;
+    }
+    case 1: {
+        /* 64-bit */
+        HALT_ON_ERRORCOND(size == sizeof(u64));
+        __vmx_vmwrite64(encoding, *(u64 *)addr);
+        break;
+    }
+    case 2: {
+        /* 32-bit */
+        HALT_ON_ERRORCOND(size == sizeof(u32));
+        __vmx_vmwrite32(encoding, *(u32 *)addr);
+        break;
+    }
+    case 3: {
+        /* natural width */
+        HALT_ON_ERRORCOND(size == sizeof(ulong_t));
+        __vmx_vmwriteNW(encoding, *(ulong_t *)addr);
+        break;
+    }
+    default:
+        HALT();
+    }
+}
+
 //---putVMCS--------------------------------------------------------------------
 // routine takes vcpu vmcsfields and stores it in the CPU VMCS
 void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
     unsigned int i;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      unsigned long *field = (unsigned long *)((hva_t)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-      unsigned long fieldvalue = *field;
-      //printf("\nvmwrite: enc=0x%08x, value=0x%08x", vmcsrwfields_encodings[i].encoding, fieldvalue);
-      if(!__vmx_vmwrite(g_vmx_vmcsrwfields_encodings[i].encoding, fieldvalue)){
-        printf("\nCPU(0x%02x): VMWRITE failed. HALT!", vcpu->id);
-        HALT();
-      }
+      u32 encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
+      u32 offset = g_vmx_vmcsrwfields_encodings[i].fieldoffset;
+      void *field = (void *)((hva_t)&vcpu->vmcs + offset);
+      u32 size = g_vmx_vmcsrwfields_encodings[i].membersize;
+      xmhf_baseplatform_arch_x86vmx_write_field(encoding, field, size);
     }
 }
 
-void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
-                                                 u32 size) {
-    unsigned long value;
-    HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
+static void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
+                                                    u32 size) {
     switch ((encoding >> 13) & 0x3) {
-    case 0: /* 16-bit */
+    case 0: {
+        /* 16-bit */
         HALT_ON_ERRORCOND(size == sizeof(u16));
-        *(u16 *)addr = (u16)value;
+        *(u16 *)addr = __vmx_vmread16(encoding);
         break;
-    case 1: /* 64-bit */
-#ifdef __AMD64__
+    }
+    case 1: {
+        /* 64-bit */
         HALT_ON_ERRORCOND(size == sizeof(u64));
-        /* Disallow high access */
-        HALT_ON_ERRORCOND((encoding & 0x1) == 0x0);
-        *(u64 *)addr = value;
-#elif defined(__I386__)
-        HALT_ON_ERRORCOND(size == sizeof(u32));
-        *(u32 *)addr = value;
-#else /* !defined(__I386__) && !defined(__AMD64__) */
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) && !defined(__AMD64__) */
+        *(u64 *)addr = __vmx_vmread64(encoding);
         break;
-    case 2: /* 32-bit */
+    }
+    case 2: {
+        /* 32-bit */
         HALT_ON_ERRORCOND(size == sizeof(u32));
-        *(u32 *)addr = (u32)value;
+        *(u32 *)addr = __vmx_vmread32(encoding);
         break;
-    case 3: /* natural width */
+    }
+    case 3: {
+        /* natural width */
         HALT_ON_ERRORCOND(size == sizeof(ulong_t));
-        *(ulong_t *)addr = value;
+        *(ulong_t *)addr = __vmx_vmreadNW(encoding);
         break;
+    }
     default:
         HALT();
     }
