@@ -15,6 +15,7 @@
 
 parameters {
     string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64', description: '')
+    string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic', description: '')
 }
 
 void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
@@ -71,7 +72,7 @@ pipeline {
                 sh "git clean -Xdf"
                 // Workaround git 2.30 bug
                 sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
-                sh "./tools/ci/build.sh i386 --no-x2apic"
+                sh "./tools/ci/build.sh i386 ${params.BUILD_OPTS}"
             }
         }
         stage('Test i386') {
@@ -84,7 +85,7 @@ pipeline {
                 sh "git clean -Xdf"
                 // Workaround git 2.30 bug
                 sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
-                sh "./tools/ci/build.sh amd64 --no-x2apic"
+                sh "./tools/ci/build.sh amd64 ${params.BUILD_OPTS}"
             }
         }
         stage('Test amd64') {
