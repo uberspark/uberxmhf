@@ -64,8 +64,10 @@ to complete installation.
 Installing prerequisits for XMHF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The Jenkins pipeline does not contain logics to install packages.
 Follow :doc:`Building </pc-intel-x86_64/build>`\ to install packages to build
 XMHF (e.g. ``apt-get install build-essential crossbuild-essential-i386``).
+Also install QEMU (TODO TODO TODO: doc).
 
 Install extra packages needed by the pipeline:
 Python 3, `gdown <https://pypi.org/project/gdown/>`_, and sshpass. For Fedora,
@@ -90,15 +92,13 @@ Then in "Pipeline", select "Definition" as "Pipeline script from SCM".
 
 Under "General", check "Do not allow concurrent builds".
 
-Under "General", check "This project is parameterized". Add a "String
-Parameter" with "Name" be "XMHF_BRANCH" and "Default Value" be the branch
-of your repository (e.g. "master").
-
 Under "Pipeline", enter the repository information in "SCM". Change "Script
 Path" to ``xmhf-64/tools/ci/Jenkinsfile``.
 
-Click "Save" to complete creating the pipeline. Click "Build with Parameters"
-and then "Build" to start a build.
+Click "Save" to complete creating the pipeline. Click "Build Now" to start a
+build. This build will fail, but it fetches pipeline parameters from the SCM.
+Now the button should become "Build with Parameters". Click on this button and
+then "Build" to start a build.
 
 Circle CI
 ---------
