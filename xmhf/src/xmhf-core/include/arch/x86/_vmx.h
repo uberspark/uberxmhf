@@ -568,7 +568,7 @@ static inline u32 __vmx_vmwrite(unsigned long encoding, unsigned long value){
           "1: movl $0, %0 \r\n"
           "2: \r\n"
 	  : "=g"(status)
-	  : "r"(encoding), "g"(value)
+	  : "r"(encoding), "rm"(value)
       : "cc"
     );
 	return status;
@@ -614,7 +614,7 @@ static inline u32 __vmx_vmread(unsigned long encoding, unsigned long *value){
                        "jmp 2f \r\n"
                        "1: movl $0, %1 \r\n"
                        "2: \r\n"
-	  : "=g"(*value), "=g"(status)
+	  : "=rm"(*value), "=g"(status)
 	  : "r"(encoding)
 	  : "cc");
 	return status;
