@@ -13,11 +13,6 @@
  * * ./tools/ci/download.sh: download QEMU images from Google Drive
  */
 
-parameters {
-    string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64', description: '')
-    string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic', description: '')
-}
-
 void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
     PWD = sh(returnStdout: true, script: 'pwd').trim()
     sh "./tools/ci/download.sh cache ${qemu_image_back}"
@@ -51,7 +46,10 @@ void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
 
 pipeline {
     agent any
-
+    parameters {
+        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64', description: '')
+        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic', description: '')
+    }
     stages {
         stage('Logistics') {
             steps {
