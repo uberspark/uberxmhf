@@ -791,6 +791,16 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void);
 //allocate and setup VCPU structure for all the CPUs
 void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
 
+// VMWRITE and VMREAD of different sizes
+void __vmx_vmwrite16(unsigned long encoding, u16 value);
+void __vmx_vmwrite64(unsigned long encoding, u64 value);
+void __vmx_vmwrite32(unsigned long encoding, u32 value);
+void __vmx_vmwriteNW(unsigned long encoding, ulong_t value);
+u16 __vmx_vmread16(unsigned long encoding);
+u64 __vmx_vmread64(unsigned long encoding);
+u32 __vmx_vmread32(unsigned long encoding);
+ulong_t __vmx_vmreadNW(unsigned long encoding);
+
 // routine takes vcpu vmcsfields and stores it in the CPU VMCS
 void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
 
