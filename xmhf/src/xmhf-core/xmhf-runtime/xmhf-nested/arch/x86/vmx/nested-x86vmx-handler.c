@@ -400,13 +400,48 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs02_ptr));
 
 	/* Start VMCS translation */
+
+	/* 16-Bit Control Fields */
 	// Note: VIRTUAL PROCESSOR IDENTIFIERS (VPIDS) not supported yet
 	// Need to multiplex vmcs12_info->vmcs12_value.control_vpid
-	{
+	if (_vmx_has_enable_vpid(vcpu)) {
 		u16 control_vpid = vmcs12_info->vmcs12_value.control_vpid;
 		control_vpid = 0;
-		HALT_ON_ERRORCOND(__vmx_vmwrite(0x0000, control_vpid));
+		__vmx_vmwrite16(0x0000, control_vpid);
 	}
+	if (_vmx_has_process_posted_interrupts(vcpu)) {
+		__vmx_vmwrite16(0x0002,
+			vmcs12_info->vmcs12_value.control_post_interrupt_notification_vec);
+	}
+	if (_vmx_has_ept_violation_ve(vcpu)) {
+		__vmx_vmwrite16(0x0004, vmcs12_info->vmcs12_value.control_eptp_index);
+	}
+
+	/* 16-Bit Guest-State Fields */
+	__vmx_vmwrite16(0x0800, vmcs12_info->vmcs12_value.guest_ES_selector);
+	__vmx_vmwrite16(0x0802, vmcs12_info->vmcs12_value.guest_CS_selector);
+	__vmx_vmwrite16(0x0804, vmcs12_info->vmcs12_value.guest_SS_selector);
+	__vmx_vmwrite16(0x0806, vmcs12_info->vmcs12_value.guest_DS_selector);
+	__vmx_vmwrite16(0x0808, vmcs12_info->vmcs12_value.guest_FS_selector);
+	__vmx_vmwrite16(0x080A, vmcs12_info->vmcs12_value.guest_GS_selector);
+	__vmx_vmwrite16(0x080C, vmcs12_info->vmcs12_value.guest_LDTR_selector);
+	__vmx_vmwrite16(0x080E, vmcs12_info->vmcs12_value.guest_TR_selector);
+	if (_vmx_has_virtual_interrupt_delivery(vcpu)) {
+		__vmx_vmwrite16(0x0810,
+			vmcs12_info->vmcs12_value.guest_interrupt_status);
+	}
+	if (_vmx_has_enable_pml(vcpu)) {
+		__vmx_vmwrite16(0x0812, vmcs12_info->vmcs12_value.guest_PML_index);
+	}
+
+	/* 16-Bit Host-State Fields */
+	__vmx_vmwrite16(0x0C00, vcpu->vmcs.host_ES_selector);
+	__vmx_vmwrite16(0x0C02, vcpu->vmcs.host_CS_selector);
+	__vmx_vmwrite16(0x0C04, vcpu->vmcs.host_SS_selector);
+	__vmx_vmwrite16(0x0C06, vcpu->vmcs.host_DS_selector);
+	__vmx_vmwrite16(0x0C08, vcpu->vmcs.host_FS_selector);
+	__vmx_vmwrite16(0x0C0A, vcpu->vmcs.host_GS_selector);
+	__vmx_vmwrite16(0x0C0C, vcpu->vmcs.host_TR_selector);
 
 	// TODO
 
@@ -421,7 +456,7 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 
 	/* When a problem happens, translate back to L1 guest */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void*)vcpu->vmx_vmcs_vaddr)));
-	HALT_ON_ERRORCOND(0);
+	HALT_ON_ERRORCOND(0 && "TODO frontier");
 	// TODO
 	if ("success") {
 		vmcs12_info->launched = 1;
