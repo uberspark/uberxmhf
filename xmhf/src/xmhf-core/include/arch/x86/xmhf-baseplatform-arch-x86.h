@@ -248,13 +248,13 @@ typedef struct _vcpu {
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
 #define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
-#endif //__ASSEMBLY__
 
+//_vmx_cap.h requires VCPU, so is placed here.
+#include "_vmx_cap.h"
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
-#ifndef __ASSEMBLY__
 //get CPU vendor
 u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
