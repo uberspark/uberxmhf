@@ -149,3 +149,27 @@ void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 	HALT_ON_ERRORCOND(result == 0);
 }
 
+/*
+ * Test whether guest_addr (4K page aligned) is valid guest physical memory
+ * page. If so, return corresponding host physical memory page. Else, halt.
+ */
+spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
+							gpa_t guest_addr)
+{
+	void *ans;
+	size_t avail_size;
+	HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(guest_addr));
+	ans = hptw_checked_access_va(&ctx_pair->host_ctx,
+								HPT_PROTS_R,
+								0,
+								guest_addr,
+								PAGE_SIZE_4K,
+								&avail_size);
+	/*
+	 * If this fails, likely the memory crosses page boundary. But haven't we
+	 * just checked that guest_addr is page aligned?
+	 */
+	HALT_ON_ERRORCOND(avail_size == PAGE_SIZE_4K);
+	return hva2spa(ans);
+}
+

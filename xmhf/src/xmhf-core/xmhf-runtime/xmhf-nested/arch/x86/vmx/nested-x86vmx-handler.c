@@ -393,7 +393,8 @@ static u32 _vmx_check_physical_addr_width(VCPU *vcpu, u64 addr) {
  */
 static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 {
-	(void) vcpu;
+	guestmem_hptw_ctx_pair_t ctx_pair;
+	guestmem_init(vcpu, &ctx_pair);
 	/* TODO: Check settings of VMX controls and host-state area */
 
 	/* Translate VMCS12 to VMCS02 */
@@ -442,6 +443,12 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	__vmx_vmwrite16(0x0C08, vcpu->vmcs.host_FS_selector);
 	__vmx_vmwrite16(0x0C0A, vcpu->vmcs.host_GS_selector);
 	__vmx_vmwrite16(0x0C0C, vcpu->vmcs.host_TR_selector);
+
+	/* 64-Bit Control Fields */
+	{
+		gpa_t addr = vmcs12_info->vmcs12_value.control_IO_BitmapA_address;
+		__vmx_vmwrite64(0x2000, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
 
 	// TODO
 
