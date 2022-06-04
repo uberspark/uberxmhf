@@ -599,6 +599,24 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	}
 
 	/* 64-Bit Host-State Fields */
+	/*
+	 * Note: looks like XMHF does not care about these fields. So we treat
+	 * these similar to guest state fields.
+	 */
+	if (_vmx_has_vmexit_load_ia32_pat(vcpu)) {
+		__vmx_vmwrite64(0x2C00, vmcs12_info->vmcs12_value.host_IA32_PAT);
+	}
+	if (_vmx_has_vmexit_load_ia32_efer(vcpu)) {
+		__vmx_vmwrite64(0x2C02, vmcs12_info->vmcs12_value.host_IA32_EFER);
+	}
+	if (_vmx_has_vmexit_load_ia32_perf_global_ctrl(vcpu)) {
+		__vmx_vmwrite64(0x2C04, vmcs12_info->vmcs12_value.host_IA32_PERF_GLOBAL_CTRL);
+	}
+	if (_vmx_has_vmexit_load_pkrs(vcpu)) {
+		__vmx_vmwrite64(0x2C06, vmcs12_info->vmcs12_value.host_IA32_PKRS);
+	}
+
+	/* 32-Bit Control Fields */
 
 	// TODO
 
@@ -615,12 +633,6 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	 */
 
 #if 0
-DECLARE_FIELD_64_RW(0x2C00, host_IA32_PAT, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2C02, host_IA32_EFER, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2C04, host_IA32_PERF_GLOBAL_CTRL, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2C06, host_IA32_PKRS, UNDEFINED)
-
-/* 32-Bit Control Fields */
 DECLARE_FIELD_32_RW(0x4000, control_VMX_pin_based, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4002, control_VMX_cpu_based, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4004, control_exception_bitmap, UNDEFINED)
