@@ -179,6 +179,17 @@ extern bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, spa_
 	}
 
 	static inline void * spa2hva(spa_t spa){
+#ifdef __I386__
+		/*
+		 * In i386 XMHF, casting from spa_t (64 bits) to hva_t (32 bits) will
+		 * result in higher bits to be lost. This can lead to security issues.
+		 * So we require the upper 32-bits to be 0. Ideally we do not support
+		 * PAE in i386 XMHF, so this limitation should be fine.
+		 */
+		HALT_ON_ERRORCOND((spa >> 32) != 0ULL);
+#elif !defined(__AMD64__)
+    #error "Unsupported Arch"
+#endif /* !defined(__AMD64__) */
 		return (void *)(hva_t)spa;
 	}
 
