@@ -2,6 +2,33 @@
 
 set -xe
 
+# Information about compiler's platform
+LINUX_BASE=""					# DEB or RPM
+LINUX_BIT=$(getconf LONG_BIT)	# 32 or 64
+
+# Determine LINUX_BASE (may not be 100% correct all the time)
+if [ -f "/etc/debian_version" ]; then
+	# DEB-based Linux (e.g. Debian, Ubuntu)
+	LINUX_BASE="DEB"
+else if [ -f "/etc/redhat-release" ]; then
+	# RPM-based Linux (e.g. Fedora)
+	LINUX_BASE="RPM"
+else
+	echo 'Error: build.sh does not know about OS it is running on.'; exit 1
+fi; fi
+
+# Check LINUX_BIT
+case "$LINUX_BIT" in
+	32)
+		echo 'Error: compiling on i386 Linux not supported yet'; exit 1
+		;;
+	64)
+		;;
+	*)
+		echo 'Error: unknown result from `getconf LONG_BIT`'; exit 1
+		;;
+esac
+
 MAKE_ARGS=""
 
 if [ "$1" == "windows" ]; then
@@ -17,8 +44,12 @@ if [ "$1" == "windows" ]; then
 	fi; fi
 else if [ "$1" == "linux" ]; then
 	if [ "$2" == "i386" ]; then
-		MAKE_ARGS="${MAKE_ARGS} CC=i686-linux-gnu-gcc"
-		MAKE_ARGS="${MAKE_ARGS} LD=i686-linux-gnu-ld"
+		if [ "$LINUX_BASE" == "DEB" ]; then
+			MAKE_ARGS="${MAKE_ARGS} CC=i686-linux-gnu-gcc"
+			MAKE_ARGS="${MAKE_ARGS} LD=i686-linux-gnu-ld"
+		else
+			MAKE_ARGS="${MAKE_ARGS} I386=y"
+		fi
 	else if [ "$2" == "amd64" ]; then
 		MAKE_ARGS="${MAKE_ARGS}"
 	else
