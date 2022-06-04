@@ -96,9 +96,9 @@ Under "Pipeline", enter the repository information in "SCM". Change "Script
 Path" to ``xmhf-64/tools/ci/Jenkinsfile``.
 
 Click "Save" to complete creating the pipeline. Click "Build Now" to start a
-build. This build will fail, but it fetches pipeline parameters from the SCM.
-Now the button should become "Build with Parameters". Click on this button and
-then "Build" to start a build.
+build. This build may fail, but it fetches pipeline parameters from the SCM.
+After the first build the button should become "Build with Parameters". Click
+on this button and then "Build" to start a build.
 
 Circle CI
 ---------
