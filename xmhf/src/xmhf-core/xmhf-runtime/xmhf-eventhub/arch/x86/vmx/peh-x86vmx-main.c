@@ -1189,11 +1189,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				HALT_ON_ERRORCOND(0);
 			} else {
 				/* Inject NMI to guest */
-				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-					INTR_TYPE_NMI |
-					INTR_INFO_VALID_MASK;
-				//printf("\nCPU(0x%02x): inject NMI", vcpu->id);
+                vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+                vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
+                    INTR_TYPE_NMI |
+                    INTR_INFO_VALID_MASK;
+                printf("\nCPU(0x%02x): inject NMI", vcpu->id);
 			}
 		}
 		break;
