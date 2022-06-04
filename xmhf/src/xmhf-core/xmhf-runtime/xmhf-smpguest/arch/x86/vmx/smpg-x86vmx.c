@@ -622,27 +622,6 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest){
 	(void)r;
 
-	/*
-	 * If g_vmx_quiesce = 1, process quiesce regardless of where NMI originated
-	 * from.
-	 *
-	 * If vcpu->quiesced = 1 (i.e. this core has been quiesced), simply return.
-	 * This can only happen for the CPU calling
-	 * xmhf_smpguest_arch_x86vmx_quiesce(). For other CPUs, NMIs are
-	 * blocked during the time where vcpu->quiesced = 1.
-	 */
-  /*
-   * Issue 1: If two cores request CPU quiescing at the same time, will an NMI be incorrectly injected to guest?
-   * Issue 2: Will it be simpler to use an exception (e.g., one reserved exception in 22-27, see https://wiki.osdev.org/Exceptions)
-   * instead of NMI?
-   * Issue 3: The function always inject NMI to the *current* guest, not the *correct* guest. Will it cause problem? For
-   * example, NMIs may be injected to PALs, not the red OS.
-   * Issue 4: If we decide (1) not using NMI for CPU quiescing, and (2) the function always inject NMI to the current guest
-   * for simplicity, then TrustVisor must be modified to inject NMI to the red OS.
-   * Issue 5: Will the "__control_VMX_cpu_based" code in <xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception> and
-   * virtual NMI VMExit mismatch when there are multiple guests/domains? In other words, they are reading/writing different VMCS.
-   */
-
   // The function handles NMI as follows:
   // (1) If XMHF on core i requests quiesce and the current core is not quiesced yet, XMHF must quiesce the current core
   // (2) If XMHF on core i requests quiesce and the current core is quiesced, then some device must issue NMI after core i
@@ -674,7 +653,18 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	}else{
 		//we are not in quiesce, inject the NMI to guest
 
-		/*
+        // [NOTE] VMX root must not use vcpu->vmcs.control_VM_entry_interruption_information to directly inject NMI into 
+        // the current guest, because the guest may be handling a NMI at current. Instead, the VMX root should set 
+        // "vcpu->vmcs.control_VMX_cpu_based" in order to be notified when the guest is ready to receive the next NMI. 
+        // Thus, "vcpu->vmcs.control_VMX_cpu_based" can be seen as a NMI pending bit of the current guest.
+
+        // [NOTE] Updating "vcpu->vmcs.control_VMX_cpu_based" here without "vcpu->vmx_guest_inject_nmi = 1" cannot 
+        // guarantee control_VMX_cpu_based is written. This is because VMexit handlers have 
+        // xmhf_baseplatform_arch_x86vmx_getVMCS and xmhf_baseplatform_arch_x86vmx_putVMCS or similar pair of VMCS 
+        // backup/restore operations, and they form race conditions with any "vcpu->vmcs.control_VMX_cpu_based" writing
+        // in this function.
+
+		/* [Detailed Explanations]
 		 * We want to set vcpu->vmcs.control_VMX_cpu_based, but we may be in an
 		 * exception handler that is interrupting an intercept handler using
 		 * vcpu->vmcs.control_VMX_cpu_based. This can cause race conditions.
@@ -684,11 +674,11 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 *
 		 * We observe that the intercept handlers are always having the
 		 * following logic:
-		 * 1. VMREAD reg
-		 * 2. vcpu->vmcs.control_VMX_cpu_based = reg
+		 * 1. var temp = VMREAD("control_VMX_cpu_based")
+		 * 2. vcpu->vmcs.control_VMX_cpu_based = temp
 		 * 3. update vcpu->vmcs.control_VMX_cpu_based
-		 * 4. reg = vcpu->vmcs.control_VMX_cpu_based
-		 * 5. VMWRITE reg
+		 * 4. temp = vcpu->vmcs.control_VMX_cpu_based
+		 * 5. VMWRITE("control_VMX_cpu_based", temp)
 		 *
 		 * Step 1 and 2 are in xmhf_baseplatform_arch_x86vmx_getVMCS(). Step
 		 * 3 is body of the intercept handler. Step 4 and 5 are in
@@ -702,21 +692,21 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 *
 		 * So the updated logic of intercept handlers become
 		 * 1. vcpu->vmx_guest_inject_nmi = 0
-		 * 2. VMREAD reg
-		 * 3. vcpu->vmcs.control_VMX_cpu_based = reg
+		 * 2. var temp = VMREAD("control_VMX_cpu_based")
+		 * 3. vcpu->vmcs.control_VMX_cpu_based = temp
 		 * 4. Update vcpu->vmcs.control_VMX_cpu_based
-		 * 5. reg = vcpu->vmcs.control_VMX_cpu_based
-		 * 6. VMWRITE reg
+		 * 5. temp = vcpu->vmcs.control_VMX_cpu_based
+		 * 6. VMWRITE("control_VMX_cpu_based", temp)
 		 * 7. if (vcpu->vmx_guest_inject_nmi) {
-		 * 8.     VMREAD reg
-		 * 9.     set bit 22 of reg
-		 * 10.    VMWRITE reg
+		 * 8.     var temp2 = VMREAD("control_VMX_cpu_based")
+		 * 9.     set bit 22 of temp2
+		 * 10.    VMWRITE("control_VMX_cpu_based", temp2)
 		 * 11.}
 		 *
 		 * The logic of this function is (appears atomic)
-		 * 1. VMREAD reg
-		 * 2. set bit 22 of reg
-		 * 3. VMWRITE reg
+		 * 1. var temp = VMREAD("control_VMX_cpu_based")
+		 * 2. set bit 22 of temp
+		 * 3. VMWRITE("control_VMX_cpu_based", temp)
 		 * 4. vcpu->vmx_guest_inject_nmi = 1
 		 *
 		 * Consider different places this function interleaves with the
