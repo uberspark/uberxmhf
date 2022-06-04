@@ -131,7 +131,7 @@ void guestmem_copy_gp2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 	HALT_ON_ERRORCOND(result == 0);
 }
 
-/* Copy from dst (hypervisor address) to src (guest physical address) */
+/* Copy from dst (hypervisor address) to src (guest virtual address) */
 void guestmem_copy_h2gv(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						hpt_va_t dst, void *src, size_t len)
 {
@@ -140,7 +140,7 @@ void guestmem_copy_h2gv(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 	HALT_ON_ERRORCOND(result == 0);
 }
 
-/* Copy from dst (hypervisor address) to src (guest virtual address) */
+/* Copy from dst (hypervisor address) to src (guest physical address) */
 void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						hpt_va_t dst, void *src, size_t len)
 {
