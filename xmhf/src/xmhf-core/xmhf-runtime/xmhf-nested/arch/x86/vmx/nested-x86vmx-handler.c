@@ -491,6 +491,82 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	{
 		__vmx_vmwrite64(0x2010, vmcs12_info->vmcs12_value.control_TSC_offset);
 	}
+	if (_vmx_has_virtualize_apic_access(vcpu)) {
+		gpa_t addr = vmcs12_info->vmcs12_value.control_virtual_APIC_address;
+		__vmx_vmwrite64(0x2012, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_process_posted_interrupts(vcpu)) {
+		gpa_t addr = vmcs12_info->vmcs12_value.control_APIC_access_address;
+		__vmx_vmwrite64(0x2014, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_process_posted_interrupts(vcpu)) {
+		gpa_t addr = vmcs12_info->vmcs12_value.control_posted_interrupt_desc_address;
+		__vmx_vmwrite64(0x2016, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_enable_vm_functions(vcpu)) {
+		gpa_t addr = vmcs12_info->vmcs12_value.control_VM_function_controls;
+		__vmx_vmwrite64(0x2018, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_enable_ept(vcpu)) {
+		gpa_t addr = vmcs12_info->vmcs12_value.control_EPT_pointer;
+		// TODO: need to sanitize the entier EPT
+		HALT_ON_ERRORCOND(addr == 0);
+		__vmx_vmwrite64(0x201A, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_virtual_interrupt_delivery(vcpu)) {
+		__vmx_vmwrite64(0x201C, vmcs12_info->vmcs12_value.control_EOI_exit_bitmap_0);
+		__vmx_vmwrite64(0x201E, vmcs12_info->vmcs12_value.control_EOI_exit_bitmap_1);
+		__vmx_vmwrite64(0x2020, vmcs12_info->vmcs12_value.control_EOI_exit_bitmap_2);
+		__vmx_vmwrite64(0x2022, vmcs12_info->vmcs12_value.control_EOI_exit_bitmap_3);
+	}
+	if (0) {
+		// Note: EPTP Switching not supported
+		gpa_t addr = vmcs12_info->vmcs12_value.control_EPTP_list_address;
+		// Note: likely need to sanitize input
+		HALT_ON_ERRORCOND(addr == 0);
+		__vmx_vmwrite64(0x2024, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_vmcs_shadowing(vcpu)) {
+		gpa_t addr;
+		addr = vmcs12_info->vmcs12_value.control_VMREAD_bitmap_address;
+		__vmx_vmwrite64(0x2026, guestmem_gpa2spa_page(&ctx_pair, addr));
+		addr = vmcs12_info->vmcs12_value.control_VMWRITE_bitmap_address;
+		__vmx_vmwrite64(0x2028, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_ept_violation_ve(vcpu)) {
+		gpa_t addr = vmcs12_info->vmcs12_value.control_virt_exception_info_address;
+		__vmx_vmwrite64(0x202A, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_enable_xsaves_xrstors(vcpu)) {
+		__vmx_vmwrite64(0x202C, vmcs12_info->vmcs12_value.control_XSS_exiting_bitmap);
+	}
+	if (_vmx_has_enable_encls_exiting(vcpu)) {
+		__vmx_vmwrite64(0x202E, vmcs12_info->vmcs12_value.control_ENCLS_exiting_bitmap);
+	}
+	if (_vmx_has_sub_page_write_permissions_for_ept(vcpu)) {
+		// Note: Sub-page write permissions for EPT
+		gpa_t addr = vmcs12_info->vmcs12_value.control_subpage_permission_table_pointer;
+		// Note: likely need to sanitize input
+		HALT_ON_ERRORCOND(addr == 0);
+		__vmx_vmwrite64(0x2030, guestmem_gpa2spa_page(&ctx_pair, addr));
+	}
+	if (_vmx_has_use_tsc_scaling(vcpu)) {
+		__vmx_vmwrite64(0x2032, vmcs12_info->vmcs12_value.control_TSC_multiplier);
+	}
+	if (_vmx_has_activate_tertiary_controls(vcpu)) {
+		// Note: Activate tertiary controls not supported
+		u64 val = vmcs12_info->vmcs12_value.control_tertiary_proc_based_VMexec_ctls;
+		// Note: likely need to sanitize input
+		HALT_ON_ERRORCOND(val == 0);
+		__vmx_vmwrite64(0x2034, val);
+	}
+	if (_vmx_has_enable_enclv_exiting(vcpu)) {
+		__vmx_vmwrite64(0x2036, vmcs12_info->vmcs12_value.control_ENCLV_exiting_bitmap);
+	}
+
+	/* 64-Bit Read-Only Data Field: skipped */
+
+	/* 64-Bit Guest-State Fields */
 
 	// TODO
 
@@ -500,32 +576,13 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 		* "VMCS shadowing" not supported (logic not written)
 		* writing to VM-exit information field not supported
 		* VM exit/entry MSR load/store not supported (TODO)
+		* "Enable EPT" not supported yet
+		* "EPTP switching" not supported (the only VMFUNC in Intel SDM)
+		* "Sub-page write permissions for EPT" not supported
+		* "Activate tertiary controls" not supported
 	 */
 
 #if 0
-DECLARE_FIELD_64_RW(0x2012, control_virtual_APIC_address, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2014, control_APIC_access_address, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2016, control_posted_interrupt_desc_address, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2018, control_VM_function_controls, UNDEFINED)
-DECLARE_FIELD_64_RW(0x201A, control_EPT_pointer, UNDEFINED)
-DECLARE_FIELD_64_RW(0x201C, control_EOI_exit_bitmap_0, UNDEFINED)
-DECLARE_FIELD_64_RW(0x201E, control_EOI_exit_bitmap_1, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2020, control_EOI_exit_bitmap_2, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2022, control_EOI_exit_bitmap_3, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2024, control_EPTP_list_address, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2026, control_VMREAD_bitmap_address, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2028, control_VMWRITE_bitmap_address, UNDEFINED)
-DECLARE_FIELD_64_RW(0x202A, control_virt_exception_info_address, UNDEFINED)
-DECLARE_FIELD_64_RW(0x202C, control_XSS_exiting_bitmap, UNDEFINED)
-DECLARE_FIELD_64_RW(0x202E, control_ENCLS_exiting_bitmap, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2030, control_subpage_permission_table_pointer, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2032, control_TSC_multiplier, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2034, control_tertiary_proc_based_VMexec_ctls, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2036, control_ENCLV_exiting_bitmap, UNDEFINED)
-
-/* 64-Bit Read-Only Data Field */
-DECLARE_FIELD_64_RO(0x2400, guest_paddr, UNDEFINED)
-
 /* 64-Bit Guest-State Fields */
 DECLARE_FIELD_64_RW(0x2800, guest_VMCS_link_pointer, UNDEFINED)
 DECLARE_FIELD_64_RW(0x2802, guest_IA32_DEBUGCTL, UNDEFINED)
