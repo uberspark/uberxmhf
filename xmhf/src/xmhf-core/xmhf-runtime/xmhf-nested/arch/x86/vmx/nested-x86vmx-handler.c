@@ -567,6 +567,38 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	/* 64-Bit Read-Only Data Field: skipped */
 
 	/* 64-Bit Guest-State Fields */
+	__vmx_vmwrite64(0x2800, vmcs12_info->vmcs12_value.guest_VMCS_link_pointer);
+	__vmx_vmwrite64(0x2802, vmcs12_info->vmcs12_value.guest_IA32_DEBUGCTL);
+	if (_vmx_has_vmexit_save_ia32_pat(vcpu) ||
+		_vmx_has_vmentry_load_ia32_pat(vcpu)) {
+		__vmx_vmwrite64(0x2804, vmcs12_info->vmcs12_value.guest_IA32_PAT);
+	}
+	if (_vmx_has_vmexit_save_ia32_efer(vcpu) ||
+		_vmx_has_vmentry_load_ia32_efer(vcpu)) {
+		__vmx_vmwrite64(0x2806, vmcs12_info->vmcs12_value.guest_IA32_EFER);
+	}
+	if (_vmx_has_vmentry_load_ia32_perf_global_ctrl(vcpu)) {
+		__vmx_vmwrite64(0x2808, vmcs12_info->vmcs12_value.guest_IA32_PERF_GLOBAL_CTRL);
+	}
+	if (_vmx_has_enable_ept(vcpu)) {
+		__vmx_vmwrite64(0x280A, vmcs12_info->vmcs12_value.guest_PDPTE0);
+		__vmx_vmwrite64(0x280C, vmcs12_info->vmcs12_value.guest_PDPTE1);
+		__vmx_vmwrite64(0x280E, vmcs12_info->vmcs12_value.guest_PDPTE2);
+		__vmx_vmwrite64(0x2810, vmcs12_info->vmcs12_value.guest_PDPTE3);
+	}
+	if (_vmx_has_vmexit_clear_ia32_bndcfgs(vcpu) || 
+		_vmx_has_vmentry_load_ia32_bndcfgs(vcpu)) {
+		__vmx_vmwrite64(0x2812, vmcs12_info->vmcs12_value.guest_IA32_BNDCFGS);
+	}
+	if (_vmx_has_vmexit_clear_ia32_rtit_ctl(vcpu) ||
+		_vmx_has_vmentry_load_ia32_rtit_ctl(vcpu)) {
+		__vmx_vmwrite64(0x2814, vmcs12_info->vmcs12_value.guest_IA32_RTIT_CTL);
+	}
+	if (_vmx_has_vmentry_load_pkrs(vcpu)) {
+		__vmx_vmwrite64(0x2818, vmcs12_info->vmcs12_value.guest_IA32_PKRS);
+	}
+
+	/* 64-Bit Host-State Fields */
 
 	// TODO
 
@@ -583,21 +615,6 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	 */
 
 #if 0
-/* 64-Bit Guest-State Fields */
-DECLARE_FIELD_64_RW(0x2800, guest_VMCS_link_pointer, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2802, guest_IA32_DEBUGCTL, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2804, guest_IA32_PAT, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2806, guest_IA32_EFER, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2808, guest_IA32_PERF_GLOBAL_CTRL, UNDEFINED)
-DECLARE_FIELD_64_RW(0x280A, guest_PDPTE0, UNDEFINED)
-DECLARE_FIELD_64_RW(0x280C, guest_PDPTE1, UNDEFINED)
-DECLARE_FIELD_64_RW(0x280E, guest_PDPTE2, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2810, guest_PDPTE3, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2812, guest_IA32_BNDCFGS, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2814, guest_IA32_RTIT_CTL, UNDEFINED)
-DECLARE_FIELD_64_RW(0x2818, guest_IA32_PKRS, UNDEFINED)
-
-/* 64-Bit Host-State Fields */
 DECLARE_FIELD_64_RW(0x2C00, host_IA32_PAT, UNDEFINED)
 DECLARE_FIELD_64_RW(0x2C02, host_IA32_EFER, UNDEFINED)
 DECLARE_FIELD_64_RW(0x2C04, host_IA32_PERF_GLOBAL_CTRL, UNDEFINED)
