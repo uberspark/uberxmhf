@@ -186,7 +186,7 @@ extern bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, spa_
 		 * So we require the upper 32-bits to be 0. Ideally we do not support
 		 * PAE in i386 XMHF, so this limitation should be fine.
 		 */
-		HALT_ON_ERRORCOND((spa >> 32) != 0ULL);
+		HALT_ON_ERRORCOND((spa >> 32) == 0ULL);
 #elif !defined(__AMD64__)
     #error "Unsupported Arch"
 #endif /* !defined(__AMD64__) */
