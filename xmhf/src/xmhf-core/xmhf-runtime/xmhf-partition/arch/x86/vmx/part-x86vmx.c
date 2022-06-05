@@ -142,20 +142,29 @@ static void _vmx_initVT(VCPU *vcpu){
     #else
     for(i=0; i < 1; i++){
     #endif
+        if (i >= INDEX_IA32_VMX_TRUE_PINBASED_CTLS &&
+            i <= INDEX_IA32_VMX_VMFUNC &&
+            !(vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55))) {
+            continue;
+        }
         vcpu->vmx_msrs[i] = rdmsr64(IA32_VMX_BASIC_MSR + i);
     }
 
-    vcpu->vmx_msr_efer = rdmsr64(MSR_EFER);
-    vcpu->vmx_msr_efcr = rdmsr64(MSR_EFCR);
-
-    //[debug: dump contents of MSRs]
-    //for(i=0; i < IA32_VMX_MSRCOUNT; i++)
-    //  printf("\nCPU(0x%02x): VMX MSR 0x%08x = 0x%08x%08x", vcpu->id, IA32_VMX_BASIC_MSR+i,
-    //      (u32)((u64)vcpu->vmx_msrs[i] >> 32), (u32)vcpu->vmx_msrs[i]);
+    if (vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55)) {
+        vcpu->vmx_pinbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_PINBASED_CTLS];
+        vcpu->vmx_procbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_PROCBASED_CTLS];
+        vcpu->vmx_exit_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_EXIT_CTLS];
+        vcpu->vmx_entry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_ENTRY_CTLS];
+    } else {
+        vcpu->vmx_pinbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
+        vcpu->vmx_procbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
+        vcpu->vmx_exit_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
+        vcpu->vmx_entry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
+    }
 
 		//check if VMX supports unrestricted guest, if so we don't need the
 		//v86 monitor and the associated state transition handling
-		if( (u32)((u64)vcpu->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 )
+		if (_vmx_has_unrestricted_guest(vcpu))
 			vcpu->vmx_guest_unrestricted = 1;
 		else
 			vcpu->vmx_guest_unrestricted = 0;
@@ -168,12 +177,6 @@ static void _vmx_initVT(VCPU *vcpu){
 
 		if(vcpu->vmx_guest_unrestricted)
 			printf("\nCPU(0x%02x): UNRESTRICTED-GUEST supported.", vcpu->id);
-
-		printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efer >> 32),
-          (u32)vcpu->vmx_msr_efer);
-    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efcr >> 32),
-          (u32)vcpu->vmx_msr_efcr);
-
   }
 
   //step-4: enable VMX by setting CR4
@@ -350,19 +353,19 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif
 
 	//setup default VMX controls
-	vcpu->vmcs.control_VMX_pin_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
-	vcpu->vmcs.control_VMX_cpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
-	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
-	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
+	vcpu->vmcs.control_VMX_pin_based = vcpu->vmx_pinbased_ctls;
+	vcpu->vmcs.control_VMX_cpu_based = vcpu->vmx_procbased_ctls;
+	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_exit_ctls;
+	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_entry_ctls;
 
 #ifdef __AMD64__
 	/*
 	 * For amd64, set the Host address-space size (bit 9) in
 	 * control_VM_exit_controls. First check whether setting this bit is
-	 * allowed through bit (9 + 32) in the MSR.
+	 * allowed.
 	 */
-	HALT_ON_ERRORCOND(vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] & (1UL << (9 + 32)));
-	vcpu->vmcs.control_VM_exit_controls |= (1UL << 9);
+	HALT_ON_ERRORCOND(_vmx_has_vmexit_host_address_space_size(vcpu));
+	vcpu->vmcs.control_VM_exit_controls |= (1UL << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
 #elif !defined(__I386__)
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) */

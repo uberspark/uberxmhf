@@ -282,8 +282,10 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
         DUMP_VCPU_PRINT_INT64_INDEX(vcpu->vmx_msrs, i);
     }
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efer);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efcr);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_pinbased_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_procbased_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_exit_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_entry_ctls);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vmxonregion_vaddr);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vmcs_vaddr);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_iobitmap);
@@ -294,10 +296,16 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_ept_pdp_table);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_ept_pd_tables);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_ept_p_tables);
-    // Skip: vmx_ept_memorytypes
-    // Skip: vmx_guestmtrrmsrs
-    DUMP_VCPU_PRINT_INT32(vcpu->vmx_guest_currentstate);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmx_guest_nextstate);
+    DUMP_VCPU_PRINT_INT32(vcpu->vmx_ept_defaulttype);
+    DUMP_VCPU_PRINT_INT32(vcpu->vmx_ept_mtrr_enable);
+    DUMP_VCPU_PRINT_INT32(vcpu->vmx_ept_fixmtrr_enable);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_ept_paddrmask);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_guestmtrrmsrs.def_type);
+    for (i = 0; i < NUM_FIXED_MTRRS; i++) {
+        DUMP_VCPU_PRINT_INT64_INDEX(vcpu->vmx_guestmtrrmsrs.fix_mtrrs, i);
+    }
+    DUMP_VCPU_PRINT_INT32(vcpu->vmx_guestmtrrmsrs.var_count);
+    // Skip: vcpu->vmx_guestmtrrmsrs.var_mtrrs
     DUMP_VCPU_PRINT_INT32(vcpu->vmx_guest_unrestricted);
     DUMP_VCPU_PRINT_INT16(vcpu->vmcs.control_vpid);
     DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VMX_pin_based);
