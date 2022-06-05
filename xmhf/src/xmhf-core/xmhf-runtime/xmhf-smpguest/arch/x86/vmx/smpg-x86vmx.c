@@ -727,7 +727,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		/* Cannot be u32 in amd64, because VMREAD writes 64-bits */
 		unsigned long __control_VMX_cpu_based;
 		HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
-		__control_VMX_cpu_based |= (1U << 22);
+		__control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 		HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
 		vcpu->vmx_guest_inject_nmi = 1;
 	}

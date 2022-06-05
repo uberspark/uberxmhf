@@ -281,20 +281,6 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 	}
 }
 
-/* Return nonzero if this CPU supports INVPCID according to CPUID */
-static uint32_t _vmx_check_invpcid_support(void) {
-	uintptr_t eax, ebx, ecx, edx;
-	cpuid(0x7U, &eax, &ebx, &ecx, &edx);
-	return ebx & (1U << 10);
-}
-
-/* Return nonzero if this CPU supports RDTSCP according to CPUID */
-static uint32_t _vmx_check_rdtscp_support(void) {
-	uintptr_t eax, ebx, ecx, edx;
-	cpuid(0x80000001U, &eax, &ebx, &ecx, &edx);
-	return edx & (1U << 27);
-}
-
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//setup host state
@@ -365,7 +351,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	 * allowed.
 	 */
 	HALT_ON_ERRORCOND(_vmx_has_vmexit_host_address_space_size(vcpu));
-	vcpu->vmcs.control_VM_exit_controls |= (1UL << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
+	vcpu->vmcs.control_VM_exit_controls |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
 #elif !defined(__I386__)
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) */
@@ -379,7 +365,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
         u64 addr = hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
 	    vcpu->vmcs.control_IO_BitmapB_address = addr;
     }
-	vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
+	vcpu->vmcs.control_VMX_cpu_based |= (1U << VMX_PROCBASED_USE_IO_BITMAPS);
 
 	//Critical MSR load/store
 	{
@@ -529,27 +515,27 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 
 	//activate secondary processor controls
 	vcpu->vmcs.control_VMX_seccpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
-	vcpu->vmcs.control_VMX_cpu_based |= (1 << 31); //activate secondary processor controls
+	vcpu->vmcs.control_VMX_cpu_based |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
 
 	//setup unrestricted guest
-	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 7); //enable unrestricted guest
+	vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_UNRESTRICTED_GUEST);
 
 	//allow INVPCID (used by Debian 11)
-	if (_vmx_check_invpcid_support()) {
-		vcpu->vmcs.control_VMX_seccpu_based |= (1 << 12); //enable INVPCID
+	if (_vmx_has_enable_invpcid(vcpu)) {
+		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_INVPCID);
 	}
 
 	//allow RDTSCP (used by Debian 11)
-	if (_vmx_check_rdtscp_support()) {
-		vcpu->vmcs.control_VMX_seccpu_based |= (1 << 3); //enable RDTSCP
+	if (_vmx_has_enable_rdtscp(vcpu)) {
+		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_RDTSCP);
 	}
 
 	//setup VMCS link pointer
 	vcpu->vmcs.guest_VMCS_link_pointer = (u64)0xFFFFFFFFFFFFFFFFULL;
 
 	//setup NMI intercept for core-quiescing
-	vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
-	vcpu->vmcs.control_VMX_pin_based |= (1 << 5);	//enable virtual NMIs
+	vcpu->vmcs.control_VMX_pin_based |= (1U << VMX_BINBASED_NMI_EXITING);
+	vcpu->vmcs.control_VMX_pin_based |= (1U << VMX_BINBASED_VIRTUAL_NMIS);
 	vcpu->vmx_guest_inject_nmi = 0;
 
 	//trap access to CR0 fixed 1-bits
