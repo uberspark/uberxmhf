@@ -286,8 +286,6 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_procbased_ctls);
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_exit_ctls);
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_entry_ctls);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efer);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efcr);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vmxonregion_vaddr);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vmcs_vaddr);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vaddr_iobitmap);

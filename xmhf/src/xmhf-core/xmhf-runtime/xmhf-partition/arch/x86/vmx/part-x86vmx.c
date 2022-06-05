@@ -162,9 +162,6 @@ static void _vmx_initVT(VCPU *vcpu){
         vcpu->vmx_entry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
     }
 
-    vcpu->vmx_msr_efer = rdmsr64(MSR_EFER);
-    vcpu->vmx_msr_efcr = rdmsr64(MSR_EFCR);
-
 		//check if VMX supports unrestricted guest, if so we don't need the
 		//v86 monitor and the associated state transition handling
 		if (_vmx_has_unrestricted_guest(vcpu))
@@ -180,12 +177,6 @@ static void _vmx_initVT(VCPU *vcpu){
 
 		if(vcpu->vmx_guest_unrestricted)
 			printf("\nCPU(0x%02x): UNRESTRICTED-GUEST supported.", vcpu->id);
-
-		printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efer >> 32),
-          (u32)vcpu->vmx_msr_efer);
-    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efcr >> 32),
-          (u32)vcpu->vmx_msr_efcr);
-
   }
 
   //step-4: enable VMX by setting CR4
