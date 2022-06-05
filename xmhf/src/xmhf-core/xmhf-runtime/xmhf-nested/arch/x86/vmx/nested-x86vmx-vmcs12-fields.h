@@ -50,72 +50,72 @@
 
 #ifndef DECLARE_FIELD_16_RO
  #ifdef DECLARE_FIELD_16
-  #define DECLARE_FIELD_16_RO(encoding, name, extra) \
-          DECLARE_FIELD_16(encoding, name, extra)
+  #define DECLARE_FIELD_16_RO(encoding, name, ...) \
+          DECLARE_FIELD_16(encoding, name, __VA_ARGS__)
  #else
-  #define DECLARE_FIELD_16_RO(encoding, name, extra)
+  #define DECLARE_FIELD_16_RO(encoding, name, ...)
  #endif
 #endif
 
 #ifndef DECLARE_FIELD_64_RO
  #ifdef DECLARE_FIELD_64
-  #define DECLARE_FIELD_64_RO(encoding, name, extra) \
-          DECLARE_FIELD_64(encoding, name, extra)
+  #define DECLARE_FIELD_64_RO(encoding, name, ...) \
+          DECLARE_FIELD_64(encoding, name, __VA_ARGS__)
  #else
-  #define DECLARE_FIELD_64_RO(encoding, name, extra)
+  #define DECLARE_FIELD_64_RO(encoding, name, ...)
  #endif
 #endif
 
 #ifndef DECLARE_FIELD_32_RO
  #ifdef DECLARE_FIELD_32
-  #define DECLARE_FIELD_32_RO(encoding, name, extra) \
-          DECLARE_FIELD_32(encoding, name, extra)
+  #define DECLARE_FIELD_32_RO(encoding, name, ...) \
+          DECLARE_FIELD_32(encoding, name, __VA_ARGS__)
  #else
-  #define DECLARE_FIELD_32_RO(encoding, name, extra)
+  #define DECLARE_FIELD_32_RO(encoding, name, ...)
  #endif
 #endif
 
 #ifndef DECLARE_FIELD_NW_RO
  #ifdef DECLARE_FIELD_NW
-  #define DECLARE_FIELD_NW_RO(encoding, name, extra) \
-          DECLARE_FIELD_NW(encoding, name, extra)
+  #define DECLARE_FIELD_NW_RO(encoding, name, ...) \
+          DECLARE_FIELD_NW(encoding, name, __VA_ARGS__)
  #else
-  #define DECLARE_FIELD_NW_RO(encoding, name, extra)
+  #define DECLARE_FIELD_NW_RO(encoding, name, ...)
  #endif
 #endif
 #ifndef DECLARE_FIELD_16_RW
  #ifdef DECLARE_FIELD_16
-  #define DECLARE_FIELD_16_RW(encoding, name, extra) \
-          DECLARE_FIELD_16(encoding, name, extra)
+  #define DECLARE_FIELD_16_RW(encoding, name, ...) \
+          DECLARE_FIELD_16(encoding, name, __VA_ARGS__)
  #else
-  #define DECLARE_FIELD_16_RW(encoding, name, extra)
+  #define DECLARE_FIELD_16_RW(encoding, name, ...)
  #endif
 #endif
 
 #ifndef DECLARE_FIELD_64_RW
  #ifdef DECLARE_FIELD_64
-  #define DECLARE_FIELD_64_RW(encoding, name, extra) \
-          DECLARE_FIELD_64(encoding, name, extra)
+  #define DECLARE_FIELD_64_RW(encoding, name, ...) \
+          DECLARE_FIELD_64(encoding, name, __VA_ARGS__)
  #else
-  #define DECLARE_FIELD_64_RW(encoding, name, extra)
+  #define DECLARE_FIELD_64_RW(encoding, name, ...)
  #endif
 #endif
 
 #ifndef DECLARE_FIELD_32_RW
  #ifdef DECLARE_FIELD_32
-  #define DECLARE_FIELD_32_RW(encoding, name, extra) \
-          DECLARE_FIELD_32(encoding, name, extra)
+  #define DECLARE_FIELD_32_RW(encoding, name, ...) \
+          DECLARE_FIELD_32(encoding, name, __VA_ARGS__)
  #else
-  #define DECLARE_FIELD_32_RW(encoding, name, extra)
+  #define DECLARE_FIELD_32_RW(encoding, name, ...)
  #endif
 #endif
 
 #ifndef DECLARE_FIELD_NW_RW
  #ifdef DECLARE_FIELD_NW
-  #define DECLARE_FIELD_NW_RW(encoding, name, extra) \
-          DECLARE_FIELD_NW(encoding, name, extra)
+  #define DECLARE_FIELD_NW_RW(encoding, name, ...) \
+          DECLARE_FIELD_NW(encoding, name, __VA_ARGS__)
  #else
-  #define DECLARE_FIELD_NW_RW(encoding, name, extra)
+  #define DECLARE_FIELD_NW_RW(encoding, name, ...)
  #endif
 #endif
 

@@ -49,13 +49,13 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 
 struct nested_vmcs12 {
-#define DECLARE_FIELD_16(encoding, name, extra) \
+#define DECLARE_FIELD_16(encoding, name, ...) \
 	u16 name;
-#define DECLARE_FIELD_64(encoding, name, extra) \
+#define DECLARE_FIELD_64(encoding, name, ...) \
 	u64 name;
-#define DECLARE_FIELD_32(encoding, name, extra) \
+#define DECLARE_FIELD_32(encoding, name, ...) \
 	u32 name;
-#define DECLARE_FIELD_NW(encoding, name, extra) \
+#define DECLARE_FIELD_NW(encoding, name, ...) \
 	ulong_t name;
 #include "nested-x86vmx-vmcs12-fields.h"
 };
