@@ -617,6 +617,12 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	}
 
 	/* 32-Bit Control Fields */
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VMX_pin_based;
+		// TODO: check vcpu->vmx_nested_msrs
+		HALT_ON_ERRORCOND(0);
+		__vmx_vmwrite32(0x4000, val);
+	}
 
 	// TODO
 
@@ -633,7 +639,6 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	 */
 
 #if 0
-DECLARE_FIELD_32_RW(0x4000, control_VMX_pin_based, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4002, control_VMX_cpu_based, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4004, control_exception_bitmap, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4006, control_pagefault_errorcode_mask, UNDEFINED)
@@ -831,10 +836,40 @@ static u32 _vmx_nested_check_ud(VCPU *vcpu, int is_vmxon)
  */
 void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 {
+	u32 i;
 	vcpu->vmx_nested_is_vmx_operation = 0;
 	vcpu->vmx_nested_vmxon_pointer = 0;
 	vcpu->vmx_nested_is_vmx_root_operation = 0;
 	vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
+	/* Compute MSRs for the guest */
+	for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
+		vcpu->vmx_nested_msrs[i] = vcpu->vmx_msrs[i];
+	}
+	{
+		u32 vmx_basic_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+		/* Set bits 44:32 to 4096 (require a full page of VMCS region) */
+		vmx_basic_msr &= ~0x00001fff00000000ULL;
+		vmx_basic_msr |= 0x0000100000000000ULL;
+		/* Do not support dual-monitor treatment of SMI and SMM */
+		vmx_basic_msr &= ~(1ULL << 49);
+		/* Currently IA32_VMX_TRUE_* MSRs not supported */
+		HALT_ON_ERRORCOND(!(vmx_basic_msr & (1ULL << 55)));
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_BASIC_MSR] = vmx_basic_msr;
+	}
+	HALT_ON_ERRORCOND(0 && "TODO frontier");
+/* TODO
+INDEX_IA32_VMX_PINBASED_CTLS_MSR
+INDEX_IA32_VMX_PROCBASED_CTLS_MSR
+INDEX_IA32_VMX_EXIT_CTLS_MSR
+INDEX_IA32_VMX_ENTRY_CTLS_MSR
+INDEX_IA32_VMX_MISC_MSR
+INDEX_IA32_VMX_CR0_FIXED0_MSR
+INDEX_IA32_VMX_CR0_FIXED1_MSR
+INDEX_IA32_VMX_CR4_FIXED0_MSR
+INDEX_IA32_VMX_CR4_FIXED1_MSR
+INDEX_IA32_VMX_VMCS_ENUM_MSR
+INDEX_IA32_VMX_PROCBASED_CTLS2_MSR
+*/
 }
 
 // TODO: also need to virtualize VMCALL

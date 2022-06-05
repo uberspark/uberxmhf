@@ -484,6 +484,22 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 					:"a"(r->eax), "c" (r->ecx), "d" (r->edx));
 			}
 			break;
+#ifdef __NESTED_VIRTUALIZATION__
+		case IA32_VMX_BASIC_MSR: /* fallthrough */
+		case IA32_VMX_PINBASED_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_PROCBASED_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_EXIT_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_ENTRY_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_MISC_MSR: /* fallthrough */
+		case IA32_VMX_CR0_FIXED0_MSR: /* fallthrough */
+		case IA32_VMX_CR0_FIXED1_MSR: /* fallthrough */
+		case IA32_VMX_CR4_FIXED0_MSR: /* fallthrough */
+		case IA32_VMX_CR4_FIXED1_MSR: /* fallthrough */
+		case IA32_VMX_VMCS_ENUM_MSR: /* fallthrough */
+		case IA32_VMX_PROCBASED_CTLS2_MSR:
+			HALT_ON_ERRORCOND(0 && "Writing to VMX MSRs (read-only)");
+			break;
+#endif /* !__NESTED_VIRTUALIZATION__ */
 		default:{
 			asm volatile ("wrmsr\r\n"
 				: //no outputs
@@ -589,6 +605,22 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			// TODO: we can probably just forward it to hardware x2APIC
 			HALT_ON_ERRORCOND(0 && "TODO: x2APIC ICR read not implemented");
 			break;
+#ifdef __NESTED_VIRTUALIZATION__
+		case IA32_VMX_BASIC_MSR: /* fallthrough */
+		case IA32_VMX_PINBASED_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_PROCBASED_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_EXIT_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_ENTRY_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_MISC_MSR: /* fallthrough */
+		case IA32_VMX_CR0_FIXED0_MSR: /* fallthrough */
+		case IA32_VMX_CR0_FIXED1_MSR: /* fallthrough */
+		case IA32_VMX_CR4_FIXED0_MSR: /* fallthrough */
+		case IA32_VMX_CR4_FIXED1_MSR: /* fallthrough */
+		case IA32_VMX_VMCS_ENUM_MSR: /* fallthrough */
+		case IA32_VMX_PROCBASED_CTLS2_MSR:
+			read_result = vcpu->vmx_nested_msrs[r->ecx - IA32_VMX_BASIC_MSR];
+			break;
+#endif /* !__NESTED_VIRTUALIZATION__ */
 		default:{
 			if (rdmsr_safe(r) != 0) {
 				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);

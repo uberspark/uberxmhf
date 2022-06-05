@@ -243,6 +243,8 @@ typedef struct _vcpu {
   u32 vmx_nested_is_vmx_root_operation;
   /* If in VMX operation, current-VMCS pointer ((u64)(-1) means invalid) */
   gpa_t vmx_nested_current_vmcs_pointer;
+  /* VMX MSR values that should be observed by the guest */
+  u64 vmx_nested_msrs[IA32_VMX_MSRCOUNT];
 #endif /* !__NESTED_VIRTUALIZATION__ */
 } VCPU;
 
