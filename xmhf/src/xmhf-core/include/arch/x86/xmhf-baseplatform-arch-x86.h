@@ -251,6 +251,11 @@ typedef struct _vcpu {
   gpa_t vmx_nested_current_vmcs_pointer;
   /* VMX MSR values that should be observed by the guest */
   u64 vmx_nested_msrs[IA32_VMX_MSRCOUNT];
+  /* VMX control register limitations for guest hypervisor */
+  u64 vmx_nested_pinbased_ctls;
+  u64 vmx_nested_procbased_ctls;
+  u64 vmx_nested_exit_ctls;
+  u64 vmx_nested_entry_ctls;
 #endif /* !__NESTED_VIRTUALIZATION__ */
 } VCPU;
 

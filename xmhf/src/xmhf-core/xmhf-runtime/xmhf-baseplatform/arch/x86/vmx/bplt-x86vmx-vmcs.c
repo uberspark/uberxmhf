@@ -449,6 +449,10 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
         DUMP_VCPU_PRINT_INT64_INDEX(vcpu->vmx_nested_msrs, i);
     }
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_nested_pinbased_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_nested_procbased_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_nested_exit_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_nested_entry_ctls);
 
 #endif /* !__NESTED_VIRTUALIZATION__ */
 

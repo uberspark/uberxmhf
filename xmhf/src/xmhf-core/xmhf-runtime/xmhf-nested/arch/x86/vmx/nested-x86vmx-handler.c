@@ -884,6 +884,26 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 		mask &= ~(1ULL << (32 + VMX_SECPROCBASED_SUB_PAGE_WRITE_PERMISSIONS_FOR_EPT));
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] &= mask;
 	}
+	/* Select IA32_VMX_* or IA32_VMX_TRUE_* in guest mode */
+	if (vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55)) {
+		vcpu->vmx_nested_pinbased_ctls =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_TRUE_PINBASED_CTLS_MSR];
+		vcpu->vmx_nested_procbased_ctls =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_TRUE_PROCBASED_CTLS_MSR];
+		vcpu->vmx_nested_exit_ctls =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_TRUE_EXIT_CTLS_MSR];
+		vcpu->vmx_nested_entry_ctls =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_TRUE_ENTRY_CTLS_MSR];
+		} else {
+		vcpu->vmx_nested_pinbased_ctls =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
+		vcpu->vmx_nested_procbased_ctls =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
+		vcpu->vmx_nested_exit_ctls =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
+		vcpu->vmx_nested_entry_ctls =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
+	}
 }
 
 // TODO: also need to virtualize VMCALL
