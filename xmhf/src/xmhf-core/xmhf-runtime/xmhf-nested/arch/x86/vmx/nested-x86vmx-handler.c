@@ -391,7 +391,7 @@ static u32 _vmx_check_physical_addr_width(VCPU *vcpu, u64 addr) {
  * Perform VMENTRY. Never returns if succeed. If controls / host state check
  * fails, return error code for _vmx_nested_vm_fail().
  */
-static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
+static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 {
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	guestmem_init(vcpu, &ctx_pair);
@@ -839,15 +839,18 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 
 	/* End VMCS translation */
 
+	if (vmcs12_info->launched) {
+		__vmx_vmentry_vmresume(r);
+	} else {
+		vmcs12_info->launched = 1;
+		__vmx_vmentry_vmlaunch(r);
+	}
+
 	/* When a problem happens, translate back to L1 guest */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void*)vcpu->vmx_vmcs_vaddr)));
 	HALT_ON_ERRORCOND(0 && "TODO frontier");
 	// TODO
-	if ("success") {
-		vmcs12_info->launched = 1;
-	} else {
-		return 0;
-	}
+	return 0;
 }
 
 /*
@@ -1060,7 +1063,6 @@ void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU *vcpu,
 														struct regs *r,
 														int is_vmresume)
 {
-	(void) r;
 	if (_vmx_nested_check_ud(vcpu, 0)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
@@ -1083,7 +1085,7 @@ void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU *vcpu,
 			} else if (is_vmresume && !vmcs12_info->launched) {
 				error_number = VM_INST_ERRNO_VMRESUME_NONLAUNCH_VMCS;
 			} else {
-				error_number = _vmx_vmentry(vcpu, vmcs12_info);
+				error_number = _vmx_vmentry(vcpu, vmcs12_info, r);
 			}
 			_vmx_nested_vm_fail_valid(vcpu, error_number);
 		}
