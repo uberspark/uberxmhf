@@ -165,14 +165,9 @@ static void _vmx_initVT(VCPU *vcpu){
     vcpu->vmx_msr_efer = rdmsr64(MSR_EFER);
     vcpu->vmx_msr_efcr = rdmsr64(MSR_EFCR);
 
-    //[debug: dump contents of MSRs]
-    //for(i=0; i < IA32_VMX_MSRCOUNT; i++)
-    //  printf("\nCPU(0x%02x): VMX MSR 0x%08x = 0x%08x%08x", vcpu->id, IA32_VMX_BASIC_MSR+i,
-    //      (u32)((u64)vcpu->vmx_msrs[i] >> 32), (u32)vcpu->vmx_msrs[i]);
-
 		//check if VMX supports unrestricted guest, if so we don't need the
 		//v86 monitor and the associated state transition handling
-		if( (u32)((u64)vcpu->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 )
+		if (_vmx_has_unrestricted_guest(vcpu))
 			vcpu->vmx_guest_unrestricted = 1;
 		else
 			vcpu->vmx_guest_unrestricted = 0;
@@ -376,10 +371,10 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	/*
 	 * For amd64, set the Host address-space size (bit 9) in
 	 * control_VM_exit_controls. First check whether setting this bit is
-	 * allowed through bit (9 + 32) in the MSR.
+	 * allowed.
 	 */
-	HALT_ON_ERRORCOND(vcpu->vmx_exit_ctls & (1UL << (9 + 32)));
-	vcpu->vmcs.control_VM_exit_controls |= (1UL << 9);
+	HALT_ON_ERRORCOND(_vmx_has_vmexit_host_address_space_size(vcpu));
+	vcpu->vmcs.control_VM_exit_controls |= (1UL << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
 #elif !defined(__I386__)
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) */
