@@ -846,7 +846,7 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 		vcpu->vmx_nested_msrs[i] = vcpu->vmx_msrs[i];
 	}
 	{
-		u32 vmx_basic_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+		u64 vmx_basic_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 		/* Set bits 44:32 to 4096 (require a full page of VMCS region) */
 		vmx_basic_msr &= ~0x00001fff00000000ULL;
 		vmx_basic_msr |= 0x0000100000000000ULL;
@@ -856,20 +856,63 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 		HALT_ON_ERRORCOND(!(vmx_basic_msr & (1ULL << 55)));
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_BASIC_MSR] = vmx_basic_msr;
 	}
-	HALT_ON_ERRORCOND(0 && "TODO frontier");
-/* TODO
-INDEX_IA32_VMX_PINBASED_CTLS_MSR
-INDEX_IA32_VMX_PROCBASED_CTLS_MSR
-INDEX_IA32_VMX_EXIT_CTLS_MSR
-INDEX_IA32_VMX_ENTRY_CTLS_MSR
-INDEX_IA32_VMX_MISC_MSR
-INDEX_IA32_VMX_CR0_FIXED0_MSR
-INDEX_IA32_VMX_CR0_FIXED1_MSR
-INDEX_IA32_VMX_CR4_FIXED0_MSR
-INDEX_IA32_VMX_CR4_FIXED1_MSR
-INDEX_IA32_VMX_VMCS_ENUM_MSR
-INDEX_IA32_VMX_PROCBASED_CTLS2_MSR
-*/
+	{
+		u64 pin_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR] = pin_ctls;
+	}
+	{
+		u64 proc_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
+		/* "Activate tertiary controls" not supported */
+		proc_ctls &= ~(1ULL << (32 + VMX_PROCBASED_ACTIVATE_TERTIARY_CONTROLS));
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] = proc_ctls;
+	}
+	{
+		u64 vmexit_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] = vmexit_ctls;
+	}
+	{
+		u64 vmentry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] = vmentry_ctls;
+	}
+	{
+		u64 vmx_misc_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_MISC_MSR];
+		/* VMWRITE to VM-exit information field not supported */
+		vmx_misc_msr &= ~(1ULL << 29);
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_MISC_MSR] = vmx_misc_msr;
+	}
+	{
+		u64 cr0_fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] = cr0_fixed0;
+	}
+	{
+		u64 cr0_fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR];
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_CR0_FIXED1_MSR] = cr0_fixed1;
+	}
+	{
+		u64 cr4_fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR] = cr4_fixed0;
+	}
+	{
+		u64 cr4_fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR];
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_CR4_FIXED1_MSR] = cr4_fixed1;
+	}
+	{
+		u64 vmx_enum_msr = vcpu->vmx_msrs[INDEX_IA32_VMX_VMCS_ENUM_MSR];
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_VMCS_ENUM_MSR] = vmx_enum_msr;
+	}
+	{
+		u64 proc_ctls2 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
+		/* "Enable VPID" not supported */
+		proc_ctls2 &= ~(1ULL << (32 + VMX_SECPROCBASED_ENABLE_VPID));
+		/* "VMCS shadowing" not supported */
+		proc_ctls2 &= ~(1ULL << (32 + VMX_SECPROCBASED_VMCS_SHADOWING));
+		/* "Enable EPT" not supported */
+		proc_ctls2 &= ~(1ULL << (32 + VMX_SECPROCBASED_ENABLE_EPT));
+		/* "Sub-page write permissions for EPT" not supported */
+		proc_ctls2 &=
+			~(1ULL << (32 + VMX_SECPROCBASED_SUB_PAGE_WRITE_PERMISSIONS_FOR_EPT));
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] = proc_ctls2;
+	}
 }
 
 // TODO: also need to virtualize VMCALL
