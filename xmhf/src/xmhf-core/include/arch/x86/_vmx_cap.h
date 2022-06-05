@@ -54,7 +54,7 @@
 #define VMX_BINBASED_EXTERNAL_INTERRUPT_EXITING 0
 static inline bool _vmx_has_external_interrupt_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_pinbased_ctls >> 32) &
 			(1U << VMX_BINBASED_EXTERNAL_INTERRUPT_EXITING));
 }
 
@@ -62,7 +62,7 @@ static inline bool _vmx_has_external_interrupt_exiting(VCPU *vcpu)
 #define VMX_BINBASED_NMI_EXITING 3
 static inline bool _vmx_has_nmi_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_pinbased_ctls >> 32) &
 			(1U << VMX_BINBASED_NMI_EXITING));
 }
 
@@ -70,7 +70,7 @@ static inline bool _vmx_has_nmi_exiting(VCPU *vcpu)
 #define VMX_BINBASED_VIRTUAL_NMIS 5
 static inline bool _vmx_has_virtual_nmis(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_pinbased_ctls >> 32) &
 			(1U << VMX_BINBASED_VIRTUAL_NMIS));
 }
 
@@ -78,7 +78,7 @@ static inline bool _vmx_has_virtual_nmis(VCPU *vcpu)
 #define VMX_BINBASED_ACTIVATE_VMX_PREEMPTION_TIMER 6
 static inline bool _vmx_has_activate_vmx_preemption_timer(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_pinbased_ctls >> 32) &
 			(1U << VMX_BINBASED_ACTIVATE_VMX_PREEMPTION_TIMER));
 }
 
@@ -86,7 +86,7 @@ static inline bool _vmx_has_activate_vmx_preemption_timer(VCPU *vcpu)
 #define VMX_BINBASED_PROCESS_POSTED_INTERRUPTS 7
 static inline bool _vmx_has_process_posted_interrupts(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_pinbased_ctls >> 32) &
 			(1U << VMX_BINBASED_PROCESS_POSTED_INTERRUPTS));
 }
 
@@ -94,7 +94,7 @@ static inline bool _vmx_has_process_posted_interrupts(VCPU *vcpu)
 #define VMX_PROCBASED_INTERRUPT_WINDOW_EXITING 2
 static inline bool _vmx_has_interrupt_window_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_INTERRUPT_WINDOW_EXITING));
 }
 
@@ -102,7 +102,7 @@ static inline bool _vmx_has_interrupt_window_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_USE_TSC_OFFSETTING 3
 static inline bool _vmx_has_use_tsc_offsetting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_USE_TSC_OFFSETTING));
 }
 
@@ -110,7 +110,7 @@ static inline bool _vmx_has_use_tsc_offsetting(VCPU *vcpu)
 #define VMX_PROCBASED_HLT_EXITING 7
 static inline bool _vmx_has_hlt_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_HLT_EXITING));
 }
 
@@ -118,7 +118,7 @@ static inline bool _vmx_has_hlt_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_INVLPG_EXITING 9
 static inline bool _vmx_has_invlpg_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_INVLPG_EXITING));
 }
 
@@ -126,7 +126,7 @@ static inline bool _vmx_has_invlpg_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_MWAIT_EXITING 10
 static inline bool _vmx_has_mwait_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_MWAIT_EXITING));
 }
 
@@ -134,7 +134,7 @@ static inline bool _vmx_has_mwait_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_RDPMC_EXITING 11
 static inline bool _vmx_has_rdpmc_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_RDPMC_EXITING));
 }
 
@@ -142,7 +142,7 @@ static inline bool _vmx_has_rdpmc_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_RDTSC_EXITING 12
 static inline bool _vmx_has_rdtsc_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_RDTSC_EXITING));
 }
 
@@ -150,7 +150,7 @@ static inline bool _vmx_has_rdtsc_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_CR3_LOAD_EXITING 15
 static inline bool _vmx_has_cr3_load_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_CR3_LOAD_EXITING));
 }
 
@@ -158,7 +158,7 @@ static inline bool _vmx_has_cr3_load_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_CR3_STORE_EXITING 16
 static inline bool _vmx_has_cr3_store_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_CR3_STORE_EXITING));
 }
 
@@ -166,7 +166,7 @@ static inline bool _vmx_has_cr3_store_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_ACTIVATE_TERTIARY_CONTROLS 17
 static inline bool _vmx_has_activate_tertiary_controls(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_ACTIVATE_TERTIARY_CONTROLS));
 }
 
@@ -174,7 +174,7 @@ static inline bool _vmx_has_activate_tertiary_controls(VCPU *vcpu)
 #define VMX_PROCBASED_CR8_LOAD_EXITING 19
 static inline bool _vmx_has_cr8_load_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_CR8_LOAD_EXITING));
 }
 
@@ -182,7 +182,7 @@ static inline bool _vmx_has_cr8_load_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_CR8_STORE_EXITING 20
 static inline bool _vmx_has_cr8_store_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_CR8_STORE_EXITING));
 }
 
@@ -190,7 +190,7 @@ static inline bool _vmx_has_cr8_store_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_USE_TPR_SHADOW 21
 static inline bool _vmx_has_use_tpr_shadow(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_USE_TPR_SHADOW));
 }
 
@@ -198,7 +198,7 @@ static inline bool _vmx_has_use_tpr_shadow(VCPU *vcpu)
 #define VMX_PROCBASED_NMI_WINDOW_EXITING 22
 static inline bool _vmx_has_nmi_window_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_NMI_WINDOW_EXITING));
 }
 
@@ -206,7 +206,7 @@ static inline bool _vmx_has_nmi_window_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_MOV_DR_EXITING 23
 static inline bool _vmx_has_mov_dr_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_MOV_DR_EXITING));
 }
 
@@ -214,7 +214,7 @@ static inline bool _vmx_has_mov_dr_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_UNCONDITIONAL_IO_EXITING 24
 static inline bool _vmx_has_unconditional_io_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_UNCONDITIONAL_IO_EXITING));
 }
 
@@ -222,7 +222,7 @@ static inline bool _vmx_has_unconditional_io_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_USE_IO_BITMAPS 25
 static inline bool _vmx_has_use_io_bitmaps(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_USE_IO_BITMAPS));
 }
 
@@ -230,7 +230,7 @@ static inline bool _vmx_has_use_io_bitmaps(VCPU *vcpu)
 #define VMX_PROCBASED_MONITOR_TRAP_FLAG 27
 static inline bool _vmx_has_monitor_trap_flag(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_MONITOR_TRAP_FLAG));
 }
 
@@ -238,7 +238,7 @@ static inline bool _vmx_has_monitor_trap_flag(VCPU *vcpu)
 #define VMX_PROCBASED_USE_MSR_BITMAPS 28
 static inline bool _vmx_has_use_msr_bitmaps(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_USE_MSR_BITMAPS));
 }
 
@@ -246,7 +246,7 @@ static inline bool _vmx_has_use_msr_bitmaps(VCPU *vcpu)
 #define VMX_PROCBASED_MONITOR_EXITING 29
 static inline bool _vmx_has_monitor_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_MONITOR_EXITING));
 }
 
@@ -254,7 +254,7 @@ static inline bool _vmx_has_monitor_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_PAUSE_EXITING 30
 static inline bool _vmx_has_pause_exiting(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_PAUSE_EXITING));
 }
 
@@ -262,7 +262,7 @@ static inline bool _vmx_has_pause_exiting(VCPU *vcpu)
 #define VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS 31
 static inline bool _vmx_has_activate_secondary_controls(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_procbased_ctls >> 32) &
 			(1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS));
 }
 
@@ -486,7 +486,7 @@ static inline bool _vmx_has_enable_enclv_exiting(VCPU *vcpu)
 #define VMX_VMEXIT_SAVE_DEBUG_CONTROLS 2
 static inline bool _vmx_has_vmexit_save_debug_controls(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_SAVE_DEBUG_CONTROLS));
 }
 
@@ -494,7 +494,7 @@ static inline bool _vmx_has_vmexit_save_debug_controls(VCPU *vcpu)
 #define VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE 9
 static inline bool _vmx_has_vmexit_host_address_space_size(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE));
 }
 
@@ -502,7 +502,7 @@ static inline bool _vmx_has_vmexit_host_address_space_size(VCPU *vcpu)
 #define VMX_VMEXIT_LOAD_IA32_PERF_GLOBAL_CTRL 12
 static inline bool _vmx_has_vmexit_load_ia32_perf_global_ctrl(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_LOAD_IA32_PERF_GLOBAL_CTRL));
 }
 
@@ -510,7 +510,7 @@ static inline bool _vmx_has_vmexit_load_ia32_perf_global_ctrl(VCPU *vcpu)
 #define VMX_VMEXIT_ACKNOWLEDGE_INTERRUPT_ON_EXIT 15
 static inline bool _vmx_has_vmexit_acknowledge_interrupt_on_exit(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_ACKNOWLEDGE_INTERRUPT_ON_EXIT));
 }
 
@@ -518,7 +518,7 @@ static inline bool _vmx_has_vmexit_acknowledge_interrupt_on_exit(VCPU *vcpu)
 #define VMX_VMEXIT_SAVE_IA32_PAT 18
 static inline bool _vmx_has_vmexit_save_ia32_pat(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_SAVE_IA32_PAT));
 }
 
@@ -526,7 +526,7 @@ static inline bool _vmx_has_vmexit_save_ia32_pat(VCPU *vcpu)
 #define VMX_VMEXIT_LOAD_IA32_PAT 19
 static inline bool _vmx_has_vmexit_load_ia32_pat(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_LOAD_IA32_PAT));
 }
 
@@ -534,7 +534,7 @@ static inline bool _vmx_has_vmexit_load_ia32_pat(VCPU *vcpu)
 #define VMX_VMEXIT_SAVE_IA32_EFER 20
 static inline bool _vmx_has_vmexit_save_ia32_efer(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_SAVE_IA32_EFER));
 }
 
@@ -542,7 +542,7 @@ static inline bool _vmx_has_vmexit_save_ia32_efer(VCPU *vcpu)
 #define VMX_VMEXIT_LOAD_IA32_EFER 21
 static inline bool _vmx_has_vmexit_load_ia32_efer(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_LOAD_IA32_EFER));
 }
 
@@ -550,7 +550,7 @@ static inline bool _vmx_has_vmexit_load_ia32_efer(VCPU *vcpu)
 #define VMX_VMEXIT_SAVE_VMX_PREEMPTION_TIMER_VALUE 22
 static inline bool _vmx_has_vmexit_save_vmx_preemption_timer_value(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_SAVE_VMX_PREEMPTION_TIMER_VALUE));
 }
 
@@ -558,7 +558,7 @@ static inline bool _vmx_has_vmexit_save_vmx_preemption_timer_value(VCPU *vcpu)
 #define VMX_VMEXIT_CLEAR_IA32_BNDCFGS 23
 static inline bool _vmx_has_vmexit_clear_ia32_bndcfgs(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_CLEAR_IA32_BNDCFGS));
 }
 
@@ -566,7 +566,7 @@ static inline bool _vmx_has_vmexit_clear_ia32_bndcfgs(VCPU *vcpu)
 #define VMX_VMEXIT_CONCEAL_VMX_FROM_PT 24
 static inline bool _vmx_has_vmexit_conceal_vmx_from_pt(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_CONCEAL_VMX_FROM_PT));
 }
 
@@ -574,7 +574,7 @@ static inline bool _vmx_has_vmexit_conceal_vmx_from_pt(VCPU *vcpu)
 #define VMX_VMEXIT_CLEAR_IA32_RTIT_CTL 25
 static inline bool _vmx_has_vmexit_clear_ia32_rtit_ctl(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_CLEAR_IA32_RTIT_CTL));
 }
 
@@ -582,7 +582,7 @@ static inline bool _vmx_has_vmexit_clear_ia32_rtit_ctl(VCPU *vcpu)
 #define VMX_VMEXIT_LOAD_CET_STATE 28
 static inline bool _vmx_has_vmexit_load_cet_state(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_LOAD_CET_STATE));
 }
 
@@ -590,7 +590,7 @@ static inline bool _vmx_has_vmexit_load_cet_state(VCPU *vcpu)
 #define VMX_VMEXIT_LOAD_PKRS 29
 static inline bool _vmx_has_vmexit_load_pkrs(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_exit_ctls >> 32) &
 			(1U << VMX_VMEXIT_LOAD_PKRS));
 }
 
@@ -598,7 +598,7 @@ static inline bool _vmx_has_vmexit_load_pkrs(VCPU *vcpu)
 #define VMX_VMENTRY_LOAD_DEBUG_CONTROLS 2
 static inline bool _vmx_has_vmentry_load_debug_controls(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_LOAD_DEBUG_CONTROLS));
 }
 
@@ -606,7 +606,7 @@ static inline bool _vmx_has_vmentry_load_debug_controls(VCPU *vcpu)
 #define VMX_VMENTRY_IA_32E_MODE_GUEST 9
 static inline bool _vmx_has_vmentry_ia_32e_mode_guest(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_IA_32E_MODE_GUEST));
 }
 
@@ -614,7 +614,7 @@ static inline bool _vmx_has_vmentry_ia_32e_mode_guest(VCPU *vcpu)
 #define VMX_VMENTRY_ENTRY_TO_SMM 10
 static inline bool _vmx_has_vmentry_entry_to_smm(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_ENTRY_TO_SMM));
 }
 
@@ -622,7 +622,7 @@ static inline bool _vmx_has_vmentry_entry_to_smm(VCPU *vcpu)
 #define VMX_VMENTRY_DEACTIVATE_DUAL_MONITOR_TREATMENT 11
 static inline bool _vmx_has_vmentry_deactivate_dual_monitor_treatment(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_DEACTIVATE_DUAL_MONITOR_TREATMENT));
 }
 
@@ -630,7 +630,7 @@ static inline bool _vmx_has_vmentry_deactivate_dual_monitor_treatment(VCPU *vcpu
 #define VMX_VMENTRY_LOAD_IA32_PERF_GLOBAL_CTRL 13
 static inline bool _vmx_has_vmentry_load_ia32_perf_global_ctrl(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_LOAD_IA32_PERF_GLOBAL_CTRL));
 }
 
@@ -638,7 +638,7 @@ static inline bool _vmx_has_vmentry_load_ia32_perf_global_ctrl(VCPU *vcpu)
 #define VMX_VMENTRY_LOAD_IA32_PAT 14
 static inline bool _vmx_has_vmentry_load_ia32_pat(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_LOAD_IA32_PAT));
 }
 
@@ -646,7 +646,7 @@ static inline bool _vmx_has_vmentry_load_ia32_pat(VCPU *vcpu)
 #define VMX_VMENTRY_LOAD_IA32_EFER 15
 static inline bool _vmx_has_vmentry_load_ia32_efer(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_LOAD_IA32_EFER));
 }
 
@@ -654,7 +654,7 @@ static inline bool _vmx_has_vmentry_load_ia32_efer(VCPU *vcpu)
 #define VMX_VMENTRY_LOAD_IA32_BNDCFGS 16
 static inline bool _vmx_has_vmentry_load_ia32_bndcfgs(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_LOAD_IA32_BNDCFGS));
 }
 
@@ -662,7 +662,7 @@ static inline bool _vmx_has_vmentry_load_ia32_bndcfgs(VCPU *vcpu)
 #define VMX_VMENTRY_CONCEAL_VMX_FROM_PT 17
 static inline bool _vmx_has_vmentry_conceal_vmx_from_pt(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_CONCEAL_VMX_FROM_PT));
 }
 
@@ -670,7 +670,7 @@ static inline bool _vmx_has_vmentry_conceal_vmx_from_pt(VCPU *vcpu)
 #define VMX_VMENTRY_LOAD_IA32_RTIT_CTL 18
 static inline bool _vmx_has_vmentry_load_ia32_rtit_ctl(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_LOAD_IA32_RTIT_CTL));
 }
 
@@ -678,7 +678,7 @@ static inline bool _vmx_has_vmentry_load_ia32_rtit_ctl(VCPU *vcpu)
 #define VMX_VMENTRY_LOAD_CET_STATE 20
 static inline bool _vmx_has_vmentry_load_cet_state(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_LOAD_CET_STATE));
 }
 
@@ -686,7 +686,7 @@ static inline bool _vmx_has_vmentry_load_cet_state(VCPU *vcpu)
 #define VMX_VMENTRY_LOAD_PKRS 22
 static inline bool _vmx_has_vmentry_load_pkrs(VCPU *vcpu)
 {
-	return ((vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] >> 32) &
+	return ((vcpu->vmx_entry_ctls >> 32) &
 			(1U << VMX_VMENTRY_LOAD_PKRS));
 }
 

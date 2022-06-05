@@ -282,6 +282,10 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
         DUMP_VCPU_PRINT_INT64_INDEX(vcpu->vmx_msrs, i);
     }
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_pinbased_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_procbased_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_exit_ctls);
+    DUMP_VCPU_PRINT_INT64(vcpu->vmx_entry_ctls);
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efer);
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_msr_efcr);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_vmxonregion_vaddr);

@@ -142,7 +142,24 @@ static void _vmx_initVT(VCPU *vcpu){
     #else
     for(i=0; i < 1; i++){
     #endif
+        if (i >= INDEX_IA32_VMX_TRUE_PINBASED_CTLS &&
+            i <= INDEX_IA32_VMX_VMFUNC &&
+            !(vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55))) {
+            continue;
+        }
         vcpu->vmx_msrs[i] = rdmsr64(IA32_VMX_BASIC_MSR + i);
+    }
+
+    if (vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55)) {
+        vcpu->vmx_pinbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_PINBASED_CTLS];
+        vcpu->vmx_procbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_PROCBASED_CTLS];
+        vcpu->vmx_exit_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_EXIT_CTLS];
+        vcpu->vmx_entry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_ENTRY_CTLS];
+    } else {
+        vcpu->vmx_pinbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
+        vcpu->vmx_procbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
+        vcpu->vmx_exit_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
+        vcpu->vmx_entry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
     }
 
     vcpu->vmx_msr_efer = rdmsr64(MSR_EFER);
@@ -350,10 +367,10 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif
 
 	//setup default VMX controls
-	vcpu->vmcs.control_VMX_pin_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
-	vcpu->vmcs.control_VMX_cpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
-	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
-	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
+	vcpu->vmcs.control_VMX_pin_based = vcpu->vmx_pinbased_ctls;
+	vcpu->vmcs.control_VMX_cpu_based = vcpu->vmx_procbased_ctls;
+	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_exit_ctls;
+	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_entry_ctls;
 
 #ifdef __AMD64__
 	/*
@@ -361,7 +378,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	 * control_VM_exit_controls. First check whether setting this bit is
 	 * allowed through bit (9 + 32) in the MSR.
 	 */
-	HALT_ON_ERRORCOND(vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] & (1UL << (9 + 32)));
+	HALT_ON_ERRORCOND(vcpu->vmx_exit_ctls & (1UL << (9 + 32)));
 	vcpu->vmcs.control_VM_exit_controls |= (1UL << 9);
 #elif !defined(__I386__)
     #error "Unsupported Arch"
