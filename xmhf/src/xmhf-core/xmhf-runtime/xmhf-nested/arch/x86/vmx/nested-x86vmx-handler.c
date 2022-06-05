@@ -604,16 +604,23 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	 * these similar to guest state fields.
 	 */
 	if (_vmx_has_vmexit_load_ia32_pat(vcpu)) {
-		__vmx_vmwrite64(0x2C00, vmcs12_info->vmcs12_value.host_IA32_PAT);
+		__vmx_vmwrite64(0x2C00, rdmsr64(MSR_IA32_PAT));
 	}
 	if (_vmx_has_vmexit_load_ia32_efer(vcpu)) {
-		__vmx_vmwrite64(0x2C02, vmcs12_info->vmcs12_value.host_IA32_EFER);
+		__vmx_vmwrite64(0x2C02, rdmsr64(MSR_EFER));
 	}
 	if (_vmx_has_vmexit_load_ia32_perf_global_ctrl(vcpu)) {
-		__vmx_vmwrite64(0x2C04, vmcs12_info->vmcs12_value.host_IA32_PERF_GLOBAL_CTRL);
+		u32 eax, ebx, ecx, edx;
+		cpuid(0x0, &eax, &ebx, &ecx, &edx);
+		if (eax >= 0xA) {
+			cpuid(0xA, &eax, &ebx, &ecx, &edx);
+			if (eax & 0xffU) {
+				__vmx_vmwrite64(0x2C04, rdmsr64(IA32_PERF_GLOBAL_CTRL));
+			}
+		}
 	}
 	if (_vmx_has_vmexit_load_pkrs(vcpu)) {
-		__vmx_vmwrite64(0x2C06, vmcs12_info->vmcs12_value.host_IA32_PKRS);
+		__vmx_vmwrite64(0x2C06, rdmsr64(IA32_PKRS));
 	}
 
 	/* 32-Bit Control Fields */
@@ -747,7 +754,7 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	}
 
 	/* 32-Bit Host-State Field */
-	__vmx_vmwrite32(0x4C00, vmcs12_info->vmcs12_value.host_IA32_SYSENTER_CS);
+	__vmx_vmwrite32(0x4C00, vcpu->vmcs.host_SYSENTER_CS);
 
 	/* Natural-Width Control Fields */
 	{
@@ -765,7 +772,58 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 
 	/* Natural-Width Read-Only Data Fields */
 
-	// TODO
+	/* Natural-Width Guest-State Fields */
+	__vmx_vmwriteNW(0x6800, vmcs12_info->vmcs12_value.guest_CR0);
+	__vmx_vmwriteNW(0x6802, vmcs12_info->vmcs12_value.guest_CR3);
+	__vmx_vmwriteNW(0x6804, vmcs12_info->vmcs12_value.guest_CR4);
+	__vmx_vmwriteNW(0x6806, vmcs12_info->vmcs12_value.guest_ES_base);
+	__vmx_vmwriteNW(0x6808, vmcs12_info->vmcs12_value.guest_CS_base);
+	__vmx_vmwriteNW(0x680A, vmcs12_info->vmcs12_value.guest_SS_base);
+	__vmx_vmwriteNW(0x680C, vmcs12_info->vmcs12_value.guest_DS_base);
+	__vmx_vmwriteNW(0x680E, vmcs12_info->vmcs12_value.guest_FS_base);
+	__vmx_vmwriteNW(0x6810, vmcs12_info->vmcs12_value.guest_GS_base);
+	__vmx_vmwriteNW(0x6812, vmcs12_info->vmcs12_value.guest_LDTR_base);
+	__vmx_vmwriteNW(0x6814, vmcs12_info->vmcs12_value.guest_TR_base);
+	__vmx_vmwriteNW(0x6816, vmcs12_info->vmcs12_value.guest_GDTR_base);
+	__vmx_vmwriteNW(0x6818, vmcs12_info->vmcs12_value.guest_IDTR_base);
+	__vmx_vmwriteNW(0x681A, vmcs12_info->vmcs12_value.guest_DR7);
+	__vmx_vmwriteNW(0x681C, vmcs12_info->vmcs12_value.guest_RSP);
+	__vmx_vmwriteNW(0x681E, vmcs12_info->vmcs12_value.guest_RIP);
+	__vmx_vmwriteNW(0x6820, vmcs12_info->vmcs12_value.guest_RFLAGS);
+	__vmx_vmwriteNW(0x6822, vmcs12_info->vmcs12_value.guest_pending_debug_x);
+	__vmx_vmwriteNW(0x6824, vmcs12_info->vmcs12_value.guest_SYSENTER_ESP);
+	__vmx_vmwriteNW(0x6826, vmcs12_info->vmcs12_value.guest_SYSENTER_EIP);
+	if (_vmx_has_vmentry_load_cet_state(vcpu)) {
+		__vmx_vmwriteNW(0x6828, vmcs12_info->vmcs12_value.guest_IA32_S_CET);
+		__vmx_vmwriteNW(0x682A, vmcs12_info->vmcs12_value.guest_SSP);
+		__vmx_vmwriteNW(0x682C,
+			vmcs12_info->vmcs12_value.guest_IA32_INTERRUPT_SSP_TABLE_ADDR);
+	}
+
+	/* Natural-Width Host-State Fields */
+	__vmx_vmwriteNW(0x6C00, vcpu->vmcs.host_CR0);
+	__vmx_vmwriteNW(0x6C02, vcpu->vmcs.host_CR3);
+	__vmx_vmwriteNW(0x6C04, vcpu->vmcs.host_CR4);
+	__vmx_vmwriteNW(0x6C06, vcpu->vmcs.host_FS_base);
+	__vmx_vmwriteNW(0x6C08, vcpu->vmcs.host_GS_base);
+	__vmx_vmwriteNW(0x6C0A, vcpu->vmcs.host_TR_base);
+	__vmx_vmwriteNW(0x6C0C, vcpu->vmcs.host_GDTR_base);
+	__vmx_vmwriteNW(0x6C0E, vcpu->vmcs.host_IDTR_base);
+	__vmx_vmwriteNW(0x6C10, vcpu->vmcs.host_SYSENTER_ESP);
+	__vmx_vmwriteNW(0x6C12, vcpu->vmcs.host_SYSENTER_EIP);
+	__vmx_vmwriteNW(0x6C14, vcpu->vmcs.host_RSP);
+	__vmx_vmwriteNW(0x6C16, vcpu->vmcs.host_RIP);
+	if (_vmx_has_vmexit_load_cet_state(vcpu)) {
+		/*
+		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
+		 * To implement load CET state correctly, need to modify:
+		 * * encoding 0x6C18: host_IA32_S_CET
+		 * * encoding 0x6C1A: host_SSP
+		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
+		*/
+	}
+
+	// TODO: for host-state fields, update vmcs of guest hv.
 
 	/*
 		Features notes
@@ -778,50 +836,6 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 		* "Sub-page write permissions for EPT" not supported
 		* "Activate tertiary controls" not supported
 	 */
-
-#if 0
-/* Natural-Width Guest-State Fields */
-DECLARE_FIELD_NW_RW(0x6800, guest_CR0, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6802, guest_CR3, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6804, guest_CR4, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6806, guest_ES_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6808, guest_CS_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x680A, guest_SS_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x680C, guest_DS_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x680E, guest_FS_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6810, guest_GS_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6812, guest_LDTR_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6814, guest_TR_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6816, guest_GDTR_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6818, guest_IDTR_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x681A, guest_DR7, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x681C, guest_RSP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x681E, guest_RIP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6820, guest_RFLAGS, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6822, guest_pending_debug_x, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6824, guest_SYSENTER_ESP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6826, guest_SYSENTER_EIP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6828, guest_IA32_S_CET, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x682A, guest_SSP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x682C, guest_IA32_INTERRUPT_SSP_TABLE_ADDR, UNDEFINED)
-
-/* Natural-Width Host-State Fields */
-DECLARE_FIELD_NW_RW(0x6C00, host_CR0, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C02, host_CR3, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C04, host_CR4, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C06, host_FS_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C08, host_GS_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C0A, host_TR_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C0C, host_GDTR_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C0E, host_IDTR_base, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C10, host_SYSENTER_ESP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C12, host_SYSENTER_EIP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C14, host_RSP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C16, host_RIP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C18, host_IA32_S_CET, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C1A, host_SSP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6C1C, host_IA32_INTERRUPT_SSP_TABLE_ADDR, UNDEFINED)
-#endif
 
 	/* End VMCS translation */
 
@@ -928,8 +942,28 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] &= mask;
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_TRUE_PROCBASED_CTLS_MSR] &= mask;
 	}
-	/* INDEX_IA32_VMX_EXIT_CTLS_MSR: not changed */
-	/* INDEX_IA32_VMX_ENTRY_CTLS_MSR: not changed */
+	{
+		/*
+		 * Modifying IA32_PAT and IA32_EFER and CET state not supported yet.
+		 * Need some extra logic to protect XMHF's states.
+		 */
+		u64 mask = ~(1ULL << (32 + VMX_VMEXIT_SAVE_IA32_PAT));
+		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_IA32_PAT));
+		mask &= ~(1ULL << (32 + VMX_VMEXIT_SAVE_IA32_EFER));
+		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_IA32_EFER));
+		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_CET_STATE));
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] &= mask;
+	}
+	{
+		/*
+		 * Modifying IA32_PAT and IA32_EFER and CET state not supported yet.
+		 * Need some extra logic to protect XMHF's states.
+		 */
+		u64 mask = ~(1ULL << (32 + VMX_VMENTRY_LOAD_IA32_PAT));
+		mask &= ~(1ULL << (32 + VMX_VMENTRY_LOAD_IA32_EFER));
+		mask &= ~(1ULL << (32 + VMX_VMENTRY_LOAD_CET_STATE));
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR] &= mask;
+	}
 	{
 		/* VMWRITE to VM-exit information field not supported */
 		u64 mask = ~(1ULL << 29);
