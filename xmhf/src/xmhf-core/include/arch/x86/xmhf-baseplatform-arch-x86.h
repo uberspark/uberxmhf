@@ -150,24 +150,24 @@ struct _guestmtrrmsrs {
 
 //---platform
 //VMX MSR indices for the vcpu structure
-#define INDEX_IA32_VMX_BASIC_MSR            0x0
-#define INDEX_IA32_VMX_PINBASED_CTLS_MSR    0x1
-#define INDEX_IA32_VMX_PROCBASED_CTLS_MSR   0x2
-#define INDEX_IA32_VMX_EXIT_CTLS_MSR        0x3
-#define INDEX_IA32_VMX_ENTRY_CTLS_MSR       0x4
-#define INDEX_IA32_VMX_MISC_MSR             0x5
-#define INDEX_IA32_VMX_CR0_FIXED0_MSR       0x6
-#define INDEX_IA32_VMX_CR0_FIXED1_MSR       0x7
-#define INDEX_IA32_VMX_CR4_FIXED0_MSR       0x8
-#define INDEX_IA32_VMX_CR4_FIXED1_MSR       0x9
-#define INDEX_IA32_VMX_VMCS_ENUM_MSR        0xA
-#define INDEX_IA32_VMX_PROCBASED_CTLS2_MSR  0xB
-#define INDEX_IA32_VMX_EPT_VPID_CAP         0xC
-#define INDEX_IA32_VMX_TRUE_PINBASED_CTLS   0xD
-#define INDEX_IA32_VMX_TRUE_PROCBASED_CTLS  0xE
-#define INDEX_IA32_VMX_TRUE_EXIT_CTLS       0xF
-#define INDEX_IA32_VMX_TRUE_ENTRY_CTLS      0x10
-#define INDEX_IA32_VMX_VMFUNC               0x11
+#define INDEX_IA32_VMX_BASIC_MSR                0x0
+#define INDEX_IA32_VMX_PINBASED_CTLS_MSR        0x1
+#define INDEX_IA32_VMX_PROCBASED_CTLS_MSR       0x2
+#define INDEX_IA32_VMX_EXIT_CTLS_MSR            0x3
+#define INDEX_IA32_VMX_ENTRY_CTLS_MSR           0x4
+#define INDEX_IA32_VMX_MISC_MSR                 0x5
+#define INDEX_IA32_VMX_CR0_FIXED0_MSR           0x6
+#define INDEX_IA32_VMX_CR0_FIXED1_MSR           0x7
+#define INDEX_IA32_VMX_CR4_FIXED0_MSR           0x8
+#define INDEX_IA32_VMX_CR4_FIXED1_MSR           0x9
+#define INDEX_IA32_VMX_VMCS_ENUM_MSR            0xA
+#define INDEX_IA32_VMX_PROCBASED_CTLS2_MSR      0xB
+#define INDEX_IA32_VMX_EPT_VPID_CAP_MSR         0xC
+#define INDEX_IA32_VMX_TRUE_PINBASED_CTLS_MSR   0xD
+#define INDEX_IA32_VMX_TRUE_PROCBASED_CTLS_MSR  0xE
+#define INDEX_IA32_VMX_TRUE_EXIT_CTLS_MSR       0xF
+#define INDEX_IA32_VMX_TRUE_ENTRY_CTLS_MSR      0x10
+#define INDEX_IA32_VMX_VMFUNC_MSR               0x11
 
 //---platform
 #define IA32_VMX_MSRCOUNT                   18

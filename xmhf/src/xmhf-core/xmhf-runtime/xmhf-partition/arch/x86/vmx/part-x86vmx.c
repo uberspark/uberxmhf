@@ -142,8 +142,8 @@ static void _vmx_initVT(VCPU *vcpu){
     #else
     for(i=0; i < 1; i++){
     #endif
-        if (i >= INDEX_IA32_VMX_TRUE_PINBASED_CTLS &&
-            i <= INDEX_IA32_VMX_VMFUNC &&
+        if (i >= INDEX_IA32_VMX_TRUE_PINBASED_CTLS_MSR &&
+            i <= INDEX_IA32_VMX_VMFUNC_MSR &&
             !(vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55))) {
             continue;
         }
@@ -151,10 +151,10 @@ static void _vmx_initVT(VCPU *vcpu){
     }
 
     if (vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55)) {
-        vcpu->vmx_pinbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_PINBASED_CTLS];
-        vcpu->vmx_procbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_PROCBASED_CTLS];
-        vcpu->vmx_exit_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_EXIT_CTLS];
-        vcpu->vmx_entry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_ENTRY_CTLS];
+        vcpu->vmx_pinbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_PINBASED_CTLS_MSR];
+        vcpu->vmx_procbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_PROCBASED_CTLS_MSR];
+        vcpu->vmx_exit_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_EXIT_CTLS_MSR];
+        vcpu->vmx_entry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_TRUE_ENTRY_CTLS_MSR];
     } else {
         vcpu->vmx_pinbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
         vcpu->vmx_procbased_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
