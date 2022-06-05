@@ -747,6 +747,20 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	__vmx_vmwrite32(0x4C00, vmcs12_info->vmcs12_value.host_IA32_SYSENTER_CS);
 
 	/* Natural-Width Control Fields */
+	{
+		__vmx_vmwriteNW(0x6000, vmcs12_info->vmcs12_value.control_CR0_mask);
+		__vmx_vmwriteNW(0x6002, vmcs12_info->vmcs12_value.control_CR4_mask);
+		__vmx_vmwriteNW(0x6004, vmcs12_info->vmcs12_value.control_CR0_shadow);
+		__vmx_vmwriteNW(0x6006, vmcs12_info->vmcs12_value.control_CR4_shadow);
+#ifndef __DEBUG_QEMU__
+		__vmx_vmwriteNW(0x6008, vmcs12_info->vmcs12_value.control_CR3_target0);
+		__vmx_vmwriteNW(0x600A, vmcs12_info->vmcs12_value.control_CR3_target1);
+		__vmx_vmwriteNW(0x600C, vmcs12_info->vmcs12_value.control_CR3_target2);
+		__vmx_vmwriteNW(0x600E, vmcs12_info->vmcs12_value.control_CR3_target3);
+#endif /* !__DEBUG_QEMU__ */
+	}
+
+	/* Natural-Width Read-Only Data Fields */
 
 	// TODO
 
@@ -763,24 +777,6 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	 */
 
 #if 0
-/* Natural-Width Control Fields */
-DECLARE_FIELD_NW_RW(0x6000, control_CR0_mask, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6002, control_CR4_mask, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6004, control_CR0_shadow, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6006, control_CR4_shadow, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6008, control_CR3_target0, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x600A, control_CR3_target1, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x600C, control_CR3_target2, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x600E, control_CR3_target3, UNDEFINED)
-
-/* Natural-Width Read-Only Data Fields */
-DECLARE_FIELD_NW_RW(0x6400, info_exit_qualification, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6402, info_IO_RCX, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6404, info_IO_RSI, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6406, info_IO_RDI, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x6408, info_IO_RIP, UNDEFINED)
-DECLARE_FIELD_NW_RW(0x640A, info_guest_linear_address, UNDEFINED)
-
 /* Natural-Width Guest-State Fields */
 DECLARE_FIELD_NW_RW(0x6800, guest_CR0, UNDEFINED)
 DECLARE_FIELD_NW_RW(0x6802, guest_CR3, UNDEFINED)
