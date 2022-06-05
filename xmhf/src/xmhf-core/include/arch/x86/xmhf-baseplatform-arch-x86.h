@@ -234,8 +234,6 @@ typedef struct _vcpu {
   u32 vmx_guest_inject_nmi;     //asynchronously inject NMI to guest
 
   //guest state fields
-  u32 vmx_guest_currentstate;   //current operating mode of guest
-  u32 vmx_guest_nextstate;      //next operating mode of guest
   u32 vmx_guest_unrestricted;   //this is 1 if the CPU VMX implementation supports unrestricted guest execution
   struct _vmx_vmcsfields vmcs;   //the VMCS fields
 
