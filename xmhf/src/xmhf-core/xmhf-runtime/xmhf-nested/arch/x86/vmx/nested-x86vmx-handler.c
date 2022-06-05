@@ -619,9 +619,66 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	/* 32-Bit Control Fields */
 	{
 		u32 val = vmcs12_info->vmcs12_value.control_VMX_pin_based;
-		// TODO: check vcpu->vmx_nested_msrs
-		HALT_ON_ERRORCOND(0);
+		u32 fixed0 = vcpu->vmx_nested_pinbased_ctls;
+		u32 fixed1 = vcpu->vmx_nested_pinbased_ctls >> 32;
+		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
 		__vmx_vmwrite32(0x4000, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VMX_cpu_based;
+		u32 fixed0 = vcpu->vmx_nested_procbased_ctls;
+		u32 fixed1 = vcpu->vmx_nested_procbased_ctls >> 32;
+		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		__vmx_vmwrite32(0x4002, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_exception_bitmap;
+		// TODO: in the future, need to merge with host's exception bitmap
+		__vmx_vmwrite32(0x4004, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_pagefault_errorcode_mask;
+		__vmx_vmwrite32(0x4006, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_pagefault_errorcode_match;
+		__vmx_vmwrite32(0x4008, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_CR3_target_count;
+		__vmx_vmwrite32(0x400A, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VM_exit_controls;
+		u32 fixed0 = vcpu->vmx_nested_exit_ctls;
+		u32 fixed1 = vcpu->vmx_nested_exit_ctls >> 32;
+		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		__vmx_vmwrite32(0x400C, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VM_exit_MSR_store_count;
+		/* VM exit/entry MSR load/store not supported */
+		HALT_ON_ERRORCOND(val == 0);
+		__vmx_vmwrite32(0x400E, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VM_exit_MSR_load_count;
+		/* VM exit/entry MSR load/store not supported */
+		HALT_ON_ERRORCOND(val == 0);
+		__vmx_vmwrite32(0x4010, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VM_entry_controls;
+		u32 fixed0 = vcpu->vmx_nested_entry_ctls;
+		u32 fixed1 = vcpu->vmx_nested_entry_ctls >> 32;
+		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		__vmx_vmwrite32(0x4012, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VM_entry_MSR_load_count;
+		/* VM exit/entry MSR load/store not supported */
+		HALT_ON_ERRORCOND(val == 0);
+		__vmx_vmwrite32(0x4014, val);
 	}
 
 	// TODO
@@ -639,16 +696,6 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	 */
 
 #if 0
-DECLARE_FIELD_32_RW(0x4002, control_VMX_cpu_based, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4004, control_exception_bitmap, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4006, control_pagefault_errorcode_mask, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4008, control_pagefault_errorcode_match, UNDEFINED)
-DECLARE_FIELD_32_RW(0x400A, control_CR3_target_count, UNDEFINED)
-DECLARE_FIELD_32_RW(0x400C, control_VM_exit_controls, UNDEFINED)
-DECLARE_FIELD_32_RW(0x400E, control_VM_exit_MSR_store_count, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4010, control_VM_exit_MSR_load_count, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4012, control_VM_entry_controls, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4014, control_VM_entry_MSR_load_count, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4016, control_VM_entry_interruption_information, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4018, control_VM_entry_exception_errorcode, UNDEFINED)
 DECLARE_FIELD_32_RW(0x401A, control_VM_entry_instruction_length, UNDEFINED)
