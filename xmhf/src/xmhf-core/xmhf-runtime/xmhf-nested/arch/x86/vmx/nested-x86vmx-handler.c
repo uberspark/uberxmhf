@@ -714,6 +714,37 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	/* 32-Bit Read-Only Data Fields */
 
 	/* 32-Bit Guest-State Fields */
+	__vmx_vmwrite32(0x4800, vmcs12_info->vmcs12_value.guest_ES_limit);
+	__vmx_vmwrite32(0x4802, vmcs12_info->vmcs12_value.guest_CS_limit);
+	__vmx_vmwrite32(0x4804, vmcs12_info->vmcs12_value.guest_SS_limit);
+	__vmx_vmwrite32(0x4806, vmcs12_info->vmcs12_value.guest_DS_limit);
+	__vmx_vmwrite32(0x4808, vmcs12_info->vmcs12_value.guest_FS_limit);
+	__vmx_vmwrite32(0x480A, vmcs12_info->vmcs12_value.guest_GS_limit);
+	__vmx_vmwrite32(0x480C, vmcs12_info->vmcs12_value.guest_LDTR_limit);
+	__vmx_vmwrite32(0x480E, vmcs12_info->vmcs12_value.guest_TR_limit);
+	__vmx_vmwrite32(0x4810, vmcs12_info->vmcs12_value.guest_GDTR_limit);
+	__vmx_vmwrite32(0x4812, vmcs12_info->vmcs12_value.guest_IDTR_limit);
+	__vmx_vmwrite32(0x4814, vmcs12_info->vmcs12_value.guest_ES_access_rights);
+	__vmx_vmwrite32(0x4816, vmcs12_info->vmcs12_value.guest_CS_access_rights);
+	__vmx_vmwrite32(0x4818, vmcs12_info->vmcs12_value.guest_SS_access_rights);
+	__vmx_vmwrite32(0x481A, vmcs12_info->vmcs12_value.guest_DS_access_rights);
+	__vmx_vmwrite32(0x481C, vmcs12_info->vmcs12_value.guest_FS_access_rights);
+	__vmx_vmwrite32(0x481E, vmcs12_info->vmcs12_value.guest_GS_access_rights);
+	__vmx_vmwrite32(0x4820, vmcs12_info->vmcs12_value.guest_LDTR_access_rights);
+	__vmx_vmwrite32(0x4822, vmcs12_info->vmcs12_value.guest_TR_access_rights);
+	__vmx_vmwrite32(0x4824, vmcs12_info->vmcs12_value.guest_interruptibility);
+	__vmx_vmwrite32(0x4826, vmcs12_info->vmcs12_value.guest_activity_state);
+	__vmx_vmwrite32(0x4828, vmcs12_info->vmcs12_value.guest_SMBASE);
+	__vmx_vmwrite32(0x482A, vmcs12_info->vmcs12_value.guest_SYSENTER_CS);
+	if (_vmx_has_activate_vmx_preemption_timer(vcpu)) {
+		u32 val = vmcs12_info->vmcs12_value.guest_VMX_preemption_timer_value;
+		__vmx_vmwrite32(0x482E, val);
+	}
+
+	/* 32-Bit Host-State Field */
+	__vmx_vmwrite32(0x4C00, vmcs12_info->vmcs12_value.host_IA32_SYSENTER_CS);
+
+	/* Natural-Width Control Fields */
 
 	// TODO
 
@@ -730,35 +761,6 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	 */
 
 #if 0
-
-
-DECLARE_FIELD_32_RW(0x4800, guest_ES_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4802, guest_CS_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4804, guest_SS_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4806, guest_DS_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4808, guest_FS_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x480A, guest_GS_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x480C, guest_LDTR_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x480E, guest_TR_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4810, guest_GDTR_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4812, guest_IDTR_limit, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4814, guest_ES_access_rights, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4816, guest_CS_access_rights, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4818, guest_SS_access_rights, UNDEFINED)
-DECLARE_FIELD_32_RW(0x481A, guest_DS_access_rights, UNDEFINED)
-DECLARE_FIELD_32_RW(0x481C, guest_FS_access_rights, UNDEFINED)
-DECLARE_FIELD_32_RW(0x481E, guest_GS_access_rights, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4820, guest_LDTR_access_rights, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4822, guest_TR_access_rights, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4824, guest_interruptibility, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4826, guest_activity_state, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4828, guest_SMBASE, UNDEFINED)
-DECLARE_FIELD_32_RW(0x482A, guest_SYSENTER_CS, UNDEFINED)
-DECLARE_FIELD_32_RW(0x482E, guest_VMX_preemption_timer_value, UNDEFINED)
-
-/* 32-Bit Host-State Field */
-DECLARE_FIELD_32_RW(0x4C00, host_IA32_SYSENTER_CS, UNDEFINED)
-
 /* Natural-Width Control Fields */
 DECLARE_FIELD_NW_RW(0x6000, control_CR0_mask, UNDEFINED)
 DECLARE_FIELD_NW_RW(0x6002, control_CR4_mask, UNDEFINED)
