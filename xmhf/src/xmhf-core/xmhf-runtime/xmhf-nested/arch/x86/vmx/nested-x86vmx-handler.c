@@ -680,6 +680,40 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 		HALT_ON_ERRORCOND(val == 0);
 		__vmx_vmwrite32(0x4014, val);
 	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VM_entry_interruption_information;
+		__vmx_vmwrite32(0x4016, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VM_entry_exception_errorcode;
+		__vmx_vmwrite32(0x4018, val);
+	}
+	{
+		u32 val = vmcs12_info->vmcs12_value.control_VM_entry_instruction_length;
+		__vmx_vmwrite32(0x401A, val);
+	}
+	if (_vmx_has_use_tpr_shadow(vcpu)) {
+		u32 val = vmcs12_info->vmcs12_value.control_Task_PRivilege_Threshold;
+		__vmx_vmwrite32(0x401C, val);
+	}
+	if (_vmx_has_activate_secondary_controls(vcpu)) {
+		u32 val = vmcs12_info->vmcs12_value.control_VMX_seccpu_based;
+		u32 fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
+		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
+		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		__vmx_vmwrite32(0x401E, val);
+	}
+	if (_vmx_has_pause_loop_exiting(vcpu)) {
+		u32 val;
+		val = vmcs12_info->vmcs12_value.control_PLE_gap;
+		__vmx_vmwrite32(0x4020, val);
+		val = vmcs12_info->vmcs12_value.control_PLE_window;
+		__vmx_vmwrite32(0x4022, val);
+	}
+
+	/* 32-Bit Read-Only Data Fields */
+
+	/* 32-Bit Guest-State Fields */
 
 	// TODO
 
@@ -696,25 +730,8 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	 */
 
 #if 0
-DECLARE_FIELD_32_RW(0x4016, control_VM_entry_interruption_information, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4018, control_VM_entry_exception_errorcode, UNDEFINED)
-DECLARE_FIELD_32_RW(0x401A, control_VM_entry_instruction_length, UNDEFINED)
-DECLARE_FIELD_32_RW(0x401C, control_Task_PRivilege_Threshold, UNDEFINED)
-DECLARE_FIELD_32_RW(0x401E, control_VMX_seccpu_based, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4020, control_PLE_gap, UNDEFINED)
-DECLARE_FIELD_32_RW(0x4022, control_PLE_window, UNDEFINED)
 
-/* 32-Bit Read-Only Data Fields */
-DECLARE_FIELD_32_RO(0x4400, info_vminstr_error, UNDEFINED)
-DECLARE_FIELD_32_RO(0x4402, info_vmexit_reason, UNDEFINED)
-DECLARE_FIELD_32_RO(0x4404, info_vmexit_interrupt_information, UNDEFINED)
-DECLARE_FIELD_32_RO(0x4406, info_vmexit_interrupt_error_code, UNDEFINED)
-DECLARE_FIELD_32_RO(0x4408, info_IDT_vectoring_information, UNDEFINED)
-DECLARE_FIELD_32_RO(0x440A, info_IDT_vectoring_error_code, UNDEFINED)
-DECLARE_FIELD_32_RO(0x440C, info_vmexit_instruction_length, UNDEFINED)
-DECLARE_FIELD_32_RO(0x440E, info_vmx_instruction_information, UNDEFINED)
 
-/* 32-Bit Guest-State Fields */
 DECLARE_FIELD_32_RW(0x4800, guest_ES_limit, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4802, guest_CS_limit, UNDEFINED)
 DECLARE_FIELD_32_RW(0x4804, guest_SS_limit, UNDEFINED)
