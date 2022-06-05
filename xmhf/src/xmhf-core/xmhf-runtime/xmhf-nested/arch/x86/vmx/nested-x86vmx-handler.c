@@ -734,7 +734,9 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info)
 	__vmx_vmwrite32(0x4822, vmcs12_info->vmcs12_value.guest_TR_access_rights);
 	__vmx_vmwrite32(0x4824, vmcs12_info->vmcs12_value.guest_interruptibility);
 	__vmx_vmwrite32(0x4826, vmcs12_info->vmcs12_value.guest_activity_state);
+#ifndef __DEBUG_QEMU__
 	__vmx_vmwrite32(0x4828, vmcs12_info->vmcs12_value.guest_SMBASE);
+#endif /* !__DEBUG_QEMU__ */
 	__vmx_vmwrite32(0x482A, vmcs12_info->vmcs12_value.guest_SYSENTER_CS);
 	if (_vmx_has_activate_vmx_preemption_timer(vcpu)) {
 		u32 val = vmcs12_info->vmcs12_value.guest_VMX_preemption_timer_value;
