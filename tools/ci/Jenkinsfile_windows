@@ -35,17 +35,19 @@ void qemu_test(String subarch, String guest_subarch, String qemu_image,
             --boot-dir ${PWD}/tools/ci/boot
     """
     sh "tools/ci/pal_demo_img.sh tmp/pal_demo.img"
-    sh """
-        python3 -u ./tools/ci/test4.py \
-            --guest-subarch ${guest_subarch} \
-            --qemu-image ${PWD}/cache/${qemu_image} \
-            --work-dir ${PWD}/tmp/ \
-            --qemu-timeout ${timeout} \
-            --memory ${memory} \
-            --no-display \
-            --verbose \
-            --watch-serial
-    """
+    retry (3) {
+        sh """
+            python3 -u ./tools/ci/test4.py \
+                --guest-subarch ${guest_subarch} \
+                --qemu-image ${PWD}/cache/${qemu_image} \
+                --work-dir ${PWD}/tmp/ \
+                --qemu-timeout ${timeout} \
+                --memory ${memory} \
+                --no-display \
+                --verbose \
+                --watch-serial
+        """
+    }
 }
 
 pipeline {
@@ -137,7 +139,7 @@ pipeline {
                 expression { params.TEST_AMD64_WIN10_AMD64_XMHF }
             }
             steps {
-                qemu_test "amd64", "amd64", "win10x64-j.qcow2", "300", "1024M"
+                qemu_test "amd64", "amd64", "win10x64-j.qcow2", "450", "1024M"
             }
         }
     }
