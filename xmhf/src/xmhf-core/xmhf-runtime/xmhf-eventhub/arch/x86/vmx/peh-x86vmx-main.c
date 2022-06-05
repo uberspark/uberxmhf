@@ -814,9 +814,9 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		u32 value = vcpu->vmcs.control_VM_entry_controls;
 		u32 lme, pae;
 		u64 efer = _vmx_get_guest_efer(vcpu);
-		lme = (cr0_value & CR0_PG) && (efer & (0x1U << EFER_LME));
-		value &= ~(1U << 9);
-		value |= lme << 9;
+		lme = (cr0_value & CR0_PG) && (efer & (1U << EFER_LME));
+		value &= ~(1U << VMX_VMENTRY_IA_32E_MODE_GUEST);
+		value |= lme << VMX_VMENTRY_IA_32E_MODE_GUEST;
 		vcpu->vmcs.control_VM_entry_controls = value;
 		pae = (cr0_value & CR0_PG) && (!lme) && (vcpu->vmcs.guest_CR4 & CR4_PAE);
 #elif defined(__I386__)
@@ -991,7 +991,7 @@ u32 xmhf_parteventhub_arch_x86vmx_print_guest(VCPU *vcpu, struct regs *r)
 	(void)r;
 
 #ifdef __AMD64__
-	if (vcpu->vmcs.control_VM_entry_controls & (1U << 9)) 
+	if (vcpu->vmcs.control_VM_entry_controls & (1U << VMX_VMENTRY_IA_32E_MODE_GUEST)) 
 	{
 		// amd64 mode
 		printf("\n	CPU(0x%02x): RFLAGS=0x%016llx",
@@ -1217,7 +1217,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		case VMX_VMEXIT_NMI_WINDOW: {
 			/* Clear NMI windowing */
-			vcpu->vmcs.control_VMX_cpu_based &= ~(1U << 22);
+			vcpu->vmcs.control_VMX_cpu_based &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 			/* Check whether the CPU can handle NMI */
 			if (vcpu->vmcs.control_exception_bitmap & (1U << CPU_EXCEPTION_NMI)) {
 				/*
@@ -1327,7 +1327,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		default:{
 #ifdef __AMD64__
-			if (vcpu->vmcs.control_VM_entry_controls & (1U << 9)) {
+			if (vcpu->vmcs.control_VM_entry_controls &
+				(1U << VMX_VMENTRY_IA_32E_MODE_GUEST)) {
 				/* amd64 mode */
 				printf("\nCPU(0x%02x): Unhandled intercept in long mode: %d (0x%08x)",
 						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
@@ -1371,7 +1372,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     if (vcpu->vmx_guest_inject_nmi) {
         unsigned long __control_VMX_cpu_based;
         HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
-        __control_VMX_cpu_based |= (1U << 22);
+        __control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
         HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
     }
 #endif // __XMHF_VERIFICATION__
