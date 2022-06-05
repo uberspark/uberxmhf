@@ -496,7 +496,13 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		case IA32_VMX_CR4_FIXED0_MSR: /* fallthrough */
 		case IA32_VMX_CR4_FIXED1_MSR: /* fallthrough */
 		case IA32_VMX_VMCS_ENUM_MSR: /* fallthrough */
-		case IA32_VMX_PROCBASED_CTLS2_MSR:
+		case IA32_VMX_PROCBASED_CTLS2_MSR: /* fallthrough */
+		case IA32_VMX_EPT_VPID_CAP_MSR: /* fallthrough */
+		case IA32_VMX_TRUE_PINBASED_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_TRUE_PROCBASED_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_TRUE_EXIT_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_TRUE_ENTRY_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_VMFUNC_MSR:
 			HALT_ON_ERRORCOND(0 && "Writing to VMX MSRs (read-only)");
 			break;
 #endif /* !__NESTED_VIRTUALIZATION__ */
@@ -617,7 +623,13 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		case IA32_VMX_CR4_FIXED0_MSR: /* fallthrough */
 		case IA32_VMX_CR4_FIXED1_MSR: /* fallthrough */
 		case IA32_VMX_VMCS_ENUM_MSR: /* fallthrough */
-		case IA32_VMX_PROCBASED_CTLS2_MSR:
+		case IA32_VMX_PROCBASED_CTLS2_MSR: /* fallthrough */
+		case IA32_VMX_EPT_VPID_CAP_MSR: /* fallthrough */
+		case IA32_VMX_TRUE_PINBASED_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_TRUE_PROCBASED_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_TRUE_EXIT_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_TRUE_ENTRY_CTLS_MSR: /* fallthrough */
+		case IA32_VMX_VMFUNC_MSR:
 			read_result = vcpu->vmx_nested_msrs[r->ecx - IA32_VMX_BASIC_MSR];
 			break;
 #endif /* !__NESTED_VIRTUALIZATION__ */
