@@ -839,6 +839,8 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 
 	/* End VMCS translation */
 
+	vcpu->vmx_nested_is_vmx_root_operation = 0;
+
 	if (vmcs12_info->launched) {
 		__vmx_vmentry_vmresume(r);
 	} else {
