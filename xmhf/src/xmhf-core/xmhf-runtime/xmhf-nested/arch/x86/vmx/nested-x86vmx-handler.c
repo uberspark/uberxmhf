@@ -1022,7 +1022,7 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU *vcpu, struct regs *r)
 {
-	(void) vcpu;
+	xmhf_nested_arch_x86vmx_vmread_all(vcpu, "Nested VMEXIT: ");
 	(void) r;
 	HALT_ON_ERRORCOND(0 && "TODO frontier");
 }

@@ -189,6 +189,7 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 	}
 }
 
+/* Dump all fields in vmcs12 */
 void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
 										char *prefix)
 {
@@ -209,6 +210,89 @@ void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
 #define DECLARE_FIELD_NW(encoding, name, ...) \
 	printf("CPU(0x%02x): %s" #name " = 0x%08lx\n", vcpu->id, prefix, \
 			vmcs12->name);
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+#include "nested-x86vmx-vmcs12-fields.h"
+}
+
+/* Dump all fields in current physical VMCS (using vmread) */
+void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix)
+{
+#define DECLARE_FIELD_16(encoding, name, ...) \
+	{ \
+		unsigned long value; \
+		if (__vmx_vmread(encoding, &value)) { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = 0x%04lx\n", \
+					vcpu->id, (u32) encoding, prefix, value); \
+		} else { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = unavailable\n", \
+					vcpu->id, (u32) encoding, prefix); \
+		} \
+	}
+#ifdef __AMD64__
+#define DECLARE_FIELD_64(encoding, name, ...) \
+	{ \
+		unsigned long value; \
+		if (__vmx_vmread(encoding, &value)) { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = 0x%016lx\n", \
+					vcpu->id, (u32) encoding, prefix, value); \
+		} else { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = unavailable\n", \
+					vcpu->id, (u32) encoding, prefix); \
+		} \
+	}
+#elif defined(__I386__)
+#define DECLARE_FIELD_64(encoding, name, ...) \
+	{ \
+		unsigned long value0, value1; \
+		if (__vmx_vmread(encoding, &value0) && \
+			__vmx_vmread(encoding + 1, &value1)) { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = 0x%08lx%08lx\n", \
+					vcpu->id, (u32) encoding, prefix, value1, value0); \
+		} else { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = unavailable\n", \
+					vcpu->id, (u32) encoding, prefix); \
+		} \
+	}
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+#define DECLARE_FIELD_32(encoding, name, ...) \
+	{ \
+		unsigned long value; \
+		if (__vmx_vmread(encoding, &value)) { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = 0x%08lx\n", \
+					vcpu->id, (u32) encoding, prefix, value); \
+		} else { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = unavailable\n", \
+					vcpu->id, (u32) encoding, prefix); \
+		} \
+	}
+#ifdef __AMD64__
+#define DECLARE_FIELD_NW(encoding, name, ...) \
+	{ \
+		unsigned long value; \
+		if (__vmx_vmread(encoding, &value)) { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = 0x%016lx\n", \
+					vcpu->id, (u32) encoding, prefix, value); \
+		} else { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = unavailable\n", \
+					vcpu->id, (u32) encoding, prefix); \
+		} \
+	}
+#elif defined(__I386__)
+#define DECLARE_FIELD_NW(encoding, name, ...) \
+	{ \
+		unsigned long value; \
+		if (__vmx_vmread(encoding, &value)) { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = 0x%08lx\n", \
+					vcpu->id, (u32) encoding, prefix, value); \
+		} else { \
+			printf("CPU(0x%02x): (0x%04x) %s" #name " = unavailable\n", \
+					vcpu->id, (u32) encoding, prefix); \
+		} \
+	}
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
