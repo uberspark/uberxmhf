@@ -508,10 +508,13 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 		__vmx_vmwrite64(0x2018, guestmem_gpa2spa_page(&ctx_pair, addr));
 	}
 	if (_vmx_has_enable_ept(vcpu)) {
+		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
 		gpa_t addr = vmcs12_info->vmcs12_value.control_EPT_pointer;
-		// TODO: need to sanitize the entier EPT
+		// TODO: to support EPT for guest, need to sanitize the entier EPT
 		HALT_ON_ERRORCOND(addr == 0);
-		__vmx_vmwrite64(0x201A, guestmem_gpa2spa_page(&ctx_pair, addr));
+		addr = guestmem_gpa2spa_page(&ctx_pair, addr);
+		addr = vcpu->vmcs.control_EPT_pointer;
+		__vmx_vmwrite64(0x201A, addr);
 	}
 	if (_vmx_has_virtual_interrupt_delivery(vcpu)) {
 		__vmx_vmwrite64(0x201C, vmcs12_info->vmcs12_value.control_EOI_exit_bitmap_0);
@@ -709,8 +712,8 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
 		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
 		/* XMHF needs the guest to run unrestricted and in EPT */
-//		val |= VMX_SECPROCBASED_ENABLE_EPT;
-//		val |= VMX_SECPROCBASED_UNRESTRICTED_GUEST;
+		val |= VMX_SECPROCBASED_ENABLE_EPT;
+		val |= VMX_SECPROCBASED_UNRESTRICTED_GUEST;
 		__vmx_vmwrite32(0x401E, val);
 	}
 	if (_vmx_has_pause_loop_exiting(vcpu)) {
