@@ -66,6 +66,7 @@
 
 void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu);
 
+void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU *vcpu,
 														struct regs *r,

@@ -842,6 +842,12 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 
 	/* End VMCS translation */
 
+	/* TODO: When a problem happens, translate back to L1 guest */
+	if (0) {
+		HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void*)vcpu->vmx_vmcs_vaddr)));
+	}
+
+	/* From now on, cannot fail */
 	vcpu->vmx_nested_is_vmx_root_operation = 0;
 
 	if (vmcs12_info->launched) {
@@ -851,10 +857,7 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 		__vmx_vmentry_vmlaunch(r);
 	}
 
-	/* When a problem happens, translate back to L1 guest */
-	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void*)vcpu->vmx_vmcs_vaddr)));
-	HALT_ON_ERRORCOND(0 && "TODO frontier");
-	// TODO
+	HALT_ON_ERRORCOND(0 && "VM entry should never return");
 	return 0;
 }
 
@@ -1015,6 +1018,13 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 		vcpu->vmx_nested_entry_ctls =
 			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 	}
+}
+
+void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU *vcpu, struct regs *r)
+{
+	(void) vcpu;
+	(void) r;
+	HALT_ON_ERRORCOND(0 && "TODO frontier");
 }
 
 // TODO: also need to virtualize VMCALL
