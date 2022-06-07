@@ -71,7 +71,7 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 			&& vendor_dword3 == INTEL_STRING_DWORD3)
 		cpu_vendor = CPU_VENDOR_INTEL;
 	else{
-		printf("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
+		printf("%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!\n",
 			__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
 		HALT();
 	}
@@ -91,7 +91,7 @@ void xmhf_baseplatform_arch_initialize(void){
 		#ifndef __XMHF_VERIFICATION__
 			//TODO: plug in a BIOS data area map/model
 			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
-				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				printf("%s: ACPI RSDP not found, Halting!\n", __FUNCTION__);
 				HALT();
 			}
 		#endif //__XMHF_VERIFICATION__

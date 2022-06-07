@@ -169,7 +169,7 @@ static void _pci_enumeratebus(void){
 				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
 					break;
 
-				printf("\n	%02x:%02x.%1x -> vendor_id=%04x, device_id=%04x", b, d, f, vendor_id, device_id);
+				printf("	%02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", b, d, f, vendor_id, device_id);
 			}
 		}
 	}
@@ -258,7 +258,7 @@ void xmhf_baseplatform_arch_x86_pci_initialize(void){
   //reading PCI_CONFIG_ADDR_PORT should return with bit 31 set
 	//if system supports type-1 access
   if (inl(PCI_CONFIG_ADDR_PORT) != 0x80000000) {
-  	printf("\n%s: system does not support type-1 access. HALT!", __FUNCTION__);
+  	printf("%s: system does not support type-1 access. HALT!\n", __FUNCTION__);
 		HALT();
   }
 
@@ -266,10 +266,10 @@ void xmhf_baseplatform_arch_x86_pci_initialize(void){
   outl(tmp, PCI_CONFIG_ADDR_PORT);
 
 	//say we are good to go and enumerate the PCI bus
-	printf("\n%s: PCI type-1 access supported.", __FUNCTION__);
-	printf("\n%s: PCI bus enumeration follows:", __FUNCTION__);
+	printf("%s: PCI type-1 access supported.\n", __FUNCTION__);
+	printf("%s: PCI bus enumeration follows:\n", __FUNCTION__);
 	//_pci_enumeratebus();
-	printf("\n%s: Done with PCI bus enumeration.", __FUNCTION__);
+	printf("%s: Done with PCI bus enumeration.\n", __FUNCTION__);
 
 	return;
 }

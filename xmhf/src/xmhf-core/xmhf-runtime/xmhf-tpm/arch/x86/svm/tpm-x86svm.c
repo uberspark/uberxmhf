@@ -59,10 +59,10 @@ int xmhf_tpm_arch_x86svm_open_locality(int locality){
         //dump_locality_access_regs();
 
         if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
-            printf("\n%s: TPM successfully opened in Locality %d.", __FUNCTION__, locality);
+            printf("%s: TPM successfully opened in Locality %d.\n", __FUNCTION__, locality);
 			return 0;
         } else {
-            printf("\n%s: TPM ERROR: Locality %d could not be opened.\n", __FUNCTION__, locality);
+            printf("%s: TPM ERROR: Locality %d could not be opened.\n", __FUNCTION__, locality);
             return 1;
         }
 }

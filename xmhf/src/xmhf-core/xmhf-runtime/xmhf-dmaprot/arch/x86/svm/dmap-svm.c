@@ -135,7 +135,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
         return 0;
 
     // okay, we found a DEV capability block at index mc_caplist_nextptr
-    printf("\n%s: found DEV capability block at index %04x", __FUNCTION__, mc_caplist_nextptr);
+    printf("%s: found DEV capability block at index %04x\n", __FUNCTION__, mc_caplist_nextptr);
 
     // now obtain the PCI configuration space indices for DEV header, fn/idx
     // and data registers and store them in the SVM EAP container structure
@@ -144,9 +144,9 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
     _svm_eap.dev_data_reg = mc_caplist_nextptr + (2 * sizeof(u32));
 
     // print it out for now...
-    printf("\n%s: dev_hdr_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_hdr_reg);
-    printf("\n%s: dev_fnidx_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_fnidx_reg);
-    printf("\n%s: dev_data_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_data_reg);
+    printf("%s: dev_hdr_reg at %02x:%02x.%1x(%04x)\n", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_hdr_reg);
+    printf("%s: dev_fnidx_reg at %02x:%02x.%1x(%04x)\n", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_fnidx_reg);
+    printf("%s: dev_data_reg at %02x:%02x.%1x(%04x)\n", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_data_reg);
 
     // setup DEV
 
@@ -154,13 +154,13 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
 #ifndef __XMHF_VERIFICATION__
     _svm_eap.dev_bitmap_vaddr = dev_bitmap_vaddr;
 #endif
-    printf("\n	DEV: bitmap at v:p addr %08x:%08x", _svm_eap.dev_bitmap_vaddr,
+    printf("	DEV: bitmap at v:p addr %08x:%08x\n", _svm_eap.dev_bitmap_vaddr,
            dev_bitmap_paddr);
 
     // 1. read the DEV revision, and the number of maps and domains supported
     dev_cap.bytes = svm_eap_dev_read(DEV_CAP, 0);
 
-    printf("\n	DEV:rev=%u, n_doms=%u, n_maps=%u", dev_cap.fields.rev, dev_cap.fields.n_doms, dev_cap.fields.n_maps);
+    printf("	DEV:rev=%u, n_doms=%u, n_maps=%u\n", dev_cap.fields.rev, dev_cap.fields.n_doms, dev_cap.fields.n_maps);
 
     // 2. disable all the DEV maps. AMD manuals do not mention anything about
     // the reset state of the map registers
@@ -172,7 +172,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
 #else
     svm_eap_dev_write(DEV_MAP, 0, dev_map.bytes);
 #endif
-    printf("\n	DEV: cleared map registers.");
+    printf("	DEV: cleared map registers.\n");
 
     // 3. set the DEV_BASE_HI and DEV_BASE_LO registers of domain 0
     dev_base_hi.bytes = 0; // our DEV bitmap is within 4GB physical
@@ -183,7 +183,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
     dev_base_lo.fields.resv = 0;
     dev_base_lo.fields.base_addr = (u32)dev_bitmap_paddr >> 12;
     svm_eap_dev_write(DEV_BASE_LO, 0, dev_base_lo.bytes);
-    printf("\n	DEV: set DEV_BASE_LO and DEV_BASE_HI.");
+    printf("	DEV: set DEV_BASE_LO and DEV_BASE_HI.\n");
 
     // 4. invalidate the DEV_BASE_HIGH and DEV_BASE_LOW registers of all other
     // domains.
@@ -202,7 +202,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
         svm_eap_dev_write(DEV_BASE_LO, i, dev_base_lo.bytes);
     }
 #endif
-    printf("\n	DEV: invalidated other domains.");
+    printf("	DEV: invalidated other domains.\n");
 
     // 5. enable DEV protections
     dev_cr.fields.deven = 1;
@@ -217,7 +217,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr)
     assert(dev_cr.fields.deven == 1);
 #endif
     svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);
-    printf("\n	DEV: enabled protections.");
+    printf("	DEV: enabled protections.\n");
 
     return 1;
 }
@@ -241,7 +241,7 @@ static u32 svm_eap_early_initialize(uintptr_t protected_buffer_paddr,
 {
     u32 dev_bitmap_paddr = 0;
 
-    printf("\n%s: protected buffer, paddr=%08x, vaddr=%08x", __FUNCTION__,
+    printf("%s: protected buffer, paddr=%08x, vaddr=%08x\n", __FUNCTION__,
            protected_buffer_paddr, protected_buffer_vaddr);
 
     // sanity check: the protected buffer MUST be page aligned
@@ -279,7 +279,7 @@ static u32 svm_eap_early_initialize(uintptr_t protected_buffer_paddr,
         // Note: we dont care about other parts of the DEV bitmap except for
         // our protected buffer which is assumed to be protected...
         dev_bitmap_paddr = protected_buffer_paddr - devbitmap_bytes_before;
-        printf("\nSL:%s dev_bitmap_paddr=%08x", __FUNCTION__, dev_bitmap_paddr);
+        printf("SL:%s dev_bitmap_paddr=%08x\n", __FUNCTION__, dev_bitmap_paddr);
 
         // DEV bitmap base MUST be page aligned, however dev_bitmap_paddr
         // can violate this, so make sure we page align it and account for the
@@ -288,7 +288,7 @@ static u32 svm_eap_early_initialize(uintptr_t protected_buffer_paddr,
         {
             offset = PAGE_SIZE_4K - (dev_bitmap_paddr & 0x00000FFFUL); // offset is always less than 4K
             dev_bitmap_paddr += offset;                                // page-align dev_bitmap_paddr
-            printf("\nSL:%s dev_bitmap_paddr page-aligned to %08x", __FUNCTION__, dev_bitmap_paddr);
+            printf("SL:%s dev_bitmap_paddr page-aligned to %08x\n", __FUNCTION__, dev_bitmap_paddr);
         }
 
         // sanity check: dev_bitmap_paddr MUST be page aligned
@@ -409,7 +409,7 @@ u32 xmhf_dmaprot_arch_x86_svm_earlyinitialize(u64 protectedbuffer_paddr,
     HALT_ON_ERRORCOND(!(protectedbuffer_vaddr & 0x00000FFF));
     HALT_ON_ERRORCOND(protectedbuffer_size >= (PAGE_SIZE_4K * 2));
 
-    printf("\nSL: initializing SVM DMA protection...");
+    printf("SL: initializing SVM DMA protection...\n");
 
 #ifndef __XMHF_VERIFICATION__
     dev_bitmap_paddr = svm_eap_early_initialize(protectedbuffer_paddr, protectedbuffer_vaddr,

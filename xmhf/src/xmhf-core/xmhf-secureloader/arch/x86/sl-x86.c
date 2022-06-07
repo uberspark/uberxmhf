@@ -100,7 +100,7 @@ u64 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t run
     pdt_t xpdt;
     u64 i, default_flags;
 
-    printf("\nSL (%s): runtime_spa=%016lx, runtime_sva=%016lx, totalsize=%016lx",
+    printf("SL (%s): runtime_spa=%016lx, runtime_sva=%016lx, totalsize=%016lx\n",
          __FUNCTION__, runtime_spa, runtime_sva, totalsize);
 
     HALT_ON_ERRORCOND(runtime_spa == runtime_sva);
@@ -112,7 +112,7 @@ u64 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, spa_t runtime_spa, hva_t run
     xpdpt= hva2sla((void *)rpb->XtVmmPdptBase);
     xpdt = hva2sla((void *)rpb->XtVmmPdtsBase);
 
-    printf("\n\tpa xpml4=0x%p, xpdpt=0x%p, xpdt=0x%p", xpml4, xpdpt, xpdt);
+    printf("\tpa xpml4=0x%p, xpdpt=0x%p, xpdt=0x%p\n", xpml4, xpdpt, xpdt);
 
     /* PML4E -> PDPT */
     default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW);
@@ -157,13 +157,13 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
   u32 i;
   u64 default_flags;
 
-  printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
+  printf("SL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x\n",
          __FUNCTION__, runtime_spa, runtime_sva, totalsize);
 
   xpdpt= hva2sla((void *)rpb->XtVmmPdptBase);
   xpdt = hva2sla((void *)rpb->XtVmmPdtsBase);
 
-  printf("\n	pa xpdpt=0x%p, xpdt=0x%p", xpdpt, xpdt);
+  printf("	pa xpdpt=0x%p, xpdt=0x%p\n", xpdpt, xpdt);
 
   default_flags = (u64)(_PAGE_PRESENT);
 
@@ -213,7 +213,7 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
     print_hex("SL: Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
 
-    printf("\nSL: CR0 %08lx, CD bit %ld", read_cr0(), read_cr0() & CR0_CD);
+    printf("SL: CR0 %08lx, CD bit %ld\n", read_cr0(), read_cr0() & CR0_CD);
     hashandprint("SL: Computed Runtime SHA-1: ",
                  runtime_base_addr, runtime_len);
 
@@ -252,17 +252,17 @@ void xmhf_sl_arch_sanitize_post_launch(void){
 
         // sl.c unity-maps 0xfed00000 for 2M so these should work fine
         txt_heap = get_txt_heap();
-		printf("\nSL: txt_heap = 0x%08lx", (uintptr_t)txt_heap);
+		printf("SL: txt_heap = 0x%08lx\n", (uintptr_t)txt_heap);
         /// compensate for special DS here in SL
         os_mle_data = get_os_mle_data_start((txt_heap_t*)((uintptr_t)txt_heap - sl_baseaddr));
-        printf("\nSL: os_mle_data = 0x%08lx", (uintptr_t)os_mle_data);
+        printf("SL: os_mle_data = 0x%08lx\n", (uintptr_t)os_mle_data);
         // restore pre-SENTER MTRRs that were overwritten for SINIT launch
         if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
-            printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
+            printf("SECURITY FAILURE: validate_mtrrs() failed.\n");
             HALT();
         }
 
-        printf("\nSL: Restoring mtrrs...");
+        printf("SL: Restoring mtrrs...\n");
 
         restore_mtrrs(&(os_mle_data->saved_mtrr_state));
     }
@@ -299,17 +299,17 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 			memregionbase_paddr = sl_baseaddr;
 			memregion_size = (runtime_size + PAGE_SIZE_2M);
 
-			printf("\nSL: Initializing DMA protections...");
+			printf("SL: Initializing DMA protections...\n");
 
 
 			if(!xmhf_dmaprot_earlyinitialize(protectedbuffer_paddr,
 				protectedbuffer_vaddr, protectedbuffer_size,
 				memregionbase_paddr, memregion_size)){
-				printf("\nSL: Fatal, could not initialize DMA protections. Halting!");
+				printf("SL: Fatal, could not initialize DMA protections. Halting!\n");
 				HALT();
 			}
 
-			printf("\nSL: Initialized DMA protections successfully");
+			printf("SL: Initialized DMA protections successfully\n");
 
 		}
 
@@ -349,18 +349,18 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 		t->limit0_15=0x67;
-	printf("\nSL: setup runtime TSS.");
+	printf("SL: setup runtime TSS.\n");
 
 	#ifndef __XMHF_VERIFICATION__
 	//setup paging structures for runtime
 	ptba=xmhf_sl_arch_x86_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP_2M(rpb->XtVmmRuntimeSize));
 	#endif
 
-	printf("\nSL: setup runtime paging structures.");
+	printf("SL: setup runtime paging structures.\n");
 
-	printf("\nTransferring control to runtime");
-	//printf("\nGDT=%08x, IDT=%08x, EntryPoint=%08x", rpb->XtVmmGdt, rpb->XtVmmIdt, rpb->XtVmmEntryPoint);
-	//printf("\nTop-of-stack=%08x, CR3=%08x", (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
+	printf("Transferring control to runtime\n");
+	//printf("GDT=%08x, IDT=%08x, EntryPoint=%08x\n", rpb->XtVmmGdt, rpb->XtVmmIdt, rpb->XtVmmEntryPoint);
+	//printf("Top-of-stack=%08x, CR3=%08x\n", (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 
 
 	#ifndef __XMHF_VERIFICATION__

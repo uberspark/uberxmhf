@@ -77,22 +77,22 @@ static void vmx_eap_zap(void)
     // [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
-    printf("\n%s: RSDP at %08x", __FUNCTION__, status);
+    printf("%s: RSDP at %08x\n", __FUNCTION__, status);
 
     // [Superymk] Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
     if (rsdp.revision == 0) // ACPI v1
     {
-        printf("\n%s: ACPI v1", __FUNCTION__);
+        printf("%s: ACPI v1\n", __FUNCTION__);
         rsdt_xsdt_spaddr = rsdp.rsdtaddress;
     }
     else if (rsdp.revision == 0x2) // ACPI v2
     {
-        printf("\n%s: ACPI v2", __FUNCTION__);
+        printf("%s: ACPI v2\n", __FUNCTION__);
         rsdt_xsdt_spaddr = (spa_t)rsdp.xsdtaddress;
     }
     else // Unrecognized ACPI version
     {
-        printf("\n%s: ACPI unsupported version!", __FUNCTION__);
+        printf("%s: ACPI unsupported version!\n", __FUNCTION__);
         return;
     }
 
@@ -101,7 +101,7 @@ static void vmx_eap_zap(void)
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
 
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
-    printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes",
+    printf("%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
            __FUNCTION__, rsdt_xsdt_vaddr, rsdt.length, sizeof(ACPI_RSDT));
 
     // get the RSDT entry list
@@ -109,7 +109,7 @@ static void vmx_eap_zap(void)
     HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)),
                                      sizeof(u32) * num_rsdtentries);
-    printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
+    printf("%s: RSDT entry list at %08x, len=%u\n", __FUNCTION__,
            (rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)), num_rsdtentries);
 
     // find the VT-d DMAR table in the list (if any)
@@ -128,11 +128,11 @@ static void vmx_eap_zap(void)
         return;
 
     dmaraddrphys = rsdtentries[i]; // DMAR table physical memory address;
-    printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
+    printf("%s: DMAR at %08x\n", __FUNCTION__, dmaraddrphys);
 
     i = 0;
     remappingstructuresaddrphys = dmaraddrphys + sizeof(VTD_DMAR);
-    printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
+    printf("%s: remapping structures at %08x\n", __FUNCTION__, remappingstructuresaddrphys);
 
     // zap VT-d presence in ACPI table...
     // TODO: we need to be a little elegant here. eventually need to setup
@@ -140,7 +140,7 @@ static void vmx_eap_zap(void)
     xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);
 
     // success
-    printf("\n%s: success, leaving...", __FUNCTION__);
+    printf("%s: success, leaving...\n", __FUNCTION__);
 }
 #endif /* defined(__DRT__) && !defined(__DMAP__) */
 
@@ -157,32 +157,32 @@ void xmhf_runtime_entry(void){
 
 	//setup debugging
 	xmhf_debug_init((char *)&rpb->RtmUartConfig);
-	printf("\nruntime initializing...");
+	printf("runtime initializing...\n");
 
   // initialize memory management
 	xmhf_mm_init();
-	printf("\nmemory management initialized");
+	printf("memory management initialized\n");
 
   //initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
   //[debug] dump E820 and MP table
  	#ifndef __XMHF_VERIFICATION__
- 	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
+ 	printf("Number of E820 entries = %u\n", rpb->XtVmmE820NumEntries);
 	{
 		int i;
 		for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
-		printf("\n0x%08x%08x, size=0x%08x%08x (%u)",
+		printf("0x%08x%08x, size=0x%08x%08x (%u)\n",
           g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
           g_e820map[i].length_high, g_e820map[i].length_low,
           g_e820map[i].type);
 		}
   	}
-	printf("\nNumber of MP entries = %u", rpb->XtVmmMPCpuinfoNumEntries);
+	printf("Number of MP entries = %u\n", rpb->XtVmmMPCpuinfoNumEntries);
 	{
 		int i;
 		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
-			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
+			printf("CPU #%u: bsp=%u, lapic_id=0x%02x\n", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
 	}
 	#endif //__XMHF_VERIFICATION__
 
@@ -207,19 +207,19 @@ void xmhf_runtime_entry(void){
 
                 xmhf_iommu_init();
 
-				printf("\nRuntime: Re-initializing DMA protection (physical address space size:0x%llX)...", DMAPROT_PHY_ADDR_SPACE_SIZE);
+				printf("Runtime: Re-initializing DMA protection (physical address space size:0x%llX)...\n", DMAPROT_PHY_ADDR_SPACE_SIZE);
 				if(!xmhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
-					printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
+					printf("Runtime: Unable to re-initialize DMA protection. HALT!\n");
 					HALT();
 				}
 
 				// Protect SL and runtime memory regions
 				xmhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
-				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
+				printf("Runtime: Protected SL+Runtime (%08lx-%08x) from DMA.\n", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 
                 // Enable DMA protection
                 if(!xmhf_dmaprot_enable(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
-					printf("\nRuntime: Unable to enable DMA protection. HALT!");
+					printf("Runtime: Unable to enable DMA protection. HALT!\n");
 					HALT();
 				}
 
@@ -241,7 +241,7 @@ void xmhf_runtime_entry(void){
 	//initialize base platform with SMP
 	xmhf_baseplatform_smpinitialize();
 
-	printf("\nRuntime: We should NEVER get here!");
+	printf("Runtime: We should NEVER get here!\n");
 	HALT_ON_ERRORCOND(0);
 }
 
@@ -280,7 +280,7 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
     //call app main
     if(xmhf_app_main(vcpu, &appParamBlock)){
-        printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
+        printf("CPU(0x%02x): EMHF app. failed to initialize. HALT!\n", vcpu->id);
         HALT();
     }
   }
@@ -295,16 +295,16 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //TODO: conceal g_midtable_numentries behind interface
   //xmhf_baseplatform_getnumberofcpus
   if(vcpu->isbsp && (g_midtable_numentries > 1)){
-		printf("\nCPU(0x%02x): Waiting for all cores to cycle through appmain...", vcpu->id);
+		printf("CPU(0x%02x): Waiting for all cores to cycle through appmain...\n", vcpu->id);
 		while(g_appmain_success_counter < g_midtable_numentries);
-		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
+		printf("CPU(0x%02x): All cores have successfully been through appmain.\n", vcpu->id);
   }
 #endif
 
   //late initialization is still WiP and we can get only this far
   //currently
 	if(!isEarlyInit){
-		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);
+		printf("CPU(0x%02x): Late-initialization, WiP, HALT!\n", vcpu->id);
 		HALT();
 	}
 
@@ -320,10 +320,10 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 #endif
 
   //start partition (guest)
-  printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
+  printf("%s[%02x]: starting partition...\n", __FUNCTION__, vcpu->id);
   xmhf_partition_start(vcpu);
 
-  printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
+  printf("CPU(0x%02x): FATAL, should not be here. HALTING!\n", vcpu->id);
   HALT();
 }
 

@@ -179,7 +179,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   	#endif
 
   	if( !(edx & (u32)(1 << 12)) ){
-  		printf("\nCPU(0x%02x): CPU does not support MTRRs!", vcpu->id);
+  		printf("CPU(0x%02x): CPU does not support MTRRs!\n", vcpu->id);
   		HALT();
   	}
 
@@ -187,7 +187,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   	rdmsr(IA32_MTRRCAP, &eax, &edx);
 	num_vmtrrs = (u8)eax;
 	vcpu->vmx_guestmtrrmsrs.var_count = num_vmtrrs;
-	printf("\nIA32_MTRRCAP: VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
+	printf("IA32_MTRRCAP: VCNT=%u, FIX=%u, WC=%u, SMRR=%u\n",
 			num_vmtrrs, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
 			((eax & (1 << 11)) >> 11));
 	//sanity check that fixed MTRRs are supported
@@ -296,7 +296,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 		} else if (prev_type == MTRR_TYPE_WT && cur_type == MTRR_TYPE_WB) {
 			prev_type = MTRR_TYPE_WT;
 		} else {
-			printf("\nConflicting MTRR types (%u, %u), HALT!", prev_type, cur_type);
+			printf("Conflicting MTRR types (%u, %u), HALT!\n", prev_type, cur_type);
 			HALT();
 		}
 	}
@@ -414,7 +414,7 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_read(VCPU *vcpu, u32 msr, u64 *val) {
 				return 0;
 			}
 		}
-		printf("\nCannot find MTRR, the caller (XMHF code) is wrong.");
+		printf("Cannot find MTRR, the caller (XMHF code) is wrong.\n");
 		HALT();
 		/* Placate compiler */
 		return 1;
@@ -432,7 +432,7 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 	{
 		u64 oldval;
 		HALT_ON_ERRORCOND(xmhf_memprot_arch_x86vmx_mtrr_read(vcpu, msr, &oldval) == 0);
-		printf("\nCPU(0x%02x): WRMSR (MTRR) 0x%08x 0x%016llx (old = 0x%016llx)",
+		printf("CPU(0x%02x): WRMSR (MTRR) 0x%08x 0x%016llx (old = 0x%016llx)\n",
 				vcpu->id, msr, val, oldval);
 	}
 	/* Check whether hypapp allows modifying MTRR */
@@ -440,7 +440,7 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 	hypapp_status = xmhf_app_handlemtrr(vcpu, msr, val);
 	xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 	if (hypapp_status != APP_SUCCESS) {
-		printf("\nCPU(0x%02x): Hypapp does not allow changing MTRRs. Halt!",
+		printf("CPU(0x%02x): Hypapp does not allow changing MTRRs. Halt!\n",
 				vcpu->id);
 		HALT();
 	}
@@ -509,7 +509,7 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 			}
 		}
 		if (!found) {
-			printf("\nCannot find MTRR, the caller (XMHF code) is wrong.");
+			printf("Cannot find MTRR, the caller (XMHF code) is wrong.\n");
 			HALT();
 		}
 		/* If MTRRs / fixed MTRRs are not enabled, no need to update EPT */
@@ -526,7 +526,7 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 		 * changed and the value before and after change. However, this needs a
 		 * complicated logic.
 		 */
-		printf("\nCPU(0x%02x): Update EPT memory types due to MTRR", vcpu->id);
+		printf("CPU(0x%02x): Update EPT memory types due to MTRR\n", vcpu->id);
 		_vmx_updateEPT_memtype(vcpu, 0, MAX_PHYS_ADDR);
 		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
 	}

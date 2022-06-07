@@ -74,7 +74,7 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 			HALT();
 		}else{	//CPU_VENDOR_INTEL
 			xmhf_smpguest_arch_x86vmx_initialize(vcpu, 0);
-			printf("\nCPU(0x%02x): x86vmx SMP but only one CPU", vcpu->id);
+			printf("CPU(0x%02x): x86vmx SMP but only one CPU\n", vcpu->id);
 		}
 		return;
 	}
@@ -83,17 +83,17 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 	if(vcpu->isbsp){
 		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 			xmhf_smpguest_arch_x86svm_initialize(vcpu);
-			printf("\nCPU(0x%02x): setup x86svm SMP guest capabilities", vcpu->id);
+			printf("CPU(0x%02x): setup x86svm SMP guest capabilities\n", vcpu->id);
 		}else{	//CPU_VENDOR_INTEL
 			xmhf_smpguest_arch_x86vmx_initialize(vcpu, 1);
-			printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
+			printf("CPU(0x%02x): setup x86vmx SMP guest capabilities\n", vcpu->id);
 		}
 	}else{ //we are an AP, so just wait for SIPI signal
-			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
+			printf("CPU(0x%02x): AP, waiting for SIPI signal...\n", vcpu->id);
 			#ifndef __XMHF_VERIFICATION__
 			while(!vcpu->sipireceived);
 			#endif
-			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
+			printf("CPU(0x%02x): SIPI signal received, vector=0x%02x\n", vcpu->id, vcpu->sipivector);
 
 			//g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
 			//	 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
@@ -107,7 +107,7 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 		return;
 
 	//we are an AP, so just lockup
-	printf("\nCPU(0x%02x): AP, locked!", vcpu->id);
+	printf("CPU(0x%02x): AP, locked!\n", vcpu->id);
 	while(1);
 #endif
 

@@ -260,22 +260,22 @@ static u32 vmx_eap_initialize(
     //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
-    printf("\n%s: RSDP at %lx", __FUNCTION__, status);
+    printf("%s: RSDP at %lx\n", __FUNCTION__, status);
 
     // [Superymk] Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
     if (rsdp.revision == 0) // ACPI v1
     {
-        printf("\n%s: ACPI v1", __FUNCTION__);
+        printf("%s: ACPI v1\n", __FUNCTION__);
         rsdt_xsdt_spaddr = rsdp.rsdtaddress;
     }
     else if (rsdp.revision == 0x2) // ACPI v2
     {
-        printf("\n%s: ACPI v2", __FUNCTION__);
+        printf("%s: ACPI v2\n", __FUNCTION__);
         rsdt_xsdt_spaddr = (spa_t)rsdp.xsdtaddress;
     }
     else // Unrecognized ACPI version
     {
-        printf("\n%s: ACPI unsupported version!", __FUNCTION__);
+        printf("%s: ACPI unsupported version!\n", __FUNCTION__);
         return 0;
     }
 
@@ -284,7 +284,7 @@ static u32 vmx_eap_initialize(
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
 
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
-    printf("\n%s: RSDT at %lx, len=%u bytes, hdrlen=%u bytes",
+    printf("%s: RSDT at %lx, len=%u bytes, hdrlen=%u bytes\n",
            __FUNCTION__, rsdt_xsdt_vaddr, rsdt.length, sizeof(ACPI_RSDT));
 
     // get the RSDT entry list
@@ -292,7 +292,7 @@ static u32 vmx_eap_initialize(
     HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)),
                                      sizeof(rsdtentries[0]) * num_rsdtentries);
-    printf("\n%s: RSDT entry list at %lx, len=%u", __FUNCTION__,
+    printf("%s: RSDT entry list at %lx, len=%u\n", __FUNCTION__,
            (rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)), num_rsdtentries);
 
     // find the VT-d DMAR table in the list (if any)
@@ -311,11 +311,11 @@ static u32 vmx_eap_initialize(
         return 0;
 
     dmaraddrphys = rsdtentries[i]; // DMAR table physical memory address;
-    printf("\n%s: DMAR at %llx", __FUNCTION__, dmaraddrphys);
+    printf("%s: DMAR at %llx\n", __FUNCTION__, dmaraddrphys);
 
     i = 0;
     remappingstructuresaddrphys = dmaraddrphys + sizeof(VTD_DMAR);
-    printf("\n%s: remapping structures at %llx", __FUNCTION__, remappingstructuresaddrphys);
+    printf("%s: remapping structures at %llx\n", __FUNCTION__, remappingstructuresaddrphys);
 
     while (i < (dmar.length - sizeof(VTD_DMAR)))
     {
@@ -328,7 +328,7 @@ static u32 vmx_eap_initialize(
         switch (type)
         {
         case 0: // DRHD
-            printf("\nDRHD at %lx, len=%u bytes", (remappingstructures_vaddr + i), length);
+            printf("DRHD at %lx, len=%u bytes\n", (remappingstructures_vaddr + i), length);
             HALT_ON_ERRORCOND(vtd_num_drhd < VTD_MAX_DRHD);
             xmhf_baseplatform_arch_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructures_vaddr + i), length);
             vtd_num_drhd++;
@@ -341,27 +341,27 @@ static u32 vmx_eap_initialize(
         }
     }
 
-    printf("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
+    printf("%s: total DRHDs detected= %u units\n", __FUNCTION__, vtd_num_drhd);
 
     // be a little verbose about what we found
-    printf("\n%s: DMAR Devices:", __FUNCTION__);
+    printf("%s: DMAR Devices:\n", __FUNCTION__);
     for (i = 0; i < vtd_num_drhd; i++)
     {
         VTD_CAP_REG cap;
         VTD_ECAP_REG ecap;
-        printf("\n	Device %u on PCI seg %04x; base=0x%016llx", i,
+        printf("	Device %u on PCI seg %04x; base=0x%016llx\n", i,
                vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
         _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
-        printf("\n		cap=0x%016llx", (u64)cap.value);
+        printf("		cap=0x%016llx\n", (u64)cap.value);
         _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
-        printf("\n		ecap=0x%016llx", (u64)ecap.value);
+        printf("		ecap=0x%016llx\n", (u64)ecap.value);
     }
 
     // Verify VT-d capabilities
     status2 = _vtd_verify_cap(vtd_drhd, vtd_num_drhd, &g_vtd_cap);
     if (!status2)
     {
-        printf("\n%s: verify VT-d units' capabilities error! Halting!", __FUNCTION__);
+        printf("%s: verify VT-d units' capabilities error! Halting!\n", __FUNCTION__);
         HALT();
     }
 
@@ -375,7 +375,7 @@ static u32 vmx_eap_initialize(
         status2 = xmhf_get_machine_paddr_range(&machine_low_spa, &machine_high_spa);
         if (!status2)
         {
-            printf("\n%s: Get system physical address range error! Halting!", __FUNCTION__);
+            printf("%s: Get system physical address range error! Halting!\n", __FUNCTION__);
             HALT();
         }
 
@@ -383,7 +383,7 @@ static u32 vmx_eap_initialize(
         phy_space_size = machine_high_spa - machine_low_spa;
         if(phy_space_size > DMAPROT_PHY_ADDR_SPACE_SIZE)
         {
-            printf("\n%s: Too large system physical address! Found space size:%llX. Halting!", __FUNCTION__, phy_space_size);
+            printf("%s: Too large system physical address! Found space size:%llX. Halting!\n", __FUNCTION__, phy_space_size);
             HALT();
         }
 
@@ -391,11 +391,11 @@ static u32 vmx_eap_initialize(
                                        vtd_pdts_paddr, vtd_pdts_vaddr, vtd_pts_paddr, vtd_pts_vaddr, machine_low_spa, machine_high_spa);
         if (!status2)
         {
-            printf("\n%s: setup VT-d page tables (pdpt=%llx, pdts=%llx, pts=%llx) error! Halting!", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
+            printf("%s: setup VT-d page tables (pdpt=%llx, pdts=%llx, pts=%llx) error! Halting!\n", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
             HALT();
         }
 
-        printf("\n%s: setup VT-d page tables (pdpt=%llx, pdts=%llx, pts=%llx).", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
+        printf("%s: setup VT-d page tables (pdpt=%llx, pdts=%llx, pts=%llx).\n", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
     }
 
     // initialize VT-d RET and CET
@@ -403,11 +403,11 @@ static u32 vmx_eap_initialize(
         status2 = _vtd_setupRETCET(&g_vtd_cap, vtd_pml4t_paddr, vtd_pdpt_paddr, vtd_ret_paddr, vtd_ret_vaddr, vtd_cet_paddr, vtd_cet_vaddr);
         if (!status2)
         {
-            printf("\n%s: setup VT-d RET (%llx) and CET (%llx) error! Halting!", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+            printf("%s: setup VT-d RET (%llx) and CET (%llx) error! Halting!\n", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
             HALT();
         }
 
-        printf("\n%s: setup VT-d RET (%llx) and CET (%llx).", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+        printf("%s: setup VT-d RET (%llx) and CET (%llx).\n", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
     }
 
 #endif //__XMHF_VERIFICATION__
@@ -418,7 +418,7 @@ static u32 vmx_eap_initialize(
     xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);
 
     // success
-    printf("\n%s: success, leaving...", __FUNCTION__);
+    printf("%s: success, leaving...\n", __FUNCTION__);
 
     return 1;
 }
@@ -471,7 +471,7 @@ static void _vtd_invalidatecaches(void)
         // if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
         if (ccmd.bits.caig != 0x1)
         {
-            printf("\n	Invalidatation of CET failed. Halting! (%u)", ccmd.bits.caig);
+            printf("	Invalidatation of CET failed. Halting! (%u)\n", ccmd.bits.caig);
             HALT();
         }
 
@@ -497,7 +497,7 @@ static void _vtd_invalidatecaches(void)
         // if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
         if (iotlb.bits.iaig != 0x1)
         {
-            printf("\n	Invalidation of IOTLB failed. Halting! (%u)", iotlb.bits.iaig);
+            printf("	Invalidation of IOTLB failed. Halting! (%u)\n", iotlb.bits.iaig);
             HALT();
         }
     }
@@ -537,11 +537,11 @@ u32 xmhf_dmaprot_arch_x86_vmx_enable(spa_t protectedbuffer_paddr,
     // initialize all DRHD units
     for (i = 0; i < vtd_num_drhd; i++)
     {
-        printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+        printf("%s: initializing DRHD unit %u...\n", __FUNCTION__, i);
         _vtd_drhd_initialize(&vtd_drhd[i], vmx_eap_vtd_ret_paddr);
     }
 #else
-    printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+    printf("%s: initializing DRHD unit %u...\n", __FUNCTION__, i);
     _vtd_drhd_initialize(&vtd_drhd[0], vmx_eap_vtd_ret_paddr);
 #endif
 
@@ -549,7 +549,7 @@ u32 xmhf_dmaprot_arch_x86_vmx_enable(spa_t protectedbuffer_paddr,
     _vtd_invalidatecaches();
 
     // success
-    printf("\n%s: success, leaving...", __FUNCTION__);
+    printf("%s: success, leaving...\n", __FUNCTION__);
 
     return 1;
 }
