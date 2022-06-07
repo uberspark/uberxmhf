@@ -115,7 +115,7 @@ static void _vmx_initVT(VCPU *vcpu){
   {
     #ifndef __XMHF_VERIFICATION__
     if (get_cpu_vendor_or_die() != CPU_VENDOR_INTEL) {
-      printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", vcpu->id);
+      printf("CPU(0x%02x) is not an Intel CPU. Halting!\n", vcpu->id);
       HALT();
     }
     #endif
@@ -176,7 +176,7 @@ static void _vmx_initVT(VCPU *vcpu){
 		#endif
 
 		if(vcpu->vmx_guest_unrestricted)
-			printf("\nCPU(0x%02x): UNRESTRICTED-GUEST supported.", vcpu->id);
+			printf("CPU(0x%02x): UNRESTRICTED-GUEST supported.\n", vcpu->id);
   }
 
   //step-4: enable VMX by setting CR4
@@ -193,7 +193,7 @@ static void _vmx_initVT(VCPU *vcpu){
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 	#endif
-  printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
+  printf("CPU(0x%02x): enabled VMX\n", vcpu->id);
 
 	  //step-5:enter VMX root operation using VMXON
 	  {
@@ -237,11 +237,11 @@ static void _vmx_initVT(VCPU *vcpu){
 			#endif
 
 	    if(!retval){
-	      printf("\nCPU(0x%02x): Fatal, unable to enter VMX root operation", vcpu->id);
+	      printf("CPU(0x%02x): Fatal, unable to enter VMX root operation\n", vcpu->id);
 	      HALT();
 	    }
 
-	    printf("\nCPU(0x%02x): Entered VMX root operation", vcpu->id);
+	    printf("CPU(0x%02x): Entered VMX root operation\n", vcpu->id);
 	  }
 
 }
@@ -258,7 +258,7 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 		/* 32-bit CS:IP for IVT INT 15 handler */
 		volatile u16 *ivt_int15 = (volatile u16 *)(0x54);
 
-		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
+		printf("CPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x\n", vcpu->id,
 			ivt_int15[1], ivt_int15[0]);
 
 		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for the
@@ -468,7 +468,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_RSP = 0x0;
 	//RIP
 	if(vcpu->isbsp){
-		printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
+		printf("BSP(0x%02x): copying boot-module to boot guest\n", vcpu->id);
 		#ifndef __XMHF_VERIFICATION__
 		memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
 		#endif
@@ -580,10 +580,10 @@ static void _vmx_initVMCS(VCPU *vcpu){
 static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   //clear VMCS
   if(!__vmx_vmclear((u64)vmcs_phys_addr)){
-    printf("\nCPU(0x%02x): VMCLEAR failed, HALT!", vcpu->id);
+    printf("CPU(0x%02x): VMCLEAR failed, HALT!\n", vcpu->id);
     HALT();
   }
-  printf("\nCPU(0x%02x): VMCLEAR success.", vcpu->id);
+  printf("CPU(0x%02x): VMCLEAR success.\n", vcpu->id);
 
 
   //set VMCS revision id
@@ -591,14 +591,14 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 
   //load VMPTR
   if(!__vmx_vmptrld((u64)vmcs_phys_addr)){
-    printf("\nCPU(0x%02x): VMPTRLD failed, HALT!", vcpu->id);
+    printf("CPU(0x%02x): VMPTRLD failed, HALT!\n", vcpu->id);
     HALT();
   }
-  printf("\nCPU(0x%02x): VMPTRLD success.", vcpu->id);
+  printf("CPU(0x%02x): VMPTRLD success.\n", vcpu->id);
 
   //put VMCS to CPU
   xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
-  printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
+  printf("CPU(0x%02x): VMWRITEs success.\n", vcpu->id);
   HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer == 0xFFFFFFFFFFFFFFFFULL );
 
   {
@@ -636,7 +636,7 @@ void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	if(vcpu->isbsp){
-		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook for UG mode...", vcpu->id);
+		printf("CPU(0x%02x, BSP): initializing INT 15 hook for UG mode...\n", vcpu->id);
 		_vmx_int15_initializehook(vcpu);
 	}
 
@@ -684,23 +684,23 @@ void __vmx_vmentry_fail_callback(ulong_t is_resume, ulong_t valid)
 	VCPU *vcpu = _svm_and_vmx_getvcpu();
 	switch (valid) {
 	case 0:
-		printf("\nCPU(0x%02x): %s error: VMCS pointer invalid? HALT!",
+		printf("CPU(0x%02x): %s error: VMCS pointer invalid? HALT!\n",
 				vcpu->id, inst_name);
 		break;
 	case 1:
 		{
 			unsigned long code;
 			HALT_ON_ERRORCOND(__vmx_vmread(0x4400, &code));
-			printf("\nCPU(0x%02x): %s error; code=0x%lx.", vcpu->id, inst_name,
+			printf("CPU(0x%02x): %s error; code=0x%lx.\n", vcpu->id, inst_name,
 					code);
 		}
 		xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 		xmhf_baseplatform_arch_x86vmx_dump_vcpu(vcpu);
-		printf("\nCPU(0x%02x): HALT!", vcpu->id);
+		printf("CPU(0x%02x): HALT!\n", vcpu->id);
 		break;
 	default:
-		printf("\nCPU(0x%02x): %s error: neither VMfailInvalid nor VMfailValid?"
-				" HALT!", vcpu->id, inst_name);
+		printf("CPU(0x%02x): %s error: neither VMfailInvalid nor VMfailValid?"
+				" HALT!\n", vcpu->id, inst_name);
 		break;
 	}
 	HALT();

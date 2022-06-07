@@ -58,25 +58,25 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
   u32 npt_current_asid=ASID_GUEST_KERNEL;
   VCPU *vcpu;
 
-  printf("\n%s: g_cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
+  printf("%s: g_cpustacks range 0x%08x-0x%08x in 0x%08x chunks\n",
     __FUNCTION__, (hva_t)g_cpustacks, (hva_t)g_cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
         RUNTIME_STACK_SIZE);
-  printf("\n%s: g_vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
+  printf("%s: g_vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks\n",
     __FUNCTION__, (hva_t)g_vcpubuffers, (hva_t)g_vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
         SIZE_STRUCT_VCPU);
-  printf("\n%s: g_svm_hsave_buffers range 0x%08x-0x%08x in 0x%08x chunks",
+  printf("%s: g_svm_hsave_buffers range 0x%08x-0x%08x in 0x%08x chunks\n",
     __FUNCTION__, (hva_t)g_svm_hsave_buffers, (hva_t)g_svm_hsave_buffers + (8192 * MAX_VCPU_ENTRIES),
         8192);
-  printf("\n%s: g_svm_vmcb_buffers range 0x%08x-0x%08x in 0x%08x chunks",
+  printf("%s: g_svm_vmcb_buffers range 0x%08x-0x%08x in 0x%08x chunks\n",
     __FUNCTION__, (hva_t)g_svm_vmcb_buffers, (hva_t)g_svm_vmcb_buffers + (8192 * MAX_VCPU_ENTRIES),
         8192);
-  printf("\n%s: g_svm_npt_pdpt_buffers range 0x%08x-0x%08x in 0x%08x chunks",
+  printf("%s: g_svm_npt_pdpt_buffers range 0x%08x-0x%08x in 0x%08x chunks\n",
     __FUNCTION__, (hva_t)g_svm_npt_pdpt_buffers, (hva_t)g_svm_npt_pdpt_buffers + (4096 * MAX_VCPU_ENTRIES),
         4096);
-  printf("\n%s: g_svm_npt_pdts_buffers range 0x%08x-0x%08x in 0x%08x chunks",
+  printf("%s: g_svm_npt_pdts_buffers range 0x%08x-0x%08x in 0x%08x chunks\n",
     __FUNCTION__, (hva_t)g_svm_npt_pdts_buffers, (hva_t)g_svm_npt_pdts_buffers + (16384 * MAX_VCPU_ENTRIES),
         16384);
-  printf("\n%s: g_svm_npt_pts_buffers range 0x%08x-0x%08x in 0x%08x chunks",
+  printf("%s: g_svm_npt_pts_buffers range 0x%08x-0x%08x in 0x%08x chunks\n",
     __FUNCTION__, (hva_t)g_svm_npt_pts_buffers, (hva_t)g_svm_npt_pts_buffers + ((2048*4096) * MAX_VCPU_ENTRIES),
         (2048*4096));
 
@@ -123,15 +123,15 @@ void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
 
     g_midtable[i].vcpu_vaddr_ptr = (hva_t)vcpu;
 #ifdef __AMD64__
-    printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, rsp=0x%16lx", i, g_midtable[i].vcpu_vaddr_ptr,
+    printf("CPU #%u: vcpu_vaddr_ptr=0x%08x, rsp=0x%16lx\n", i, g_midtable[i].vcpu_vaddr_ptr,
       vcpu->rsp);
 #elif defined(__I386__)
-    printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, g_midtable[i].vcpu_vaddr_ptr,
+    printf("CPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x\n", i, g_midtable[i].vcpu_vaddr_ptr,
       vcpu->esp);
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
-    printf("\n  hsave_vaddr_ptr=0x%08x, vmcb_vaddr_ptr=0x%08x", vcpu->hsave_vaddr_ptr,
+    printf("  hsave_vaddr_ptr=0x%08x, vmcb_vaddr_ptr=0x%08x\n", vcpu->hsave_vaddr_ptr,
           vcpu->vmcb_vaddr_ptr);
   }
 }
@@ -151,7 +151,7 @@ void xmhf_baseplatform_arch_x86svm_wakeupAPs(void){
 
 	//step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
 	//MP protocol. Use the APIC for IPI purposes.
-  printf("\nBSP: Using APIC to awaken APs...");
+  printf("BSP: Using APIC to awaken APs...\n");
   xmhf_baseplatform_arch_x86_wakeupAPs();
-  printf("\nBSP: APs should be awake.");
+  printf("BSP: APs should be awake.\n");
 }

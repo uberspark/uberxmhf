@@ -71,9 +71,9 @@ VCPU *_svm_and_vmx_getvcpu(void){
     eax &= (u32)0xFFFFF000UL;
     lapic_reg = (u32 *)((uintptr_t)eax + (uintptr_t)LAPIC_ID);
     lapic_id = *lapic_reg;
-    //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
+    //printf("%s: lapic base=0x%08x, id reg=0x%08x\n", __FUNCTION__, eax, lapic_id);
     lapic_id = lapic_id >> 24;
-    //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
+    //printf("%s: lapic_id of core=0x%02x\n", __FUNCTION__, lapic_id);
   }
 
   for(i=0; i < (int)g_midtable_numentries; i++){
@@ -81,7 +81,7 @@ VCPU *_svm_and_vmx_getvcpu(void){
         return( (VCPU *)g_midtable[i].vcpu_vaddr_ptr );
   }
 
-  printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
+  printf("%s: fatal, unable to retrieve vcpu for id=0x%02x\n", __FUNCTION__, lapic_id);
   HALT(); return NULL; // will never return presently
 }
 
@@ -90,7 +90,7 @@ void xmhf_xcphandler_arch_initialize(void){
     uintptr_t *pexceptionstubs;
     uintptr_t i;
 
-    printf("\n%s: setting up runtime IDT...", __FUNCTION__);
+    printf("%s: setting up runtime IDT...\n", __FUNCTION__);
 
     pexceptionstubs = (uintptr_t *)&xmhf_xcphandler_exceptionstubs;
 
@@ -110,7 +110,7 @@ void xmhf_xcphandler_arch_initialize(void){
                                 // present=1, DPL=00b, system=0, type=1110b
     }
 
-    printf("\n%s: IDT setup done.", __FUNCTION__);
+    printf("%s: IDT setup done.\n", __FUNCTION__);
 }
 
 
@@ -195,7 +195,7 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
             if (found) {
                 /* Found in xcph table; Modify EIP on stack and iret */
-                printf("\nFound in xcph table");
+                printf("Found in xcph table\n");
 #ifdef __AMD64__
                 ((uintptr_t *)(r->rsp))[0] = found[2];
 #elif defined(__I386__)
@@ -207,66 +207,66 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
             }
 
             /* Print exception and halt */
-            printf("\n[%02x]: unhandled exception %d (0x%x), halting!",
+            printf("[%02x]: unhandled exception %d (0x%x), halting!\n",
                     vcpu->id, vector, vector);
             if (error_code_available) {
 #ifdef __AMD64__
-                printf("\n[%02x]: error code: 0x%016lx", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
+                printf("[%02x]: error code: 0x%016lx\n", vcpu->id, ((uintptr_t *)(r->rsp))[-1]);
 #elif defined(__I386__)
-                printf("\n[%02x]: error code: 0x%08lx", vcpu->id, ((uintptr_t *)(r->esp))[-1]);
+                printf("[%02x]: error code: 0x%08lx\n", vcpu->id, ((uintptr_t *)(r->esp))[-1]);
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
             }
-            printf("\n[%02x]: state dump follows...", vcpu->id);
+            printf("[%02x]: state dump follows...\n", vcpu->id);
             // things to dump
 #ifdef __AMD64__
-            printf("\n[%02x] CS:RIP 0x%04x:0x%016lx with RFLAGS=0x%016lx", vcpu->id,
+            printf("[%02x] CS:RIP 0x%04x:0x%016lx with RFLAGS=0x%016lx\n", vcpu->id,
                 (u16)exception_cs, exception_rip, exception_rflags);
-            printf("\n[%02x]: VCPU at 0x%016lx", vcpu->id, (uintptr_t)vcpu, vcpu->id);
-            printf("\n[%02x] RAX=0x%016lx RBX=0x%016lx", vcpu->id, r->rax, r->rbx);
-            printf("\n[%02x] RCX=0x%016lx RDX=0x%016lx", vcpu->id, r->rcx, r->rdx);
-            printf("\n[%02x] RSI=0x%016lx RDI=0x%016lx", vcpu->id, r->rsi, r->rdi);
-            printf("\n[%02x] RBP=0x%016lx RSP=0x%016lx", vcpu->id, r->rbp, r->rsp);
-            printf("\n[%02x] R8 =0x%016lx R9 =0x%016lx", vcpu->id, r->r8 , r->r9 );
-            printf("\n[%02x] R10=0x%016lx R11=0x%016lx", vcpu->id, r->r10, r->r11);
-            printf("\n[%02x] R12=0x%016lx R13=0x%016lx", vcpu->id, r->r12, r->r13);
-            printf("\n[%02x] R14=0x%016lx R15=0x%016lx", vcpu->id, r->r14, r->r15);
+            printf("[%02x]: VCPU at 0x%016lx\n", vcpu->id, (uintptr_t)vcpu, vcpu->id);
+            printf("[%02x] RAX=0x%016lx RBX=0x%016lx\n", vcpu->id, r->rax, r->rbx);
+            printf("[%02x] RCX=0x%016lx RDX=0x%016lx\n", vcpu->id, r->rcx, r->rdx);
+            printf("[%02x] RSI=0x%016lx RDI=0x%016lx\n", vcpu->id, r->rsi, r->rdi);
+            printf("[%02x] RBP=0x%016lx RSP=0x%016lx\n", vcpu->id, r->rbp, r->rsp);
+            printf("[%02x] R8 =0x%016lx R9 =0x%016lx\n", vcpu->id, r->r8 , r->r9 );
+            printf("[%02x] R10=0x%016lx R11=0x%016lx\n", vcpu->id, r->r10, r->r11);
+            printf("[%02x] R12=0x%016lx R13=0x%016lx\n", vcpu->id, r->r12, r->r13);
+            printf("[%02x] R14=0x%016lx R15=0x%016lx\n", vcpu->id, r->r14, r->r15);
 #elif defined(__I386__)
-            printf("\n[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x", vcpu->id,
+            printf("[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x\n", vcpu->id,
                 (u16)exception_cs, exception_rip, exception_rflags);
-            printf("\n[%02x]: VCPU at 0x%08x", vcpu->id, (u32)vcpu, vcpu->id);
-            printf("\n[%02x] EAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", vcpu->id,
+            printf("[%02x]: VCPU at 0x%08x\n", vcpu->id, (u32)vcpu, vcpu->id);
+            printf("[%02x] EAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x\n", vcpu->id,
                     r->eax, r->ebx, r->ecx, r->edx);
-            printf("\n[%02x] ESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", vcpu->id,
+            printf("[%02x] ESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x\n", vcpu->id,
                     r->esi, r->edi, r->ebp, r->esp);
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
-            printf("\n[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
+            printf("[%02x] CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", vcpu->id,
                 (u16)read_segreg_cs(), (u16)read_segreg_ds(),
                 (u16)read_segreg_es(), (u16)read_segreg_ss());
-            printf("\n[%02x] FS=0x%04x, GS=0x%04x", vcpu->id,
+            printf("[%02x] FS=0x%04x, GS=0x%04x\n", vcpu->id,
                 (u16)read_segreg_fs(), (u16)read_segreg_gs());
-            printf("\n[%02x] TR=0x%04x", vcpu->id, (u16)read_tr_sel());
+            printf("[%02x] TR=0x%04x\n", vcpu->id, (u16)read_tr_sel());
 
             //do a stack dump in the hopes of getting more info.
             {
                 //vcpu->rsp is the TOS
                 uintptr_t i;
-                printf("\n[%02x]-----stack dump-----", vcpu->id);
+                printf("[%02x]-----stack dump-----\n", vcpu->id);
 #ifdef __AMD64__
                 for(i=r->rsp; i < vcpu->rsp; i+=sizeof(uintptr_t)){
-                    printf("\n[%02x]  Stack(0x%016lx) -> 0x%016lx", vcpu->id, i, *(uintptr_t *)i);
+                    printf("[%02x]  Stack(0x%016lx) -> 0x%016lx\n", vcpu->id, i, *(uintptr_t *)i);
                 }
 #elif defined(__I386__)
                 for(i=r->esp; i < vcpu->esp; i+=sizeof(uintptr_t)){
-                    printf("\n[%02x]  Stack(0x%08x) -> 0x%08x", vcpu->id, i, *(uintptr_t *)i);
+                    printf("[%02x]  Stack(0x%08x) -> 0x%08x\n", vcpu->id, i, *(uintptr_t *)i);
                 }
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
-                printf("\n[%02x]-----end------------", vcpu->id);
+                printf("[%02x]-----end------------\n", vcpu->id);
             }
             HALT();
         }

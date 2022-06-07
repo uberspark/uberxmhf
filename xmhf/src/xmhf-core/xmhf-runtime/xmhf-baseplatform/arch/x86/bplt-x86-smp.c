@@ -166,10 +166,10 @@ void xmhf_baseplatform_arch_smpinitialize(void){
   //fall through to common code
   {
 	 void _ap_pmode_entry_with_paging(void);
-   printf("\nRelinquishing BSP thread and moving to common...");
+   printf("Relinquishing BSP thread and moving to common...\n");
    // Do some low-level init and then call allcpus_common_start() below
    _ap_pmode_entry_with_paging();
-   printf("\nBSP must never get here. HALT!");
+   printf("BSP must never get here. HALT!\n");
    HALT();
   }
 }
@@ -183,11 +183,11 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
   if(xmhf_baseplatform_arch_x86_isbsp()){
     vcpu->isbsp = 1;	//this core is a BSP
 
-	printf("\nBSP rallying APs...");
+	printf("BSP rallying APs...\n");
 #ifdef __AMD64__
-    printf("\nBSP(0x%02x): My RSP is 0x%016lx", vcpu->id, vcpu->rsp);
+    printf("BSP(0x%02x): My RSP is 0x%016lx\n", vcpu->id, vcpu->rsp);
 #elif defined(__I386__)
-    printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
+    printf("BSP(0x%02x): My ESP is 0x%08x\n", vcpu->id, vcpu->esp);
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
@@ -201,7 +201,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     //that all APs have been successfully started
     while(g_cpus_active < g_midtable_numentries);
 
-    printf("\nAPs all awake...Setting them free...");
+    printf("APs all awake...Setting them free...\n");
     spin_lock(&g_lock_ap_go_signal);
     g_ap_go_signal=1;
     spin_unlock(&g_lock_ap_go_signal);
@@ -220,9 +220,9 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
 
 #ifdef __AMD64__
-    printf("\nAP(0x%02x): My RSP is 0x%016lx, proceeding...", vcpu->id, vcpu->rsp);
+    printf("AP(0x%02x): My RSP is 0x%016lx, proceeding...\n", vcpu->id, vcpu->rsp);
 #elif defined(__I386__)
-    printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
+    printf("AP(0x%02x): My ESP is 0x%08x, proceeding...\n", vcpu->id, vcpu->esp);
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */

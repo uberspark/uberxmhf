@@ -73,22 +73,22 @@ static u32 vmx_eap_initialize_early(
     //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
-    printf("\n%s: RSDP at %08x", __FUNCTION__, status);
+    printf("%s: RSDP at %08x\n", __FUNCTION__, status);
 
     // [Superymk] Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
     if (rsdp.revision == 0) // ACPI v1
     {
-        printf("\n%s: ACPI v1", __FUNCTION__);
+        printf("%s: ACPI v1\n", __FUNCTION__);
         rsdt_xsdt_spaddr = rsdp.rsdtaddress;
     }
     else if (rsdp.revision == 0x2) // ACPI v2
     {
-        printf("\n%s: ACPI v2", __FUNCTION__);
+        printf("%s: ACPI v2\n", __FUNCTION__);
         rsdt_xsdt_spaddr = (spa_t)rsdp.xsdtaddress;
     }
     else // Unrecognized ACPI version
     {
-        printf("\n%s: ACPI unsupported version!", __FUNCTION__);
+        printf("%s: ACPI unsupported version!\n", __FUNCTION__);
         return 0;
     }
 
@@ -97,7 +97,7 @@ static u32 vmx_eap_initialize_early(
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
 
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
-    printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes",
+    printf("%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
            __FUNCTION__, rsdt_xsdt_vaddr, rsdt.length, sizeof(ACPI_RSDT));
 
     // get the RSDT entry list
@@ -105,7 +105,7 @@ static u32 vmx_eap_initialize_early(
     HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)),
                                      sizeof(rsdtentries[0]) * num_rsdtentries);
-    printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
+    printf("%s: RSDT entry list at %08x, len=%u\n", __FUNCTION__,
            (rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)), num_rsdtentries);
 
     // find the VT-d DMAR table in the list (if any)
@@ -124,11 +124,11 @@ static u32 vmx_eap_initialize_early(
         return 0;
 
     dmaraddrphys = rsdtentries[i]; // DMAR table physical memory address;
-    printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
+    printf("%s: DMAR at %08x\n", __FUNCTION__, dmaraddrphys);
 
     i = 0;
     remappingstructuresaddrphys = dmaraddrphys + sizeof(VTD_DMAR);
-    printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
+    printf("%s: remapping structures at %08x\n", __FUNCTION__, remappingstructuresaddrphys);
 
     while (i < (dmar.length - sizeof(VTD_DMAR)))
     {
@@ -141,7 +141,7 @@ static u32 vmx_eap_initialize_early(
         switch (type)
         {
         case 0: // DRHD
-            printf("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructures_vaddr + i), length);
+            printf("DRHD at %08x, len=%u bytes\n", (u32)(remappingstructures_vaddr + i), length);
             HALT_ON_ERRORCOND(vtd_num_drhd < VTD_MAX_DRHD);
             xmhf_baseplatform_arch_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructures_vaddr + i), length);
             vtd_num_drhd++;
@@ -154,33 +154,33 @@ static u32 vmx_eap_initialize_early(
         }
     }
 
-    printf("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
+    printf("%s: total DRHDs detected= %u units\n", __FUNCTION__, vtd_num_drhd);
 
     // be a little verbose about what we found
-    printf("\n%s: DMAR Devices:", __FUNCTION__);
+    printf("%s: DMAR Devices:\n", __FUNCTION__);
     for (i = 0; i < vtd_num_drhd; i++)
     {
         VTD_CAP_REG cap;
         VTD_ECAP_REG ecap;
-        printf("\n	Device %u on PCI seg %04x; base=0x%016llx", i,
+        printf("	Device %u on PCI seg %04x; base=0x%016llx\n", i,
                vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
         _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
-        printf("\n		cap=0x%016llx", (u64)cap.value);
+        printf("		cap=0x%016llx\n", (u64)cap.value);
         _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
-        printf("\n		ecap=0x%016llx", (u64)ecap.value);
+        printf("		ecap=0x%016llx\n", (u64)ecap.value);
     }
 
     // Verify VT-d capabilities
     status2 = _vtd_verify_cap(vtd_drhd, vtd_num_drhd, &g_vtd_cap);
     if (!status2)
     {
-        printf("\n%s: verify VT-d units' capabilities error! Halting!", __FUNCTION__);
+        printf("%s: verify VT-d units' capabilities error! Halting!\n", __FUNCTION__);
         HALT();
     }
 
     // initialize VT-d RET and CET using empty RET and CET, so no DMA is allowed
     _vtd_setupRETCET_bootstrap(vtd_ret_paddr, vtd_ret_vaddr, vtd_cet_paddr, vtd_cet_vaddr);
-    printf("\n%s: setup VT-d RET (%08x) and CET (%08x) for bootstrap.", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+    printf("%s: setup VT-d RET (%08x) and CET (%08x) for bootstrap.\n", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
 
 #endif //__XMHF_VERIFICATION__
 
@@ -188,16 +188,16 @@ static u32 vmx_eap_initialize_early(
     // initialize all DRHD units
     for (i = 0; i < vtd_num_drhd; i++)
     {
-        printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+        printf("%s: initializing DRHD unit %u...\n", __FUNCTION__, i);
         _vtd_drhd_initialize(&vtd_drhd[i], vtd_ret_paddr);
     }
 #else
-    printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+    printf("%s: initializing DRHD unit %u...\n", __FUNCTION__, i);
     _vtd_drhd_initialize(&vtd_drhd[0], vtd_ret_paddr);
 #endif
 
     // success
-    printf("\n%s: success, leaving...", __FUNCTION__);
+    printf("%s: success, leaving...\n", __FUNCTION__);
 
     return 1;
 }
@@ -215,7 +215,7 @@ u32 xmhf_dmaprot_arch_x86_vmx_earlyinitialize(sla_t protectedbuffer_paddr, sla_t
     //(void)memregionbase_paddr;
     //(void)memregion_size;
 
-    printf("\nSL: Bootstrapping VMX DMA protection...");
+    printf("SL: Bootstrapping VMX DMA protection...\n");
 
     // we use 2 pages for Vt-d bootstrapping
     HALT_ON_ERRORCOND(protectedbuffer_size >= (2 * PAGE_SIZE_4K));

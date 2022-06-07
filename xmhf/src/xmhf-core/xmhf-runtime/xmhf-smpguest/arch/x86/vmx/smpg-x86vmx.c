@@ -120,17 +120,17 @@ static u32 have_all_cores_recievedSIPI(void){
 // send SIPI to a single CPU
 static void processSIPIcpu(VCPU *vcpu, VCPU *dest_vcpu, u32 icr_low_value) {
   HALT_ON_ERRORCOND( dest_vcpu != (VCPU *)0 );
-  printf("\nCPU(0x%02x): found AP to pass SIPI; id=0x%02x, vcpu=0x%08x",
+  printf("CPU(0x%02x): found AP to pass SIPI; id=0x%02x, vcpu=0x%08x\n",
       vcpu->id, dest_vcpu->id, (uintptr_t)dest_vcpu);
 
   //send the sipireceived flag to trigger the AP to start the HVM
   if(dest_vcpu->sipireceived){
-    printf("\nCPU(0x%02x): destination CPU #0x%02x has already received SIPI, ignoring",
+    printf("CPU(0x%02x): destination CPU #0x%02x has already received SIPI, ignoring\n",
             vcpu->id, dest_vcpu->id);
   }else{
     dest_vcpu->sipivector = (u8)icr_low_value;
     dest_vcpu->sipireceived = 1;
-    printf("\nCPU(0x%02x): Sent SIPI command to AP, should awaken it!",
+    printf("CPU(0x%02x): Sent SIPI command to AP, should awaken it!\n",
             vcpu->id);
   }
 }
@@ -144,7 +144,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 dest_lapic_id){
   int i;
 
   if ((icr_low_value & 0x000C0000) == 0x0) {
-    printf("\nCPU(0x%02x): %s, dest_lapic_id is 0x%02x",
+    printf("CPU(0x%02x): %s, dest_lapic_id is 0x%02x\n",
             vcpu->id, __FUNCTION__, dest_lapic_id);
     //find the vcpu entry of the core with dest_lapic_id
     for(i=0; i < (int)g_midtable_numentries; i++){
@@ -158,7 +158,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 dest_lapic_id){
   } else {
     // make sure that the IPI is not sending to self
     HALT_ON_ERRORCOND( (icr_low_value & 0x000C0000) == 0x000C0000 );
-    printf("\nCPU(0x%02x): %s, sending to All Excluding Self",
+    printf("CPU(0x%02x): %s, sending to All Excluding Self\n",
             vcpu->id, __FUNCTION__);
     //send the interrupt to all CPUs but self
     for(i=0; i < (int)g_midtable_numentries; i++){
@@ -193,7 +193,7 @@ void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu, u32 unmaplapic){
   HALT_ON_ERRORCOND( edx == 0 ); //APIC should be below 4G
 
   g_vmx_lapic_base = eax & 0xFFFFF000UL;
-  //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, g_vmx_lapic_base);
+  //printf("BSP(0x%02x): LAPIC base=0x%08x\n", vcpu->id, g_vmx_lapic_base);
 
   if (unmaplapic) {
     //unmap LAPIC page
@@ -335,7 +335,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
     if(g_vmx_lapic_reg == LAPIC_ICR_LOW){
       if ( (value_tobe_written & 0x00000F00) == 0x500){
         //this is an INIT IPI, we just void it
-        printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x",
+        printf("0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x\n",
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);
         #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 			g_vmx_lapic_db_verification_coreprotected = true;
@@ -344,7 +344,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
         u32 icr_value_high = *((u32 *)((hva_t)&g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
-        printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x",
+        printf("0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x\n",
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);
 
 		#ifdef __XMHF_VERIFICATION__
@@ -385,7 +385,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
   //remove LAPIC interception if all cores have booted up
   if(delink_lapic_interception){
-    printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
+    printf("%s: delinking LAPIC interception since all cores have SIPI\n", __FUNCTION__);
 	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
   }else{
 	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
@@ -417,12 +417,12 @@ int xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(VCPU *vcpu, struct re
 	switch (r->eax & 0x00000F00) {
 	case 0x500:
 		/* INIT IPI, we just void it */
-		printf("\n0x%04x:0x%08llx -> (x2APIC ICR write) INIT IPI skipped, EAX=0x%08x, EDX=0x%08x",
+		printf("0x%04x:0x%08llx -> (x2APIC ICR write) INIT IPI skipped, EAX=0x%08x, EDX=0x%08x\n",
 				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, r->eax, r->edx);
 		return 1;
 	case 0x600:
 		/* STARTUP IPI */
-		printf("\n0x%04x:0x%08llx -> (x2APIC ICR write) STARTUP IPI detected, EAX=0x%08x, EDX=0x%08x",
+		printf("0x%04x:0x%08llx -> (x2APIC ICR write) STARTUP IPI detected, EAX=0x%08x, EDX=0x%08x\n",
 				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, r->eax, r->edx);
 		/*
 		 * In LAPIC, the destination field is bit 56-63. In x2APIC is 32-63.
@@ -435,7 +435,7 @@ int xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(VCPU *vcpu, struct re
 			 * Ideally the guest should only be using x2APIC and not APIC.
 			 * But we nevertheless delink LAPIC interception.
 			 */
-			printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
+			printf("%s: delinking LAPIC interception since all cores have SIPI\n", __FUNCTION__);
 			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
 		}
 		return 1;
@@ -476,7 +476,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
     *icr_low = 0x000C0400UL;      //send NMI
 
     //check if IPI has been delivered successfully
-    //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
+    //printf("%s: CPU(0x%02x): firing NMIs...\n", __FUNCTION__, vcpu->id);
 #ifndef __XMHF_VERIFICATION__
     do {
       // TODO: should this be icr_low?
@@ -492,7 +492,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
     *icr_high = prev_icr_high_value;
   }
 
-  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
+  //printf("%s: CPU(0x%02x): NMIs fired!\n", __FUNCTION__, vcpu->id);
 }
 
 /* Unblock NMI by executing iret, but do not jump to somewhere else */
@@ -535,10 +535,10 @@ void xmhf_smpguest_arch_x86vmx_unblock_nmi(void) {
 //note: we are in atomic processsing mode for this "vcpu"
 void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
-        //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
+        //printf("CPU(0x%02x): got quiesce signal...\n", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
-        //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
+        //printf("CPU(0x%02x): grabbed quiesce lock.\n", vcpu->id);
 
         /* Acquire the printf lock to prevent deadlock */
         emhfc_putchar_linelock(emhfc_putchar_linelock_arg);
@@ -554,9 +554,9 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         _vmx_send_quiesce_signal(vcpu);
 
         //wait for all the remaining CPUs to quiesce
-        //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
+        //printf("CPU(0x%02x): waiting for other CPUs to respond...\n", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
-        //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+        //printf("CPU(0x%02x): all CPUs quiesced successfully.\n", vcpu->id);
 
         /*
          * Release the printf lock to allow printing things after this function
@@ -591,14 +591,14 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
         g_vmx_quiesce_resume_counter=0;
-        //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
+        //printf("CPU(0x%02x): waiting for other CPUs to resume...\n", vcpu->id);
         g_vmx_quiesce_resume_signal=1;
 
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
         vcpu->quiesced=0;
 
-        //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
+        //printf("CPU(0x%02x): all CPUs resumed successfully.\n", vcpu->id);
 
         //reset resume signal
         spin_lock(&g_vmx_lock_quiesce_resume_signal);
@@ -610,7 +610,7 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
           g_vmx_flush_all_tlb_signal = 0;
 
         //release quiesce lock
-        //printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
+        //printf("CPU(0x%02x): releasing quiesce lock.\n", vcpu->id);
         spin_unlock(&g_vmx_lock_quiesce);
 
 }
@@ -637,9 +637,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		spin_unlock(&g_vmx_lock_quiesce_counter);
 
 		//wait until quiesceing is finished
-		//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
+		//printf("CPU(0x%02x): Quiesced\n", vcpu->id);
 		while(!g_vmx_quiesce_resume_signal);
-		//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+		//printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
 
     // Flush EPT TLB, if instructed so
     if(g_vmx_flush_all_tlb_signal)
@@ -722,7 +722,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 * d. after step 7: the bit 22 will finally be set, and the change to
 		 *    the VMCS field made by the intercept handle is always preserved.
 		 */
-		//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+		//printf("CPU(0x%02x): Regular NMI, injecting back to guest...\n", vcpu->id);
 		// TODO: if hypapp has multiple VMCS, need to select which one to inject
 		/* Cannot be u32 in amd64, because VMREAD writes 64-bits */
 		unsigned long __control_VMX_cpu_based;

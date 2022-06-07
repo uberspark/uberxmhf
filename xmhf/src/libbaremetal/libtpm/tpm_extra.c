@@ -1022,7 +1022,7 @@ uint32_t tpm_save_state(uint32_t locality)
         //delay(100);
         //delay support; should probably end up using udelay (EMHF) or
         //environment specific delay routine
-        printf("\nHalting, need delay support...");
+        printf("Halting, need delay support...\n");
         while(1);
     } while ( retries < MAX_SAVESTATE_RETRIES );
     if ( retries >= MAX_SAVESTATE_RETRIES )

@@ -171,7 +171,7 @@ void handle_intel_ucode_update(VCPU *vcpu, u64 update_data)
 	header = (intel_ucode_update_t *) copy_area;
 	size = sizeof(intel_ucode_update_t);
 	guestmem_copy_gv2h(&ctx_pair, 0, header, va_header, size);
-	printf("\nCPU(0x%02x): date(mmddyyyy)=%08x, dsize=%d, tsize=%d",
+	printf("CPU(0x%02x): date(mmddyyyy)=%08x, dsize=%d, tsize=%d\n",
 			vcpu->id, header->date, header->data_size, header->total_size);
 	/* If the following check fails, increase UCODE_TOTAL_SIZE_MAX */
 	HALT_ON_ERRORCOND(header->total_size <= UCODE_TOTAL_SIZE_MAX);
@@ -180,30 +180,18 @@ void handle_intel_ucode_update(VCPU *vcpu, u64 update_data)
 	guestmem_copy_gv2h(&ctx_pair, 0, &header->update_data, update_data, size);
 	/* Check the hash of the update */
 	if (!ucode_check_sha1(header)) {
-		printf("\nCPU(0x%02x): Unrecognized microcode update, HALT!", vcpu->id);
+		printf("CPU(0x%02x): Unrecognized microcode update, HALT!\n", vcpu->id);
 		HALT();
 	}
 	/* Check whether update is for the processor */
 	if (!ucode_check_processor(header)) {
-		printf("\nCPU(0x%02x): Incompatible microcode update, HALT!", vcpu->id);
+		printf("CPU(0x%02x): Incompatible microcode update, HALT!\n", vcpu->id);
 		HALT();
 	}
-	/*
-	for (u32 i = 0; i < header->total_size; i++) {
-		if (i % 16 == 0) {
-			printf("\n%08x  ", i);
-		} else if (i % 8 == 0) {
-			printf("  ");
-		} else {
-			printf(" ");
-		}
-		printf("%02x", copy_area[i]);
-	}
-	*/
 	/* Forward microcode update to host */
-	printf("\nCPU(0x%02x): Calling physical ucode update at 0x%08lx",
+	printf("CPU(0x%02x): Calling physical ucode update at 0x%08lx\n",
 			vcpu->id, &header->update_data);
 	wrmsr64(IA32_BIOS_UPDT_TRIG, (uintptr_t) &header->update_data);
-	printf("\nCPU(0x%02x): Physical ucode update returned", vcpu->id);
+	printf("CPU(0x%02x): Physical ucode update returned\n", vcpu->id);
 }
 

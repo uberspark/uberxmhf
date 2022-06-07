@@ -82,7 +82,7 @@ static void _svm_nptinitialize(hva_t npt_pdpt_base, hva_t npt_pdts_base, hva_t n
 	spa_t y, z;
 	u64 flags;
 
-	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x", __FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
+	printf("%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x\n", __FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
 
 	pdpt=(pdpt_t)npt_pdpt_base;
 

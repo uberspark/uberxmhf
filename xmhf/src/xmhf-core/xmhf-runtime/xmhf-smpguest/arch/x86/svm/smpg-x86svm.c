@@ -123,7 +123,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 
   dest_lapic_id= icr_high_value >> 24;
 
-  printf("\n%s: dest_lapic_id is 0x%02x", __FUNCTION__, dest_lapic_id);
+  printf("%s: dest_lapic_id is 0x%02x\n", __FUNCTION__, dest_lapic_id);
 
   //find the vcpu entry of the core with dest_lapic_id
   {
@@ -139,17 +139,17 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
     HALT_ON_ERRORCOND( dest_vcpu != (VCPU *)0 );
   }
 
-  printf("\nfound AP to pass SIPI to; id=0x%02x, vcpu=0x%08x",
+  printf("found AP to pass SIPI to; id=0x%02x, vcpu=0x%08x\n",
       dest_vcpu->id, (hva_t)dest_vcpu);
 
 
   //send the sipireceived flag to trigger the AP to start the HVM
   if(dest_vcpu->sipireceived){
-    printf("\nCPU(0x%02x): destination CPU #0x%02x has already received SIPI, ignoring", vcpu->id, dest_vcpu->id);
+    printf("CPU(0x%02x): destination CPU #0x%02x has already received SIPI, ignoring\n", vcpu->id, dest_vcpu->id);
   }else{
 		dest_vcpu->sipivector = (u8)icr_low_value;
   	dest_vcpu->sipireceived = 1;
-  	printf("\nCPU(0x%02x): Sent SIPI command to AP, should awaken it!",
+  	printf("CPU(0x%02x): Sent SIPI command to AP, should awaken it!\n",
                vcpu->id);
   }
 
@@ -172,7 +172,7 @@ void xmhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
 
   g_svm_lapic_base = eax & 0xFFFFF000UL;
-  printf("\nBSP(0x%02x): Local APIC base=0x%08x", vcpu->id, g_svm_lapic_base);
+  printf("BSP(0x%02x): Local APIC base=0x%08x\n", vcpu->id, g_svm_lapic_base);
 
   //unmap LAPIC page
   svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_UNMAP);
@@ -317,7 +317,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
     if(g_svm_lapic_reg == LAPIC_ICR_LOW){
       if ( (value_tobe_written & 0x00000F00) == 0x500){
         //this is an INIT IPI, we just void it
-        printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x",
+        printf("0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x\n",
           (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
         #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 			g_svm_lapic_db_verification_coreprotected = true;
@@ -326,7 +326,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
         u32 icr_value_high = *((u32 *)((hva_t)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
-        printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x",
+        printf("0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x\n",
           (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
         #ifdef __XMHF_VERIFICATION__
 			#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
@@ -371,7 +371,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
   //remove LAPIC interception if all cores have booted up
   if(delink_lapic_interception){
-    printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
+    printf("%s: delinking LAPIC interception since all cores have SIPI\n", __FUNCTION__);
 	svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_MAP);
   }else{
     svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_UNMAP);
@@ -400,7 +400,7 @@ static void _svm_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu, struct 
   prev_icr_high_value = *icr_high;
 
   *icr_high = icr_high_value;    //send to all but self
-  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
+  //printf("%s: CPU(0x%02x): firing NMIs...\n", __FUNCTION__, vcpu->id);
   *icr_low = 0x000C0400UL;      //send NMI
 
   //check if IPI has been delivered successfully
@@ -418,7 +418,7 @@ static void _svm_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu, struct 
   //restore icr high
   *icr_high = prev_icr_high_value;
 
-  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
+  //printf("%s: CPU(0x%02x): NMIs fired!\n", __FUNCTION__, vcpu->id);
 }
 
 
@@ -426,10 +426,10 @@ static void _svm_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu, struct 
 void xmhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 
-	//printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
+	//printf("CPU(0x%02x): got quiesce signal...\n", vcpu->id);
     //grab hold of quiesce lock
     spin_lock(&g_svm_lock_quiesce);
-    //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
+    //printf("CPU(0x%02x): grabbed quiesce lock.\n", vcpu->id);
 
 	vcpu->quiesced = 1;
 
@@ -442,9 +442,9 @@ void xmhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
     _svm_send_quiesce_signal(vcpu, vmcb);
 
     //wait for all the remaining CPUs to quiesce
-    //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
+    //printf("CPU(0x%02x): waiting for other CPUs to respond...\n", vcpu->id);
     while(g_svm_quiesce_counter < (g_midtable_numentries-1) );
-    //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+    //printf("CPU(0x%02x): all CPUs quiesced successfully.\n", vcpu->id);
 }
 
 //endquiesce interface to resume all guest cores after a quiesce
@@ -453,7 +453,7 @@ void xmhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
         g_svm_quiesce_resume_counter=0;
-        //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
+        //printf("CPU(0x%02x): waiting for other CPUs to resume...\n", vcpu->id);
         g_svm_quiesce_resume_signal=1;
 
         while(g_svm_quiesce_resume_counter < (g_midtable_numentries-1) );
@@ -462,7 +462,7 @@ void xmhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
         g_svm_quiesce=0;  // we are out of quiesce at this point
 
 
-        //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
+        //printf("CPU(0x%02x): all CPUs resumed successfully.\n", vcpu->id);
 
         //reset resume signal
         spin_lock(&g_svm_lock_quiesce_resume_signal);
@@ -470,7 +470,7 @@ void xmhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
         spin_unlock(&g_svm_lock_quiesce_resume_signal);
 
         //release quiesce lock
-        //printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
+        //printf("CPU(0x%02x): releasing quiesce lock.\n", vcpu->id);
         spin_unlock(&g_svm_lock_quiesce);
 }
 
@@ -485,7 +485,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
 
 	nmiinhvm = (vmcb->exitcode == SVM_VMEXIT_NMI) ? 0 : 1;
 
-	//printf("\n%s[%02x]: nmiinhvm=%u, g_svm_quiesce=%u", __FUNCTION__, vcpu->id,
+	//printf("%s[%02x]: nmiinhvm=%u, g_svm_quiesce=%u\n", __FUNCTION__, vcpu->id,
 	//	nmiinhvm, g_svm_quiesce);
 
 
@@ -499,22 +499,22 @@ void xmhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
     //this could be a NMI for the guest. we have no way of distinguising
     //this. however, since g_svm_quiesce=1, we can handle this NMI as a g_svm_quiesce NMI
     //and rely on the platform h/w to reissue the NMI later
-    //printf("\nCPU(0x%02x): NMI for core g_svm_quiesce", vcpu->id);
-    //printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x", vcpu->id, (u16)vmcb->cs.selector, (u32)vmcb->rip);
+    //printf("CPU(0x%02x): NMI for core g_svm_quiesce\n", vcpu->id);
+    //printf("CPU(0x%02x): CS:EIP=0x%04x:0x%08x\n", vcpu->id, (u16)vmcb->cs.selector, (u32)vmcb->rip);
 
-    //printf("\nCPU(0x%02x): quiesced, updating counter. awaiting EOQ...", vcpu->id);
+    //printf("CPU(0x%02x): quiesced, updating counter. awaiting EOQ...\n", vcpu->id);
     spin_lock(&g_svm_lock_quiesce_counter);
     g_svm_quiesce_counter++;
     spin_unlock(&g_svm_lock_quiesce_counter);
 
     while(!g_svm_quiesce_resume_signal);
-    //printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+    //printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
 
     spin_lock(&g_svm_lock_quiesce_resume_counter);
     g_svm_quiesce_resume_counter++;
     spin_unlock(&g_svm_lock_quiesce_resume_counter);
 
-    //printf("\nCPU(0x%08x): Halting!", vcpu->id);
+    //printf("CPU(0x%08x): Halting!\n", vcpu->id);
     //HALT();
     vcpu->quiesced=0;
 

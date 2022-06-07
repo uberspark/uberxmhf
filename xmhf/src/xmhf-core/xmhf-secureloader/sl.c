@@ -95,29 +95,29 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//is our launch before the OS has been loaded (early) is loaded or
 	//is it after the OS has been loaded (late)
 	if(slpb.isEarlyInit)
-		printf("\nSL(early-init): at 0x%08x, starting...", sl_baseaddr);
+		printf("SL(early-init): at 0x%08x, starting...\n", sl_baseaddr);
     else
-		printf("\nSL(late-init): at 0x%08x, starting...", sl_baseaddr);
+		printf("SL(late-init): at 0x%08x, starting...\n", sl_baseaddr);
 
 	//debug: dump SL parameter block
-	printf("\nSL: slpb at = 0x%08lx", (sla_t)&slpb);
-	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
-	printf("\n	isEarlyInit=0x%08x", slpb.isEarlyInit);
-	printf("\n	numE820Entries=%u", slpb.numE820Entries);
-	printf("\n	system memory map buffer at 0x%08lx", (sla_t)&slpb.memmapbuffer);
-	printf("\n	numCPUEntries=%u", slpb.numCPUEntries);
-	printf("\n	cpuinfo buffer at 0x%08lx", (sla_t)&slpb.cpuinfobuffer);
-	printf("\n	runtime size= %u bytes", slpb.runtime_size);
-	printf("\n	OS bootmodule at 0x%08x, size=%u bytes",
+	printf("SL: slpb at = 0x%08lx\n", (sla_t)&slpb);
+	printf("	errorHandler=0x%08x\n", slpb.errorHandler);
+	printf("	isEarlyInit=0x%08x\n", slpb.isEarlyInit);
+	printf("	numE820Entries=%u\n", slpb.numE820Entries);
+	printf("	system memory map buffer at 0x%08lx\n", (sla_t)&slpb.memmapbuffer);
+	printf("	numCPUEntries=%u\n", slpb.numCPUEntries);
+	printf("	cpuinfo buffer at 0x%08lx\n", (sla_t)&slpb.cpuinfobuffer);
+	printf("	runtime size= %u bytes\n", slpb.runtime_size);
+	printf("	OS bootmodule at 0x%08x, size=%u bytes\n",
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
-    printf("\n  OS boot_drive is 0x%02x", (u32)slpb.runtime_osbootdrive);
-    printf("\n\tcmdline = \"%s\"", slpb.cmdline);
+    printf("  OS boot_drive is 0x%02x\n", (u32)slpb.runtime_osbootdrive);
+    printf("\tcmdline = \"%s\"\n", slpb.cmdline);
 
 	//debug: if we are doing some performance measurements
     slpb.rdtsc_after_drtm = (u64)rdtsc_eax | ((u64)rdtsc_edx << 32);
-    printf("\nSL: RDTSC before_drtm 0x%llx, after_drtm 0x%llx",
+    printf("SL: RDTSC before_drtm 0x%llx, after_drtm 0x%llx\n",
            slpb.rdtsc_before_drtm, slpb.rdtsc_after_drtm);
-    printf("\nSL: [PERF] RDTSC DRTM elapsed cycles: 0x%llx",
+    printf("SL: [PERF] RDTSC DRTM elapsed cycles: 0x%llx\n",
            slpb.rdtsc_after_drtm - slpb.rdtsc_before_drtm);
 
 	//get runtime physical base
@@ -126,7 +126,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//compute 2M aligned runtime size
 	runtime_size_2Maligned = PAGE_ALIGN_UP_2M((ulong_t)slpb.runtime_size);
 
-	printf("\nSL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)",
+	printf("SL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)\n",
 			runtime_physical_base, slpb.runtime_size, runtime_size_2Maligned);
 
 	//setup runtime parameter block with required parameters
@@ -141,7 +141,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb = (RPB *)&_xrpb;
 	#endif
 
-		printf("\nSL: RPB, magic=0x%08x", rpb->magic);
+		printf("SL: RPB, magic=0x%08x\n", rpb->magic);
 		HALT_ON_ERRORCOND(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 
 		//populate runtime parameter block fields
@@ -206,7 +206,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 #ifndef __XMHF_VERIFICATION__
 	//we should never get here
-	printf("\nSL: Fatal, should never be here!");
+	printf("SL: Fatal, should never be here!\n");
 	HALT();
 #else
 	return;

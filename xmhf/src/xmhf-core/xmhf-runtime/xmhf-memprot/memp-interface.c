@@ -88,7 +88,7 @@ void xmhf_memprot_flushmappings(VCPU *vcpu){
 
 //flush the TLB of all nested page tables in the current core
 void xmhf_memprot_flushmappings_localtlb(VCPU *vcpu){
-	//printf("\nCPU(0x%02x): <xmhf_memprot_flushmappings_localtlb>\n", vcpu->id);
+	//printf("CPU(0x%02x): <xmhf_memprot_flushmappings_localtlb>\n", vcpu->id);
 	xmhf_memprot_arch_flushmappings_localtlb(vcpu);
 }
 

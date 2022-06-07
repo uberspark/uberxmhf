@@ -53,7 +53,7 @@
 // application main
 u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   (void)apb;	//unused
-  printf("\nCPU(0x%02x): Hello world from XMHF hyperapp!", vcpu->id);
+  printf("CPU(0x%02x): Hello world from XMHF hyperapp!\n", vcpu->id);
   return APP_INIT_SUCCESS;  //successful
 }
 
@@ -61,7 +61,7 @@ u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			u32 status=APP_SUCCESS;
 			(void)r; //unused
-			printf("\nCPU(0x%02x): hypercall unhandled, simply returning!", vcpu->id);
+			printf("CPU(0x%02x): hypercall unhandled, simply returning!\n", vcpu->id);
 			return status;
 }
 

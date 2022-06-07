@@ -59,57 +59,57 @@ static void _svm_initSVM(VCPU *vcpu){
   //check if CPU supports SVM extensions
   cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
   if( !(ecx & (1<<ECX_SVM)) ){
-   printf("\nCPU(0x%02x): no SVM extensions. HALT!", vcpu->id);
+   printf("CPU(0x%02x): no SVM extensions. HALT!\n", vcpu->id);
    HALT();
   }
 
   //check if SVM extensions are disabled by the BIOS
   rdmsr(VM_CR_MSR, &eax, &edx);
   if( eax & (1<<VM_CR_SVME_DISABLE) ){
-    printf("\nCPU(0x%02x): SVM extensions disabled in the BIOS. HALT!", vcpu->id);
+    printf("CPU(0x%02x): SVM extensions disabled in the BIOS. HALT!\n", vcpu->id);
     HALT();
   }
 
   // check for nested paging support and number of ASIDs
 	cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
   if(!(edx & 0x1)){
-      printf("\nCPU(0x%02x): No support for Nested Paging, HALTING!", vcpu->id);
+      printf("CPU(0x%02x): No support for Nested Paging, HALTING!\n", vcpu->id);
 		HALT();
 	}
 
-  printf("\nCPU(0x%02x): Nested paging support present", vcpu->id);
+  printf("CPU(0x%02x): Nested paging support present\n", vcpu->id);
 	if( (ebx-1) < 2 ){
-		printf("\nCPU(0x%02x): Total number of ASID is too low, HALTING!", vcpu->id);
+		printf("CPU(0x%02x): Total number of ASID is too low, HALTING!\n", vcpu->id);
 		HALT();
 	}
 
-	printf("\nCPU(0x%02x): Total ASID is valid", vcpu->id);
+	printf("CPU(0x%02x): Total ASID is valid\n", vcpu->id);
 
   // enable SVM and debugging support (if required)
   rdmsr((u32)VM_CR_MSR, &eax, &edx);
   eax &= (~(1<<VM_CR_DPD));
   wrmsr((u32)VM_CR_MSR, eax, edx);
-  printf("\nCPU(0x%02x): HDT debugging enabled", vcpu->id);
+  printf("CPU(0x%02x): HDT debugging enabled\n", vcpu->id);
 
   rdmsr((u32)MSR_EFER, &eax, &edx);
   eax |= (1<<EFER_SVME);
   wrmsr((u32)MSR_EFER, eax, edx);
-  printf("\nCPU(0x%02x): SVM extensions enabled", vcpu->id);
+  printf("CPU(0x%02x): SVM extensions enabled\n", vcpu->id);
 
   // Initialize the HSA
-  //printf("\nHSAVE area=0x%08X", vcpu->hsave_vaddr_ptr);
+  //printf("HSAVE area=0x%08X\n", vcpu->hsave_vaddr_ptr);
   hsave_pa = hva2spa((void*)vcpu->hsave_vaddr_ptr);
-  //printf("\nHSAVE physaddr=0x%08x", hsave_pa);
+  //printf("HSAVE physaddr=0x%08x\n", hsave_pa);
   eax = (u32)hsave_pa;
   edx = (u32)(hsave_pa >> 32);
   wrmsr((u32)VM_HSAVE_PA, eax, edx);
-  printf("\nCPU(0x%02x): SVM HSAVE initialized", vcpu->id);
+  printf("CPU(0x%02x): SVM HSAVE initialized\n", vcpu->id);
 
   // enable NX protections
   rdmsr(MSR_EFER, &eax, &edx);
   eax |= (1 << EFER_NXE);
   wrmsr(MSR_EFER, eax, edx);
-  printf("\nCPU(0x%02x): NX protection enabled", vcpu->id);
+  printf("CPU(0x%02x): NX protection enabled\n", vcpu->id);
 
   return;
 }
@@ -127,7 +127,7 @@ static void	_svm_int15_initializehook(VCPU *vcpu){
 		/* 32-bit CS:IP for IVT INT 15 handler */
 		volatile u16 *ivt_int15 = (volatile u16 *)(0x54);
 
-		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
+		printf("CPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x\n", vcpu->id,
 			ivt_int15[1], ivt_int15[0]);
 
 		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for the
@@ -155,7 +155,7 @@ static void _svm_initVMCB(VCPU *vcpu){
 
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 
-  printf("\nCPU(0x%02x): VMCB at 0x%08x", vcpu->id, (hva_t)vmcb);
+  printf("CPU(0x%02x): VMCB at 0x%08x\n", vcpu->id, (hva_t)vmcb);
   #ifndef __XMHF_VERIFICATION__
   memset(vmcb, 0, sizeof(struct _svm_vmcbfields));
   #endif
@@ -213,7 +213,7 @@ static void _svm_initVMCB(VCPU *vcpu){
   vmcb->rsp= 0x0ULL;
 
   if(vcpu->isbsp){
-    printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
+    printf("BSP(0x%02x): copying boot-module to boot guest\n", vcpu->id);
   	#ifndef __XMHF_VERIFICATION__
   	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
     #endif
@@ -251,7 +251,7 @@ static void _svm_initVMCB(VCPU *vcpu){
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	if(vcpu->isbsp){
-		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook...", vcpu->id);
+		printf("CPU(0x%02x, BSP): initializing INT 15 hook...\n", vcpu->id);
 		_svm_int15_initializehook(vcpu);
 	}
 
@@ -294,7 +294,7 @@ void xmhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu){
 void xmhf_partition_arch_x86svm_start(VCPU *vcpu){
     struct _svm_vmcbfields *vmcb;
     vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
-    printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
+    printf("CPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...\n", vcpu->id,
 			(u16)vmcb->cs.selector, (u32)vmcb->rip);
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__

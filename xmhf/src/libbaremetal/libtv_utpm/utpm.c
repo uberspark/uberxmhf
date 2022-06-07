@@ -802,7 +802,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 		for(i=0;i<TPM_PCR_SIZE;i++) {
 			printf("%x ",output[i+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE]);
 		}
-		printf("\n[TV] current pcr:");
+		printf("[TV] current pcr:\n");
 		for(i=0;i<TPM_PCR_SIZE;i++) {
 			printf("%x ",utpm->pcr_bank[0].value[i]);
 		}

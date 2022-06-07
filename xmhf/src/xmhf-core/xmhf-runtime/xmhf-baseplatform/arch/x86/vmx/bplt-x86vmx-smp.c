@@ -148,9 +148,9 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
     //step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
     //MP protocol. Use the APIC for IPI purposes.
     if(!txt_is_launched()) { // XXX TODO: Do actual GETSEC[WAKEUP] in here?
-        printf("\nBSP: Using APIC to awaken APs...");
+        printf("BSP: Using APIC to awaken APs...\n");
         xmhf_baseplatform_arch_x86_wakeupAPs();
-        printf("\nBSP: APs should be awake.");
+        printf("BSP: APs should be awake.\n");
     }else{
 		//we ran SENTER, so do a GETSEC[WAKEUP]
         txt_heap_t *txt_heap;
@@ -162,14 +162,14 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         // sl.c unity-maps 0xfed00000 for 2M so these should work fine
         #ifndef __XMHF_VERIFICATION__
         txt_heap = get_txt_heap();
-        //printf("\ntxt_heap = 0x%08lx", (uintptr_t)txt_heap);
+        //printf("txt_heap = 0x%08lx\n", (uintptr_t)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
         (void)os_mle_data;
-        //printf("\nos_mle_data = 0x%08lx", (uintptr_t)os_mle_data);
+        //printf("os_mle_data = 0x%08lx\n", (uintptr_t)os_mle_data);
         sinit_mle_data = get_sinit_mle_data_start(txt_heap);
-        //printf("\nsinit_mle_data = 0x%08lx", (uintptr_t)sinit_mle_data);
+        //printf("sinit_mle_data = 0x%08lx\n", (uintptr_t)sinit_mle_data);
         os_sinit_data = get_os_sinit_data_start(txt_heap);
-        //printf("\nos_sinit_data = 0x%08lx", (uintptr_t)os_sinit_data);
+        //printf("os_sinit_data = 0x%08lx\n", (uintptr_t)os_sinit_data);
 	#endif
 
         // Start APs.  Choose wakeup mechanism based on
@@ -180,7 +180,7 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         // unity-mapped trampoline that starts at 64K
         // physical. Without SENTER, or with AMD, APs start in
         // 16-bit mode.  We get to skip that.
-        printf("\nBSP: _mle_join_start = 0x%08lx, _ap_bootstrap_start = 0x%08lx",
+        printf("BSP: _mle_join_start = 0x%08lx, _ap_bootstrap_start = 0x%08lx\n",
 			(uintptr_t)_mle_join_start, (uintptr_t)_ap_bootstrap_start);
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
@@ -192,22 +192,22 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         #ifndef __XMHF_VERIFICATION__
         mle_join = (mle_join_t*)((uintptr_t)_mle_join_start - (uintptr_t)_ap_bootstrap_start + 0x10000); // XXX magic number
         #endif
-        //printf("\nBSP: mle_join.gdt_limit = 0x%08x", mle_join->gdt_limit);
-        //printf("\nBSP: mle_join.gdt_base = 0x%08x", mle_join->gdt_base);
-        //printf("\nBSP: mle_join.seg_sel = 0x%08x", mle_join->seg_sel);
-        //printf("\nBSP: mle_join.entry_point = 0x%08x", mle_join->entry_point);
+        //printf("BSP: mle_join.gdt_limit = 0x%08x\n", mle_join->gdt_limit);
+        //printf("BSP: mle_join.gdt_base = 0x%08x\n", mle_join->gdt_base);
+        //printf("BSP: mle_join.seg_sel = 0x%08x\n", mle_join->seg_sel);
+        //printf("BSP: mle_join.entry_point = 0x%08x\n", mle_join->entry_point);
 
 	#ifndef __XMHF_VERIFICATION__
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 
         if (os_sinit_data->capabilities.rlp_wake_monitor) {
-            printf("\nBSP: joining RLPs to MLE with MONITOR wakeup");
-            printf("\nBSP: rlp_wakeup_addr = 0x%08x", sinit_mle_data->rlp_wakeup_addr);
+            printf("BSP: joining RLPs to MLE with MONITOR wakeup\n");
+            printf("BSP: rlp_wakeup_addr = 0x%08x\n", sinit_mle_data->rlp_wakeup_addr);
             *((uint32_t *)(unsigned long)(sinit_mle_data->rlp_wakeup_addr)) = 0x01;
         }else {
-            printf("\nBSP: joining RLPs to MLE with GETSEC[WAKEUP]");
+            printf("BSP: joining RLPs to MLE with GETSEC[WAKEUP]\n");
             __getsec_wakeup();
-            printf("\nBSP: GETSEC[WAKEUP] completed");
+            printf("BSP: GETSEC[WAKEUP] completed\n");
         }
 	#endif
 
@@ -215,9 +215,9 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
 	}
 
 #else //!__DRT__
-        printf("\nBSP: Using APIC to awaken APs...");
+        printf("BSP: Using APIC to awaken APs...\n");
         xmhf_baseplatform_arch_x86_wakeupAPs();
-        printf("\nBSP: APs should be awake.");
+        printf("BSP: APs should be awake.\n");
 
 #endif
 

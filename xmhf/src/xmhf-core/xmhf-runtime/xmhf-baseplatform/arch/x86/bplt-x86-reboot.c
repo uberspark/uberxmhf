@@ -63,7 +63,7 @@ void xmhf_baseplatform_arch_x86_reboot(void){
 	outb(0xFE, 0x64);
 
 	//never get here
-	printf("\n%s: should never get here. halt!", __FUNCTION__);
+	printf("%s: should never get here. halt!\n", __FUNCTION__);
 	HALT();
 
 #else   //__XMHF_VERIFICATION__

@@ -59,7 +59,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct re
   ioinfo.rawbits = vmcb->exitinfo1;
 
   if (ioinfo.fields.rep || ioinfo.fields.str){
-    printf("\nCPU(0x%02x): Fatal, unsupported batch I/O ops!", vcpu->id);
+    printf("CPU(0x%02x): Fatal, unsupported batch I/O ops!\n", vcpu->id);
     HALT();
   }
 
@@ -100,7 +100,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct re
 		}else{
 		   //h/w should set sz8, sz16 or sz32, we get here if there
 		   //is a non-complaint CPU
-		   printf("\nnon-complaint CPU (ioio intercept). Halting!");
+		   printf("non-complaint CPU (ioio intercept). Halting!\n");
 		   HALT();
 		}
 	  }else{
@@ -127,7 +127,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct re
 //---MSR intercept handling-----------------------------------------------------
 static void _svm_handle_msr(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct regs *r){
   HALT_ON_ERRORCOND( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
-  printf("\nCPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x", vcpu->id,
+  printf("CPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x\n", vcpu->id,
     (u32)vmcb->exitinfo1, r->ecx);
   switch(vmcb->exitinfo1){
     case 0:{  //RDMSR with MSR in ECX
@@ -179,12 +179,12 @@ static void _svm_handle_nmi(VCPU *vcpu, struct _svm_vmcbfields __attribute__((un
     //the core thinks it must dispatch the pending NMI :p
     (void)vcpu;
 
-    //printf("\nCPU(0x%02x): triggering local NMI in CPU...", vcpu->id);
+    //printf("CPU(0x%02x): triggering local NMI in CPU...\n", vcpu->id);
 
     __asm__ __volatile__("clgi\r\n");
     __asm__ __volatile__("stgi\r\n"); //at this point we get control in
                                       //our exception handler which handles the rest
-    //printf("\nCPU(0x%02x): resuming guest...", vcpu->id);
+    //printf("CPU(0x%02x): resuming guest...\n", vcpu->id);
 }
 
 
@@ -204,12 +204,12 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (hva_t)bdamemory);
 		#endif
 		if((sla_t)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
-			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08lx to %08lx",
+			printf("INT15 (E820): V86 mode, bdamemory translated from %08lx to %08lx\n",
 				(hva_t)bdamemory, (sla_t)bdamemoryphysical);
 			bdamemory = bdamemoryphysical;
 		}else{
-			printf("\nCPU(0x%02x): INT15 (E820) V86 mode, translated bdamemory points beyond \
-				guest physical memory space. Halting!", vcpu->id);
+			printf("CPU(0x%02x): INT15 (E820) V86 mode, translated bdamemory points beyond \
+				guest physical memory space. Halting!\n", vcpu->id);
 			HALT();
 		}
 	}
@@ -221,7 +221,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
-		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id,
+		printf("CPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x\n", vcpu->id,
 		(u16)vmcb->rax, r->edx, r->ebx, r->ecx, (u16)vmcb->es.selector, (u16)r->edi);
 
 		//HALT_ON_ERRORCOND(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
@@ -250,8 +250,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 						pe820entry->type = g_e820map[r->ebx].type;
 					#endif //__XMHF_VERIFICATION__
 				}else{
-						printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
-							physical memory bounds. Halting!", vcpu->id);
+						printf("CPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
+							physical memory bounds. Halting!\n", vcpu->id);
 						HALT();
 				}
 
@@ -287,12 +287,12 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (hva_t)gueststackregion);
 					#endif
 					if((sla_t)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
-						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
+						printf("INT15 (E820): V86 mode, gueststackregion translated from %08x to %08x\n",
 							(hva_t)gueststackregion, (sla_t)gueststackregionphysical);
 						gueststackregion = (u16 *)gueststackregionphysical;
 					}else{
-						printf("\nCPU(0x%02x): INT15 (E820) V86 mode, translated gueststackregion points beyond \
-							guest physical memory space. Halting!", vcpu->id);
+						printf("CPU(0x%02x): INT15 (E820) V86 mode, translated gueststackregion points beyond \
+							guest physical memory space. Halting!\n", vcpu->id);
 						HALT();
 					}
 				}
@@ -330,8 +330,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 		}else{	//invalid state specified during INT 15 E820, fail by
 				//setting carry flag
-				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest \
-						Halting!", vcpu->id);
+				printf("CPU(0x%02x): INT15 (E820), invalid state specified by guest \
+						Halting!\n", vcpu->id);
 				HALT();
 		}
 
@@ -387,14 +387,14 @@ u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 						(vmcb->rflags & EFLAGS_VM)  ) ){
 					_svm_int15_handleintercept(vcpu, r);
 				}else{
-						printf("\nCPU(0x%02x): unhandled INT 15h request from protected mode", vcpu->id);
-						printf("\nHalting!");
+						printf("CPU(0x%02x): unhandled INT 15h request from protected mode\n", vcpu->id);
+						printf("Halting!\n");
 						HALT();
 				}
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
 				xmhf_smpguest_arch_x86svm_quiesce(vcpu);
 				if( xmhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
-					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
+					printf("CPU(0x%02x): error(halt), unhandled hypercall 0x%08x!\n", vcpu->id, r->eax);
 					HALT();
 				}
 				xmhf_smpguest_arch_x86svm_endquiesce(vcpu);
@@ -418,7 +418,7 @@ u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		case SVM_VMEXIT_INIT:{
 			printf("\n***** INIT xmhf_runtime_shutdown\n");
 			xmhf_runtime_shutdown(vcpu, r);
-			printf("\nCPU(0x%02x): Fatal, xmhf_runtime_shutdown returned. Halting!", vcpu->id);
+			printf("CPU(0x%02x): Fatal, xmhf_runtime_shutdown returned. Halting!\n", vcpu->id);
 			HALT();
 		}
 		break;
@@ -437,8 +437,8 @@ u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
 				xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 			}else{															//TODO: reflect back to guest
-				printf("\nUnexpected DB exception on non-BSP core (0x%02x)", vcpu->id);
-				printf("\nHalting!");
+				printf("Unexpected DB exception on non-BSP core (0x%02x)\n", vcpu->id);
+				printf("Halting!\n");
 				HALT();
 			}
 		}
@@ -450,14 +450,14 @@ u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		default:{
-			printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
-			printf("\n\tCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.selector, (u32)vmcb->rip);
-			printf("\n\tedi:%08x esi:%08x ebp:%08x esp:%08llx",
+			printf("Unhandled Intercept:0x%08llx\n", vmcb->exitcode);
+			printf("\tCS:EIP=0x%04x:0x%08x\n", (u16)vmcb->cs.selector, (u32)vmcb->rip);
+			printf("\tedi:%08x esi:%08x ebp:%08x esp:%08llx\n",
 				r->edi, r->esi, r->ebp, vmcb->rsp);
-			printf("\n\tebx:%08x edx:%08x ecx:%08x eax:%08llx",
+			printf("\tebx:%08x edx:%08x ecx:%08x eax:%08llx\n",
 				r->ebx, r->edx, r->ecx, vmcb->rax);
-			printf("\n\tExitInfo1: %llx", vmcb->exitinfo1);
-			printf("\n\tExitInfo2: %llx", vmcb->exitinfo2);
+			printf("\tExitInfo1: %llx\n", vmcb->exitinfo1);
+			printf("\tExitInfo2: %llx\n", vmcb->exitinfo2);
 			HALT();
 		}
 	}	//end switch(vmcb->exitcode)

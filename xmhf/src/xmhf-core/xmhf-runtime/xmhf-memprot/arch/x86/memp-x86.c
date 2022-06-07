@@ -55,10 +55,10 @@ void xmhf_memprot_arch_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		xmhf_memprot_arch_x86svm_initialize(vcpu);
-		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
+		printf("CPU(0x%02x): Activated SVM NPTs.\n", vcpu->id);
 	}else{	//CPU_VENDOR_INTEL
 		xmhf_memprot_arch_x86vmx_initialize(vcpu);
-		printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
+		printf("CPU(0x%02x): Activated VMX EPTs.\n", vcpu->id);
 	}
 }
 
@@ -178,7 +178,7 @@ bool xmhf_arch_get_machine_paddr_range(spa_t* machine_base_spa, spa_t* machine_l
     // Get the base and limit used system physical address from the E820 map
     if (!xmhf_baseplatform_x86_e820_paddr_range(machine_base_spa, machine_limit_spa))
     {
-        printf("\n%s: Get system physical address range error! Halting!", __FUNCTION__);
+        printf("%s: Get system physical address range error! Halting!\n", __FUNCTION__);
         return false;
     }
 

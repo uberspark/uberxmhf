@@ -104,7 +104,7 @@ void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value)
     }
 
     default:
-        printf("\n%s: Halt, Unsupported register=%08x", __FUNCTION__, reg);
+        printf("%s: Halt, Unsupported register=%08x\n", __FUNCTION__, reg);
         HALT();
         break;
     }
@@ -133,7 +133,7 @@ void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value)
     }
 
     default:
-        printf("\n%s: Halt, Unsupported access width=%08x", __FUNCTION__, regtype);
+        printf("%s: Halt, Unsupported access width=%08x\n", __FUNCTION__, regtype);
         HALT();
     }
 
@@ -172,7 +172,7 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
     for (i = 0; i < vtd_num_drhd; i++)
     {
         VTD_DRHD *drhd = &vtd_drhd[i];
-        printf("\n%s: verifying DRHD unit %u...", __FUNCTION__, i);
+        printf("%s: verifying DRHD unit %u...\n", __FUNCTION__, i);
 
         // read CAP register
         _vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
@@ -188,7 +188,7 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
             else
             {
                 // The current VT-d unit has different capabilities with some other units
-                printf("\n  [VT-d] Check error! Different SAGAW capability found on VT-d unix %u. last sagaw:0x%08X, current sagaw:0x%08X",
+                printf("  [VT-d] Check error! Different SAGAW capability found on VT-d unix %u. last sagaw:0x%08X, current sagaw:0x%08X\n",
                        i, last_sagaw, cap.bits.sagaw);
                 return false;
             }
@@ -204,7 +204,7 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
             else
             {
                 // The current VT-d unit has different capabilities with some other units
-                printf("\n  [VT-d] Check error! Different MGAW capability found on VT-d unix %u. last mgaw:0x%08X, current mgaw:0x%08X",
+                printf("  [VT-d] Check error! Different MGAW capability found on VT-d unix %u. last mgaw:0x%08X, current mgaw:0x%08X\n",
                        i, last_mgaw, cap.bits.mgaw);
                 return false;
             }
@@ -220,7 +220,7 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
             else
             {
                 // The current VT-d unit has different capabilities with some other units
-                printf("\n  [VT-d] Check error! Different ND capability found on VT-d unix %u. last nd:0x%08X, current nd:0x%08X",
+                printf("  [VT-d] Check error! Different ND capability found on VT-d unix %u. last nd:0x%08X, current nd:0x%08X\n",
                        i, last_nd, cap.bits.nd);
                 return false;
             }
@@ -229,14 +229,14 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
         // Check: supported MGAW to ensure our host address width is supported (32-bits)
         if (cap.bits.mgaw < 31)
         {
-            printf("\n  [VT-d] Check error! GAW < 31 (%u) unsupported.", cap.bits.mgaw);
+            printf("  [VT-d] Check error! GAW < 31 (%u) unsupported.\n", cap.bits.mgaw);
             return false;
         }
 
         // Check: AGAW must support 39-bits or 48-bits
         if (!(cap.bits.sagaw & 0x2 || cap.bits.sagaw & 0x4))
         {
-            printf("\n	[VT-d] Check error! AGAW does not support 3-level or 4-level page-table. See sagaw capabilities:0x%08X. Halting!", cap.bits.sagaw);
+            printf("	[VT-d] Check error! AGAW does not support 3-level or 4-level page-table. See sagaw capabilities:0x%08X. Halting!\n", cap.bits.sagaw);
             return false;
         }
         else
@@ -247,7 +247,7 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
         // Check: Number of domains must not be unsupported
         if (cap.bits.nd == 0x7)
         {
-            printf("\n  [VT-d] Check error! ND == 0x7 unsupported on VT-d unix %u.", i);
+            printf("  [VT-d] Check error! ND == 0x7 unsupported on VT-d unix %u.\n", i);
             return false;
         }
         else
@@ -256,7 +256,7 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
         }
     }
 
-    printf("\nVerify all Vt-d units success");
+    printf("Verify all Vt-d units success\n");
 
     return true;
 }
@@ -286,18 +286,18 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         _vtd_reg(drhd, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
 
         if (ecap.bits.sc)
-            printf("\n	VT-d hardware Snoop Control (SC) capabilities present");
+            printf("	VT-d hardware Snoop Control (SC) capabilities present\n");
         else
-            printf("\n	VT-d hardware Snoop Control (SC) unavailable");
+            printf("	VT-d hardware Snoop Control (SC) unavailable\n");
 
         if (ecap.bits.c)
-            printf("\n	VT-d hardware access to remapping structures COHERENT");
+            printf("	VT-d hardware access to remapping structures COHERENT\n");
         else
-            printf("\n	VT-d hardware access to remapping structures NON-COHERENT");
+            printf("	VT-d hardware access to remapping structures NON-COHERENT\n");
     }
 
     // 3. setup fault logging
-    printf("\n	Setting Fault-reporting to NON-INTERRUPT mode...");
+    printf("	Setting Fault-reporting to NON-INTERRUPT mode...\n");
     {
         // read FECTL
         fectl.value = 0;
@@ -312,14 +312,14 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
 
         if (!fectl.bits.im)
         {
-            printf("\n	Failed to set fault-reporting. Halting!");
+            printf("	Failed to set fault-reporting. Halting!\n");
             HALT();
         }
     }
     printf("Done.");
 
     // 4. setup RET (root-entry)
-    printf("\n	Setting up RET...");
+    printf("	Setting up RET...\n");
     {
         // setup RTADDR with base of RET
         rtaddr.value = (u64)vtd_ret_paddr;
@@ -330,7 +330,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         _vtd_reg(drhd, VTD_REG_READ, VTD_RTADDR_REG_OFF, (void *)&rtaddr.value);
         if (rtaddr.value != (u64)vtd_ret_paddr)
         {
-            printf("\n	Failed to set RTADDR. Halting!");
+            printf("	Failed to set RTADDR. Halting!\n");
             HALT();
         }
 
@@ -344,14 +344,14 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
 
         if (!gsts.bits.rtps)
         {
-            printf("\n	Failed to latch RTADDR. Halting!");
+            printf("	Failed to latch RTADDR. Halting!\n");
             HALT();
         }
     }
     printf("Done.");
 
     // 5. invalidate CET cache
-    printf("\n	Invalidating CET cache...");
+    printf("	Invalidating CET cache...\n");
     {
         // wait for context cache invalidation request to send
 #ifndef __XMHF_VERIFICATION__
@@ -380,14 +380,14 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         // if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
         if (ccmd.bits.caig != 0x1)
         {
-            printf("\n	Invalidatation of CET failed. Halting! (%u)", ccmd.bits.caig);
+            printf("	Invalidatation of CET failed. Halting! (%u)\n", ccmd.bits.caig);
             HALT();
         }
     }
     printf("Done.");
 
     // 6. invalidate IOTLB
-    printf("\n	Invalidating IOTLB...");
+    printf("	Invalidating IOTLB...\n");
     {
         // initialize IOTLB to perform a global invalidation
         iotlb.value = 0;
@@ -408,14 +408,14 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         // if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
         if (iotlb.bits.iaig != 0x1)
         {
-            printf("\n	Invalidation of IOTLB failed. Halting! (%u)", iotlb.bits.iaig);
+            printf("	Invalidation of IOTLB failed. Halting! (%u)\n", iotlb.bits.iaig);
             HALT();
         }
     }
     printf("Done.");
 
     // 7. disable options we dont support
-    printf("\n	Disabling unsupported options...");
+    printf("	Disabling unsupported options...\n");
     {
         // disable advanced fault logging (AFL)
         gcmd.value = 0;
@@ -424,7 +424,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
         if (gsts.bits.afls)
         {
-            printf("\n	Could not disable AFL. Halting!");
+            printf("	Could not disable AFL. Halting!\n");
             HALT();
         }
 
@@ -435,7 +435,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
         if (gsts.bits.qies)
         {
-            printf("\n	Could not disable QI. Halting!");
+            printf("	Could not disable QI. Halting!\n");
             HALT();
         }
 
@@ -446,14 +446,14 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
         if (gsts.bits.ires)
         {
-            printf("\n	Could not disable IR. Halting!");
+            printf("	Could not disable IR. Halting!\n");
             HALT();
         }
     }
     printf("Done.");
 
     // 8. enable device
-    printf("\n	Enabling device...");
+    printf("	Enabling device...\n");
     {
         // enable translation
         gcmd.value = 0;
@@ -476,7 +476,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
     printf("Done.");
 
     // 9. disable protected memory regions (PMR) if available
-    printf("\n	Checking and disabling PMR...");
+    printf("	Checking and disabling PMR...\n");
     {
         VTD_PMEN_REG pmen;
         _vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);

@@ -239,16 +239,16 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
 
 #define DUMP_VCPU_PRINT_INT16(x) \
     { _Static_assert(sizeof(x) == sizeof(u16), "incorrect size"); } \
-    printf("\nCPU(0x%02x): " #x "=0x%04x", (u32) vcpu->id, (x));
+    printf("CPU(0x%02x): " #x "=0x%04x\n", (u32) vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT32(x) \
     { _Static_assert(sizeof(x) == sizeof(u32), "incorrect size"); } \
-    printf("\nCPU(0x%02x): " #x "=0x%08x", vcpu->id, (x));
+    printf("CPU(0x%02x): " #x "=0x%08x\n", vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT64(x) \
     { _Static_assert(sizeof(x) == sizeof(u64), "incorrect size"); } \
-    printf("\nCPU(0x%02x): " #x "=0x%016lx", vcpu->id, (x));
+    printf("CPU(0x%02x): " #x "=0x%016lx\n", vcpu->id, (x));
 #define DUMP_VCPU_PRINT_INT64_INDEX(x, i) \
     { _Static_assert(sizeof((x)[i]) == sizeof(u64), "incorrect size"); } \
-    printf("\nCPU(0x%02x): " #x "[%x]=0x%016lx", vcpu->id, (i), (x)[i]);
+    printf("CPU(0x%02x): " #x "[%x]=0x%016lx\n", vcpu->id, (i), (x)[i]);
 #ifdef __AMD64__
 #define DUMP_VCPU_PRINT_INTNW(x) DUMP_VCPU_PRINT_INT64(x)
 #elif defined(__I386__)
