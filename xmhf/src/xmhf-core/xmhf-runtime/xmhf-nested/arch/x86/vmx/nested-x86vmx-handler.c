@@ -1137,7 +1137,7 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU *vcpu, struct regs *r)
 {
-	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
+	printf("CPU(0x%02x): %s(): r=%p\n", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
@@ -1237,7 +1237,7 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmxoff(VCPU *vcpu, struct regs *r)
 {
-	printf("\nCPU(0x%02x): %s(): r=%p", vcpu->id, __func__, r);
+	printf("CPU(0x%02x): %s(): r=%p\n", vcpu->id, __func__, r);
 	HALT_ON_ERRORCOND(0 && "Not implemented");
 }
 
@@ -1290,7 +1290,7 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU *vcpu, struct regs *r)
 		}
 	} else {
 		/* This may happen if guest tries nested virtualization */
-		printf("\nNot implemented, HALT!");
+		printf("Not implemented, HALT!\n");
 		HALT();
 	}
 }

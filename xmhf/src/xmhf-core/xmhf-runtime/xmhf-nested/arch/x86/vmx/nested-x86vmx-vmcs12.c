@@ -69,7 +69,7 @@ size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding)
 		DECLARE_FIELD_16(encoding, name)
 #include "nested-x86vmx-vmcs12-fields.h"
 	default:
-		printf("\nWarning: unknown encoding requested: 0x%04lx", encoding);
+		printf("Warning: unknown encoding requested: 0x%04lx\n", encoding);
 		return (size_t)(-1);
 	}
 }
