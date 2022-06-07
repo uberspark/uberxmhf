@@ -189,3 +189,28 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 	}
 }
 
+void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
+										char *prefix)
+{
+#define DECLARE_FIELD_16(encoding, name, ...) \
+	printf("CPU(0x%02x): %s" #name " = 0x%04x\n", vcpu->id, prefix, \
+			(u32) vmcs12->name);
+#define DECLARE_FIELD_64(encoding, name, ...) \
+	printf("CPU(0x%02x): %s" #name " = 0x%016llx\n", vcpu->id, prefix, \
+			vmcs12->name);
+#define DECLARE_FIELD_32(encoding, name, ...) \
+	printf("CPU(0x%02x): %s" #name " = 0x%08x\n", vcpu->id, prefix, \
+			vmcs12->name);
+#ifdef __AMD64__
+#define DECLARE_FIELD_NW(encoding, name, ...) \
+	printf("CPU(0x%02x): %s" #name " = 0x%016lx\n", vcpu->id, prefix, \
+			vmcs12->name);
+#elif defined(__I386__)
+#define DECLARE_FIELD_NW(encoding, name, ...) \
+	printf("CPU(0x%02x): %s" #name " = 0x%08lx\n", vcpu->id, prefix, \
+			vmcs12->name);
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+#include "nested-x86vmx-vmcs12-fields.h"
+}
