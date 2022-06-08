@@ -297,7 +297,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
     }
 
     // 3. setup fault logging
-    printf("	Setting Fault-reporting to NON-INTERRUPT mode...\n");
+    printf("	Setting Fault-reporting to NON-INTERRUPT mode...");
     {
         // read FECTL
         fectl.value = 0;
@@ -316,10 +316,10 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
             HALT();
         }
     }
-    printf("Done.");
+    printf("Done.\n");
 
     // 4. setup RET (root-entry)
-    printf("	Setting up RET...\n");
+    printf("	Setting up RET...");
     {
         // setup RTADDR with base of RET
         rtaddr.value = (u64)vtd_ret_paddr;
@@ -348,10 +348,10 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
             HALT();
         }
     }
-    printf("Done.");
+    printf("Done.\n");
 
     // 5. invalidate CET cache
-    printf("	Invalidating CET cache...\n");
+    printf("	Invalidating CET cache...");
     {
         // wait for context cache invalidation request to send
 #ifndef __XMHF_VERIFICATION__
@@ -384,10 +384,10 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
             HALT();
         }
     }
-    printf("Done.");
+    printf("Done.\n");
 
     // 6. invalidate IOTLB
-    printf("	Invalidating IOTLB...\n");
+    printf("	Invalidating IOTLB...");
     {
         // initialize IOTLB to perform a global invalidation
         iotlb.value = 0;
@@ -412,10 +412,10 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
             HALT();
         }
     }
-    printf("Done.");
+    printf("Done.\n");
 
     // 7. disable options we dont support
-    printf("	Disabling unsupported options...\n");
+    printf("	Disabling unsupported options...");
     {
         // disable advanced fault logging (AFL)
         gcmd.value = 0;
@@ -450,10 +450,10 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
             HALT();
         }
     }
-    printf("Done.");
+    printf("Done.\n");
 
     // 8. enable device
-    printf("	Enabling device...\n");
+    printf("	Enabling device...");
     {
         // enable translation
         gcmd.value = 0;
@@ -473,10 +473,10 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         }
 #endif
     }
-    printf("Done.");
+    printf("Done.\n");
 
     // 9. disable protected memory regions (PMR) if available
-    printf("	Checking and disabling PMR...\n");
+    printf("	Checking and disabling PMR...");
     {
         VTD_PMEN_REG pmen;
         _vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
@@ -496,5 +496,5 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
 #endif
         }
     }
-    printf("Done.");
+    printf("Done.\n");
 }
