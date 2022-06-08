@@ -479,7 +479,6 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 		gpa_t addr = vmcs12_info->vmcs12_value.control_Executive_VMCS_pointer;
 		// TODO: related to SMM, check whether this restriction makes sense
 		HALT_ON_ERRORCOND(addr == 0);
-		// TODO: this should be considered KVM bug
 #ifndef __DEBUG_QEMU__
 		__vmx_vmwrite64(0x200C, guestmem_gpa2spa_page(&ctx_pair, addr));
 #endif /* !__DEBUG_QEMU__ */
