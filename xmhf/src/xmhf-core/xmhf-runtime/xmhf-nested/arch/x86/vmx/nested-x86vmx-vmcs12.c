@@ -301,7 +301,7 @@ void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix)
 }
 
 /*
- * Translate VMCS12 (vmcs12) as VMCS02 (already loaded as current VMCS)
+ * Translate VMCS12 (vmcs12) to VMCS02 (already loaded as current VMCS)
  */
 u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 											struct nested_vmcs12 *vmcs12)
@@ -538,14 +538,18 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		u32 val = vmcs12->control_VMX_pin_based;
 		u32 fixed0 = vcpu->vmx_nested_pinbased_ctls;
 		u32 fixed1 = vcpu->vmx_nested_pinbased_ctls >> 32;
-		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
 		__vmx_vmwrite32(0x4000, val);
 	}
 	{
 		u32 val = vmcs12->control_VMX_cpu_based;
 		u32 fixed0 = vcpu->vmx_nested_procbased_ctls;
 		u32 fixed1 = vcpu->vmx_nested_procbased_ctls >> 32;
-		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
 		__vmx_vmwrite32(0x4002, val);
 	}
 	{
@@ -569,7 +573,9 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		u32 val = vmcs12->control_VM_exit_controls;
 		u32 fixed0 = vcpu->vmx_nested_exit_ctls;
 		u32 fixed1 = vcpu->vmx_nested_exit_ctls >> 32;
-		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
 		__vmx_vmwrite32(0x400C, val);
 	}
 	{
@@ -588,7 +594,9 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		u32 val = vmcs12->control_VM_entry_controls;
 		u32 fixed0 = vcpu->vmx_nested_entry_ctls;
 		u32 fixed1 = vcpu->vmx_nested_entry_ctls >> 32;
-		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
 		__vmx_vmwrite32(0x4012, val);
 	}
 	{
@@ -617,7 +625,9 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		u32 val = vmcs12->control_VMX_seccpu_based;
 		u32 fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
 		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
-		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
 		/* XMHF needs the guest to run in EPT to protect memory */
 		val |= VMX_SECPROCBASED_ENABLE_EPT;
 		__vmx_vmwrite32(0x401E, val);
@@ -732,19 +742,17 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		*/
 	}
 
-	// TODO: for host-state fields, update vmcs of guest hv.
 	return 0;
+}
 
-	/*
-		Features notes
-		* "enable VPID" not supported (currently ignore control_vpid in VMCS12)
-		* "VMCS shadowing" not supported (logic not written)
-		* writing to VM-exit information field not supported
-		* VM exit/entry MSR load/store not supported (TODO)
-		* "Enable EPT" not supported yet
-		* "EPTP switching" not supported (the only VMFUNC in Intel SDM)
-		* "Sub-page write permissions for EPT" not supported
-		* "Activate tertiary controls" not supported
-	 */
-
+/*
+ * Translate VMCS02 (already loaded as current VMCS) to VMCS12 (vmcs12)
+ */
+u32 xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
+											struct nested_vmcs12 *vmcs12)
+{
+	(void) vcpu;
+	(void) vmcs12;
+	// TODO
+	return 0;
 }
