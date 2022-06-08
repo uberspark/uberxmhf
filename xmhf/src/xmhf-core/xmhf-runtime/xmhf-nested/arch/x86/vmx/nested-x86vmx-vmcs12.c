@@ -748,11 +748,11 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 /*
  * Translate VMCS02 (already loaded as current VMCS) to VMCS12 (vmcs12)
  */
-u32 xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
-											struct nested_vmcs12 *vmcs12)
+void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
+												struct nested_vmcs12 *vmcs12)
 {
 	(void) vcpu;
 	(void) vmcs12;
 	// TODO
-	return 0;
+	HALT_ON_ERRORCOND(0 && "TODO frontier");
 }

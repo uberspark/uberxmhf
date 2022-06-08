@@ -345,6 +345,20 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 {
 	u32 result;
 
+	/*
+		Features notes
+		* "enable VPID" not supported (currently ignore control_vpid in VMCS12)
+		* "VMCS shadowing" not supported (logic not written)
+		* writing to VM-exit information field not supported
+		* VM exit/entry MSR load/store not supported (TODO)
+		* "Enable EPT" not supported yet
+		* "EPTP switching" not supported (the only VMFUNC in Intel SDM)
+		* "Sub-page write permissions for EPT" not supported
+		* "Activate tertiary controls" not supported
+	 */
+
+	// TODO: for host-state fields, update vmcs of guest hv.
+
 	/* Translate VMCS12 to VMCS02 */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs02_ptr));
 	result = xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(vcpu, &vmcs12_info->vmcs12_value);
@@ -530,7 +544,9 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU *vcpu, struct regs *r)
 {
+	vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
 	xmhf_nested_arch_x86vmx_vmread_all(vcpu, "Nested VMEXIT: ");
+	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, &vmcs12_info->vmcs12_value);
 	(void) r;
 	HALT_ON_ERRORCOND(0 && "TODO frontier");
 }
