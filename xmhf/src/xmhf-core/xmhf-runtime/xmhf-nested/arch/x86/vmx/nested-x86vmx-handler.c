@@ -710,9 +710,8 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 		u32 fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
 		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
 		HALT_ON_ERRORCOND((~val & fixed0) == 0 && (val & ~fixed1) == 0);
-		/* XMHF needs the guest to run unrestricted and in EPT */
+		/* XMHF needs the guest to run in EPT to protect memory */
 		val |= VMX_SECPROCBASED_ENABLE_EPT;
-		val |= VMX_SECPROCBASED_UNRESTRICTED_GUEST;
 		__vmx_vmwrite32(0x401E, val);
 	}
 	if (_vmx_has_pause_loop_exiting(vcpu)) {
