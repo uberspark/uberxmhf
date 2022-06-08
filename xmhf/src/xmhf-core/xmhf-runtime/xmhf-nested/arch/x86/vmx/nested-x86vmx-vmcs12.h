@@ -48,6 +48,9 @@
 // Handle VMCS in the guest
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 
+#ifndef _NESTED_X86VMX_VMCS12_H_
+#define _NESTED_X86VMX_VMCS12_H_
+
 struct nested_vmcs12 {
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	u16 name;
@@ -71,3 +74,4 @@ void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
 										char *prefix);
 void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix);
 
+#endif /* _NESTED_X86VMX_VMCS12_H_ */
