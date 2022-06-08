@@ -51,6 +51,9 @@
 #ifndef _NESTED_X86VMX_VMINSTERR_H_
 #define _NESTED_X86VMX_VMINSTERR_H_
 
+/* The VM instruction succeeded (not in SDM) */
+#define VM_INST_SUCCESS 0
+
 /* VMCALL executed in VMX root operation */
 #define VM_INST_ERRNO_VMCALL_IN_VMXROOT 1
 /* VMCLEAR with invalid physical address */

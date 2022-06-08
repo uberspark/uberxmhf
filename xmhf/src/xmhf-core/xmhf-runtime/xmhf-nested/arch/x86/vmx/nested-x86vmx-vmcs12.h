@@ -73,5 +73,7 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
 										char *prefix);
 void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix);
+u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
+											struct nested_vmcs12 *vmcs12);
 
 #endif /* _NESTED_X86VMX_VMCS12_H_ */
