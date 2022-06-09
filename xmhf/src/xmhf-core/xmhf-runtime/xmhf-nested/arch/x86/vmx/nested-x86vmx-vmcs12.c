@@ -786,6 +786,22 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	HALT_ON_ERRORCOND(vcpu->vmcs.host_GS_selector == __vmx_vmread16(0x0C0A));
 	HALT_ON_ERRORCOND(vcpu->vmcs.host_TR_selector == __vmx_vmread16(0x0C0C));
 
+	/* 16-Bit fields: VMCS12 host -> VMCS02 guest */
+	vcpu->vmcs.guest_ES_selector = vmcs12->host_ES_selector;
+	vcpu->vmcs.guest_CS_selector = vmcs12->host_CS_selector;
+	vcpu->vmcs.guest_SS_selector = vmcs12->host_SS_selector;
+	vcpu->vmcs.guest_DS_selector = vmcs12->host_DS_selector;
+	vcpu->vmcs.guest_FS_selector = vmcs12->host_FS_selector;
+	vcpu->vmcs.guest_GS_selector = vmcs12->host_GS_selector;
+	{
+		/*
+		 * SDM volume 3 26.5.2 "Loading Host Segment and Descriptor-Table
+		 * Registers": "the selector is cleared to 0000H".
+		 */
+		vcpu->vmcs.guest_LDTR_selector = 0x0000U;
+	}
+	vcpu->vmcs.guest_TR_selector = vmcs12->host_TR_selector;
+
 	/* 64-Bit Control Fields */
 	{
 		vmcs12->control_IO_BitmapA_address = __vmx_vmread64(0x2000);
@@ -947,6 +963,40 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		HALT_ON_ERRORCOND(__vmx_vmread64(0x2C06) == rdmsr64(IA32_PKRS));
 	}
 
+	/* 64-Bit fields: VMCS12 host -> VMCS02 guest */
+	if (_vmx_has_vmexit_load_ia32_pat(vcpu)) {
+		// TODO: check whether guest hypervisor enables the feature
+		if (0) {
+			wrmsr64(MSR_IA32_PAT, __vmx_vmread64(0x2C00));
+		}
+	}
+	if (_vmx_has_vmexit_load_ia32_efer(vcpu)) {
+		// TODO: check whether guest hypervisor enables the feature
+		if (0) {
+			wrmsr64(MSR_EFER, __vmx_vmread64(0x2C02));
+		}
+	}
+	if (_vmx_has_vmexit_load_ia32_perf_global_ctrl(vcpu)) {
+		u32 eax, ebx, ecx, edx;
+		cpuid(0x0, &eax, &ebx, &ecx, &edx);
+		if (eax >= 0xA) {
+			cpuid(0xA, &eax, &ebx, &ecx, &edx);
+			if (eax & 0xffU) {
+				// TODO: check whether guest hypervisor enables the feature
+				if (0) {
+					wrmsr64(IA32_PERF_GLOBAL_CTRL, __vmx_vmread64(0x2C04));
+				}
+			}
+		}
+	}
+	if (_vmx_has_vmexit_load_pkrs(vcpu)) {
+		// TODO: check whether guest hypervisor enables the feature
+		if (0) {
+			wrmsr64(IA32_PKRS, __vmx_vmread64(0x2C06));
+		}
+	}
+
+
 	/* 32-Bit Control Fields */
 	{
 		vmcs12->control_VMX_pin_based = __vmx_vmread32(0x4000);
@@ -1047,6 +1097,9 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	/* 32-Bit Host-State Field */
 	HALT_ON_ERRORCOND(vcpu->vmcs.host_SYSENTER_CS == __vmx_vmread32(0x4C00));
 
+	/* 32-Bit fields: VMCS12 host -> VMCS02 guest */
+	vcpu->vmcs.guest_SYSENTER_CS = vmcs12->host_IA32_SYSENTER_CS;
+
 	/* Natural-Width Control Fields */
 	{
 		vmcs12->control_CR0_mask = __vmx_vmreadNW(0x6000);
@@ -1111,6 +1164,29 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C12) == vcpu->vmcs.host_SYSENTER_EIP);
 	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C14) == vcpu->vmcs.host_RSP);
 	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C16) == vcpu->vmcs.host_RIP);
+	if (_vmx_has_vmexit_load_cet_state(vcpu)) {
+		/*
+		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
+		 * To implement load CET state correctly, need to modify:
+		 * * encoding 0x6C18: host_IA32_S_CET
+		 * * encoding 0x6C1A: host_SSP
+		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
+		 */
+	}
+
+	/* Natural-Width fields: VMCS12 host -> VMCS02 guest */
+	vcpu->vmcs.guest_CR0 = vmcs12->host_CR0;
+	vcpu->vmcs.guest_CR3 = vmcs12->host_CR3;
+	vcpu->vmcs.guest_CR4 = vmcs12->host_CR4;
+	vcpu->vmcs.guest_FS_base = vmcs12->host_FS_base;
+	vcpu->vmcs.guest_GS_base = vmcs12->host_GS_base;
+	vcpu->vmcs.guest_TR_base = vmcs12->host_TR_base;
+	vcpu->vmcs.guest_GDTR_base = vmcs12->host_GDTR_base;
+	vcpu->vmcs.guest_IDTR_base = vmcs12->host_IDTR_base;
+	vcpu->vmcs.guest_SYSENTER_ESP = vmcs12->host_SYSENTER_ESP;
+	vcpu->vmcs.guest_SYSENTER_EIP = vmcs12->host_SYSENTER_EIP;
+	vcpu->vmcs.guest_RSP = vmcs12->host_RSP;
+	vcpu->vmcs.guest_RIP = vmcs12->host_RIP;
 	if (_vmx_has_vmexit_load_cet_state(vcpu)) {
 		/*
 		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.

@@ -485,6 +485,14 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 		mask &= ~(1ULL << (32 + VMX_VMEXIT_SAVE_IA32_EFER));
 		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_IA32_EFER));
 		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_CET_STATE));
+		/*
+		 * For the following, see "check whether guest hypervisor enables the
+		 * feature" in xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12().
+		 */
+		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_IA32_PAT));
+		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_IA32_EFER));
+		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_IA32_PERF_GLOBAL_CTRL));
+		mask &= ~(1ULL << (32 + VMX_VMEXIT_LOAD_PKRS));
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR] &= mask;
 	}
 	{
