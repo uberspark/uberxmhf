@@ -735,7 +735,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		 * * encoding 0x6C18: host_IA32_S_CET
 		 * * encoding 0x6C1A: host_SSP
 		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
-		*/
+		 */
 	}
 
 	return 0;
@@ -1047,73 +1047,70 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	/* 32-Bit Host-State Field */
 	HALT_ON_ERRORCOND(vcpu->vmcs.host_SYSENTER_CS == __vmx_vmread32(0x4C00));
 
-	// TODO
-	HALT_ON_ERRORCOND(0 && "TODO frontier");
-#if 0
-
 	/* Natural-Width Control Fields */
 	{
-		__vmx_vmwriteNW(0x6000, vmcs12->control_CR0_mask);
-		__vmx_vmwriteNW(0x6002, vmcs12->control_CR4_mask);
-		__vmx_vmwriteNW(0x6004, vmcs12->control_CR0_shadow);
-		__vmx_vmwriteNW(0x6006, vmcs12->control_CR4_shadow);
+		vmcs12->control_CR0_mask = __vmx_vmreadNW(0x6000);
+		vmcs12->control_CR4_mask = __vmx_vmreadNW(0x6002);
+		vmcs12->control_CR0_shadow = __vmx_vmreadNW(0x6004);
+		vmcs12->control_CR4_shadow = __vmx_vmreadNW(0x6006);
 #ifndef __DEBUG_QEMU__
-		__vmx_vmwriteNW(0x6008, vmcs12->control_CR3_target0);
-		__vmx_vmwriteNW(0x600A, vmcs12->control_CR3_target1);
-		__vmx_vmwriteNW(0x600C, vmcs12->control_CR3_target2);
-		__vmx_vmwriteNW(0x600E, vmcs12->control_CR3_target3);
+		vmcs12->control_CR3_target0 = __vmx_vmreadNW(0x6008);
+		vmcs12->control_CR3_target1 = __vmx_vmreadNW(0x600A);
+		vmcs12->control_CR3_target2 = __vmx_vmreadNW(0x600C);
+		vmcs12->control_CR3_target3 = __vmx_vmreadNW(0x600E);
 #endif /* !__DEBUG_QEMU__ */
 	}
 
 	/* Natural-Width Read-Only Data Fields */
-DECLARE_FIELD_NW_RO(0x6400, info_exit_qualification, UNDEFINED)
-DECLARE_FIELD_NW_RO(0x6402, info_IO_RCX, UNDEFINED)
-DECLARE_FIELD_NW_RO(0x6404, info_IO_RSI, UNDEFINED)
-DECLARE_FIELD_NW_RO(0x6406, info_IO_RDI, UNDEFINED)
-DECLARE_FIELD_NW_RO(0x6408, info_IO_RIP, UNDEFINED)
-DECLARE_FIELD_NW_RO(0x640A, info_guest_linear_address, UNDEFINED)
+	vmcs12->info_exit_qualification = __vmx_vmreadNW(0x6400);
+#ifndef __DEBUG_QEMU__
+	vmcs12->info_IO_RCX = __vmx_vmreadNW(0x6402);
+	vmcs12->info_IO_RSI = __vmx_vmreadNW(0x6404);
+	vmcs12->info_IO_RDI = __vmx_vmreadNW(0x6406);
+	vmcs12->info_IO_RIP = __vmx_vmreadNW(0x6408);
+#endif /* !__DEBUG_QEMU__ */
+	vmcs12->info_guest_linear_address = __vmx_vmreadNW(0x640A);
 
 	/* Natural-Width Guest-State Fields */
-	__vmx_vmwriteNW(0x6800, vmcs12->guest_CR0);
-	__vmx_vmwriteNW(0x6802, vmcs12->guest_CR3);
-	__vmx_vmwriteNW(0x6804, vmcs12->guest_CR4);
-	__vmx_vmwriteNW(0x6806, vmcs12->guest_ES_base);
-	__vmx_vmwriteNW(0x6808, vmcs12->guest_CS_base);
-	__vmx_vmwriteNW(0x680A, vmcs12->guest_SS_base);
-	__vmx_vmwriteNW(0x680C, vmcs12->guest_DS_base);
-	__vmx_vmwriteNW(0x680E, vmcs12->guest_FS_base);
-	__vmx_vmwriteNW(0x6810, vmcs12->guest_GS_base);
-	__vmx_vmwriteNW(0x6812, vmcs12->guest_LDTR_base);
-	__vmx_vmwriteNW(0x6814, vmcs12->guest_TR_base);
-	__vmx_vmwriteNW(0x6816, vmcs12->guest_GDTR_base);
-	__vmx_vmwriteNW(0x6818, vmcs12->guest_IDTR_base);
-	__vmx_vmwriteNW(0x681A, vmcs12->guest_DR7);
-	__vmx_vmwriteNW(0x681C, vmcs12->guest_RSP);
-	__vmx_vmwriteNW(0x681E, vmcs12->guest_RIP);
-	__vmx_vmwriteNW(0x6820, vmcs12->guest_RFLAGS);
-	__vmx_vmwriteNW(0x6822, vmcs12->guest_pending_debug_x);
-	__vmx_vmwriteNW(0x6824, vmcs12->guest_SYSENTER_ESP);
-	__vmx_vmwriteNW(0x6826, vmcs12->guest_SYSENTER_EIP);
+	vmcs12->guest_CR0 = __vmx_vmreadNW(0x6800);
+	vmcs12->guest_CR3 = __vmx_vmreadNW(0x6802);
+	vmcs12->guest_CR4 = __vmx_vmreadNW(0x6804);
+	vmcs12->guest_ES_base = __vmx_vmreadNW(0x6806);
+	vmcs12->guest_CS_base = __vmx_vmreadNW(0x6808);
+	vmcs12->guest_SS_base = __vmx_vmreadNW(0x680A);
+	vmcs12->guest_DS_base = __vmx_vmreadNW(0x680C);
+	vmcs12->guest_FS_base = __vmx_vmreadNW(0x680E);
+	vmcs12->guest_GS_base = __vmx_vmreadNW(0x6810);
+	vmcs12->guest_LDTR_base = __vmx_vmreadNW(0x6812);
+	vmcs12->guest_TR_base = __vmx_vmreadNW(0x6814);
+	vmcs12->guest_GDTR_base = __vmx_vmreadNW(0x6816);
+	vmcs12->guest_IDTR_base = __vmx_vmreadNW(0x6818);
+	vmcs12->guest_DR7 = __vmx_vmreadNW(0x681A);
+	vmcs12->guest_RSP = __vmx_vmreadNW(0x681C);
+	vmcs12->guest_RIP = __vmx_vmreadNW(0x681E);
+	vmcs12->guest_RFLAGS = __vmx_vmreadNW(0x6820);
+	vmcs12->guest_pending_debug_x = __vmx_vmreadNW(0x6822);
+	vmcs12->guest_SYSENTER_ESP = __vmx_vmreadNW(0x6824);
+	vmcs12->guest_SYSENTER_EIP = __vmx_vmreadNW(0x6826);
 	if (_vmx_has_vmentry_load_cet_state(vcpu)) {
-		__vmx_vmwriteNW(0x6828, vmcs12->guest_IA32_S_CET);
-		__vmx_vmwriteNW(0x682A, vmcs12->guest_SSP);
-		__vmx_vmwriteNW(0x682C,
-			vmcs12->guest_IA32_INTERRUPT_SSP_TABLE_ADDR);
+		vmcs12->guest_IA32_S_CET = __vmx_vmreadNW(0x6828);
+		vmcs12->guest_SSP = __vmx_vmreadNW(0x682A);
+		vmcs12->guest_IA32_INTERRUPT_SSP_TABLE_ADDR = __vmx_vmreadNW(0x682C);
 	}
 
 	/* Natural-Width Host-State Fields */
-	__vmx_vmwriteNW(0x6C00, vcpu->vmcs.host_CR0);
-	__vmx_vmwriteNW(0x6C02, vcpu->vmcs.host_CR3);
-	__vmx_vmwriteNW(0x6C04, vcpu->vmcs.host_CR4);
-	__vmx_vmwriteNW(0x6C06, vcpu->vmcs.host_FS_base);
-	__vmx_vmwriteNW(0x6C08, vcpu->vmcs.host_GS_base);
-	__vmx_vmwriteNW(0x6C0A, vcpu->vmcs.host_TR_base);
-	__vmx_vmwriteNW(0x6C0C, vcpu->vmcs.host_GDTR_base);
-	__vmx_vmwriteNW(0x6C0E, vcpu->vmcs.host_IDTR_base);
-	__vmx_vmwriteNW(0x6C10, vcpu->vmcs.host_SYSENTER_ESP);
-	__vmx_vmwriteNW(0x6C12, vcpu->vmcs.host_SYSENTER_EIP);
-	__vmx_vmwriteNW(0x6C14, vcpu->vmcs.host_RSP);
-	__vmx_vmwriteNW(0x6C16, vcpu->vmcs.host_RIP);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C00) == vcpu->vmcs.host_CR0);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C02) == vcpu->vmcs.host_CR3);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C04) == vcpu->vmcs.host_CR4);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C06) == vcpu->vmcs.host_FS_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C08) == vcpu->vmcs.host_GS_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C0A) == vcpu->vmcs.host_TR_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C0C) == vcpu->vmcs.host_GDTR_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C0E) == vcpu->vmcs.host_IDTR_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C10) == vcpu->vmcs.host_SYSENTER_ESP);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C12) == vcpu->vmcs.host_SYSENTER_EIP);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C14) == vcpu->vmcs.host_RSP);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C16) == vcpu->vmcs.host_RIP);
 	if (_vmx_has_vmexit_load_cet_state(vcpu)) {
 		/*
 		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
@@ -1121,7 +1118,6 @@ DECLARE_FIELD_NW_RO(0x640A, info_guest_linear_address, UNDEFINED)
 		 * * encoding 0x6C18: host_IA32_S_CET
 		 * * encoding 0x6C1A: host_SSP
 		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
-		*/
+		 */
 	}
-#endif
 }
