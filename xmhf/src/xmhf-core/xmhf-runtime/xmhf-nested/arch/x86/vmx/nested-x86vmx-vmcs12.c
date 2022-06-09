@@ -1005,52 +1005,51 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		vmcs12->control_PLE_window = __vmx_vmread32(0x4022);
 	}
 
-	// TODO
-	HALT_ON_ERRORCOND(0 && "TODO frontier");
-#if 0
-
 	/* 32-Bit Read-Only Data Fields */
-DECLARE_FIELD_32_RO(0x4400, info_vminstr_error, UNDEFINED)
-DECLARE_FIELD_32_RO(0x4402, info_vmexit_reason, UNDEFINED)
-DECLARE_FIELD_32_RO(0x4404, info_vmexit_interrupt_information, UNDEFINED)
-DECLARE_FIELD_32_RO(0x4406, info_vmexit_interrupt_error_code, UNDEFINED)
-DECLARE_FIELD_32_RO(0x4408, info_IDT_vectoring_information, UNDEFINED)
-DECLARE_FIELD_32_RO(0x440A, info_IDT_vectoring_error_code, UNDEFINED)
-DECLARE_FIELD_32_RO(0x440C, info_vmexit_instruction_length, UNDEFINED)
-DECLARE_FIELD_32_RO(0x440E, info_vmx_instruction_information, UNDEFINED)
+	vmcs12->info_vminstr_error = __vmx_vmread32(0x4400);
+	vmcs12->info_vmexit_reason = __vmx_vmread32(0x4402);
+	vmcs12->info_vmexit_interrupt_information = __vmx_vmread32(0x4404);
+	vmcs12->info_vmexit_interrupt_error_code = __vmx_vmread32(0x4406);
+	vmcs12->info_IDT_vectoring_information = __vmx_vmread32(0x4408);
+	vmcs12->info_IDT_vectoring_error_code = __vmx_vmread32(0x440A);
+	vmcs12->info_vmexit_instruction_length = __vmx_vmread32(0x440C);
+	vmcs12->info_vmx_instruction_information = __vmx_vmread32(0x440E);
 
 	/* 32-Bit Guest-State Fields */
-	__vmx_vmwrite32(0x4800, vmcs12->guest_ES_limit);
-	__vmx_vmwrite32(0x4802, vmcs12->guest_CS_limit);
-	__vmx_vmwrite32(0x4804, vmcs12->guest_SS_limit);
-	__vmx_vmwrite32(0x4806, vmcs12->guest_DS_limit);
-	__vmx_vmwrite32(0x4808, vmcs12->guest_FS_limit);
-	__vmx_vmwrite32(0x480A, vmcs12->guest_GS_limit);
-	__vmx_vmwrite32(0x480C, vmcs12->guest_LDTR_limit);
-	__vmx_vmwrite32(0x480E, vmcs12->guest_TR_limit);
-	__vmx_vmwrite32(0x4810, vmcs12->guest_GDTR_limit);
-	__vmx_vmwrite32(0x4812, vmcs12->guest_IDTR_limit);
-	__vmx_vmwrite32(0x4814, vmcs12->guest_ES_access_rights);
-	__vmx_vmwrite32(0x4816, vmcs12->guest_CS_access_rights);
-	__vmx_vmwrite32(0x4818, vmcs12->guest_SS_access_rights);
-	__vmx_vmwrite32(0x481A, vmcs12->guest_DS_access_rights);
-	__vmx_vmwrite32(0x481C, vmcs12->guest_FS_access_rights);
-	__vmx_vmwrite32(0x481E, vmcs12->guest_GS_access_rights);
-	__vmx_vmwrite32(0x4820, vmcs12->guest_LDTR_access_rights);
-	__vmx_vmwrite32(0x4822, vmcs12->guest_TR_access_rights);
-	__vmx_vmwrite32(0x4824, vmcs12->guest_interruptibility);
-	__vmx_vmwrite32(0x4826, vmcs12->guest_activity_state);
+	vmcs12->guest_ES_limit = __vmx_vmread32(0x4800);
+	vmcs12->guest_CS_limit = __vmx_vmread32(0x4802);
+	vmcs12->guest_SS_limit = __vmx_vmread32(0x4804);
+	vmcs12->guest_DS_limit = __vmx_vmread32(0x4806);
+	vmcs12->guest_FS_limit = __vmx_vmread32(0x4808);
+	vmcs12->guest_GS_limit = __vmx_vmread32(0x480A);
+	vmcs12->guest_LDTR_limit = __vmx_vmread32(0x480C);
+	vmcs12->guest_TR_limit = __vmx_vmread32(0x480E);
+	vmcs12->guest_GDTR_limit = __vmx_vmread32(0x4810);
+	vmcs12->guest_IDTR_limit = __vmx_vmread32(0x4812);
+	vmcs12->guest_ES_access_rights = __vmx_vmread32(0x4814);
+	vmcs12->guest_CS_access_rights = __vmx_vmread32(0x4816);
+	vmcs12->guest_SS_access_rights = __vmx_vmread32(0x4818);
+	vmcs12->guest_DS_access_rights = __vmx_vmread32(0x481A);
+	vmcs12->guest_FS_access_rights = __vmx_vmread32(0x481C);
+	vmcs12->guest_GS_access_rights = __vmx_vmread32(0x481E);
+	vmcs12->guest_LDTR_access_rights = __vmx_vmread32(0x4820);
+	vmcs12->guest_TR_access_rights = __vmx_vmread32(0x4822);
+	vmcs12->guest_interruptibility = __vmx_vmread32(0x4824);
+	vmcs12->guest_activity_state = __vmx_vmread32(0x4826);
 #ifndef __DEBUG_QEMU__
-	__vmx_vmwrite32(0x4828, vmcs12->guest_SMBASE);
+	vmcs12->guest_SMBASE = __vmx_vmread32(0x4828);
 #endif /* !__DEBUG_QEMU__ */
-	__vmx_vmwrite32(0x482A, vmcs12->guest_SYSENTER_CS);
+	vmcs12->guest_SYSENTER_CS = __vmx_vmread32(0x482A);
 	if (_vmx_has_activate_vmx_preemption_timer(vcpu)) {
-		u32 val = vmcs12->guest_VMX_preemption_timer_value;
-		__vmx_vmwrite32(0x482E, val);
+		vmcs12->guest_VMX_preemption_timer_value = __vmx_vmread32(0x482E);
 	}
 
 	/* 32-Bit Host-State Field */
-	__vmx_vmwrite32(0x4C00, vcpu->vmcs.host_SYSENTER_CS);
+	HALT_ON_ERRORCOND(vcpu->vmcs.host_SYSENTER_CS == __vmx_vmread32(0x4C00));
+
+	// TODO
+	HALT_ON_ERRORCOND(0 && "TODO frontier");
+#if 0
 
 	/* Natural-Width Control Fields */
 	{
