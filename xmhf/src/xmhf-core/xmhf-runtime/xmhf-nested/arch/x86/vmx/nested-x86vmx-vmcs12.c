@@ -509,10 +509,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	}
 
 	/* 64-Bit Host-State Fields */
-	/*
-	 * Note: looks like XMHF does not care about these fields. So we treat
-	 * these similar to guest state fields.
-	 */
 	if (_vmx_has_vmexit_load_ia32_pat(vcpu)) {
 		__vmx_vmwrite64(0x2C00, rdmsr64(MSR_IA32_PAT));
 	}
@@ -891,54 +887,50 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	if (_vmx_has_enable_enclv_exiting(vcpu)) {
 		vmcs12->control_ENCLV_exiting_bitmap = __vmx_vmread64(0x2036);
 	}
-	// TODO
-	HALT_ON_ERRORCOND(0 && "TODO frontier");
-#if 0
 
 	/* 64-Bit Read-Only Data Field: skipped */
+	if (_vmx_has_enable_ept(vcpu)) {
+		vmcs12->guest_paddr = __vmx_vmread64(0x2400);
+	}
 
 	/* 64-Bit Guest-State Fields */
-	__vmx_vmwrite64(0x2800, vmcs12->guest_VMCS_link_pointer);
-	__vmx_vmwrite64(0x2802, vmcs12->guest_IA32_DEBUGCTL);
+	vmcs12->guest_VMCS_link_pointer = __vmx_vmread64(0x2800);
+	vmcs12->guest_IA32_DEBUGCTL = __vmx_vmread64(0x2802);
 	if (_vmx_has_vmexit_save_ia32_pat(vcpu) ||
 		_vmx_has_vmentry_load_ia32_pat(vcpu)) {
-		__vmx_vmwrite64(0x2804, vmcs12->guest_IA32_PAT);
+		vmcs12->guest_IA32_PAT = __vmx_vmread64(0x2804);
 	}
 	if (_vmx_has_vmexit_save_ia32_efer(vcpu) ||
 		_vmx_has_vmentry_load_ia32_efer(vcpu)) {
-		__vmx_vmwrite64(0x2806, vmcs12->guest_IA32_EFER);
+		vmcs12->guest_IA32_EFER = __vmx_vmread64(0x2806);
 	}
 	if (_vmx_has_vmentry_load_ia32_perf_global_ctrl(vcpu)) {
-		__vmx_vmwrite64(0x2808, vmcs12->guest_IA32_PERF_GLOBAL_CTRL);
+		vmcs12->guest_IA32_PERF_GLOBAL_CTRL = __vmx_vmread64(0x2808);
 	}
 	if (_vmx_has_enable_ept(vcpu)) {
-		__vmx_vmwrite64(0x280A, vmcs12->guest_PDPTE0);
-		__vmx_vmwrite64(0x280C, vmcs12->guest_PDPTE1);
-		__vmx_vmwrite64(0x280E, vmcs12->guest_PDPTE2);
-		__vmx_vmwrite64(0x2810, vmcs12->guest_PDPTE3);
+		vmcs12->guest_PDPTE0 = __vmx_vmread64(0x280A);
+		vmcs12->guest_PDPTE1 = __vmx_vmread64(0x280C);
+		vmcs12->guest_PDPTE2 = __vmx_vmread64(0x280E);
+		vmcs12->guest_PDPTE3 = __vmx_vmread64(0x2810);
 	}
 	if (_vmx_has_vmexit_clear_ia32_bndcfgs(vcpu) || 
 		_vmx_has_vmentry_load_ia32_bndcfgs(vcpu)) {
-		__vmx_vmwrite64(0x2812, vmcs12->guest_IA32_BNDCFGS);
+		vmcs12->guest_IA32_BNDCFGS = __vmx_vmread64(0x2812);
 	}
 	if (_vmx_has_vmexit_clear_ia32_rtit_ctl(vcpu) ||
 		_vmx_has_vmentry_load_ia32_rtit_ctl(vcpu)) {
-		__vmx_vmwrite64(0x2814, vmcs12->guest_IA32_RTIT_CTL);
+		vmcs12->guest_IA32_RTIT_CTL = __vmx_vmread64(0x2814);
 	}
 	if (_vmx_has_vmentry_load_pkrs(vcpu)) {
-		__vmx_vmwrite64(0x2818, vmcs12->guest_IA32_PKRS);
+		vmcs12->guest_IA32_PKRS = __vmx_vmread64(0x2818);
 	}
 
 	/* 64-Bit Host-State Fields */
-	/*
-	 * Note: looks like XMHF does not care about these fields. So we treat
-	 * these similar to guest state fields.
-	 */
 	if (_vmx_has_vmexit_load_ia32_pat(vcpu)) {
-		__vmx_vmwrite64(0x2C00, rdmsr64(MSR_IA32_PAT));
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x2C00) == rdmsr64(MSR_IA32_PAT));
 	}
 	if (_vmx_has_vmexit_load_ia32_efer(vcpu)) {
-		__vmx_vmwrite64(0x2C02, rdmsr64(MSR_EFER));
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x2C02) == rdmsr64(MSR_EFER));
 	}
 	if (_vmx_has_vmexit_load_ia32_perf_global_ctrl(vcpu)) {
 		u32 eax, ebx, ecx, edx;
@@ -946,13 +938,18 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		if (eax >= 0xA) {
 			cpuid(0xA, &eax, &ebx, &ecx, &edx);
 			if (eax & 0xffU) {
-				__vmx_vmwrite64(0x2C04, rdmsr64(IA32_PERF_GLOBAL_CTRL));
+				HALT_ON_ERRORCOND(__vmx_vmread64(0x2C04) ==
+									rdmsr64(IA32_PERF_GLOBAL_CTRL));
 			}
 		}
 	}
 	if (_vmx_has_vmexit_load_pkrs(vcpu)) {
-		__vmx_vmwrite64(0x2C06, rdmsr64(IA32_PKRS));
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x2C06) == rdmsr64(IA32_PKRS));
 	}
+
+	// TODO
+	HALT_ON_ERRORCOND(0 && "TODO frontier");
+#if 0
 
 	/* 32-Bit Control Fields */
 	{
@@ -1062,6 +1059,14 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	}
 
 	/* 32-Bit Read-Only Data Fields */
+DECLARE_FIELD_32_RO(0x4400, info_vminstr_error, UNDEFINED)
+DECLARE_FIELD_32_RO(0x4402, info_vmexit_reason, UNDEFINED)
+DECLARE_FIELD_32_RO(0x4404, info_vmexit_interrupt_information, UNDEFINED)
+DECLARE_FIELD_32_RO(0x4406, info_vmexit_interrupt_error_code, UNDEFINED)
+DECLARE_FIELD_32_RO(0x4408, info_IDT_vectoring_information, UNDEFINED)
+DECLARE_FIELD_32_RO(0x440A, info_IDT_vectoring_error_code, UNDEFINED)
+DECLARE_FIELD_32_RO(0x440C, info_vmexit_instruction_length, UNDEFINED)
+DECLARE_FIELD_32_RO(0x440E, info_vmx_instruction_information, UNDEFINED)
 
 	/* 32-Bit Guest-State Fields */
 	__vmx_vmwrite32(0x4800, vmcs12->guest_ES_limit);
@@ -1111,6 +1116,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	}
 
 	/* Natural-Width Read-Only Data Fields */
+DECLARE_FIELD_NW_RO(0x6400, info_exit_qualification, UNDEFINED)
+DECLARE_FIELD_NW_RO(0x6402, info_IO_RCX, UNDEFINED)
+DECLARE_FIELD_NW_RO(0x6404, info_IO_RSI, UNDEFINED)
+DECLARE_FIELD_NW_RO(0x6406, info_IO_RDI, UNDEFINED)
+DECLARE_FIELD_NW_RO(0x6408, info_IO_RIP, UNDEFINED)
+DECLARE_FIELD_NW_RO(0x640A, info_guest_linear_address, UNDEFINED)
 
 	/* Natural-Width Guest-State Fields */
 	__vmx_vmwriteNW(0x6800, vmcs12->guest_CR0);
