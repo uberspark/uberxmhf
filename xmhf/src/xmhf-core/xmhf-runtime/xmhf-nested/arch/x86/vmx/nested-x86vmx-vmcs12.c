@@ -789,131 +789,111 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	HALT_ON_ERRORCOND(vcpu->vmcs.host_FS_selector == __vmx_vmread16(0x0C08));
 	HALT_ON_ERRORCOND(vcpu->vmcs.host_GS_selector == __vmx_vmread16(0x0C0A));
 	HALT_ON_ERRORCOND(vcpu->vmcs.host_TR_selector == __vmx_vmread16(0x0C0C));
-	// TODO
-	HALT_ON_ERRORCOND(0 && "TODO frontier");
 
-#if 0
 	/* 64-Bit Control Fields */
 	{
-		gpa_t addr = vmcs12->control_IO_BitmapA_address;
-		__vmx_vmwrite64(0x2000, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_IO_BitmapA_address = __vmx_vmread64(0x2000);
 	}
 	{
-		gpa_t addr = vmcs12->control_IO_BitmapB_address;
-		__vmx_vmwrite64(0x2002, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_IO_BitmapB_address = __vmx_vmread64(0x2002);
 	}
 	if (_vmx_has_use_msr_bitmaps(vcpu)) {
-		gpa_t addr = vmcs12->control_MSR_Bitmaps_address;
-		__vmx_vmwrite64(0x2004, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_MSR_Bitmaps_address = __vmx_vmread64(0x2004);
 	}
 	{
-		gpa_t addr = vmcs12->control_VM_exit_MSR_store_address;
 		// TODO: need to multiplex MSR loading / storing, which is not implemented yet.
-		addr = guestmem_gpa2spa_page(&ctx_pair, 0);
-		__vmx_vmwrite64(0x2006, addr);
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x2006) == 0);
+		// vmcs12->control_VM_exit_MSR_store_address = ...
 	}
 	{
-		gpa_t addr = vmcs12->control_VM_exit_MSR_load_address;
 		// TODO: need to multiplex MSR loading / storing, which is not implemented yet.
-		addr = guestmem_gpa2spa_page(&ctx_pair, 0);
-		__vmx_vmwrite64(0x2008, addr);
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x2008) == 0);
+		// vmcs12->control_VM_exit_MSR_load_address = ...;
 	}
 	{
-		gpa_t addr = vmcs12->control_VM_entry_MSR_load_address;
 		// TODO: need to multiplex MSR loading / storing, which is not implemented yet.
-		addr = guestmem_gpa2spa_page(&ctx_pair, 0);
-		__vmx_vmwrite64(0x200A, addr);
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x200A) == 0);
+		// vmcs12->control_VM_entry_MSR_load_address = ...;
 	}
 	{
-		gpa_t addr = vmcs12->control_Executive_VMCS_pointer;
 		// TODO: related to SMM, check whether this restriction makes sense
-		HALT_ON_ERRORCOND(addr == 0);
 #ifndef __DEBUG_QEMU__
-		__vmx_vmwrite64(0x200C, guestmem_gpa2spa_page(&ctx_pair, addr));
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x200C) == 0);
 #endif /* !__DEBUG_QEMU__ */
+		// vmcs12->control_Executive_VMCS_pointer = ...;
 	}
 	if (_vmx_has_enable_pml(vcpu)) {
-		gpa_t addr = vmcs12->control_PML_address;
-		__vmx_vmwrite64(0x200E, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_PML_address = __vmx_vmread64(0x200E);
 	}
 	{
-		__vmx_vmwrite64(0x2010, vmcs12->control_TSC_offset);
+		vmcs12->control_TSC_offset = __vmx_vmread64(0x2010);
 	}
 	if (_vmx_has_virtualize_apic_access(vcpu)) {
-		gpa_t addr = vmcs12->control_virtual_APIC_address;
-		__vmx_vmwrite64(0x2012, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_virtual_APIC_address = __vmx_vmread64(0x2012);
 	}
 	if (_vmx_has_process_posted_interrupts(vcpu)) {
-		gpa_t addr = vmcs12->control_APIC_access_address;
-		__vmx_vmwrite64(0x2014, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_APIC_access_address = __vmx_vmread64(0x2014);
 	}
 	if (_vmx_has_process_posted_interrupts(vcpu)) {
-		gpa_t addr = vmcs12->control_posted_interrupt_desc_address;
-		__vmx_vmwrite64(0x2016, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_posted_interrupt_desc_address = __vmx_vmread64(0x2016);
 	}
 	if (_vmx_has_enable_vm_functions(vcpu)) {
-		gpa_t addr = vmcs12->control_VM_function_controls;
-		__vmx_vmwrite64(0x2018, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_VM_function_controls = __vmx_vmread64(0x2018);
 	}
 	if (_vmx_has_enable_ept(vcpu)) {
 		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
-		gpa_t addr = vmcs12->control_EPT_pointer;
+		gpa_t addr = vcpu->vmcs.control_EPT_pointer;
 		// TODO: to support EPT for guest, need to sanitize the entier EPT
-		HALT_ON_ERRORCOND(addr == 0);
-		addr = guestmem_gpa2spa_page(&ctx_pair, addr);
-		addr = vcpu->vmcs.control_EPT_pointer;
-		__vmx_vmwrite64(0x201A, addr);
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x201A) == addr);
+		addr = 0;
+		// vmcs12->control_EPT_pointer = ...
 	}
 	if (_vmx_has_virtual_interrupt_delivery(vcpu)) {
-		__vmx_vmwrite64(0x201C, vmcs12->control_EOI_exit_bitmap_0);
-		__vmx_vmwrite64(0x201E, vmcs12->control_EOI_exit_bitmap_1);
-		__vmx_vmwrite64(0x2020, vmcs12->control_EOI_exit_bitmap_2);
-		__vmx_vmwrite64(0x2022, vmcs12->control_EOI_exit_bitmap_3);
+		vmcs12->control_EOI_exit_bitmap_0 = __vmx_vmread64(0x201C);
+		vmcs12->control_EOI_exit_bitmap_1 = __vmx_vmread64(0x201E);
+		vmcs12->control_EOI_exit_bitmap_2 = __vmx_vmread64(0x2020);
+		vmcs12->control_EOI_exit_bitmap_3 = __vmx_vmread64(0x2022);
 	}
 	if (0) {
 		// Note: EPTP Switching not supported
-		gpa_t addr = vmcs12->control_EPTP_list_address;
 		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(addr == 0);
-		__vmx_vmwrite64(0x2024, guestmem_gpa2spa_page(&ctx_pair, addr));
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x2024) == 0);
+		// vmcs12->control_EPTP_list_address = ...
 	}
 	if (_vmx_has_vmcs_shadowing(vcpu)) {
-		gpa_t addr;
-		addr = vmcs12->control_VMREAD_bitmap_address;
-		__vmx_vmwrite64(0x2026, guestmem_gpa2spa_page(&ctx_pair, addr));
-		addr = vmcs12->control_VMWRITE_bitmap_address;
-		__vmx_vmwrite64(0x2028, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_VMREAD_bitmap_address = __vmx_vmread64(0x2026);
+		vmcs12->control_VMWRITE_bitmap_address = __vmx_vmread64(0x2028);
 	}
 	if (_vmx_has_ept_violation_ve(vcpu)) {
-		gpa_t addr = vmcs12->control_virt_exception_info_address;
-		__vmx_vmwrite64(0x202A, guestmem_gpa2spa_page(&ctx_pair, addr));
+		vmcs12->control_virt_exception_info_address = __vmx_vmread64(0x202A);
 	}
 	if (_vmx_has_enable_xsaves_xrstors(vcpu)) {
-		__vmx_vmwrite64(0x202C, vmcs12->control_XSS_exiting_bitmap);
+		vmcs12->control_XSS_exiting_bitmap = __vmx_vmread64(0x202C);
 	}
 	if (_vmx_has_enable_encls_exiting(vcpu)) {
-		__vmx_vmwrite64(0x202E, vmcs12->control_ENCLS_exiting_bitmap);
+		vmcs12->control_ENCLS_exiting_bitmap = __vmx_vmread64(0x202E);
 	}
 	if (_vmx_has_sub_page_write_permissions_for_ept(vcpu)) {
 		// Note: Sub-page write permissions for EPT
-		gpa_t addr = vmcs12->control_subpage_permission_table_pointer;
 		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(addr == 0);
-		__vmx_vmwrite64(0x2030, guestmem_gpa2spa_page(&ctx_pair, addr));
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x2030) == 0);
+		// vmcs12->control_subpage_permission_table_pointer = ...
 	}
 	if (_vmx_has_use_tsc_scaling(vcpu)) {
-		__vmx_vmwrite64(0x2032, vmcs12->control_TSC_multiplier);
+		vmcs12->control_TSC_multiplier = __vmx_vmread64(0x2032);
 	}
 	if (_vmx_has_activate_tertiary_controls(vcpu)) {
 		// Note: Activate tertiary controls not supported
-		u64 val = vmcs12->control_tertiary_proc_based_VMexec_ctls;
 		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(val == 0);
-		__vmx_vmwrite64(0x2034, val);
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x2034) == 0);
+		// vmcs12->control_tertiary_proc_based_VMexec_ctls = ...
 	}
 	if (_vmx_has_enable_enclv_exiting(vcpu)) {
-		__vmx_vmwrite64(0x2036, vmcs12->control_ENCLV_exiting_bitmap);
+		vmcs12->control_ENCLV_exiting_bitmap = __vmx_vmread64(0x2036);
 	}
+	// TODO
+	HALT_ON_ERRORCOND(0 && "TODO frontier");
+#if 0
 
 	/* 64-Bit Read-Only Data Field: skipped */
 
