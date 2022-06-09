@@ -625,7 +625,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
 		}
 		/* XMHF needs the guest to run in EPT to protect memory */
-		val |= VMX_SECPROCBASED_ENABLE_EPT;
+		val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
 		__vmx_vmwrite32(0x401E, val);
 	}
 	if (_vmx_has_pause_loop_exiting(vcpu)) {
@@ -947,116 +947,67 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		HALT_ON_ERRORCOND(__vmx_vmread64(0x2C06) == rdmsr64(IA32_PKRS));
 	}
 
+	/* 32-Bit Control Fields */
+	{
+		vmcs12->control_VMX_pin_based = __vmx_vmread32(0x4000);
+	}
+	{
+		vmcs12->control_VMX_cpu_based = __vmx_vmread32(0x4002);
+	}
+	{
+		// TODO: in the future, need to merge with host's exception bitmap
+		vmcs12->control_exception_bitmap = __vmx_vmread32(0x4004);
+	}
+	{
+		vmcs12->control_pagefault_errorcode_mask = __vmx_vmread32(0x4006);
+	}
+	{
+		vmcs12->control_pagefault_errorcode_match = __vmx_vmread32(0x4008);
+	}
+	{
+		vmcs12->control_CR3_target_count = __vmx_vmread32(0x400A);
+	}
+	{
+		vmcs12->control_VM_exit_controls = __vmx_vmread32(0x400C);
+	}
+	{
+		vmcs12->control_VM_exit_MSR_store_count = __vmx_vmread32(0x400E);
+	}
+	{
+		vmcs12->control_VM_exit_MSR_load_count = __vmx_vmread32(0x4010);
+	}
+	{
+		vmcs12->control_VM_entry_controls = __vmx_vmread32(0x4012);
+	}
+	{
+		vmcs12->control_VM_entry_MSR_load_count = __vmx_vmread32(0x4014);
+	}
+	{
+		vmcs12->control_VM_entry_interruption_information = __vmx_vmread32(0x4016);
+	}
+	{
+		vmcs12->control_VM_entry_exception_errorcode = __vmx_vmread32(0x4018);
+	}
+	{
+		vmcs12->control_VM_entry_instruction_length = __vmx_vmread32(0x401A);
+	}
+	if (_vmx_has_use_tpr_shadow(vcpu)) {
+		vmcs12->control_Task_PRivilege_Threshold = __vmx_vmread32(0x401C);
+	}
+	if (_vmx_has_activate_secondary_controls(vcpu)) {
+		u32 val = __vmx_vmread32(0x401E);
+		/* XMHF needs the guest to run in EPT to protect memory */
+		val &= ~(1U << VMX_SECPROCBASED_ENABLE_EPT);
+		vmcs12->control_VMX_seccpu_based = val;
+	}
+	if (_vmx_has_pause_loop_exiting(vcpu)) {
+		vmcs12->control_PLE_gap = __vmx_vmread32(0x4020);
+		vmcs12->control_PLE_window = __vmx_vmread32(0x4022);
+	}
+
 	// TODO
 	HALT_ON_ERRORCOND(0 && "TODO frontier");
 #if 0
-
-	/* 32-Bit Control Fields */
-	{
-		u32 val = vmcs12->control_VMX_pin_based;
-		u32 fixed0 = vcpu->vmx_nested_pinbased_ctls;
-		u32 fixed1 = vcpu->vmx_nested_pinbased_ctls >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			HALT_ON_ERRORCOND(0);
-		}
-		__vmx_vmwrite32(0x4000, val);
-	}
-	{
-		u32 val = vmcs12->control_VMX_cpu_based;
-		u32 fixed0 = vcpu->vmx_nested_procbased_ctls;
-		u32 fixed1 = vcpu->vmx_nested_procbased_ctls >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			HALT_ON_ERRORCOND(0);
-		}
-		__vmx_vmwrite32(0x4002, val);
-	}
-	{
-		u32 val = vmcs12->control_exception_bitmap;
-		// TODO: in the future, need to merge with host's exception bitmap
-		__vmx_vmwrite32(0x4004, val);
-	}
-	{
-		u32 val = vmcs12->control_pagefault_errorcode_mask;
-		__vmx_vmwrite32(0x4006, val);
-	}
-	{
-		u32 val = vmcs12->control_pagefault_errorcode_match;
-		__vmx_vmwrite32(0x4008, val);
-	}
-	{
-		u32 val = vmcs12->control_CR3_target_count;
-		__vmx_vmwrite32(0x400A, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_exit_controls;
-		u32 fixed0 = vcpu->vmx_nested_exit_ctls;
-		u32 fixed1 = vcpu->vmx_nested_exit_ctls >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			HALT_ON_ERRORCOND(0);
-		}
-		__vmx_vmwrite32(0x400C, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_exit_MSR_store_count;
-		/* VM exit/entry MSR load/store not supported */
-		HALT_ON_ERRORCOND(val == 0);
-		__vmx_vmwrite32(0x400E, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_exit_MSR_load_count;
-		/* VM exit/entry MSR load/store not supported */
-		HALT_ON_ERRORCOND(val == 0);
-		__vmx_vmwrite32(0x4010, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_entry_controls;
-		u32 fixed0 = vcpu->vmx_nested_entry_ctls;
-		u32 fixed1 = vcpu->vmx_nested_entry_ctls >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			HALT_ON_ERRORCOND(0);
-		}
-		__vmx_vmwrite32(0x4012, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_entry_MSR_load_count;
-		/* VM exit/entry MSR load/store not supported */
-		HALT_ON_ERRORCOND(val == 0);
-		__vmx_vmwrite32(0x4014, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_entry_interruption_information;
-		__vmx_vmwrite32(0x4016, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_entry_exception_errorcode;
-		__vmx_vmwrite32(0x4018, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_entry_instruction_length;
-		__vmx_vmwrite32(0x401A, val);
-	}
-	if (_vmx_has_use_tpr_shadow(vcpu)) {
-		u32 val = vmcs12->control_Task_PRivilege_Threshold;
-		__vmx_vmwrite32(0x401C, val);
-	}
-	if (_vmx_has_activate_secondary_controls(vcpu)) {
-		u32 val = vmcs12->control_VMX_seccpu_based;
-		u32 fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
-		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			HALT_ON_ERRORCOND(0);
-		}
-		/* XMHF needs the guest to run in EPT to protect memory */
-		val |= VMX_SECPROCBASED_ENABLE_EPT;
-		__vmx_vmwrite32(0x401E, val);
-	}
-	if (_vmx_has_pause_loop_exiting(vcpu)) {
-		u32 val;
-		val = vmcs12->control_PLE_gap;
-		__vmx_vmwrite32(0x4020, val);
-		val = vmcs12->control_PLE_window;
-		__vmx_vmwrite32(0x4022, val);
-	}
 
 	/* 32-Bit Read-Only Data Fields */
 DECLARE_FIELD_32_RO(0x4400, info_vminstr_error, UNDEFINED)
