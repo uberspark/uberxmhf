@@ -142,8 +142,9 @@ static void _vmx_initVT(VCPU *vcpu){
     #else
     for(i=0; i < 1; i++){
     #endif
+        /* Note: was "i <= INDEX_IA32_VMX_VMFUNC_MSR" */
         if (i >= INDEX_IA32_VMX_TRUE_PINBASED_CTLS_MSR &&
-            i <= INDEX_IA32_VMX_VMFUNC_MSR &&
+            i <= IA32_VMX_TRUE_ENTRY_CTLS_MSR &&
             !(vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55))) {
             continue;
         }
