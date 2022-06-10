@@ -67,6 +67,7 @@
 #include "_acpi.h"			//ACPI glue
 #include "_svm_eap.h"		//SVM DMA protection
 #include "_vmx_eap.h"		//VMX DMA protection
+#include "_vmx_ctls.h"		//VMX control bits
 
 
 //SMP configuration table signatures on x86 platforms
@@ -167,12 +168,10 @@ struct _guestmtrrmsrs {
 #define INDEX_IA32_VMX_TRUE_PROCBASED_CTLS_MSR  0xE
 #define INDEX_IA32_VMX_TRUE_EXIT_CTLS_MSR       0xF
 #define INDEX_IA32_VMX_TRUE_ENTRY_CTLS_MSR      0x10
-// Note: IA32_VMX_VMFUNC_MSR temporarily not supported
-//#define INDEX_IA32_VMX_VMFUNC_MSR               0x11
+#define INDEX_IA32_VMX_VMFUNC_MSR               0x11
 
 //---platform
-// Note: after IA32_VMX_VMFUNC_MSR is supported, this number should be 18
-#define IA32_VMX_MSRCOUNT                   17
+#define IA32_VMX_MSRCOUNT                       18
 
 #ifndef __ASSEMBLY__
 //the vcpu structure which holds the current state of a core
@@ -212,6 +211,8 @@ typedef struct _vcpu {
   u64 vmx_procbased_ctls;         //IA32_VMX_PROCBASED_CTLS or IA32_VMX_TRUE_...
   u64 vmx_exit_ctls;              //IA32_VMX_EXIT_CTLS or IA32_VMX_TRUE_...
   u64 vmx_entry_ctls;             //IA32_VMX_ENTRY_CTLS or IA32_VMX_TRUE_...
+  vmx_ctls_t vmx_caps;            //VMX controls that are supported by hardware
+
   hva_t vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
   hva_t vmx_vmcs_vaddr;           //virtual address of the VMCS region
 
@@ -263,9 +264,6 @@ typedef struct _vcpu {
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
 #define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
-
-//_vmx_cap.h requires VCPU, so is placed here.
-#include "_vmx_cap.h"
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
