@@ -67,6 +67,7 @@
 #include "_acpi.h"			//ACPI glue
 #include "_svm_eap.h"		//SVM DMA protection
 #include "_vmx_eap.h"		//VMX DMA protection
+#include "_vmx_ctls.h"		//VMX control bits
 
 
 //SMP configuration table signatures on x86 platforms
@@ -210,6 +211,8 @@ typedef struct _vcpu {
   u64 vmx_procbased_ctls;         //IA32_VMX_PROCBASED_CTLS or IA32_VMX_TRUE_...
   u64 vmx_exit_ctls;              //IA32_VMX_EXIT_CTLS or IA32_VMX_TRUE_...
   u64 vmx_entry_ctls;             //IA32_VMX_ENTRY_CTLS or IA32_VMX_TRUE_...
+  vmx_ctls_t vmx_caps;            //VMX controls that are supported by hardware
+
   hva_t vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
   hva_t vmx_vmcs_vaddr;           //virtual address of the VMCS region
 
@@ -241,9 +244,6 @@ typedef struct _vcpu {
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
 #define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
-
-//_vmx_cap.h requires VCPU, so is placed here.
-#include "_vmx_cap.h"
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS

@@ -168,9 +168,16 @@ static void _vmx_initVT(VCPU *vcpu){
         vcpu->vmx_entry_ctls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
     }
 
+    vcpu->vmx_caps.pinbased_ctls = (vcpu->vmx_pinbased_ctls >> 32);
+    vcpu->vmx_caps.procbased_ctls = (vcpu->vmx_procbased_ctls >> 32);
+    vcpu->vmx_caps.procbased_ctls2 =
+        (vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32);
+    vcpu->vmx_caps.exit_ctls = (vcpu->vmx_exit_ctls >> 32);
+    vcpu->vmx_caps.entry_ctls = (vcpu->vmx_entry_ctls >> 32);
+
 		//check if VMX supports unrestricted guest, if so we don't need the
 		//v86 monitor and the associated state transition handling
-		if (_vmx_has_unrestricted_guest(vcpu))
+		if (_vmx_hasctl_unrestricted_guest(&vcpu->vmx_caps))
 			vcpu->vmx_guest_unrestricted = 1;
 		else
 			vcpu->vmx_guest_unrestricted = 0;
@@ -356,7 +363,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	 * control_VM_exit_controls. First check whether setting this bit is
 	 * allowed.
 	 */
-	HALT_ON_ERRORCOND(_vmx_has_vmexit_host_address_space_size(vcpu));
+	HALT_ON_ERRORCOND(_vmx_hasctl_vmexit_host_address_space_size(&vcpu->vmx_caps));
 	vcpu->vmcs.control_VM_exit_controls |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
 #elif !defined(__I386__)
     #error "Unsupported Arch"
@@ -527,12 +534,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_UNRESTRICTED_GUEST);
 
 	//allow INVPCID (used by Debian 11)
-	if (_vmx_has_enable_invpcid(vcpu)) {
+	if (_vmx_hasctl_enable_invpcid(&vcpu->vmx_caps)) {
 		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_INVPCID);
 	}
 
 	//allow RDTSCP (used by Debian 11)
-	if (_vmx_has_enable_rdtscp(vcpu)) {
+	if (_vmx_hasctl_enable_rdtscp(&vcpu->vmx_caps)) {
 		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_RDTSCP);
 	}
 
