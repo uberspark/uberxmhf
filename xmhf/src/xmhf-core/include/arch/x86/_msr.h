@@ -98,10 +98,7 @@
 #define IA32_VMX_TRUE_PROCBASED_CTLS_MSR  0x48E
 #define IA32_VMX_TRUE_EXIT_CTLS_MSR       0x48F
 #define IA32_VMX_TRUE_ENTRY_CTLS_MSR      0x490
-// TODO: SDM says IA32_VMX_VMFUNC_MSR exists if
-// (CPUID.01H:ECX.[5] = 1 && IA32_VMX_BASIC[55]). However, looks like this may
-// not be the case for some CPUs. So not supporting this register for now.
-//#define IA32_VMX_VMFUNC_MSR               0x491
+#define IA32_VMX_VMFUNC_MSR               0x491
 
 //sysenter/sysexit MSRs
 #define IA32_SYSENTER_CS_MSR	         0x174

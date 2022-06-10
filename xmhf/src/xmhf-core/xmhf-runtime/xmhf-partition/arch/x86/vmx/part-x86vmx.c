@@ -148,6 +148,11 @@ static void _vmx_initVT(VCPU *vcpu){
             !(vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55))) {
             continue;
         }
+        if (i == INDEX_IA32_VMX_VMFUNC_MSR &&
+            !(vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] &
+              (1ULL << VMX_SECPROCBASED_ENABLE_VM_FUNCTIONS))) {
+            continue;
+        }
         vcpu->vmx_msrs[i] = rdmsr64(IA32_VMX_BASIC_MSR + i);
     }
 

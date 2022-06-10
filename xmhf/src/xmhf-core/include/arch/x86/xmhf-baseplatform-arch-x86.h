@@ -167,12 +167,10 @@ struct _guestmtrrmsrs {
 #define INDEX_IA32_VMX_TRUE_PROCBASED_CTLS_MSR  0xE
 #define INDEX_IA32_VMX_TRUE_EXIT_CTLS_MSR       0xF
 #define INDEX_IA32_VMX_TRUE_ENTRY_CTLS_MSR      0x10
-// Note: IA32_VMX_VMFUNC_MSR temporarily not supported
-//#define INDEX_IA32_VMX_VMFUNC_MSR               0x11
+#define INDEX_IA32_VMX_VMFUNC_MSR               0x11
 
 //---platform
-// Note: after IA32_VMX_VMFUNC_MSR is supported, this number should be 18
-#define IA32_VMX_MSRCOUNT                   17
+#define IA32_VMX_MSRCOUNT                       18
 
 #ifndef __ASSEMBLY__
 //the vcpu structure which holds the current state of a core
