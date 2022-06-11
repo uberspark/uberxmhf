@@ -581,8 +581,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	/* 32-Bit Guest-State Fields */
 
 	/* 32-Bit Host-State Field */
-	// TODO: this can probably be FIELD_PROP_ID_HOST, but need to rename to host_SYSENTER_CS
-	__vmx_vmwrite32(0x4C00, vcpu->vmcs.host_SYSENTER_CS);
 
 	/* Natural-Width Control Fields */
 
@@ -830,10 +828,8 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	/* 32-Bit Guest-State Fields */
 
 	/* 32-Bit Host-State Field */
-	HALT_ON_ERRORCOND(vcpu->vmcs.host_SYSENTER_CS == __vmx_vmread32(0x4C00));
 
 	/* 32-Bit fields: VMCS12 host -> VMCS02 guest */
-	vcpu->vmcs.guest_SYSENTER_CS = vmcs12->host_SYSENTER_CS;
 
 	/* Natural-Width Control Fields */
 
