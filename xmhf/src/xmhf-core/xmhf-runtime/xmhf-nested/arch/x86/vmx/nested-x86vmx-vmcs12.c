@@ -809,6 +809,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		 * * encoding 0x6C1A: host_SSP
 		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
 		 */
+		HALT_ON_ERRORCOND(0 && "Not implemented");
 	}
 
 	return 0;
@@ -1046,16 +1047,10 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 
 	/* 64-Bit fields: VMCS12 host -> VMCS02 guest */
 	if (_vmx_hasctl_vmexit_load_ia32_pat(&ctls)) {
-		// TODO: check whether guest hypervisor enables the feature
-		if (0) {
-			wrmsr64(MSR_IA32_PAT, __vmx_vmread64(0x2C00));
-		}
+		wrmsr64(MSR_IA32_PAT, __vmx_vmread64(0x2C00));
 	}
 	if (_vmx_hasctl_vmexit_load_ia32_efer(&ctls)) {
-		// TODO: check whether guest hypervisor enables the feature
-		if (0) {
-			wrmsr64(MSR_EFER, __vmx_vmread64(0x2C02));
-		}
+		wrmsr64(MSR_EFER, __vmx_vmread64(0x2C02));
 	}
 	if (_vmx_hasctl_vmexit_load_ia32_perf_global_ctrl(&ctls)) {
 		u32 eax, ebx, ecx, edx;
@@ -1063,18 +1058,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		if (eax >= 0xA) {
 			cpuid(0xA, &eax, &ebx, &ecx, &edx);
 			if (eax & 0xffU) {
-				// TODO: check whether guest hypervisor enables the feature
-				if (0) {
-					wrmsr64(IA32_PERF_GLOBAL_CTRL, __vmx_vmread64(0x2C04));
-				}
+				wrmsr64(IA32_PERF_GLOBAL_CTRL, __vmx_vmread64(0x2C04));
 			}
 		}
 	}
 	if (_vmx_hasctl_vmexit_load_pkrs(&ctls)) {
-		// TODO: check whether guest hypervisor enables the feature
-		if (0) {
-			wrmsr64(IA32_PKRS, __vmx_vmread64(0x2C06));
-		}
+		wrmsr64(IA32_PKRS, __vmx_vmread64(0x2C06));
 	}
 
 
@@ -1254,6 +1243,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		 * * encoding 0x6C1A: host_SSP
 		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
 		 */
+		HALT_ON_ERRORCOND(0 && "Not implemented");
 	}
 
 	/* Natural-Width fields: VMCS12 host -> VMCS02 guest */
@@ -1277,5 +1267,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		 * * encoding 0x6C1A: host_SSP
 		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
 		 */
+		HALT_ON_ERRORCOND(0 && "Not implemented");
 	}
 }
