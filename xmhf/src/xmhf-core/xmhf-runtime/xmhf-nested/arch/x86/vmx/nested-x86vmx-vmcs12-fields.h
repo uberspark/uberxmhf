@@ -48,75 +48,67 @@
 // Enumerate through all VMCS fields
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 
+/*
+ * Macros are defined as DECLARE_FIELD_<size>_<writability>
+ * size is 16, 64, 32, or NW (natural width).
+ * writability is RO (read only) or RW (read write).
+ * The arguments are:
+ * * encoding: field encoding used in VMRAED and VMWRITE instructions
+ * * name: name of the field in struct nested_vmcs12
+ * * prop: properties (macros starting with "FIELD_PROP_")
+ * * exist: an expression showing whether the field is used, when
+ *          the macro FIELD_CTLS_ARG is set to the controls
+ */
+
+#ifndef DECLARE_FIELD_16
+#define DECLARE_FIELD_16(...)
+#endif
+
+#ifndef DECLARE_FIELD_64
+#define DECLARE_FIELD_64(...)
+#endif
+
+#ifndef DECLARE_FIELD_32
+#define DECLARE_FIELD_32(...)
+#endif
+
+#ifndef DECLARE_FIELD_NW
+#define DECLARE_FIELD_NW(...)
+#endif
+
 #ifndef DECLARE_FIELD_16_RO
- #ifdef DECLARE_FIELD_16
-  #define DECLARE_FIELD_16_RO(encoding, name, ...) \
-          DECLARE_FIELD_16(encoding, name, __VA_ARGS__)
- #else
-  #define DECLARE_FIELD_16_RO(encoding, name, ...)
- #endif
+#define DECLARE_FIELD_16_RO(...) DECLARE_FIELD_16(__VA_ARGS__)
 #endif
 
 #ifndef DECLARE_FIELD_64_RO
- #ifdef DECLARE_FIELD_64
-  #define DECLARE_FIELD_64_RO(encoding, name, ...) \
-          DECLARE_FIELD_64(encoding, name, __VA_ARGS__)
- #else
-  #define DECLARE_FIELD_64_RO(encoding, name, ...)
- #endif
+#define DECLARE_FIELD_64_RO(...) DECLARE_FIELD_64(__VA_ARGS__)
 #endif
 
 #ifndef DECLARE_FIELD_32_RO
- #ifdef DECLARE_FIELD_32
-  #define DECLARE_FIELD_32_RO(encoding, name, ...) \
-          DECLARE_FIELD_32(encoding, name, __VA_ARGS__)
- #else
-  #define DECLARE_FIELD_32_RO(encoding, name, ...)
- #endif
+#define DECLARE_FIELD_32_RO(...) DECLARE_FIELD_32(__VA_ARGS__)
 #endif
 
 #ifndef DECLARE_FIELD_NW_RO
- #ifdef DECLARE_FIELD_NW
-  #define DECLARE_FIELD_NW_RO(encoding, name, ...) \
-          DECLARE_FIELD_NW(encoding, name, __VA_ARGS__)
- #else
-  #define DECLARE_FIELD_NW_RO(encoding, name, ...)
- #endif
+#define DECLARE_FIELD_NW_RO(...) DECLARE_FIELD_NW(__VA_ARGS__)
 #endif
 #ifndef DECLARE_FIELD_16_RW
- #ifdef DECLARE_FIELD_16
-  #define DECLARE_FIELD_16_RW(encoding, name, ...) \
-          DECLARE_FIELD_16(encoding, name, __VA_ARGS__)
- #else
-  #define DECLARE_FIELD_16_RW(encoding, name, ...)
- #endif
+#define DECLARE_FIELD_16_RW(...) DECLARE_FIELD_16(__VA_ARGS__)
 #endif
 
 #ifndef DECLARE_FIELD_64_RW
- #ifdef DECLARE_FIELD_64
-  #define DECLARE_FIELD_64_RW(encoding, name, ...) \
-          DECLARE_FIELD_64(encoding, name, __VA_ARGS__)
- #else
-  #define DECLARE_FIELD_64_RW(encoding, name, ...)
- #endif
+#define DECLARE_FIELD_64_RW(...) DECLARE_FIELD_64(__VA_ARGS__)
 #endif
 
 #ifndef DECLARE_FIELD_32_RW
- #ifdef DECLARE_FIELD_32
-  #define DECLARE_FIELD_32_RW(encoding, name, ...) \
-          DECLARE_FIELD_32(encoding, name, __VA_ARGS__)
- #else
-  #define DECLARE_FIELD_32_RW(encoding, name, ...)
- #endif
+#define DECLARE_FIELD_32_RW(...) DECLARE_FIELD_32(__VA_ARGS__)
 #endif
 
 #ifndef DECLARE_FIELD_NW_RW
- #ifdef DECLARE_FIELD_NW
-  #define DECLARE_FIELD_NW_RW(encoding, name, ...) \
-          DECLARE_FIELD_NW(encoding, name, __VA_ARGS__)
- #else
-  #define DECLARE_FIELD_NW_RW(encoding, name, ...)
- #endif
+#define DECLARE_FIELD_NW_RW(...) DECLARE_FIELD_NW(__VA_ARGS__)
+#endif
+
+#ifndef FIELD_CTLS_ARG
+#define FIELD_CTLS_ARG
 #endif
 
 #ifdef __DEBUG_QEMU__
@@ -823,6 +815,10 @@ DECLARE_FIELD_NW_RW(0x6C1C, host_IA32_INTERRUPT_SSP_TABLE_ADDR,
 					(_vmx_hasctl_vmexit_load_cet_state(FIELD_CTLS_ARG)),
 					UNDEFINED)
 
+#undef DECLARE_FIELD_16
+#undef DECLARE_FIELD_64
+#undef DECLARE_FIELD_32
+#undef DECLARE_FIELD_NW
 #undef DECLARE_FIELD_16_RO
 #undef DECLARE_FIELD_64_RO
 #undef DECLARE_FIELD_32_RO
@@ -831,22 +827,6 @@ DECLARE_FIELD_NW_RW(0x6C1C, host_IA32_INTERRUPT_SSP_TABLE_ADDR,
 #undef DECLARE_FIELD_64_RW
 #undef DECLARE_FIELD_32_RW
 #undef DECLARE_FIELD_NW_RW
-
-#ifdef DECLARE_FIELD_16
-#undef DECLARE_FIELD_16
-#endif
-
-#ifdef DECLARE_FIELD_64
-#undef DECLARE_FIELD_64
-#endif
-
-#ifdef DECLARE_FIELD_32
-#undef DECLARE_FIELD_32
-#endif
-
-#ifdef DECLARE_FIELD_NW
-#undef DECLARE_FIELD_NW
-#endif
-
+#undef FIELD_CTLS_ARG
 #undef VMCS12_FIELDS_QEMU
 
