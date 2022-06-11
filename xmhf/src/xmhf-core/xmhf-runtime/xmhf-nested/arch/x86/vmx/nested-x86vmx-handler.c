@@ -530,7 +530,7 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_TRUE_EXIT_CTLS_MSR];
 		vcpu->vmx_nested_entry_ctls =
 			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_TRUE_ENTRY_CTLS_MSR];
-		} else {
+	} else {
 		vcpu->vmx_nested_pinbased_ctls =
 			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
 		vcpu->vmx_nested_procbased_ctls =
