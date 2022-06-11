@@ -419,6 +419,13 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	/* 16-Bit Guest-State Fields */
 
 	/* 16-Bit Host-State Fields */
+	__vmx_vmwrite16(0x0C00, vcpu->vmcs.host_ES_selector);
+	__vmx_vmwrite16(0x0C02, vcpu->vmcs.host_CS_selector);
+	__vmx_vmwrite16(0x0C04, vcpu->vmcs.host_SS_selector);
+	__vmx_vmwrite16(0x0C06, vcpu->vmcs.host_DS_selector);
+	__vmx_vmwrite16(0x0C08, vcpu->vmcs.host_FS_selector);
+	__vmx_vmwrite16(0x0C0A, vcpu->vmcs.host_GS_selector);
+	__vmx_vmwrite16(0x0C0C, vcpu->vmcs.host_TR_selector);
 
 	/* 64-Bit Control Fields */
 	{
@@ -573,6 +580,18 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	/* Natural-Width Guest-State Fields */
 
 	/* Natural-Width Host-State Fields */
+	__vmx_vmwriteNW(0x6C00, vcpu->vmcs.host_CR0);
+	__vmx_vmwriteNW(0x6C02, vcpu->vmcs.host_CR3);
+	__vmx_vmwriteNW(0x6C04, vcpu->vmcs.host_CR4);
+	__vmx_vmwriteNW(0x6C06, vcpu->vmcs.host_FS_base);
+	__vmx_vmwriteNW(0x6C08, vcpu->vmcs.host_GS_base);
+	__vmx_vmwriteNW(0x6C0A, vcpu->vmcs.host_TR_base);
+	__vmx_vmwriteNW(0x6C0C, vcpu->vmcs.host_GDTR_base);
+	__vmx_vmwriteNW(0x6C0E, vcpu->vmcs.host_IDTR_base);
+	__vmx_vmwriteNW(0x6C10, vcpu->vmcs.host_SYSENTER_ESP);
+	__vmx_vmwriteNW(0x6C12, vcpu->vmcs.host_SYSENTER_EIP);
+	__vmx_vmwriteNW(0x6C14, vcpu->vmcs.host_RSP);
+	__vmx_vmwriteNW(0x6C16, vcpu->vmcs.host_RIP);
 	if (_vmx_hasctl_vmexit_load_cet_state(&ctls)) {
 		/*
 		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
@@ -636,6 +655,13 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	/* 16-Bit Guest-State Fields */
 
 	/* 16-Bit Host-State Fields */
+	HALT_ON_ERRORCOND(vcpu->vmcs.host_ES_selector == __vmx_vmread16(0x0C00));
+	HALT_ON_ERRORCOND(vcpu->vmcs.host_CS_selector == __vmx_vmread16(0x0C02));
+	HALT_ON_ERRORCOND(vcpu->vmcs.host_SS_selector == __vmx_vmread16(0x0C04));
+	HALT_ON_ERRORCOND(vcpu->vmcs.host_DS_selector == __vmx_vmread16(0x0C06));
+	HALT_ON_ERRORCOND(vcpu->vmcs.host_FS_selector == __vmx_vmread16(0x0C08));
+	HALT_ON_ERRORCOND(vcpu->vmcs.host_GS_selector == __vmx_vmread16(0x0C0A));
+	HALT_ON_ERRORCOND(vcpu->vmcs.host_TR_selector == __vmx_vmread16(0x0C0C));
 
 	/* 16-Bit fields: VMCS12 host -> VMCS01 guest */
 	vcpu->vmcs.guest_ES_selector = vmcs12->host_ES_selector;
@@ -809,6 +835,18 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	/* Natural-Width Guest-State Fields */
 
 	/* Natural-Width Host-State Fields */
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C00) == vcpu->vmcs.host_CR0);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C02) == vcpu->vmcs.host_CR3);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C04) == vcpu->vmcs.host_CR4);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C06) == vcpu->vmcs.host_FS_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C08) == vcpu->vmcs.host_GS_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C0A) == vcpu->vmcs.host_TR_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C0C) == vcpu->vmcs.host_GDTR_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C0E) == vcpu->vmcs.host_IDTR_base);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C10) == vcpu->vmcs.host_SYSENTER_ESP);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C12) == vcpu->vmcs.host_SYSENTER_EIP);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C14) == vcpu->vmcs.host_RSP);
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(0x6C16) == vcpu->vmcs.host_RIP);
 	if (_vmx_hasctl_vmexit_load_cet_state(&ctls)) {
 		/*
 		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
