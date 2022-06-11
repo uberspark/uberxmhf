@@ -594,7 +594,7 @@ DECLARE_FIELD_32_RW(0x482E, guest_VMX_preemption_timer_value,
 					UNDEFINED)
 
 /* 32-Bit Host-State Field */
-DECLARE_FIELD_32_RW(0x4C00, host_IA32_SYSENTER_CS,
+DECLARE_FIELD_32_RW(0x4C00, host_SYSENTER_CS,
 					(FIELD_PROP_HOST),
 					(1),
 					UNDEFINED)
