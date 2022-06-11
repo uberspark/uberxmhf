@@ -604,20 +604,12 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	/* 32-Bit Control Fields */
 	{
 		u32 val = vmcs12->control_VMX_pin_based;
-		u32 fixed0 = vcpu->vmx_nested_pinbased_ctls;
-		u32 fixed1 = vcpu->vmx_nested_pinbased_ctls >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-		}
 		__vmx_vmwrite32(0x4000, val);
 	}
 	{
 		u32 val = vmcs12->control_VMX_cpu_based;
-		u32 fixed0 = vcpu->vmx_nested_procbased_ctls;
-		u32 fixed1 = vcpu->vmx_nested_procbased_ctls >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-		}
+		/* XMHF needs to activate secondary controls because of EPT */
+		val |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
 		__vmx_vmwrite32(0x4002, val);
 	}
 	{
@@ -639,11 +631,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	}
 	{
 		u32 val = vmcs12->control_VM_exit_controls;
-		u32 fixed0 = vcpu->vmx_nested_exit_ctls;
-		u32 fixed1 = vcpu->vmx_nested_exit_ctls >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-		}
 		__vmx_vmwrite32(0x400C, val);
 	}
 	{
@@ -660,11 +647,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	}
 	{
 		u32 val = vmcs12->control_VM_entry_controls;
-		u32 fixed0 = vcpu->vmx_nested_entry_ctls;
-		u32 fixed1 = vcpu->vmx_nested_entry_ctls >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-		}
 		__vmx_vmwrite32(0x4012, val);
 	}
 	{
@@ -690,13 +672,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		__vmx_vmwrite32(0x401C, val);
 	}
 	if (1) {
-		/* TODO: ignoring _vmx_hasctl_activate_secondary_controls(&ctls) */
 		u32 val = vmcs12->control_VMX_seccpu_based;
-		u32 fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
-		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
-		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-		}
 		/* XMHF needs the guest to run in EPT to protect memory */
 		val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
 		__vmx_vmwrite32(0x401E, val);
@@ -1072,7 +1048,10 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		vmcs12->control_VMX_pin_based = __vmx_vmread32(0x4000);
 	}
 	{
-		vmcs12->control_VMX_cpu_based = __vmx_vmread32(0x4002);
+		u32 val = __vmx_vmread32(0x4002);
+		HALT_ON_ERRORCOND(val == (
+			vmcs12->control_VMX_cpu_based |
+			(1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS)));
 	}
 	{
 		// TODO: in the future, need to merge with host's exception bitmap
