@@ -55,8 +55,9 @@
 #define FIELD_PROP_HOST		0x00000002	/* Host field */
 #define FIELD_PROP_CTRL		0x00000004	/* Control field */
 #define FIELD_PROP_RO		0x00000008	/* Read-only field */
-#define FIELD_PROP_IDENT	0x00000010	/* VMCS12 value = VMCS02 value = any */
+#define FIELD_PROP_ID_GUEST	0x00000010	/* VMCS12 value = VMCS02 value = any */
 #define FIELD_PROP_GPADDR	0x00000020	/* VMCS12 value = VMCS02 value = gpa */
+#define FIELD_PROP_ID_HOST	0x00000040	/* VMCS12 value = VMCS01 value */
 
 struct nested_vmcs12 {
 #define DECLARE_FIELD_16(encoding, name, ...) \
