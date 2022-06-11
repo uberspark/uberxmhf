@@ -301,16 +301,80 @@ void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix)
 }
 
 /*
- * Translate VMCS12 (vmcs12) to VMCS02 (already loaded as current VMCS)
+ * Extract ctls information to ctls from selected fields in VMCS12.
+ * Return an error code following VM instruction error number, or 0 when
+ * success.
+ */
+static u32 _vmcs12_get_ctls(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
+							vmx_ctls_t *ctls)
+{
+	{
+		u32 val = vmcs12->control_VMX_pin_based;
+		u32 fixed0 = vcpu->vmx_nested_pinbased_ctls;
+		u32 fixed1 = vcpu->vmx_nested_pinbased_ctls >> 32;
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		ctls->pinbased_ctls = val;
+	}
+	{
+		u32 val = vmcs12->control_VMX_cpu_based;
+		u32 fixed0 = vcpu->vmx_nested_procbased_ctls;
+		u32 fixed1 = vcpu->vmx_nested_procbased_ctls >> 32;
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		ctls->procbased_ctls = val;
+	}
+	{
+		u32 val = vmcs12->control_VM_exit_controls;
+		u32 fixed0 = vcpu->vmx_nested_exit_ctls;
+		u32 fixed1 = vcpu->vmx_nested_exit_ctls >> 32;
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		ctls->exit_ctls = val;
+	}
+	{
+		u32 val = vmcs12->control_VM_entry_controls;
+		u32 fixed0 = vcpu->vmx_nested_entry_ctls;
+		u32 fixed1 = vcpu->vmx_nested_entry_ctls >> 32;
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		ctls->entry_ctls = val;
+	}
+	{
+		u32 val = 0;
+		u32 fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
+		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
+		/* Check whether guest enables secondary controls */
+		if (_vmx_hasctl_activate_secondary_controls(ctls)) {
+			val = vmcs12->control_VMX_seccpu_based;
+		}
+		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		ctls->procbased_ctls2 = val;
+	}
+	return 0;
+}
+
+/*
+ * Translate VMCS12 (vmcs12) to VMCS02 (already loaded as current VMCS).
+ * Return an error code following VM instruction error number, or 0 when
+ * success.
  */
 u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 											struct nested_vmcs12 *vmcs12)
 {
-	// TODO
-	vmx_ctls_t ctls = vcpu->vmx_caps;
-
+	vmx_ctls_t ctls;
 	guestmem_hptw_ctx_pair_t ctx_pair;
+	u32 status = _vmcs12_get_ctls(vcpu, vmcs12, &ctls);
 	guestmem_init(vcpu, &ctx_pair);
+	if (status != 0) {
+		return status;
+	}
 	/* TODO: Check settings of VMX controls and host-state area */
 
 	/* 16-Bit Control Fields */
@@ -417,10 +481,15 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		gpa_t addr = vmcs12->control_VM_function_controls;
 		__vmx_vmwrite64(0x2018, guestmem_gpa2spa_page(&ctx_pair, addr));
 	}
-	if (_vmx_hasctl_enable_ept(&ctls)) {
+	{
 		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
+		// Since hypervisor needs EPT, this block is unconditional
 		gpa_t addr = vmcs12->control_EPT_pointer;
+		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		// TODO: to support EPT for guest, need to sanitize the entier EPT
+		if (_vmx_hasctl_enable_ept(&ctls)) {
+			HALT_ON_ERRORCOND(0 && "Not implemented");
+		}
 		HALT_ON_ERRORCOND(addr == 0);
 		addr = guestmem_gpa2spa_page(&ctx_pair, addr);
 		addr = vcpu->vmcs.control_EPT_pointer;
@@ -620,7 +689,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		u32 val = vmcs12->control_Task_PRivilege_Threshold;
 		__vmx_vmwrite32(0x401C, val);
 	}
-	if (_vmx_hasctl_activate_secondary_controls(&ctls)) {
+	if (1) {
+		/* TODO: ignoring _vmx_hasctl_activate_secondary_controls(&ctls) */
 		u32 val = vmcs12->control_VMX_seccpu_based;
 		u32 fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
 		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
@@ -639,7 +709,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		__vmx_vmwrite32(0x4022, val);
 	}
 
-	/* 32-Bit Read-Only Data Fields */
+	/* 32-Bit Read-Only Data Fields: skipped */
 
 	/* 32-Bit Guest-State Fields */
 	__vmx_vmwrite32(0x4800, vmcs12->guest_ES_limit);
@@ -688,7 +758,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 #endif /* !__DEBUG_QEMU__ */
 	}
 
-	/* Natural-Width Read-Only Data Fields */
+	/* Natural-Width Read-Only Data Fields: skipped */
 
 	/* Natural-Width Guest-State Fields */
 	__vmx_vmwriteNW(0x6800, vmcs12->guest_CR0);
@@ -750,7 +820,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 												struct nested_vmcs12 *vmcs12)
 {	// TODO
-	vmx_ctls_t ctls = vcpu->vmx_caps;
+	vmx_ctls_t ctls;
+	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
 
 	/* 16-Bit Control Fields */
 	if (_vmx_hasctl_enable_vpid(&ctls)) {
@@ -857,10 +928,15 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	if (_vmx_hasctl_enable_vm_functions(&ctls)) {
 		vmcs12->control_VM_function_controls = __vmx_vmread64(0x2018);
 	}
-	if (_vmx_hasctl_enable_ept(&ctls)) {
+	if (1) {
 		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
+		// Since hypervisor needs EPT, this block is unconditional
 		gpa_t addr = vcpu->vmcs.control_EPT_pointer;
+		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		// TODO: to support EPT for guest, need to sanitize the entier EPT
+		if (_vmx_hasctl_enable_ept(&ctls)) {
+			HALT_ON_ERRORCOND(0 && "Not implemented");
+		}
 		HALT_ON_ERRORCOND(__vmx_vmread64(0x201A) == addr);
 		addr = 0;
 		// vmcs12->control_EPT_pointer = ...
@@ -909,7 +985,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		vmcs12->control_ENCLV_exiting_bitmap = __vmx_vmread64(0x2036);
 	}
 
-	/* 64-Bit Read-Only Data Field: skipped */
+	/* 64-Bit Read-Only Data Field */
 	if (_vmx_hasctl_enable_ept(&ctls)) {
 		vmcs12->guest_paddr = __vmx_vmread64(0x2400);
 	}
@@ -1049,7 +1125,8 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	if (_vmx_hasctl_use_tpr_shadow(&ctls)) {
 		vmcs12->control_Task_PRivilege_Threshold = __vmx_vmread32(0x401C);
 	}
-	if (_vmx_hasctl_activate_secondary_controls(&ctls)) {
+	if (1) {
+		/* TODO: ignoring _vmx_hasctl_activate_secondary_controls(&ctls) */
 		u32 val = __vmx_vmread32(0x401E);
 		/* XMHF needs the guest to run in EPT to protect memory */
 		val &= ~(1U << VMX_SECPROCBASED_ENABLE_EPT);
