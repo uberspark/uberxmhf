@@ -377,6 +377,36 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	}
 	/* TODO: Check settings of VMX controls and host-state area */
 
+#define FIELD_CTLS_ARG (&ctls)
+#define DECLARE_FIELD_16_RW(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_ID_GUEST) { \
+			__vmx_vmwrite16(encoding, vmcs12->name); \
+		} \
+	}
+#define DECLARE_FIELD_64_RW(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_ID_GUEST) { \
+			__vmx_vmwrite64(encoding, vmcs12->name); \
+		} else if (prop & FIELD_PROP_GPADDR) { \
+			gpa_t addr = vmcs12->name; \
+			__vmx_vmwrite64(encoding, guestmem_gpa2spa_page(&ctx_pair, addr)); \
+		} \
+	}
+#define DECLARE_FIELD_32_RW(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_ID_GUEST) { \
+			__vmx_vmwrite32(encoding, vmcs12->name); \
+		} \
+	}
+#define DECLARE_FIELD_NW_RW(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_ID_GUEST) { \
+			__vmx_vmwriteNW(encoding, vmcs12->name); \
+		} \
+	}
+#include "nested-x86vmx-vmcs12-fields.h"
+
 	/* 16-Bit Control Fields */
 	if (_vmx_hasctl_enable_vpid(&ctls)) {
 		u16 control_vpid = vmcs12->control_vpid;
@@ -565,6 +595,35 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 {	// TODO
 	vmx_ctls_t ctls;
 	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
+
+#define FIELD_CTLS_ARG (&ctls)
+#define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_ID_GUEST) { \
+			vmcs12->name = __vmx_vmread16(encoding); \
+		} \
+	}
+#define DECLARE_FIELD_64(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_ID_GUEST) { \
+			vmcs12->name = __vmx_vmread64(encoding); \
+		} else if (prop & FIELD_PROP_GPADDR) { \
+			vmcs12->name = __vmx_vmread64(encoding); \
+		} \
+	}
+#define DECLARE_FIELD_32(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_ID_GUEST) { \
+			vmcs12->name = __vmx_vmread32(encoding); \
+		} \
+	}
+#define DECLARE_FIELD_NW(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_ID_GUEST) { \
+			vmcs12->name = __vmx_vmreadNW(encoding); \
+		} \
+	}
+#include "nested-x86vmx-vmcs12-fields.h"
 
 	/* 16-Bit Control Fields */
 	if (_vmx_hasctl_enable_vpid(&ctls)) {

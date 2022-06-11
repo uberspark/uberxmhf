@@ -51,6 +51,13 @@
 #ifndef _NESTED_X86VMX_VMCS12_H_
 #define _NESTED_X86VMX_VMCS12_H_
 
+/*
+ * Rules:
+ * * Exactly one bit should be set in mask 0xf
+ * * At most one bit should be set in mask 0xf0
+ * * 0x20 can only be set for 64-bit fields
+ * TODO: FIELD_PROP_ID_HOST cannot be supported
+ */
 #define FIELD_PROP_GUEST	0x00000001	/* Guest field */
 #define FIELD_PROP_HOST		0x00000002	/* Host field */
 #define FIELD_PROP_CTRL		0x00000004	/* Control field */
