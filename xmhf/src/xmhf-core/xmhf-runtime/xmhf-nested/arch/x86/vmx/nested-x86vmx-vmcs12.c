@@ -563,6 +563,21 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	}
 	{
 		u32 val = vmcs12->control_VM_exit_controls;
+		/* Check the "IA-32e mode guest" bit of the guest hypervisor */
+		if (val & (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE)) {
+			HALT_ON_ERRORCOND(VCPU_g64(vcpu));
+		} else {
+			HALT_ON_ERRORCOND(!VCPU_g64(vcpu));
+		}
+		/*
+		 * The "IA-32e mode guest" bit need to match XMHF. A mismatch can only
+		 * happen when amd64 XMHF runs i386 guest hypervisor.
+		 */
+#ifdef __AMD64__
+		val |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
 		__vmx_vmwrite32(0x400C, val);
 	}
 	{
