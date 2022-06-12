@@ -650,27 +650,41 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 #define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
 	if (exist) { \
 		if (prop & FIELD_PROP_ID_GUEST) { \
-			vmcs12->name = __vmx_vmread16(encoding); \
+			if (prop & FIELD_PROP_SWWRONLY) { \
+				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmread16(encoding)); \
+			} else { \
+				vmcs12->name = __vmx_vmread16(encoding); \
+			} \
 		} \
 	}
 #define DECLARE_FIELD_64(encoding, name, prop, exist, ...) \
 	if (exist) { \
-		if (prop & FIELD_PROP_ID_GUEST) { \
-			vmcs12->name = __vmx_vmread64(encoding); \
-		} else if (prop & FIELD_PROP_GPADDR) { \
-			vmcs12->name = __vmx_vmread64(encoding); \
+		if ((prop & FIELD_PROP_ID_GUEST) || (prop & FIELD_PROP_GPADDR)) { \
+			if (prop & FIELD_PROP_SWWRONLY) { \
+				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmread64(encoding)); \
+			} else { \
+				vmcs12->name = __vmx_vmread64(encoding); \
+			} \
 		} \
 	}
 #define DECLARE_FIELD_32(encoding, name, prop, exist, ...) \
 	if (exist) { \
 		if (prop & FIELD_PROP_ID_GUEST) { \
-			vmcs12->name = __vmx_vmread32(encoding); \
+			if (prop & FIELD_PROP_SWWRONLY) { \
+				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmread32(encoding)); \
+			} else { \
+				vmcs12->name = __vmx_vmread32(encoding); \
+			} \
 		} \
 	}
 #define DECLARE_FIELD_NW(encoding, name, prop, exist, ...) \
 	if (exist) { \
 		if (prop & FIELD_PROP_ID_GUEST) { \
-			vmcs12->name = __vmx_vmreadNW(encoding); \
+			if (prop & FIELD_PROP_SWWRONLY) { \
+				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmreadNW(encoding)); \
+			} else { \
+				vmcs12->name = __vmx_vmreadNW(encoding); \
+			} \
 		} \
 	}
 #include "nested-x86vmx-vmcs12-fields.h"

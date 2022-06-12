@@ -261,19 +261,19 @@ DECLARE_FIELD_64_RW(0x201A, control_EPT_pointer,
 					(_vmx_hasctl_enable_ept(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x201C, control_EOI_exit_bitmap_0,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_virtual_interrupt_delivery(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x201E, control_EOI_exit_bitmap_1,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_virtual_interrupt_delivery(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2020, control_EOI_exit_bitmap_2,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_virtual_interrupt_delivery(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2022, control_EOI_exit_bitmap_3,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_virtual_interrupt_delivery(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2024, control_EPTP_list_address,
@@ -405,15 +405,15 @@ DECLARE_FIELD_32_RW(0x4004, control_exception_bitmap,
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4006, control_pagefault_errorcode_mask,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4008, control_pagefault_errorcode_match,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x400A, control_CR3_target_count,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x400C, control_VM_exit_controls,
