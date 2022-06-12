@@ -836,6 +836,14 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	}
 	{
 		vmcs12->control_VM_exit_controls = __vmx_vmread32(0x400C);
+		/* Set the "IA-32e mode guest" bit of the guest hypervisor */
+		if (VCPU_g64(vcpu)) {
+			vmcs12->control_VM_exit_controls |=
+				(1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
+		} else {
+			vmcs12->control_VM_exit_controls &=
+				~(1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
+		}
 	}
 	{
 		vmcs12->control_VM_exit_MSR_store_count = __vmx_vmread32(0x400E);
