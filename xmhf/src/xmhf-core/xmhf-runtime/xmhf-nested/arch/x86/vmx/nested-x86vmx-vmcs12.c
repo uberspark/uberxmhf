@@ -504,6 +504,31 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 	/* 64-Bit Read-Only Data Field: skipped */
 
 	/* 64-Bit Guest-State Fields */
+	if (!_vmx_hasctl_enable_ept(&ctls)) {
+		/*
+		 * Guest does not use EPT, but XMHF uses EPT. When the guest is running
+		 * in PAE mode, the guest PDPTEs need to be computed by XMHF in
+		 * software. Otherwise the nested guest may triple fault.
+		 */
+		u32 pae = (vmcs12->guest_CR0 & CR0_PG) && (vmcs12->guest_CR4 & CR4_PAE);
+#ifdef __AMD64__
+		if (_vmx_hasctl_vmentry_ia_32e_mode_guest(&ctls)) {
+			pae = 0;
+		}
+#elif !defined(__I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) */
+		if (pae) {
+			/* Walk EPT and retrieve values for guest_PDPTE* */
+			u64 pdptes[4];
+			u64 addr = vmcs12->guest_CR3 & ~0x1FUL;
+			guestmem_copy_gp2h(&ctx_pair, 0, pdptes, addr, sizeof(pdptes));
+			__vmx_vmwrite64(0x280a, pdptes[0]);
+			__vmx_vmwrite64(0x280c, pdptes[1]);
+			__vmx_vmwrite64(0x280e, pdptes[2]);
+			__vmx_vmwrite64(0x2810, pdptes[3]);
+		}
+	}
 
 	/* 64-Bit Host-State Fields */
 	if (_vmx_hasctl_vmexit_load_ia32_pat(&ctls)) {
