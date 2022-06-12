@@ -1,0 +1,121 @@
+/*
+ * CI for nested virtualization
+ */
+
+properties([
+    parameters([
+        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64-nest'),
+        string(name: 'LHV_BRANCH', defaultValue: 'lhv'),
+        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic')
+    ])
+])
+
+void qemu_test(String subarch, String lhv_subarch) {
+    PWD = sh(returnStdout: true, script: 'pwd').trim()
+    sh "rm -rf tmp lhv/tmp"
+    sh "mkdir tmp lhv/tmp"
+    sh """
+        python3 -u ./tools/ci/grub.py \
+            --subarch ${subarch} \
+            --xmhf-bin ${PWD}/ \
+            --work-dir ${PWD}/tmp/ \
+            --verbose \
+            --boot-dir ${PWD}/tools/ci/boot
+    """
+    dir ("lhv") {
+        LHV_PWD = sh(returnStdout: true, script: 'pwd').trim()
+        sh """
+            python3 -u ./tools/ci/grub.py \
+                --subarch ${lhv_subarch} \
+                --xmhf-bin ${LHV_PWD}/ \
+                --work-dir ${LHV_PWD}/tmp/ \
+                --verbose \
+                --boot-dir ${LHV_PWD}/tools/ci/boot
+        """
+    }
+    sh """
+        python3 -u ./tools/ci/test5.py \
+            --lhv-image ${PWD}/lhv/tmp/grub/c.img \
+            --work-dir ${PWD}/tmp/ \
+            --no-display \
+            --verbose \
+            --watch-serial
+    """
+}
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Logistics') {
+            steps {
+                sh "git fetch origin ${params.XMHF_BRANCH}"
+                sh "git checkout ${params.XMHF_BRANCH}"
+                sh "git pull origin ${params.XMHF_BRANCH}"
+                dir ("lhv") {
+                    git url: "https://github.com/lxylxy123456/uberxmhf.git",
+                        branch: "${params.LHV_BRANCH}"
+                }
+                script {
+                    cmt = sh(
+                        returnStdout: true,
+                        script: 'git rev-parse HEAD | head -c 9').trim()
+                    currentBuild.displayName += " ${params.XMHF_BRANCH}"
+                    currentBuild.displayName += " ${cmt}"
+                }
+            }
+        }
+        stage('Build i386') {
+            steps {
+                sh "git clean -Xdf"
+                // Workaround git 2.30 bug
+                sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
+                sh "./tools/ci/build.sh i386 ${params.BUILD_OPTS}"
+            }
+        }
+        stage('Build i386 lhv') {
+            steps {
+                dir ("lhv") {
+                    sh "git clean -Xdf"
+                    // Workaround git 2.30 bug
+                    sh "rm -rf _build_lib* hypapps/helloworld/app/objects/"
+                    sh "./tools/ci/build.sh i386"
+                }
+            }
+        }
+        stage('Test i386 LHV on i386 XMHF') {
+            steps {
+                qemu_test "i386", "i386"
+            }
+        }
+        stage('Build amd64') {
+            steps {
+                sh "git clean -Xdf"
+                // Workaround git 2.30 bug
+                sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
+                sh "./tools/ci/build.sh amd64 ${params.BUILD_OPTS}"
+            }
+        }
+        stage('Test i386 LHV on amd64 XMHF') {
+            steps {
+                qemu_test "amd64", "i386"
+            }
+        }
+        stage('Build amd64 LHV') {
+            steps {
+                dir ("lhv") {
+                    sh "git clean -Xdf"
+                    // Workaround git 2.30 bug
+                    sh "rm -rf _build_lib* hypapps/helloworld/app/objects/"
+                    sh "./tools/ci/build.sh amd64"
+                }
+            }
+        }
+        stage('Test amd64 LHV on amd64 XMHF') {
+            steps {
+                qemu_test "amd64", "amd64"
+            }
+        }
+    }
+}
+
