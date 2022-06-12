@@ -467,35 +467,35 @@ DECLARE_FIELD_32_RW(0x4022, control_PLE_window,
 
 /* 32-Bit Read-Only Data Fields */
 DECLARE_FIELD_32_RO(0x4400, info_vminstr_error,
-					(FIELD_PROP_RO || FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_RO | FIELD_PROP_ID_GUEST),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RO(0x4402, info_vmexit_reason,
-					(FIELD_PROP_RO || FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_RO | FIELD_PROP_ID_GUEST),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RO(0x4404, info_vmexit_interrupt_information,
-					(FIELD_PROP_RO || FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_RO | FIELD_PROP_ID_GUEST),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RO(0x4406, info_vmexit_interrupt_error_code,
-					(FIELD_PROP_RO || FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_RO | FIELD_PROP_ID_GUEST),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RO(0x4408, info_IDT_vectoring_information,
-					(FIELD_PROP_RO || FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_RO | FIELD_PROP_ID_GUEST),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RO(0x440A, info_IDT_vectoring_error_code,
-					(FIELD_PROP_RO || FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_RO | FIELD_PROP_ID_GUEST),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RO(0x440C, info_vmexit_instruction_length,
-					(FIELD_PROP_RO || FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_RO | FIELD_PROP_ID_GUEST),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RO(0x440E, info_vmx_instruction_information,
-					(FIELD_PROP_RO || FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_RO | FIELD_PROP_ID_GUEST),
 					(1),
 					UNDEFINED)
 
