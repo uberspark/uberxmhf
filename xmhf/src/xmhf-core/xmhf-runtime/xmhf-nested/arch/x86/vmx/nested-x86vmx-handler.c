@@ -542,13 +542,18 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 	}
 }
 
+/* Handle VMEXIT from nested guest */
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU *vcpu, struct regs *r)
 {
 	vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
 	xmhf_nested_arch_x86vmx_vmread_all(vcpu, "Nested VMEXIT: ");
 	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, &vmcs12_info->vmcs12_value);
-	(void) r;
+	/* Prepare VMRESUME to guest hypervisor */
+	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void*)vcpu->vmx_vmcs_vaddr)));
+	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+	// TODO: handle vcpu->vmx_guest_inject_nmi?
 	HALT_ON_ERRORCOND(0 && "TODO frontier");
+	__vmx_vmentry_vmresume(r);
 }
 
 // TODO: also need to virtualize VMCALL

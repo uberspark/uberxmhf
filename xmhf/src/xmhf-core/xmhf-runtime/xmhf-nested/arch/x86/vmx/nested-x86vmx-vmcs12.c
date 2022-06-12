@@ -633,7 +633,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
  */
 void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 												struct nested_vmcs12 *vmcs12)
-{	// TODO
+{
 	vmx_ctls_t ctls;
 	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
 
