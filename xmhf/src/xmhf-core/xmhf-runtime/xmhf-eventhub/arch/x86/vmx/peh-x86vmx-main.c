@@ -832,7 +832,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 			u64 pdptes[4];
 			u64 addr = vcpu->vmcs.guest_CR3 & ~0x1FUL;
 			guestmem_init(vcpu, &ctx_pair);
-			guestmem_copy_gp2h(&ctx_pair, 0, pdptes, addr, 8);
+			guestmem_copy_gp2h(&ctx_pair, 0, pdptes, addr, sizeof(pdptes));
 			vcpu->vmcs.guest_PDPTE0 = pdptes[0];
 			vcpu->vmcs.guest_PDPTE1 = pdptes[1];
 			vcpu->vmcs.guest_PDPTE2 = pdptes[2];
