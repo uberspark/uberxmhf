@@ -557,15 +557,18 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU *vcpu, struct regs *r)
 	__vmx_vmentry_vmresume(r);
 }
 
-// TODO: also need to virtualize VMCALL
-
 void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r)
 {
 	if (_vmx_nested_check_ud(vcpu, 0)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
-		// TODO: VMEXIT
-		HALT_ON_ERRORCOND(0 && "Not implemented");
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
@@ -611,8 +614,13 @@ void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU *vcpu,
 	if (_vmx_nested_check_ud(vcpu, 0)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
-		// TODO: VMEXIT
-		HALT_ON_ERRORCOND(0 && "Not implemented");
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
@@ -643,8 +651,13 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r)
 	if (_vmx_nested_check_ud(vcpu, 0)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
-		// TODO: VMEXIT
-		HALT_ON_ERRORCOND(0 && "Not implemented");
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
@@ -691,9 +704,13 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 	if (_vmx_nested_check_ud(vcpu, 0)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
-		/* Note: Currently does not support 1-setting of "VMCS shadowing" */
-		// TODO: VMEXIT
-		HALT_ON_ERRORCOND(0 && "Not implemented");
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
@@ -735,8 +752,13 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
 	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
 		/* Note: Currently does not support 1-setting of "VMCS shadowing" */
-		// TODO: VMEXIT
-		HALT_ON_ERRORCOND(0 && "Not implemented");
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
