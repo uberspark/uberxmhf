@@ -715,7 +715,7 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r)
 				ulong_t value = xmhf_nested_arch_x86vmx_vmcs_read
 					(&vmcs12_info->vmcs12_value, offset, size);
 				if (value_mem_reg) {
-					*(ulong_t *)pvalue = value;
+					memcpy((void *) pvalue, &value, size);
 				} else {
 					guestmem_hptw_ctx_pair_t ctx_pair;
 					guestmem_init(vcpu, &ctx_pair);
@@ -762,9 +762,9 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU *vcpu, struct regs *r)
 			} else {
 				/* Note: Currently does not support VMCS shadowing */
 				vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
-				ulong_t value;
+				ulong_t value = 0;
 				if (value_mem_reg) {
-					value = *(ulong_t *)pvalue;
+					memcpy(&value, (void *) pvalue, size);
 				} else {
 					guestmem_hptw_ctx_pair_t ctx_pair;
 					guestmem_init(vcpu, &ctx_pair);

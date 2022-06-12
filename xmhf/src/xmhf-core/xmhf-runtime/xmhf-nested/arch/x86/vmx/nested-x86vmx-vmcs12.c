@@ -109,7 +109,6 @@ ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
 	switch (offset) {
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	case offsetof(struct nested_vmcs12, name): \
-		HALT_ON_ERRORCOND(size >= sizeof(u16)); \
 		return (ulong_t) vmcs12->name;
 #define DECLARE_FIELD_64(encoding, name, ...) \
 	case offsetof(struct nested_vmcs12, name): \
@@ -124,11 +123,9 @@ ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
 		return (ulong_t) ((u32 *)(void *)&vmcs12->name)[1];
 #define DECLARE_FIELD_32(encoding, name, ...) \
 	case offsetof(struct nested_vmcs12, name): \
-		HALT_ON_ERRORCOND(size >= sizeof(u32)); \
 		return (ulong_t) vmcs12->name;
 #define DECLARE_FIELD_NW(encoding, name, ...) \
 	case offsetof(struct nested_vmcs12, name): \
-		HALT_ON_ERRORCOND(size >= sizeof(ulong_t)); \
 		return (ulong_t) vmcs12->name;
 #include "nested-x86vmx-vmcs12-fields.h"
 	default:
@@ -158,7 +155,6 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 		DECLARE_FIELD_16_RO(encoding, name)
 #define DECLARE_FIELD_16_RW(encoding, name, ...) \
 	case offsetof(struct nested_vmcs12, name): \
-		HALT_ON_ERRORCOND(size >= sizeof(u16)); \
 		vmcs12->name = (u16) value; \
 		break;
 #define DECLARE_FIELD_64_RW(encoding, name, ...) \
@@ -176,12 +172,10 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 		break;
 #define DECLARE_FIELD_32_RW(encoding, name, ...) \
 	case offsetof(struct nested_vmcs12, name): \
-		HALT_ON_ERRORCOND(size >= sizeof(u32)); \
 		vmcs12->name = (u32) value; \
 		break;
 #define DECLARE_FIELD_NW_RW(encoding, name, ...) \
 	case offsetof(struct nested_vmcs12, name): \
-		HALT_ON_ERRORCOND(size >= sizeof(ulong_t)); \
 		vmcs12->name = (ulong_t) value; \
 		break;
 #include "nested-x86vmx-vmcs12-fields.h"
