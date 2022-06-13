@@ -82,6 +82,23 @@ struct nested_vmcs12 {
 #include "nested-x86vmx-vmcs12-fields.h"
 };
 
+/* Format of an active VMCS12 tracked by a CPU */
+typedef struct vmcs12_info {
+	/*
+	 * Pointer to VMCS12 in guest.
+	 *
+	 * When a VMCS is invalid, this field is CUR_VMCS_PTR_INVALID, and all
+	 * other fields are undefined.
+	 */
+	gpa_t vmcs12_ptr;
+	/* Pointer to VMCS02 in host */
+	spa_t vmcs02_ptr;
+	/* Whether this VMCS has launched */
+	int launched;
+	/* Content of VMCS12, stored in XMHF's format */
+	struct nested_vmcs12 vmcs12_value;
+} vmcs12_info_t;
+
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);
 int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset);
 ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
@@ -93,8 +110,8 @@ void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
 										char *prefix);
 void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix);
 u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
-											struct nested_vmcs12 *vmcs12);
+											vmcs12_info_t *vmcs12_info);
 void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
-												struct nested_vmcs12 *vmcs12);
+												vmcs12_info_t *vmcs12_info);
 
 #endif /* _NESTED_X86VMX_VMCS12_H_ */

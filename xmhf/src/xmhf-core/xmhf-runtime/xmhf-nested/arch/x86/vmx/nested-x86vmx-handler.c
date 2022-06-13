@@ -85,23 +85,6 @@ union _vmx_decode_vm_inst_info {
 	u32 raw;
 };
 
-/* Format of an active VMCS12 tracked by a CPU */
-typedef struct vmcs12_info {
-	/*
-	 * Pointer to VMCS12 in guest.
-	 *
-	 * When a VMCS is invalid, this field is CUR_VMCS_PTR_INVALID, and all
-	 * other fields are undefined.
-	 */
-	gpa_t vmcs12_ptr;
-	/* Pointer to VMCS02 in host */
-	spa_t vmcs02_ptr;
-	/* Whether this VMCS has launched */
-	int launched;
-	/* Content of VMCS12, stored in XMHF's format */
-	struct nested_vmcs12 vmcs12_value;
-} vmcs12_info_t;
-
 /* A blank page in memory for VMCLEAR */
 static u8 blank_page[PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
 
@@ -359,7 +342,7 @@ static u32 _vmx_vmentry(VCPU *vcpu, vmcs12_info_t *vmcs12_info, struct regs *r)
 
 	/* Translate VMCS12 to VMCS02 */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs02_ptr));
-	result = xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(vcpu, &vmcs12_info->vmcs12_value);
+	result = xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(vcpu, vmcs12_info);
 
 	/* When a problem happens, translate back to L1 guest */
 	if (result != VM_INST_SUCCESS) {
@@ -546,7 +529,7 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu)
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU *vcpu, struct regs *r)
 {
 	vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
-	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, &vmcs12_info->vmcs12_value);
+	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, vmcs12_info);
 	printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 			vmcs12_info->vmcs12_value.info_vmexit_reason);
 	/* Prepare VMRESUME to guest hypervisor */

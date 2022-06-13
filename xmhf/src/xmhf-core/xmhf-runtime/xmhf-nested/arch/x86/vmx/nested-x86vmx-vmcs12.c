@@ -360,8 +360,9 @@ static u32 _vmcs12_get_ctls(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
  * success.
  */
 u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
-											struct nested_vmcs12 *vmcs12)
+											vmcs12_info_t *vmcs12_info)
 {
+	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
 	vmx_ctls_t ctls;
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	u32 status = _vmcs12_get_ctls(vcpu, vmcs12, &ctls);
@@ -641,8 +642,9 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
  * Translate VMCS02 (already loaded as current VMCS) to VMCS12 (vmcs12)
  */
 void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
-												struct nested_vmcs12 *vmcs12)
+												vmcs12_info_t *vmcs12_info)
 {
+	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
 	vmx_ctls_t ctls;
 	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
 
