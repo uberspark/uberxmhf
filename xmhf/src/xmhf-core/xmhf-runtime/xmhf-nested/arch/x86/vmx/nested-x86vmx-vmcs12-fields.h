@@ -123,7 +123,7 @@ DECLARE_FIELD_16_RW(0x0000, control_vpid,
 					(_vmx_hasctl_enable_vpid(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_16_RW(0x0002, control_post_interrupt_notification_vec,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_process_posted_interrupts(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_16_RW(0x0004, control_eptp_index,
@@ -205,15 +205,15 @@ DECLARE_FIELD_16_RW(0x0C0C, host_TR_selector,
 
 /* 64-Bit Control Fields */
 DECLARE_FIELD_64_RW(0x2000, control_IO_BitmapA_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2002, control_IO_BitmapB_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2004, control_MSR_Bitmaps_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_use_msr_bitmaps(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2006, control_VM_exit_MSR_store_address,
@@ -233,27 +233,27 @@ DECLARE_FIELD_64_RW(0x200C, control_Executive_VMCS_pointer,
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x200E, control_PML_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_enable_pml(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2010, control_TSC_offset,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2012, control_virtual_APIC_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_virtualize_apic_access(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2014, control_APIC_access_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_process_posted_interrupts(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2016, control_posted_interrupt_desc_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_process_posted_interrupts(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2018, control_VM_function_controls,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_enable_vm_functions(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x201A, control_EPT_pointer,
@@ -281,23 +281,23 @@ DECLARE_FIELD_64_RW(0x2024, control_EPTP_list_address,
 					(0 /* TODO: Not able to detect "EPTP switching" */),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2026, control_VMREAD_bitmap_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_vmcs_shadowing(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2028, control_VMWRITE_bitmap_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_vmcs_shadowing(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x202A, control_virt_exception_info_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR),
+					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_ept_violation_ve(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x202C, control_XSS_exiting_bitmap,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_enable_xsaves_xrstors(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x202E, control_ENCLS_exiting_bitmap,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_enable_encls_exiting(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2030, control_subpage_permission_table_pointer,
@@ -305,7 +305,7 @@ DECLARE_FIELD_64_RW(0x2030, control_subpage_permission_table_pointer,
 					(_vmx_hasctl_sub_page_write_permissions_for_ept(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2032, control_TSC_multiplier,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_use_tsc_scaling(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2034, control_tertiary_proc_based_VMexec_ctls,
@@ -313,7 +313,7 @@ DECLARE_FIELD_64_RW(0x2034, control_tertiary_proc_based_VMexec_ctls,
 					(_vmx_hasctl_activate_tertiary_controls(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2036, control_ENCLV_exiting_bitmap,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_enable_enclv_exiting(FIELD_CTLS_ARG)),
 					UNDEFINED)
 
@@ -441,15 +441,15 @@ DECLARE_FIELD_32_RW(0x4016, control_VM_entry_interruption_information,
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4018, control_VM_entry_exception_errorcode,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x401A, control_VM_entry_instruction_length,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x401C, control_Task_PRivilege_Threshold,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_use_tpr_shadow(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x401E, control_VMX_seccpu_based,
@@ -457,11 +457,11 @@ DECLARE_FIELD_32_RW(0x401E, control_VMX_seccpu_based,
 					(_vmx_hasctl_activate_secondary_controls(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4020, control_PLE_gap,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_pause_loop_exiting(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4022, control_PLE_window,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(_vmx_hasctl_pause_loop_exiting(FIELD_CTLS_ARG)),
 					UNDEFINED)
 
@@ -601,35 +601,35 @@ DECLARE_FIELD_32_RW(0x4C00, host_SYSENTER_CS,
 
 /* Natural-Width Control Fields */
 DECLARE_FIELD_NW_RW(0x6000, control_CR0_mask,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_NW_RW(0x6002, control_CR4_mask,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_NW_RW(0x6004, control_CR0_shadow,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_NW_RW(0x6006, control_CR4_shadow,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_NW_RW(0x6008, control_CR3_target0,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(!VMCS12_FIELDS_QEMU),
 					UNDEFINED)
 DECLARE_FIELD_NW_RW(0x600A, control_CR3_target1,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(!VMCS12_FIELDS_QEMU),
 					UNDEFINED)
 DECLARE_FIELD_NW_RW(0x600C, control_CR3_target2,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(!VMCS12_FIELDS_QEMU),
 					UNDEFINED)
 DECLARE_FIELD_NW_RW(0x600E, control_CR3_target3,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
 					(!VMCS12_FIELDS_QEMU),
 					UNDEFINED)
 
