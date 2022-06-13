@@ -48,6 +48,7 @@
 // Intercept handlers for nested virtualization
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
+#include "nested-x86vmx-handler.h"
 #include "nested-x86vmx-vmcs12.h"
 #include "nested-x86vmx-vminsterr.h"
 
@@ -251,6 +252,12 @@ static void new_active_vmcs12(VCPU *vcpu, gpa_t vmcs_ptr, u32 rev)
 	*(u32 *)spa2hva(vmcs12_info->vmcs02_ptr) = rev;
 	vmcs12_info->launched = 0;
 	memset(&vmcs12_info->vmcs12_value, 0, sizeof(vmcs12_info->vmcs12_value));
+	memset(&vmcs12_info->vmcs02_vmexit_msr_store_area, 0,
+			sizeof(vmcs12_info->vmcs02_vmexit_msr_store_area));
+	memset(&vmcs12_info->vmcs02_vmexit_msr_load_area, 0,
+			sizeof(vmcs12_info->vmcs02_vmexit_msr_load_area));
+	memset(&vmcs12_info->vmcs02_vmentry_msr_load_area, 0,
+			sizeof(vmcs12_info->vmcs02_vmentry_msr_load_area));
 }
 
 /*

@@ -51,6 +51,8 @@
 #ifndef _NESTED_X86VMX_VMCS12_H_
 #define _NESTED_X86VMX_VMCS12_H_
 
+#include "nested-x86vmx-handler.h"
+
 /*
  * Rules:
  * * Exactly one bit should be set in mask 0xf
@@ -97,6 +99,15 @@ typedef struct vmcs12_info {
 	int launched;
 	/* Content of VMCS12, stored in XMHF's format */
 	struct nested_vmcs12 vmcs12_value;
+	/* VMEXIT MSR store area */
+	msr_entry_t vmcs02_vmexit_msr_store_area[VMX_NESTED_MAX_MSR_COUNT]
+	__attribute__((aligned(16)));
+	/* VMEXIT MSR load area */
+	msr_entry_t vmcs02_vmexit_msr_load_area[VMX_NESTED_MAX_MSR_COUNT]
+	__attribute__((aligned(16)));
+	/* VMENTRY MSR load area */
+	msr_entry_t vmcs02_vmentry_msr_load_area[VMX_NESTED_MAX_MSR_COUNT]
+	__attribute__((aligned(16)));
 } vmcs12_info_t;
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);

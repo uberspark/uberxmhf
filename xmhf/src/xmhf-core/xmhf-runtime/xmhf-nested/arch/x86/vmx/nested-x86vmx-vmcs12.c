@@ -48,6 +48,7 @@
 // Handle VMCS in the guest
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
+#include "nested-x86vmx-handler.h"
 #include "nested-x86vmx-vmcs12.h"
 #include "nested-x86vmx-vminsterr.h"
 
@@ -586,6 +587,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		/* VM exit/entry MSR load/store not supported */
 		HALT_ON_ERRORCOND(val == 0);
 		__vmx_vmwrite32(0x400E, val);
+		// TODO: use vmcs02_vmexit_msr_load_area
 	}
 	{
 		u32 val = vmcs12->control_VM_exit_MSR_load_count;
@@ -862,16 +864,19 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		}
 	}
 	{
-		vmcs12->control_VM_exit_MSR_store_count = __vmx_vmread32(0x400E);
+		HALT_ON_ERRORCOND(vmcs12->control_VM_exit_MSR_store_count ==
+							__vmx_vmread32(0x400E));
 	}
 	{
-		vmcs12->control_VM_exit_MSR_load_count = __vmx_vmread32(0x4010);
+		HALT_ON_ERRORCOND(vmcs12->control_VM_exit_MSR_load_count ==
+							__vmx_vmread32(0x4010));
 	}
 	{
 		vmcs12->control_VM_entry_controls = __vmx_vmread32(0x4012);
 	}
 	{
-		vmcs12->control_VM_entry_MSR_load_count = __vmx_vmread32(0x4014);
+		HALT_ON_ERRORCOND(vmcs12->control_VM_entry_MSR_load_count ==
+							__vmx_vmread32(0x4014));
 	}
 	if (1) {
 		/* TODO: ignoring _vmx_hasctl_activate_secondary_controls(&ctls) */
