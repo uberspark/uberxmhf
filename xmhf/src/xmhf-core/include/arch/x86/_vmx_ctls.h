@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// _vmx_ctls.h - Manage Intel VMX ctonrol bits
+// _vmx_ctls.h - Manage Intel VMX control bits
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 
 #ifndef _VMX_CTLS_H_

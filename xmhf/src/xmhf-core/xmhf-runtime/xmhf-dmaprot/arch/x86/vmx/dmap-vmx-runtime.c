@@ -505,8 +505,6 @@ static void _vtd_invalidatecaches(void)
 
 ////////////////////////////////////////////////////////////////////////
 // GLOBALS
-#define PAE_get_pdtaddress(x) ((u32)((u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL))
-#define PAE_get_ptaddress(x) ((u32)((u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL))
 
 u32 xmhf_dmaprot_arch_x86_vmx_enable(spa_t protectedbuffer_paddr,
                                          hva_t protectedbuffer_vaddr, size_t protectedbuffer_size)
@@ -610,7 +608,7 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size)
     HALT_ON_ERRORCOND((l_vtd_pts_paddr != 0) && (l_vtd_pts_vaddr != 0));
 
 #ifndef __XMHF_VERIFICATION__
-    for (cur_spaddr = start_paddr; cur_spaddr <= end_paddr; cur_spaddr += PAGE_SIZE_4K)
+    for (cur_spaddr = start_paddr; cur_spaddr < end_paddr; cur_spaddr += PAGE_SIZE_4K)
     {
         // compute pdpt, pdt and pt indices
         pdptindex = PAE_get_pdptindex(cur_spaddr);
@@ -622,7 +620,7 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size)
 
         // protect the physical page
         // pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;
-        pt[ptindex] &= ~((u64)VTD_READ | (u64)VTD_WRITE);
+        pt[ptindex] &= (~((u64)VTD_READ | (u64)VTD_WRITE));
     }
 #endif
 }
@@ -644,7 +642,7 @@ void xmhf_dmaprot_arch_x86_vmx_unprotect(spa_t start_paddr, size_t size)
     HALT_ON_ERRORCOND((l_vtd_pts_paddr != 0) && (l_vtd_pts_vaddr != 0));
 
 #ifndef __XMHF_VERIFICATION__
-    for (cur_spaddr = start_paddr; cur_spaddr <= end_paddr; cur_spaddr += PAGE_SIZE_4K)
+    for (cur_spaddr = start_paddr; cur_spaddr < end_paddr; cur_spaddr += PAGE_SIZE_4K)
     {
         // compute pdpt, pdt and pt indices
         pdptindex = PAE_get_pdptindex(cur_spaddr);
