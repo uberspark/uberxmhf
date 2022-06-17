@@ -101,28 +101,29 @@ typedef struct vmcs12_info {
 	struct nested_vmcs12 vmcs12_value;
 	/* VMEXIT MSR store area */
 	msr_entry_t vmcs02_vmexit_msr_store_area[VMX_NESTED_MAX_MSR_COUNT]
-	__attribute__((aligned(16)));
+		__attribute__((aligned(16)));
 	/* VMEXIT MSR load area */
 	msr_entry_t vmcs02_vmexit_msr_load_area[VMX_NESTED_MAX_MSR_COUNT]
-	__attribute__((aligned(16)));
+		__attribute__((aligned(16)));
 	/* VMENTRY MSR load area */
 	msr_entry_t vmcs02_vmentry_msr_load_area[VMX_NESTED_MAX_MSR_COUNT]
-	__attribute__((aligned(16)));
+		__attribute__((aligned(16)));
 } vmcs12_info_t;
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);
 int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset);
 ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
-											size_t offset, size_t size);
+										  size_t offset, size_t size);
 void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 										size_t offset, ulong_t value,
 										size_t size);
-void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
-										char *prefix);
-void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix);
-u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
-											vmcs12_info_t *vmcs12_info);
-void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
-												vmcs12_info_t *vmcs12_info);
+void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU * vcpu,
+									   struct nested_vmcs12 *vmcs12,
+									   char *prefix);
+void xmhf_nested_arch_x86vmx_vmread_all(VCPU * vcpu, char *prefix);
+u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
+											 vmcs12_info_t * vmcs12_info);
+void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
+											  vmcs12_info_t * vmcs12_info);
 
-#endif /* _NESTED_X86VMX_VMCS12_H_ */
+#endif							/* _NESTED_X86VMX_VMCS12_H_ */

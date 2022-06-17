@@ -105,7 +105,7 @@ int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset)
 }
 
 ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
-											size_t offset, size_t size)
+										  size_t offset, size_t size)
 {
 	switch (offset) {
 #define DECLARE_FIELD_16(encoding, name, ...) \
@@ -186,8 +186,9 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 }
 
 /* Dump all fields in vmcs12 */
-void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
-										char *prefix)
+void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU * vcpu,
+									   struct nested_vmcs12 *vmcs12,
+									   char *prefix)
 {
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	printf("CPU(0x%02x): %s" #name " = 0x%04x\n", vcpu->id, prefix, \
@@ -206,14 +207,14 @@ void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
 #define DECLARE_FIELD_NW(encoding, name, ...) \
 	printf("CPU(0x%02x): %s" #name " = 0x%08lx\n", vcpu->id, prefix, \
 			vmcs12->name);
-#else /* !defined(__I386__) && !defined(__AMD64__) */
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) && !defined(__AMD64__) */
+#else							/* !defined(__I386__) && !defined(__AMD64__) */
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) && !defined(__AMD64__) */
 #include "nested-x86vmx-vmcs12-fields.h"
 }
 
 /* Dump all fields in current physical VMCS (using vmread) */
-void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix)
+void xmhf_nested_arch_x86vmx_vmread_all(VCPU * vcpu, char *prefix)
 {
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	{ \
@@ -251,9 +252,9 @@ void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix)
 					vcpu->id, (u32) encoding, prefix); \
 		} \
 	}
-#else /* !defined(__I386__) && !defined(__AMD64__) */
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) && !defined(__AMD64__) */
+#else							/* !defined(__I386__) && !defined(__AMD64__) */
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) && !defined(__AMD64__) */
 #define DECLARE_FIELD_32(encoding, name, ...) \
 	{ \
 		unsigned long value; \
@@ -289,9 +290,9 @@ void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix)
 					vcpu->id, (u32) encoding, prefix); \
 		} \
 	}
-#else /* !defined(__I386__) && !defined(__AMD64__) */
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) && !defined(__AMD64__) */
+#else							/* !defined(__I386__) && !defined(__AMD64__) */
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) && !defined(__AMD64__) */
 #include "nested-x86vmx-vmcs12-fields.h"
 }
 
@@ -300,8 +301,8 @@ void xmhf_nested_arch_x86vmx_vmread_all(VCPU *vcpu, char *prefix)
  * Return an error code following VM instruction error number, or 0 when
  * success.
  */
-static u32 _vmcs12_get_ctls(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
-							vmx_ctls_t *ctls)
+static u32 _vmcs12_get_ctls(VCPU * vcpu, struct nested_vmcs12 *vmcs12,
+							vmx_ctls_t * ctls)
 {
 	{
 		u32 val = vmcs12->control_VMX_pin_based;
@@ -360,8 +361,8 @@ static u32 _vmcs12_get_ctls(VCPU *vcpu, struct nested_vmcs12 *vmcs12,
  * Return an error code following VM instruction error number, or 0 when
  * success.
  */
-u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
-											vmcs12_info_t *vmcs12_info)
+u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
+											 vmcs12_info_t * vmcs12_info)
 {
 	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
 	vmx_ctls_t ctls;
@@ -459,7 +460,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 		HALT_ON_ERRORCOND(addr == 0);
 #ifndef __DEBUG_QEMU__
 		__vmx_vmwrite64(0x200C, guestmem_gpa2spa_page(&ctx_pair, addr));
-#endif /* !__DEBUG_QEMU__ */
+#endif							/* !__DEBUG_QEMU__ */
 	}
 	{
 		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
@@ -512,8 +513,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 			pae = 0;
 		}
 #elif !defined(__I386__)
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) */
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) */
 		if (pae) {
 			/* Walk EPT and retrieve values for guest_PDPTE* */
 			u64 pdptes[4];
@@ -578,8 +579,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 #ifdef __AMD64__
 		val |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
 #elif !defined(__I386__)
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) */
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) */
 		__vmx_vmwrite32(0x400C, val);
 	}
 	{
@@ -643,8 +644,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU *vcpu,
 /*
  * Translate VMCS02 (already loaded as current VMCS) to VMCS12 (vmcs12)
  */
-void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
-												vmcs12_info_t *vmcs12_info)
+void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
+											  vmcs12_info_t * vmcs12_info)
 {
 	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
 	vmx_ctls_t ctls;
@@ -756,7 +757,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 		// TODO: related to SMM, check whether this restriction makes sense
 #ifndef __DEBUG_QEMU__
 		HALT_ON_ERRORCOND(__vmx_vmread64(0x200C) == 0);
-#endif /* !__DEBUG_QEMU__ */
+#endif							/* !__DEBUG_QEMU__ */
 		// vmcs12->control_Executive_VMCS_pointer = ...;
 	}
 	if (1) {
@@ -809,7 +810,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 			cpuid(0xA, &eax, &ebx, &ecx, &edx);
 			if (eax & 0xffU) {
 				HALT_ON_ERRORCOND(__vmx_vmread64(0x2C04) ==
-									rdmsr64(IA32_PERF_GLOBAL_CTRL));
+								  rdmsr64(IA32_PERF_GLOBAL_CTRL));
 			}
 		}
 	}
@@ -844,9 +845,9 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	}
 	{
 		u32 val = __vmx_vmread32(0x4002);
-		HALT_ON_ERRORCOND(val == (
-			vmcs12->control_VMX_cpu_based |
-			(1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS)));
+		HALT_ON_ERRORCOND(val == (vmcs12->control_VMX_cpu_based |
+								  (1U <<
+								   VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS)));
 	}
 	{
 		// TODO: in the future, need to merge with host's exception bitmap
@@ -865,18 +866,18 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU *vcpu,
 	}
 	{
 		HALT_ON_ERRORCOND(vmcs12->control_VM_exit_MSR_store_count ==
-							__vmx_vmread32(0x400E));
+						  __vmx_vmread32(0x400E));
 	}
 	{
 		HALT_ON_ERRORCOND(vmcs12->control_VM_exit_MSR_load_count ==
-							__vmx_vmread32(0x4010));
+						  __vmx_vmread32(0x4010));
 	}
 	{
 		vmcs12->control_VM_entry_controls = __vmx_vmread32(0x4012);
 	}
 	{
 		HALT_ON_ERRORCOND(vmcs12->control_VM_entry_MSR_load_count ==
-							__vmx_vmread32(0x4014));
+						  __vmx_vmread32(0x4014));
 	}
 	if (1) {
 		/* TODO: ignoring _vmx_hasctl_activate_secondary_controls(&ctls) */

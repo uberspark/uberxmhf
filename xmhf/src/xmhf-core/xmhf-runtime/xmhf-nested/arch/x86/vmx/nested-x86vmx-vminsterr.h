@@ -105,5 +105,4 @@
 /* Invalid operand to INVEPT/INVVPID */
 #define VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID 28
 
-#endif /* _NESTED_X86VMX_VMINSTERR_H_ */
-
+#endif							/* _NESTED_X86VMX_VMINSTERR_H_ */

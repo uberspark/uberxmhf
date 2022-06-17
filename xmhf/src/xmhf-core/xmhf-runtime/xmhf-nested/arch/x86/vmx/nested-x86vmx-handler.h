@@ -58,4 +58,4 @@
  */
 #define VMX_NESTED_MAX_MSR_COUNT 64
 
-#endif /* _NESTED_X86VMX_HANDLER_H_ */
+#endif							/* _NESTED_X86VMX_HANDLER_H_ */
