@@ -409,28 +409,32 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 }
 
 /*
- * This function is called by WRMSR interception where ECX=0x830. Return 1 if
- * smpguest handles this WRMSR. Return 0 if smpguest does not recognize it
- * (should forward the write to physical x2APIC).
+ * This function is called by WRMSR interception where ECX=0x830. value is
+ * EDX:EAX. Return 1 if smpguest handles this WRMSR. Return 0 if smpguest does
+ * not recognize it (should forward the write to physical x2APIC).
  */
-int xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(VCPU *vcpu, struct regs *r){
-	switch (r->eax & 0x00000F00) {
+int xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(VCPU *vcpu, u64 value){
+	u32 eax;
+	u32 edx;
+	switch (value & 0x00000F00ULL) {
 	case 0x500:
 		/* INIT IPI, we just void it */
-		printf("0x%04x:0x%08llx -> (x2APIC ICR write) INIT IPI skipped, EAX=0x%08x, EDX=0x%08x\n",
-				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, r->eax, r->edx);
+		printf("0x%04x:0x%08llx -> (x2APIC ICR write) INIT IPI skipped, EDX:EAX=0x%016llx\n",
+				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, value);
 		return 1;
 	case 0x600:
+		eax = (u32) value;
+		edx = value >> 32;
 		/* STARTUP IPI */
 		printf("0x%04x:0x%08llx -> (x2APIC ICR write) STARTUP IPI detected, EAX=0x%08x, EDX=0x%08x\n",
-				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, r->eax, r->edx);
+				(u16)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP, eax, edx);
 		/*
 		 * In LAPIC, the destination field is bit 56-63. In x2APIC is 32-63.
 		 * As a workaround, we simply left shift the destination field in
 		 * x2APIC. The disadvantage is that this only supports 256 LAPIC IDs.
 		 */
-		HALT_ON_ERRORCOND(r->edx <= 0xff);
-		if (processSIPI(vcpu, r->eax, r->edx)) {
+		HALT_ON_ERRORCOND(edx <= 0xff);
+		if (processSIPI(vcpu, eax, edx)) {
 			/*
 			 * Ideally the guest should only be using x2APIC and not APIC.
 			 * But we nevertheless delink LAPIC interception.
