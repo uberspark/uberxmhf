@@ -69,7 +69,7 @@ extern void _vmx_putVMCS(VCPU *vcpu);
 extern void _vmx_getVMCS(VCPU *vcpu);
 extern void _vmx_dumpVMCS(VCPU *vcpu);
 
-extern u32 rdmsr_safe(struct regs *r);
+extern u32 rdmsr_safe(u32 index, u64 *value);
 
 //----------------------------------------------------------------------
 //exported DATA
@@ -94,6 +94,8 @@ extern u32 rdmsr_safe(struct regs *r);
 //----------------------------------------------------------------------
 void _vmx_inject_exception(VCPU *vcpu, u32 vector, u32 has_ec, u32 errcode);
 u64 _vmx_get_guest_efer(VCPU *vcpu);
+u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value);
+u32 xmhf_parteventhub_arch_x86vmx_handle_rdmsr(VCPU *vcpu, u32 index, u64 *value);
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair);

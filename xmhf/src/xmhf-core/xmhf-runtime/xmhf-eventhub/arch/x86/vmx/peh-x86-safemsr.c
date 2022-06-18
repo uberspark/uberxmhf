@@ -54,8 +54,9 @@
  * If successful, return 0. If RDMSR causes #GP, return 1.
  * Implementation similar to Linux's native_read_msr_safe().
  */
-u32 rdmsr_safe(struct regs *r) {
+u32 rdmsr_safe(u32 index, u64 *value) {
     u32 result;
+    u32 eax, edx;
     asm volatile ("1:\r\n"
                   "rdmsr\r\n"
                   "xor %%ebx, %%ebx\r\n"
@@ -78,13 +79,16 @@ u32 rdmsr_safe(struct regs *r) {
                   ".previous\r\n"
                   "3:\r\n"
 #ifdef __AMD64__
-                  : "=a"(r->rax), "=d"(r->rdx), "=b"(result)
-                  : "c" (r->rcx));
+                  : "=a"(rax), "=d"(rdx), "=b"(result)
+                  : "c" (index));
 #elif defined(__I386__)
-                  : "=a"(r->eax), "=d"(r->edx), "=b"(result)
-                  : "c" (r->ecx));
+                  : "=a"(eax), "=d"(edx), "=b"(result)
+                  : "c" (index));
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
+	if (result == 0) {
+		*value = ((u64) edx << 32) | eax;
+	}
     return result;
 }
