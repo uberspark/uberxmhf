@@ -436,12 +436,10 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	/* 16-Bit Host-State Fields */
 
 	/* 64-Bit Control Fields */
-	{
-		gpa_t addr = vmcs12->control_VM_exit_MSR_store_address;
-		// TODO: need to multiplex MSR loading / storing, which is not implemented yet.
-		addr = guestmem_gpa2spa_page(&ctx_pair, 0);
-		__vmx_vmwrite64(0x2006, addr);
-	}
+	/*
+	 * Note: control_VM_exit_MSR_store_address is processed with
+	 * control_VM_exit_MSR_store_count
+	 */
 	{
 		gpa_t addr = vmcs12->control_VM_exit_MSR_load_address;
 		// TODO: need to multiplex MSR loading / storing, which is not implemented yet.
@@ -584,11 +582,14 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		__vmx_vmwrite32(0x400C, val);
 	}
 	{
-		u32 val = vmcs12->control_VM_exit_MSR_store_count;
-		/* VM exit/entry MSR load/store not supported */
-		HALT_ON_ERRORCOND(val == 0);
-		__vmx_vmwrite32(0x400E, val);
-		// TODO: use vmcs02_vmexit_msr_load_area
+		/* VMCS02 needs to always process the same fields as VMCS01 */
+		memcpy(vmcs12_info->vmcs02_vmexit_msr_store_area,
+			   (void *) vcpu->vmx_vaddr_msr_area_guest,
+			   vcpu->vmcs.control_VM_exit_MSR_store_count * sizeof(msr_entry_t));
+		__vmx_vmwrite32(0x400E, vcpu->vmcs.control_VM_exit_MSR_store_count);
+		__vmx_vmwrite64(0x2006, hva2spa(vmcs12_info->vmcs02_vmexit_msr_store_area));
+
+		/* VMX control is not checked here; will check in VMEXIT handler */
 	}
 	{
 		u32 val = vmcs12->control_VM_exit_MSR_load_count;
@@ -649,7 +650,9 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 {
 	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
 	vmx_ctls_t ctls;
+	guestmem_hptw_ctx_pair_t ctx_pair;
 	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
+	guestmem_init(vcpu, &ctx_pair);
 
 #define FIELD_CTLS_ARG (&ctls)
 #define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
@@ -738,11 +741,10 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	}
 
 	/* 64-Bit Control Fields */
-	{
-		// TODO: need to multiplex MSR loading / storing, which is not implemented yet.
-		HALT_ON_ERRORCOND(__vmx_vmread64(0x2006) == 0);
-		// vmcs12->control_VM_exit_MSR_store_address = ...
-	}
+	/*
+	 * Note: control_VM_exit_MSR_store_address is processed with
+	 * control_VM_exit_MSR_store_count
+	 */
 	{
 		// TODO: need to multiplex MSR loading / storing, which is not implemented yet.
 		HALT_ON_ERRORCOND(__vmx_vmread64(0x2008) == 0);
@@ -865,8 +867,53 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		}
 	}
 	{
-		HALT_ON_ERRORCOND(vmcs12->control_VM_exit_MSR_store_count ==
+		u32 i;
+		gva_t guest_addr = vmcs12->control_VM_exit_MSR_store_address;
+
+		/* VMCS02 needs to always process the same fields as VMCS01 */
+		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_exit_MSR_store_count ==
 						  __vmx_vmread32(0x400E));
+
+		/* Read MSRs and load to guest */
+		for (i = 0; i < vmcs12->control_VM_exit_MSR_store_count; i++) {
+			msr_entry_t guest_entry;
+			guestmem_copy_gp2h(&ctx_pair, 0, &guest_entry,
+							   guest_addr + sizeof(msr_entry_t) * i,
+							   sizeof(msr_entry_t));
+			switch (guest_entry.index) {
+			case MSR_EFER: /* fallthrough */
+			case MSR_IA32_PAT: /* fallthrough */
+			case MSR_K6_STAR:
+				{
+					bool found = false;
+				    u32 i = 0;
+					for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count; i++) {
+						msr_entry_t *entry = &vmcs12_info->vmcs02_vmexit_msr_store_area[i];
+						if (entry->index == guest_entry.index) {
+							guest_entry.data = entry->data;
+							found = true;
+							break;
+						}
+					}
+					HALT_ON_ERRORCOND(found);
+				}
+				break;
+			default:
+				{
+#if 0
+					struct regs r = {.ecx = guest_entry.index};
+					_vmx_handle_intercept_rdmsr(vcpu, &r);
+					guest_entry.data = ((u64)r.edx << 32) | r.eax;
+#else
+					guest_entry.data = 0xaaaaa000;	// TODO
+#endif
+				}
+				break;
+			}
+			guestmem_copy_h2gp(&ctx_pair, 0,
+							   guest_addr + sizeof(msr_entry_t) * i,
+							   &guest_entry, sizeof(msr_entry_t));
+		}
 	}
 	{
 		HALT_ON_ERRORCOND(vmcs12->control_VM_exit_MSR_load_count ==

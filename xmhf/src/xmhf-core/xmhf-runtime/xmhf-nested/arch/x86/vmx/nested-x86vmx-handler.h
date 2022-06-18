@@ -52,10 +52,10 @@
 #define _NESTED_X86VMX_HANDLER_H_
 
 /*
- * Maximum number of MSRs in VMENTRY/VMEXIT MSR load / store
- * In Intel's manual, this number is at least 512. So if this limit is
- * exceeded, can increase this macro.
+ * Maximum number of MSRs in VMCS02's VMENTRY/VMEXIT MSR load / store. This
+ * value only needs to be larger than or equal to vmx_msr_area_msrs_count.
+ * It is not related to VMCS12's MSR load/store.
  */
-#define VMX_NESTED_MAX_MSR_COUNT 64
+#define VMX_NESTED_MAX_MSR_COUNT 8
 
 #endif							/* _NESTED_X86VMX_HANDLER_H_ */
