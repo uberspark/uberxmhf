@@ -379,44 +379,37 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 // doh!!!
 //------------------------------------------------------------------------------
 
-//---intercept handler (WRMSR)--------------------------------------------------
-static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
-	u64 write_data = ((u64)r->edx << 32) | (u64)r->eax;
-
-	//printf("CPU(0x%02x): WRMSR 0x%08x 0x%08x%08x @ %p\n", vcpu->id, r->ecx, r->edx, r->eax, vcpu->vmcs.guest_RIP);
-
-	switch(r->ecx){
-		case IA32_SYSENTER_CS_MSR:
-			vcpu->vmcs.guest_SYSENTER_CS = (u32)write_data;
-			break;
-		case IA32_SYSENTER_EIP_MSR:
-			vcpu->vmcs.guest_SYSENTER_EIP = (u64)write_data;
-			break;
-		case IA32_SYSENTER_ESP_MSR:
-			vcpu->vmcs.guest_SYSENTER_ESP = (u64)write_data;
-			break;
-		case IA32_MSR_FS_BASE:
-			vcpu->vmcs.guest_FS_base = (u64)write_data;
-			break;
-		case IA32_MSR_GS_BASE:
-			vcpu->vmcs.guest_GS_base = (u64)write_data;
-			break;
+/*
+ * Simulate guest writing a MSR with ecx=index, value=edx:eax
+ *
+ * The MSRs that will be changed by VMENTRY/VMEXIT MSR load/store are not
+ * supported: MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR
+ *
+ * Return 0 if success, 1 if failure (should inject #GP to guest)
+ */
+u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value)
+{
+	switch (index) {
 		case MSR_EFER: /* fallthrough */
 		case MSR_IA32_PAT: /* fallthrough */
-		case MSR_K6_STAR: {
-			u32 found = 0;
-            u32 i = 0;
-			for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count; i++) {
-				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
-				if (entry->index == r->ecx) {
-					entry->data = write_data;
-					found = 1;
-					break;
-				}
-			}
-			HALT_ON_ERRORCOND(found != 0);
+		case MSR_K6_STAR:
+			HALT_ON_ERRORCOND(0 && "Illegal behavior");
 			break;
-		}
+		case IA32_SYSENTER_CS_MSR:
+			vcpu->vmcs.guest_SYSENTER_CS = (u32)value;
+			break;
+		case IA32_SYSENTER_EIP_MSR:
+			vcpu->vmcs.guest_SYSENTER_EIP = (u64)value;
+			break;
+		case IA32_SYSENTER_ESP_MSR:
+			vcpu->vmcs.guest_SYSENTER_ESP = (u64)value;
+			break;
+		case IA32_MSR_FS_BASE:
+			vcpu->vmcs.guest_FS_base = (u64)value;
+			break;
+		case IA32_MSR_GS_BASE:
+			vcpu->vmcs.guest_GS_base = (u64)value;
+			break;
 		case IA32_MTRRCAP: /* fallthrough */
 		case IA32_MTRR_DEF_TYPE: /* fallthrough */
 		case IA32_MTRR_FIX64K_00000: /* fallthrough */
@@ -454,7 +447,7 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			 * Need to change EPT to reflect MTRR changes, because host MTRRs
 			 * are not used when EPT is used.
 			 */
-			if (xmhf_memprot_arch_x86vmx_mtrr_write(vcpu, r->ecx, write_data)) {
+			if (xmhf_memprot_arch_x86vmx_mtrr_write(vcpu, index, value)) {
 				/*
 				 * When designed, xmhf_memprot_arch_x86vmx_mtrr_write() has not
 				 * been observed to fail. This may happen if the guest OS
@@ -462,26 +455,23 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 				 * case injecting #GP is the correct action.
 				 */
 				HALT_ON_ERRORCOND(0 && "Unexperienced fail in MTRR write");
-				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
-				return;
+				return 1;
 			}
 			break;
 		case IA32_BIOS_UPDT_TRIG:
 #ifdef __UPDATE_INTEL_UCODE__
 			printf("CPU(0x%02x): OS tries to write microcode!\n", vcpu->id);
-			printf("gva for microcode update: 0x%016llx\n", write_data);
-			handle_intel_ucode_update(vcpu, write_data);
+			printf("gva for microcode update: 0x%016llx\n", value);
+			handle_intel_ucode_update(vcpu, value);
 #else /* !__UPDATE_INTEL_UCODE__ */
 			printf("CPU(0x%02x): OS tries to write microcode, ignore\n",
 					vcpu->id);
 #endif /* __UPDATE_INTEL_UCODE__ */
 			break;
 		case IA32_X2APIC_ICR:
-			if (xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(vcpu, r) == 0) {
+			if (xmhf_smpguest_arch_x86vmx_eventhandler_x2apic_icrwrite(vcpu, value) == 0) {
 				/* Forward to physical APIC */
-				asm volatile ("wrmsr\r\n"
-					: //no outputs
-					:"a"(r->eax), "c" (r->ecx), "d" (r->edx));
+				wrmsr64(index, value);
 			}
 			break;
 #ifdef __NESTED_VIRTUALIZATION__
@@ -508,53 +498,29 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			break;
 #endif /* !__NESTED_VIRTUALIZATION__ */
 		default:{
-			asm volatile ("wrmsr\r\n"
-				: //no outputs
-				:"a"(r->eax), "c" (r->ecx), "d" (r->edx));
-//			asm volatile ("wrmsr\r\n"
-//				: //no outputs
-//				:"a"(r->eax), "c" (r->ecx), "d" (r->edx));
+			wrmsr64(index, value);
 			break;
 		}
 	}
-
-	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
-	//printf("CPU(0x%02x): WRMSR end\n", vcpu->id);
-	return;
+	return 0;
 }
 
-//---intercept handler (RDMSR)--------------------------------------------------
-static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
-	/* After switch statement, will assign this value to r->eax and r->edx */
-	u64 read_result = 0;
+//---intercept handler (WRMSR)--------------------------------------------------
+static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
+	u64 write_data = ((u64)r->edx << 32) | (u64)r->eax;
 
-	//printf("CPU(0x%02x): RDMSR 0x%08x @ %p\n", vcpu->id, r->ecx, vcpu->vmcs.guest_RIP);
+	//printf("CPU(0x%02x): WRMSR 0x%08x 0x%08x%08x @ %p\n", vcpu->id, r->ecx, r->edx, r->eax, vcpu->vmcs.guest_RIP);
 
 	switch(r->ecx){
-		case IA32_SYSENTER_CS_MSR:
-			read_result = (u64)vcpu->vmcs.guest_SYSENTER_CS;
-			break;
-		case IA32_SYSENTER_EIP_MSR:
-			read_result = (u64)vcpu->vmcs.guest_SYSENTER_EIP;
-			break;
-		case IA32_SYSENTER_ESP_MSR:
-			read_result = (u64)vcpu->vmcs.guest_SYSENTER_ESP;
-			break;
-		case IA32_MSR_FS_BASE:
-			read_result = (u64)vcpu->vmcs.guest_FS_base;
-			break;
-		case IA32_MSR_GS_BASE:
-			read_result = (u64)vcpu->vmcs.guest_GS_base;
-			break;
 		case MSR_EFER: /* fallthrough */
 		case MSR_IA32_PAT: /* fallthrough */
 		case MSR_K6_STAR: {
 			u32 found = 0;
             u32 i = 0;
-			for (i = 0; i < vcpu->vmcs.control_VM_exit_MSR_store_count; i++) {
+			for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count; i++) {
 				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
 				if (entry->index == r->ecx) {
-					read_result = entry->data;
+					entry->data = write_data;
 					found = 1;
 					break;
 				}
@@ -562,6 +528,49 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			HALT_ON_ERRORCOND(found != 0);
 			break;
 		}
+		default:
+			if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr(vcpu, r->ecx, write_data)) {
+				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+				return;
+			}
+	}
+
+	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	//printf("CPU(0x%02x): WRMSR end\n", vcpu->id);
+	return;
+}
+
+/*
+ * Simulate guest reading a MSR with ecx=index. *value will become edx:eax
+ *
+ * The MSRs that will be changed by VMENTRY/VMEXIT MSR load/store are not
+ * supported: MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR
+ *
+ * Return 0 if success, 1 if failure (should inject #GP to guest)
+ */
+u32 xmhf_parteventhub_arch_x86vmx_handle_rdmsr(VCPU *vcpu, u32 index, u64 *value)
+{
+	switch (index) {
+		case MSR_EFER: /* fallthrough */
+		case MSR_IA32_PAT: /* fallthrough */
+		case MSR_K6_STAR:
+			HALT_ON_ERRORCOND(0 && "Illegal behavior");
+			break;
+		case IA32_SYSENTER_CS_MSR:
+			*value = (u64)vcpu->vmcs.guest_SYSENTER_CS;
+			break;
+		case IA32_SYSENTER_EIP_MSR:
+			*value = (u64)vcpu->vmcs.guest_SYSENTER_EIP;
+			break;
+		case IA32_SYSENTER_ESP_MSR:
+			*value = (u64)vcpu->vmcs.guest_SYSENTER_ESP;
+			break;
+		case IA32_MSR_FS_BASE:
+			*value = (u64)vcpu->vmcs.guest_FS_base;
+			break;
+		case IA32_MSR_GS_BASE:
+			*value = (u64)vcpu->vmcs.guest_GS_base;
+			break;
 		case IA32_MTRR_DEF_TYPE: /* fallthrough */
 		case IA32_MTRR_FIX64K_00000: /* fallthrough */
 		case IA32_MTRR_FIX16K_80000: /* fallthrough */
@@ -598,14 +607,13 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			 * When reading MTRR MSRs, IA32_MTRRCAP is the same as host's MSR.
 			 * Other MTRR MSRs come from the shadow in vcpu.
 			 */
-			if (xmhf_memprot_arch_x86vmx_mtrr_read(vcpu, r->ecx, &read_result)) {
+			if (xmhf_memprot_arch_x86vmx_mtrr_read(vcpu, index, value)) {
 				/*
 				 * When designed, xmhf_memprot_arch_x86vmx_mtrr_read() cannot
 				 * fail. Please make sure injecting #GP is the correct action.
 				 */
 				HALT_ON_ERRORCOND(0 && "Unexpected fail in MTRR read");
-				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
-				return;
+				return 1;
 			}
 			break;
 		case IA32_X2APIC_ICR:
@@ -636,12 +644,45 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			break;
 #endif /* !__NESTED_VIRTUALIZATION__ */
 		default:{
-			if (rdmsr_safe(r) != 0) {
+			if (rdmsr_safe(index, value) != 0) {
+				return 1;
+			}
+			break;
+		}
+	}
+	return 0;
+}
+
+//---intercept handler (RDMSR)--------------------------------------------------
+static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
+	/* After switch statement, will assign this value to r->eax and r->edx */
+	u64 read_result = 0;
+
+	//printf("CPU(0x%02x): RDMSR 0x%08x @ %p\n", vcpu->id, r->ecx, vcpu->vmcs.guest_RIP);
+
+	switch(r->ecx){
+		case MSR_EFER: /* fallthrough */
+		case MSR_IA32_PAT: /* fallthrough */
+		case MSR_K6_STAR: {
+			u32 found = 0;
+            u32 i = 0;
+			for (i = 0; i < vcpu->vmcs.control_VM_exit_MSR_store_count; i++) {
+				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
+				if (entry->index == r->ecx) {
+					read_result = entry->data;
+					found = 1;
+					break;
+				}
+			}
+			HALT_ON_ERRORCOND(found != 0);
+			break;
+		}
+		default:
+			if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr(vcpu, r->ecx, &read_result)) {
 				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 				return;
 			}
-			goto no_assign_read_result;
-		}
+			break;
 	}
 
 	/* Assign read_result to r->eax and r->edx */
@@ -658,7 +699,6 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 
 	//printf("CPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x\n", vcpu->id, r->ecx, r->edx, r->eax);
 
-no_assign_read_result:
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	return;
 }
