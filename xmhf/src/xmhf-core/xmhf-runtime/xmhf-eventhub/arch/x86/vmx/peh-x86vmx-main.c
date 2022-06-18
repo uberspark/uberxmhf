@@ -640,7 +640,7 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_rdmsr(VCPU *vcpu, u32 index, u64 *value
 		case IA32_VMX_TRUE_ENTRY_CTLS_MSR: /* fallthrough */
 		// Note: IA32_VMX_VMFUNC_MSR temporarily not supported
 		// case IA32_VMX_VMFUNC_MSR:
-			read_result = vcpu->vmx_nested_msrs[r->ecx - IA32_VMX_BASIC_MSR];
+			*value = vcpu->vmx_nested_msrs[index - IA32_VMX_BASIC_MSR];
 			break;
 #endif /* !__NESTED_VIRTUALIZATION__ */
 		default:{

@@ -899,14 +899,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 				}
 				break;
 			default:
-				{
-#if 0
-					struct regs r = {.ecx = guest_entry.index};
-					_vmx_handle_intercept_rdmsr(vcpu, &r);
-					guest_entry.data = ((u64)r.edx << 32) | r.eax;
-#else
-					guest_entry.data = 0xaaaaa000;	// TODO
-#endif
+				if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr(
+					vcpu, guest_entry.index, &guest_entry.data)) {
+					/*
+					 * Likely need to fail VMEXIT, but need to double check.
+					 */
+					HALT_ON_ERRORCOND(0 && "RDMSR fail, what should I do?");
 				}
 				break;
 			}
