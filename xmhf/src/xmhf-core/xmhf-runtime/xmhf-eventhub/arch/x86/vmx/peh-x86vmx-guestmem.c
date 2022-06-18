@@ -131,3 +131,77 @@ void guestmem_copy_gp2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 	HALT_ON_ERRORCOND(result == 0);
 }
 
+/* Copy from dst (hypervisor address) to src (guest virtual address) */
+void guestmem_copy_h2gv(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+						hpt_va_t dst, void *src, size_t len)
+{
+	hptw_ctx_t *ctx = &ctx_pair->guest_ctx;
+	int result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
+	HALT_ON_ERRORCOND(result == 0);
+}
+
+/* Copy from dst (hypervisor address) to src (guest physical address) */
+void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+						hpt_va_t dst, void *src, size_t len)
+{
+	hptw_ctx_t *ctx = &ctx_pair->host_ctx;
+	int result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
+	HALT_ON_ERRORCOND(result == 0);
+}
+
+/*
+ * Test whether guest_addr (4K page aligned) is valid guest physical memory
+ * page. If so, return corresponding host physical memory page. Else, halt.
+ */
+spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
+							gpa_t guest_addr)
+{
+	void *ans;
+	size_t avail_size;
+	HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(guest_addr));
+	ans = hptw_checked_access_va(&ctx_pair->host_ctx,
+								HPT_PROTS_R,
+								0,
+								guest_addr,
+								PAGE_SIZE_4K,
+								&avail_size);
+	/*
+	 * If this fails, likely the memory crosses page boundary. But haven't we
+	 * just checked that guest_addr is page aligned?
+	 */
+	HALT_ON_ERRORCOND(avail_size == PAGE_SIZE_4K);
+	return hva2spa(ans);
+}
+
+/*
+ * Test whether guest_addr is valid continuous guest physical memory of size
+ * size in host physical memory. If so, return corresponding host physical
+ * memory page. Else, halt.
+ */
+spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
+							gpa_t guest_addr, size_t size)
+{
+	void *ans;
+	size_t scanned = 0;
+	while (scanned < len) {
+		gpa_t ptr_gpa = guest_addr + scanned;
+		size_t cur_scan;
+		void *ptr;
+		ptr = hptw_checked_access_va(&ctx_pair->host_ctx,
+									HPT_PROTS_R,
+									0,
+									ptr_gpa,
+									len - scanned,
+									&cur_scan);
+		if (scanned == 0) {
+			/* First time assigning to ans */
+			ans = ptr;
+		} else {
+			/* Check that ptr and ans indicate continuous memory */
+			HALT_ON_ERRORCOND(ans + scanned == ptr);
+		}
+		HALT_ON_ERRORCOND(cur_scan > 0);
+		scanned += cur_scan;
+	}
+	return hva2spa(ans);
+}
