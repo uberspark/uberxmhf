@@ -190,3 +190,46 @@ void xmhf_smpguest_arch_endquiesce(VCPU *vcpu){
 		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 	}
 }
+
+// Inject NMI to the guest when the guest is ready to receive it (i.e. when the
+// guest is not running NMI handler)
+// The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
+void xmhf_smpguest_arch_inject_nmi(VCPU *vcpu)
+{
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		HALT_ON_ERRORCOND(0 && "AMD not supported");
+	}else{	//CPU_VENDOR_INTEL
+		xmhf_smpguest_arch_x86vmx_inject_nmi(vcpu);
+	}
+}
+
+// Block NMIs using software
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
+// Especially, this function cannot be called in mHV's NMI interrupt handler.
+// Each intercept handler can only have one call of this function or the unblock
+// function.
+void xmhf_smpguest_arch_nmi_block(VCPU *vcpu)
+{
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		HALT_ON_ERRORCOND(0 && "AMD not supported");
+	}else{	//CPU_VENDOR_INTEL
+		xmhf_smpguest_arch_x86vmx_nmi_block(vcpu);
+	}
+}
+
+// Unblock NMIs using software
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
+// Especially, this function cannot be called in mHV's NMI interrupt handler.
+// Each intercept handler can only have one call of this function or the block
+// function.
+void xmhf_smpguest_arch_nmi_unblock(VCPU *vcpu)
+{
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		HALT_ON_ERRORCOND(0 && "AMD not supported");
+	}else{	//CPU_VENDOR_INTEL
+		xmhf_smpguest_arch_x86vmx_nmi_unblock(vcpu);
+	}
+}

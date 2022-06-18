@@ -174,6 +174,18 @@ struct _guestmtrrmsrs {
 #define IA32_VMX_MSRCOUNT                       18
 
 #ifndef __ASSEMBLY__
+
+/*
+ * Control NMI blocking. Note that this is different from hardware NMI blocking
+ * or virtual-NMI blocking.
+ */
+typedef struct {
+  /* Whether guest wants to blocks NMI */
+  bool guest_nmi_block;
+  /* Whether NMI is pending, regardless NMI block status */
+  bool guest_nmi_pending;
+} guest_nmi_t;
+
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
   //common fields
@@ -234,7 +246,31 @@ typedef struct _vcpu {
   //guest MTRR shadow MSRs
   struct _guestmtrrmsrs vmx_guestmtrrmsrs;
 
-  u32 vmx_guest_inject_nmi;     //asynchronously inject NMI to guest
+  /*
+   * Whether the NMI handling logic wants to set VMCS NMI window bit.
+   * This field is used to solve race condition in accessing VMCS.
+   * This field has lower precedence than vmx_guest_vmcs_nmi_window_clear.
+   * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception() for details
+   * about these variables and the choice of precedence.
+   */
+  bool vmx_guest_vmcs_nmi_window_set;
+  /*
+   * Whether the NMI handling logic wants to clear VMCS NMI window bit.
+   * This field is used to solve race condition in accessing VMCS.
+   * This field has higher precedence than vmx_guest_vmcs_nmi_window_set.
+   * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception() for details
+   * about these variables and the choice of precedence.
+   */
+  bool vmx_guest_vmcs_nmi_window_clear;
+  /*
+   * This function tracks whether xmhf_smpguest_arch_x86vmx_nmi_block
+   * or xmhf_smpguest_arch_x86vmx_nmi_unblock are called in the current
+   * intercept handler. This prevents multiple calls to these functions in one
+   * intercept handler.
+   */
+  bool vmx_guest_nmi_blocking_modified;
+  /* Configure NMI blocking for the guest */
+  guest_nmi_t vmx_guest_nmi_cfg;
 
   //guest state fields
   u32 vmx_guest_unrestricted;   //this is 1 if the CPU VMX implementation supports unrestricted guest execution

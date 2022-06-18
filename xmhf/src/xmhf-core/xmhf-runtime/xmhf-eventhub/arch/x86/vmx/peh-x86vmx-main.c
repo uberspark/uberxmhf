@@ -1003,11 +1003,13 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 #endif /* __OPTIMIZE_NESTED_VIRT__ */
 	//read VMCS from physical CPU/core
 #ifndef __XMHF_VERIFICATION__
-    /*
-     * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
-     * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
-     */
-    vcpu->vmx_guest_inject_nmi = 0;
+	/*
+	 * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
+	 * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
+	 */
+	vcpu->vmx_guest_vmcs_nmi_window_set = false;
+	vcpu->vmx_guest_vmcs_nmi_window_clear = false;
+	vcpu->vmx_guest_nmi_blocking_modified = false;
 	xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
@@ -1137,6 +1139,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
                 vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
                     INTR_TYPE_NMI |
                     INTR_INFO_VALID_MASK;
+                vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = false;
                 printf("CPU(0x%02x): inject NMI\n", vcpu->id);
 			}
 		}
@@ -1265,16 +1268,20 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//write updated VMCS back to CPU
 #ifndef __XMHF_VERIFICATION__
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
-    /*
-     * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
-     * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
-     */
-    if (vcpu->vmx_guest_inject_nmi) {
-        unsigned long __control_VMX_cpu_based;
-        HALT_ON_ERRORCOND(__vmx_vmread(0x4002, &__control_VMX_cpu_based));
-        __control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-        HALT_ON_ERRORCOND(__vmx_vmwrite(0x4002, __control_VMX_cpu_based));
-    }
+	/*
+	 * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
+	 * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
+	 */
+	if (vcpu->vmx_guest_vmcs_nmi_window_set) {
+		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
+		__control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
+	}
+	if (vcpu->vmx_guest_vmcs_nmi_window_clear) {
+		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
+		__control_VMX_cpu_based &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
+	}
 #endif // __XMHF_VERIFICATION__
 
 
