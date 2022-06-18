@@ -114,6 +114,8 @@ void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						hpt_va_t dst, void *src, size_t len);
 spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
 							gpa_t guest_addr);
+spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
+							gpa_t guest_addr, size_t size);
 #ifdef __UPDATE_INTEL_UCODE__
 void handle_intel_ucode_update(VCPU *vcpu, u64 update_data);
 #endif /* __UPDATE_INTEL_UCODE__ */
