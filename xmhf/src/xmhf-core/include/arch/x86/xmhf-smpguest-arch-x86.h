@@ -73,6 +73,24 @@ void xmhf_smpguest_arch_endquiesce(VCPU *vcpu);
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * xmhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
+// Inject NMI to the guest when the guest is ready to receive it (i.e. when the
+// guest is not running NMI handler)
+// The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
+void xmhf_smpguest_arch_inject_nmi(VCPU *vcpu);
+
+// Block NMIs using software
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
+// Especially, this function cannot be called in mHV's NMI interrupt handler.
+// Each intercept handler can only have one call of this function or the unblock
+// function.
+void xmhf_smpguest_arch_nmi_block(VCPU *vcpu);
+
+// Unblock NMIs using software
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
+// Especially, this function cannot be called in mHV's NMI interrupt handler.
+// Each intercept handler can only have one call of this function or the block
+// function.
+void xmhf_smpguest_arch_nmi_unblock(VCPU *vcpu);
 
 
 //----------------------------------------------------------------------
@@ -108,6 +126,24 @@ void xmhf_smpguest_arch_x86vmx_unblock_nmi(void);
 void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu);
 void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);
 
+// Inject NMI to the guest when the guest is ready to receive it (i.e. when the
+// guest is not running NMI handler)
+// The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
+void xmhf_smpguest_arch_x86vmx_inject_nmi(VCPU *vcpu);
+
+// Block NMIs using software
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
+// Especially, this function cannot be called in mHV's NMI interrupt handler.
+// Each intercept handler can only have one call of this function or the unblock
+// function.
+void xmhf_smpguest_arch_x86vmx_nmi_block(VCPU *vcpu);
+
+// Unblock NMIs using software
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
+// Especially, this function cannot be called in mHV's NMI interrupt handler.
+// Each intercept handler can only have one call of this function or the block
+// function.
+void xmhf_smpguest_arch_x86vmx_nmi_unblock(VCPU *vcpu);
 
 //perform required setup after a guest awakens a new CPU
 void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu);
