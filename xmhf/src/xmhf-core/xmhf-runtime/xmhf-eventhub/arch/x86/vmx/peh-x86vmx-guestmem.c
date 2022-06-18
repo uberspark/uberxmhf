@@ -181,8 +181,9 @@ spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
 spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
 							gpa_t guest_addr, size_t len)
 {
-	void *ans;
+	void *ans = NULL;
 	size_t scanned = 0;
+	bool ans_assigned = false;
 	while (scanned < len) {
 		gpa_t ptr_gpa = guest_addr + scanned;
 		size_t cur_scan;
@@ -196,6 +197,7 @@ spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
 		if (scanned == 0) {
 			/* First time assigning to ans */
 			ans = ptr;
+			ans_assigned = true;
 		} else {
 			/* Check that ptr and ans indicate continuous memory */
 			HALT_ON_ERRORCOND(ans + scanned == ptr);
@@ -203,5 +205,6 @@ spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
 		HALT_ON_ERRORCOND(cur_scan > 0);
 		scanned += cur_scan;
 	}
+	HALT_ON_ERRORCOND(ans_assigned);
 	return hva2spa(ans);
 }
