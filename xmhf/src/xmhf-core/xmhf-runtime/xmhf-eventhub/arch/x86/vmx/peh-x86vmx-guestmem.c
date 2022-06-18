@@ -175,11 +175,11 @@ spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
 
 /*
  * Test whether guest_addr is valid continuous guest physical memory of size
- * size in host physical memory. If so, return corresponding host physical
+ * len in host physical memory. If so, return corresponding host physical
  * memory page. Else, halt.
  */
 spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
-							gpa_t guest_addr, size_t size)
+							gpa_t guest_addr, size_t len)
 {
 	void *ans;
 	size_t scanned = 0;
