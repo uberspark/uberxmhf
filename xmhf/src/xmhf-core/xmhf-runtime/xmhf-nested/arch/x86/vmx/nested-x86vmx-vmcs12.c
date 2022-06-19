@@ -976,7 +976,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 					for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count;
 						 i++) {
 						msr_entry_t *entry =
-							&vmcs12_info->vmcs02_vmexit_msr_store_area[i];
+							&((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
 						if (entry->index == guest_entry.index) {
 							entry->data = guest_entry.data;
 							found = true;
