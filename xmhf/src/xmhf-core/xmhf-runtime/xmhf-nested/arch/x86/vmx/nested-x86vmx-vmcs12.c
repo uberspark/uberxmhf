@@ -648,8 +648,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 			}
 		}
 	}
-	if (1) {
-		/* TODO: ignoring _vmx_hasctl_activate_secondary_controls(&ctls) */
+	{
+		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is enabled above */
 		u32 val = vmcs12->control_VMX_seccpu_based;
 		/* XMHF needs the guest to run in EPT to protect memory */
 		val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
@@ -875,28 +875,30 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 
 	/* 32-Bit Control Fields */
 	{
-		vmcs12->control_VMX_pin_based = __vmx_vmread32(0x4000);
+		HALT_ON_ERRORCOND(vmcs12->control_VMX_pin_based ==
+						  __vmx_vmread32(0x4000));
 	}
 	{
-		u32 val = __vmx_vmread32(0x4002);
-		HALT_ON_ERRORCOND(val == (vmcs12->control_VMX_cpu_based |
-								  (1U <<
-								   VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS)));
+		u32 val = vmcs12->control_VMX_cpu_based;
+		val |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
+		HALT_ON_ERRORCOND(val == __vmx_vmread32(0x4002));
 	}
 	{
 		// TODO: in the future, need to merge with host's exception bitmap
 		vmcs12->control_exception_bitmap = __vmx_vmread32(0x4004);
 	}
 	{
-		vmcs12->control_VM_exit_controls = __vmx_vmread32(0x400C);
-		/* Set the "IA-32e mode guest" bit of the guest hypervisor */
-		if (VCPU_g64(vcpu)) {
-			vmcs12->control_VM_exit_controls |=
-				(1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
-		} else {
-			vmcs12->control_VM_exit_controls &=
-				~(1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
-		}
+		u32 val = vmcs12->control_VM_exit_controls;
+		/*
+		 * The "IA-32e mode guest" bit need to match XMHF. A mismatch can only
+		 * happen when amd64 XMHF runs i386 guest hypervisor.
+		 */
+#ifdef __AMD64__
+		val |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
+#elif !defined(__I386__)
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) */
+		HALT_ON_ERRORCOND(val == __vmx_vmread32(0x400C));
 	}
 	{
 		u32 i;
@@ -999,7 +1001,8 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		}
 	}
 	{
-		vmcs12->control_VM_entry_controls = __vmx_vmread32(0x4012);
+		HALT_ON_ERRORCOND(vmcs12->control_VM_entry_controls ==
+						  __vmx_vmread32(0x4012));
 	}
 	{
 		/* VMCS02 needs to always process the same fields as VMCS01 */
@@ -1008,12 +1011,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area) ==
 						  __vmx_vmread64(0x200A));
 	}
-	if (1) {
-		/* TODO: ignoring _vmx_hasctl_activate_secondary_controls(&ctls) */
-		u32 val = __vmx_vmread32(0x401E);
+	{
+		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is always enabled */
+		u32 val = vmcs12->control_VMX_seccpu_based;
 		/* XMHF needs the guest to run in EPT to protect memory */
-		val &= ~(1U << VMX_SECPROCBASED_ENABLE_EPT);
-		vmcs12->control_VMX_seccpu_based = val;
+		val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
+		HALT_ON_ERRORCOND(val == __vmx_vmread32(0x401E));
 	}
 
 	/* 32-Bit Read-Only Data Fields */
