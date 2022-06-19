@@ -567,6 +567,10 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	}
 	printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 		   vmcs12_info->vmcs12_value.info_vmexit_reason);
+	/* Follow SDM to load host state */
+	vcpu->vmcs.guest_DR7 = 0x400UL;
+	vcpu->vmcs.guest_IA32_DEBUGCTL = 0ULL;
+	vcpu->vmcs.guest_RFLAGS = (1UL << 1);
 	/* Prepare VMRESUME to guest hypervisor */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
