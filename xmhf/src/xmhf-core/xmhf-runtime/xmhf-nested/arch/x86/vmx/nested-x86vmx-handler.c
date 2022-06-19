@@ -559,6 +559,12 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		 */
 		HALT_ON_ERRORCOND(0 && "Debug: guest hypervisor VM-entry failure");
 	}
+	if (vmcs12_info->vmcs12_value.info_vmexit_reason == VMX_VMEXIT_EXCEPTION &&
+		(vmcs12_info->vmcs12_value.info_vmexit_interrupt_information &
+		 INTR_INFO_VECTOR_MASK) == 0x02) {
+		// TODO: not implemented
+		HALT_ON_ERRORCOND(0 && "Nested guest NMI handling not implemented");
+	}
 	printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 		   vmcs12_info->vmcs12_value.info_vmexit_reason);
 	/* Prepare VMRESUME to guest hypervisor */
