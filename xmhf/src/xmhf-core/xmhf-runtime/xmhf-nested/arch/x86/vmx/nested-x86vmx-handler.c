@@ -551,6 +551,14 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 {
 	vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
 	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, vmcs12_info);
+	if (vmcs12_info->vmcs12_value.info_vmexit_reason & 0x80000000U) {
+		/*
+		 * TODO: Stopping here makes debugging a correct guest hypervisor
+		 * easier. The correct behavior should be injecting the VMEXIT to
+		 * guest hypervisor.
+		 */
+		HALT_ON_ERRORCOND(0 && "Debug: guest hypervisor VM-entry failure");
+	}
 	printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 		   vmcs12_info->vmcs12_value.info_vmexit_reason);
 	/* Prepare VMRESUME to guest hypervisor */

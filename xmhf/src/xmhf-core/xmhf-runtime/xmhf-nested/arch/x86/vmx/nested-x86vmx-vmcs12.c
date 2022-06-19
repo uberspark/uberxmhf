@@ -586,12 +586,11 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		/* VMCS02 needs to always process the same fields as VMCS01 */
 		memcpy(vmcs12_info->vmcs02_vmexit_msr_load_area,
 			   (void *)vcpu->vmx_vaddr_msr_area_host,
-			   vcpu->vmcs.control_VM_exit_MSR_load_count);
-#if 0
+			   vcpu->vmcs.control_VM_exit_MSR_load_count *
+			   sizeof(msr_entry_t));
 		__vmx_vmwrite32(0x4010, vcpu->vmcs.control_VM_exit_MSR_load_count);
 		__vmx_vmwrite64(0x2008,
 						hva2spa(vmcs12_info->vmcs02_vmexit_msr_load_area));
-#endif
 
 		/* VMX control is not checked here; will check in VMEXIT handler */
 	}
@@ -606,12 +605,11 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		/* VMCS02 needs to always process the same fields as VMCS01 */
 		memcpy(vmcs12_info->vmcs02_vmentry_msr_load_area,
 			   (void *)vcpu->vmx_vaddr_msr_area_guest,
-			   vcpu->vmcs.control_VM_entry_MSR_load_count);
-#if 0
+			   vcpu->vmcs.control_VM_entry_MSR_load_count *
+			   sizeof(msr_entry_t));
 		__vmx_vmwrite32(0x4014, vcpu->vmcs.control_VM_entry_MSR_load_count);
 		__vmx_vmwrite64(0x200A,
 						hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area));
-#endif
 
 		/* Write the MSRs requested by guest */
 		for (i = 0; i < vmcs12->control_VM_entry_MSR_load_count; i++) {
@@ -956,13 +954,11 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_exit_MSR_load_address;
 
-#if 0
 		/* VMCS02 needs to always process the same fields as VMCS01 */
 		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_exit_MSR_load_count ==
 						  __vmx_vmread32(0x400E));
 		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmexit_msr_load_area) ==
 						  __vmx_vmread64(0x2008));
-#endif
 
 		/* Write MSRs as requested by guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_load_count; i++) {
@@ -1006,13 +1002,11 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		vmcs12->control_VM_entry_controls = __vmx_vmread32(0x4012);
 	}
 	{
-#if 0
 		/* VMCS02 needs to always process the same fields as VMCS01 */
 		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_entry_MSR_load_count ==
 						  __vmx_vmread32(0x4014));
 		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area) ==
 						  __vmx_vmread64(0x200A));
-#endif
 	}
 	if (1) {
 		/* TODO: ignoring _vmx_hasctl_activate_secondary_controls(&ctls) */
