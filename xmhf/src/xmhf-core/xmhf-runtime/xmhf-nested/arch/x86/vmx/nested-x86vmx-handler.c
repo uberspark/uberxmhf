@@ -562,8 +562,19 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	if (vmcs12_info->vmcs12_value.info_vmexit_reason == VMX_VMEXIT_EXCEPTION &&
 		(vmcs12_info->vmcs12_value.info_vmexit_interrupt_information &
 		 INTR_INFO_VECTOR_MASK) == 0x02) {
-		// TODO: not implemented
-		HALT_ON_ERRORCOND(0 && "Nested guest NMI handling not implemented");
+		if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu) == 1) {
+			xmhf_smpguest_arch_x86vmx_unblock_nmi();
+			/*
+			 * This is the rare case where we have L2 -> L0 -> L2. Usually it
+			 * is L2 -> L0 -> L1.
+			 */
+			__vmx_vmentry_vmresume(r);
+		} else {
+			/* Need to check guest's setting about virtual NMI etc */
+			HALT_ON_ERRORCOND(0 && "Nested guest NMI handling not implemented");
+			/* You probably want the following */
+			xmhf_smpguest_arch_x86vmx_unblock_nmi();
+		}
 	}
 	printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 		   vmcs12_info->vmcs12_value.info_vmexit_reason);
