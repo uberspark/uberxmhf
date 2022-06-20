@@ -548,18 +548,35 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 /* Handle VMEXIT from nested guest */
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 {
-	vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
+	vmcs12_info_t *vmcs12_info;
+	/*
+	 * Check whether this VMEXIT is for quiescing. If so, printing before the
+	 * quiesce is completed will result in deadlock.
+	 */
 	if (__vmx_vmread32(0x4402) == VMX_VMEXIT_EXCEPTION &&
 		(__vmx_vmread32(0x4404) & INTR_INFO_VECTOR_MASK) == 0x2) {
 		/* NMI received by L2 guest */
 		if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
 			xmhf_smpguest_arch_x86vmx_unblock_nmi();
+			/*
+			 * This is the rare case where we have L2 -> L0 -> L2. Usually it
+			 * is L2 -> L0 -> L1.
+			 */
+			__vmx_vmentry_vmresume(r);
+			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 		} else {
-			HALT_ON_ERRORCOND(0);
+			/*
+			 * TODO: Need to check guest's setting about virtual NMI etc
+			 *
+			 * Likely should move this logic to after
+			 * xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12().
+			 */
+			HALT_ON_ERRORCOND(0 && "Nested guest NMI handling not implemented");
+			/* You probably want the following */
+			xmhf_smpguest_arch_x86vmx_unblock_nmi();
 		}
-		__vmx_vmentry_vmresume(r);
-		HALT_ON_ERRORCOND(0);	/* Should not return */
 	}
+	vmcs12_info = find_current_vmcs12(vcpu);
 	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, vmcs12_info);
 	if (vmcs12_info->vmcs12_value.info_vmexit_reason & 0x80000000U) {
 		/*
@@ -568,23 +585,6 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		 * guest hypervisor.
 		 */
 		HALT_ON_ERRORCOND(0 && "Debug: guest hypervisor VM-entry failure");
-	}
-	if (vmcs12_info->vmcs12_value.info_vmexit_reason == VMX_VMEXIT_EXCEPTION &&
-		(vmcs12_info->vmcs12_value.info_vmexit_interrupt_information &
-		 INTR_INFO_VECTOR_MASK) == 0x02) {
-		if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu) == 1) {
-			xmhf_smpguest_arch_x86vmx_unblock_nmi();
-			/*
-			 * This is the rare case where we have L2 -> L0 -> L2. Usually it
-			 * is L2 -> L0 -> L1.
-			 */
-			__vmx_vmentry_vmresume(r);
-		} else {
-			/* Need to check guest's setting about virtual NMI etc */
-			HALT_ON_ERRORCOND(0 && "Nested guest NMI handling not implemented");
-			/* You probably want the following */
-			xmhf_smpguest_arch_x86vmx_unblock_nmi();
-		}
 	}
 	printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 		   vmcs12_info->vmcs12_value.info_vmexit_reason);
