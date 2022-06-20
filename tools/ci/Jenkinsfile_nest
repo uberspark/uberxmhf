@@ -7,7 +7,7 @@ properties([
         string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64-nest'),
         string(name: 'LHV_BRANCH', defaultValue: 'lhv'),
         string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic'),
-        string(name: 'LHV_OPT', defaultValue: '0')
+        string(name: 'LHV_OPT', defaultValue: '1')
     ])
 ])
 
