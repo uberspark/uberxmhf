@@ -349,7 +349,6 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	   * "enable VPID" not supported (currently ignore control_vpid in VMCS12)
 	   * "VMCS shadowing" not supported (logic not written)
 	   * writing to VM-exit information field not supported
-	   * VM exit/entry MSR load/store not supported (TODO)
 	   * "Enable EPT" not supported yet
 	   * "EPTP switching" not supported (the only VMFUNC in Intel SDM)
 	   * "Sub-page write permissions for EPT" not supported
