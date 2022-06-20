@@ -619,19 +619,28 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 
 }
 
-//quiescing handler for #NMI (non-maskable interrupt) exception event
-//note: we are in atomic processsing mode for this "vcpu"
-// from_guest: 1 if NMI originated from the HVM (i.e. caller is intercept handler),
-// otherwise 0 (within the hypervisor, i.e. caller is exception handler)
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest){
-	(void)r;
-
-  // The function handles NMI as follows:
-  // (1) If XMHF on core i requests quiesce and the current core is not quiesced yet, XMHF must quiesce the current core
-  // (2) If XMHF on core i requests quiesce and the current core is quiesced, then some device must issue NMI after core i
-  // requesting quiesce. This NMI should be injected to a guest. XMHF currently injects NMI to the trapped guest.
-  //      - [TODO] XMHF should query hypapp to find out which guest should receive this NMI
-  // (3) If no one requests quiesce and the current core receives NMI, then it should be injected to the trapped guest.
+/*
+ * Check whether an NMI received by the CPU is for quiesce.
+ *
+ * If the NMI is for quiesce, this function processes the quiesce and returns
+ * 1. The caller should simply return (and unblock NMI if needed).
+ *
+ * If the NMI is not for quiesce, this function returns 0. The caller should
+ * process the NMI (e.g. inject the NMI to the guest OS). The caller also needs
+ * to unblock NMI if needed.
+ *
+ * The purpose of an NMI received by the current core is determined by:
+ *
+ * (1) If XMHF on core i requests quiesce and the current core is not
+ *     quiesced yet, XMHF must quiesce the current core
+ * (2) If XMHF on core i requests quiesce and the current core is quiesced,
+ *     then some device must issue NMI after core i requesting quiesce.
+ *     This NMI should be injected to a guest. XMHF currently injects NMI
+ *     to the trapped guest.
+ * (3) If no one requests quiesce and the current core receives NMI, then
+ *     it should be injected to the trapped guest.
+ */
+u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 	if(g_vmx_quiesce && !vcpu->quiesced){
 		vcpu->quiesced=1;
 
@@ -645,17 +654,31 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		while(!g_vmx_quiesce_resume_signal);
 		//printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
 
-    // Flush EPT TLB, if instructed so
-    if(g_vmx_flush_all_tlb_signal)
-      xmhf_memprot_flushmappings_localtlb(vcpu);
+		// Flush EPT TLB, if instructed so
+		if(g_vmx_flush_all_tlb_signal) {
+			xmhf_memprot_flushmappings_localtlb(vcpu);
+		}
 
 		spin_lock(&g_vmx_lock_quiesce_resume_counter);
 		g_vmx_quiesce_resume_counter++;
 		spin_unlock(&g_vmx_lock_quiesce_resume_counter);
 
 		vcpu->quiesced=0;
-	}else{
-		//we are not in quiesce, inject the NMI to guest
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+//quiescing handler for #NMI (non-maskable interrupt) exception event
+//note: we are in atomic processsing mode for this "vcpu"
+// from_guest: 1 if NMI originated from the HVM (i.e. caller is intercept handler),
+// otherwise 0 (within the hypervisor, i.e. caller is exception handler)
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r, u32 from_guest){
+	(void)r;
+
+	if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu) == 0) {
+		/* The NMI is not for quiesce, inject it to guest */
 
 		/*
 		 * Note: injecting NMI into the guest OS need to be done with extra
