@@ -626,12 +626,22 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 				{
 					bool found = false;
 					u32 i = 0;
+					msr_entry_t *base =
+						(msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
 					for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count;
 						 i++) {
 						msr_entry_t *entry =
 							&vmcs12_info->vmcs02_vmentry_msr_load_area[i];
 						if (entry->index == guest_entry.index) {
 							entry->data = guest_entry.data;
+							/*
+							 * If L1 guest only loads in the MSR in VMENTRY and
+							 * does not load in VMEXIT, the L1 guest should get
+							 * the MSR loaded during VMENTRY after VMEXIT.
+							 */
+							HALT_ON_ERRORCOND(base[i].index ==
+											  guest_entry.index);
+							base[i].data = guest_entry.data;
 							found = true;
 							break;
 						}
