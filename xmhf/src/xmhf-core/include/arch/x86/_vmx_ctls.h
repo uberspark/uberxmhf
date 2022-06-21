@@ -63,78 +63,78 @@ typedef struct vmx_ctls {
 /* Begin program-generated content */
 
 /* External-interrupt exiting */
-#define VMX_BINBASED_EXTERNAL_INTERRUPT_EXITING 0
+#define VMX_PINBASED_EXTERNAL_INTERRUPT_EXITING 0
 static inline bool _vmx_hasctl_external_interrupt_exiting(vmx_ctls_t *ctls)
 {
-	return ctls->pinbased_ctls & (1U << VMX_BINBASED_EXTERNAL_INTERRUPT_EXITING);
+	return ctls->pinbased_ctls & (1U << VMX_PINBASED_EXTERNAL_INTERRUPT_EXITING);
 }
 static inline void _vmx_setctl_external_interrupt_exiting(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls |= (1U << VMX_BINBASED_EXTERNAL_INTERRUPT_EXITING);
+	ctls->pinbased_ctls |= (1U << VMX_PINBASED_EXTERNAL_INTERRUPT_EXITING);
 }
 static inline void _vmx_clearctl_external_interrupt_exiting(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls &= ~(1U << VMX_BINBASED_EXTERNAL_INTERRUPT_EXITING);
+	ctls->pinbased_ctls &= ~(1U << VMX_PINBASED_EXTERNAL_INTERRUPT_EXITING);
 }
 
 /* NMI exiting */
-#define VMX_BINBASED_NMI_EXITING 3
+#define VMX_PINBASED_NMI_EXITING 3
 static inline bool _vmx_hasctl_nmi_exiting(vmx_ctls_t *ctls)
 {
-	return ctls->pinbased_ctls & (1U << VMX_BINBASED_NMI_EXITING);
+	return ctls->pinbased_ctls & (1U << VMX_PINBASED_NMI_EXITING);
 }
 static inline void _vmx_setctl_nmi_exiting(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls |= (1U << VMX_BINBASED_NMI_EXITING);
+	ctls->pinbased_ctls |= (1U << VMX_PINBASED_NMI_EXITING);
 }
 static inline void _vmx_clearctl_nmi_exiting(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls &= ~(1U << VMX_BINBASED_NMI_EXITING);
+	ctls->pinbased_ctls &= ~(1U << VMX_PINBASED_NMI_EXITING);
 }
 
 /* Virtual NMIs */
-#define VMX_BINBASED_VIRTUAL_NMIS 5
+#define VMX_PINBASED_VIRTUAL_NMIS 5
 static inline bool _vmx_hasctl_virtual_nmis(vmx_ctls_t *ctls)
 {
-	return ctls->pinbased_ctls & (1U << VMX_BINBASED_VIRTUAL_NMIS);
+	return ctls->pinbased_ctls & (1U << VMX_PINBASED_VIRTUAL_NMIS);
 }
 static inline void _vmx_setctl_virtual_nmis(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls |= (1U << VMX_BINBASED_VIRTUAL_NMIS);
+	ctls->pinbased_ctls |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
 }
 static inline void _vmx_clearctl_virtual_nmis(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls &= ~(1U << VMX_BINBASED_VIRTUAL_NMIS);
+	ctls->pinbased_ctls &= ~(1U << VMX_PINBASED_VIRTUAL_NMIS);
 }
 
 /* Activate VMX-preemption timer */
-#define VMX_BINBASED_ACTIVATE_VMX_PREEMPTION_TIMER 6
+#define VMX_PINBASED_ACTIVATE_VMX_PREEMPTION_TIMER 6
 static inline bool _vmx_hasctl_activate_vmx_preemption_timer(vmx_ctls_t *ctls)
 {
-	return ctls->pinbased_ctls & (1U << VMX_BINBASED_ACTIVATE_VMX_PREEMPTION_TIMER);
+	return ctls->pinbased_ctls & (1U << VMX_PINBASED_ACTIVATE_VMX_PREEMPTION_TIMER);
 }
 static inline void _vmx_setctl_activate_vmx_preemption_timer(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls |= (1U << VMX_BINBASED_ACTIVATE_VMX_PREEMPTION_TIMER);
+	ctls->pinbased_ctls |= (1U << VMX_PINBASED_ACTIVATE_VMX_PREEMPTION_TIMER);
 }
 static inline void _vmx_clearctl_activate_vmx_preemption_timer(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls &= ~(1U << VMX_BINBASED_ACTIVATE_VMX_PREEMPTION_TIMER);
+	ctls->pinbased_ctls &= ~(1U << VMX_PINBASED_ACTIVATE_VMX_PREEMPTION_TIMER);
 }
 
 /* Process posted interrupts */
-#define VMX_BINBASED_PROCESS_POSTED_INTERRUPTS 7
+#define VMX_PINBASED_PROCESS_POSTED_INTERRUPTS 7
 static inline bool _vmx_hasctl_process_posted_interrupts(vmx_ctls_t *ctls)
 {
-	return ctls->pinbased_ctls & (1U << VMX_BINBASED_PROCESS_POSTED_INTERRUPTS);
+	return ctls->pinbased_ctls & (1U << VMX_PINBASED_PROCESS_POSTED_INTERRUPTS);
 }
 static inline void _vmx_setctl_process_posted_interrupts(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls |= (1U << VMX_BINBASED_PROCESS_POSTED_INTERRUPTS);
+	ctls->pinbased_ctls |= (1U << VMX_PINBASED_PROCESS_POSTED_INTERRUPTS);
 }
 static inline void _vmx_clearctl_process_posted_interrupts(vmx_ctls_t *ctls)
 {
-	ctls->pinbased_ctls &= ~(1U << VMX_BINBASED_PROCESS_POSTED_INTERRUPTS);
+	ctls->pinbased_ctls &= ~(1U << VMX_PINBASED_PROCESS_POSTED_INTERRUPTS);
 }
 
 /* Interrupt-window exiting */
