@@ -539,8 +539,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	{
 		u32 val = vmcs12->control_VMX_pin_based;
 		/* Enable NMI exiting because needed by quiesce */
-		val |= (1U << VMX_BINBASED_NMI_EXITING);
-		val |= (1U << VMX_BINBASED_VIRTUAL_NMIS);
+		val |= (1U << VMX_PINBASED_NMI_EXITING);
+		val |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
 		__vmx_vmwrite32(0x4000, val);
 	}
 	{
@@ -890,8 +890,8 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		u32 val = vmcs12->control_VMX_pin_based;
 		/* Enable NMI exiting because needed by quiesce */
-		val |= (1U << VMX_BINBASED_NMI_EXITING);
-		val |= (1U << VMX_BINBASED_VIRTUAL_NMIS);
+		val |= (1U << VMX_PINBASED_NMI_EXITING);
+		val |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
 		HALT_ON_ERRORCOND(val == __vmx_vmread32(0x4000));
 	}
 	{
