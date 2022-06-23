@@ -139,7 +139,7 @@ pipeline {
                 expression { params.TEST_AMD64_WIN10_AMD64_XMHF }
             }
             steps {
-                qemu_test "amd64", "amd64", "win10x64-j.qcow2", "450", "1024M"
+                qemu_test "amd64", "amd64", "win10x64-j.qcow2", "600", "1024M"
             }
         }
     }
