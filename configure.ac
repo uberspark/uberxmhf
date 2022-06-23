@@ -127,6 +127,16 @@ AS_IF([test "x${enable_skip_runtime_bss}" != "xno"],
       [SKIP_RUNTIME_BSS=y],
       [SKIP_RUNTIME_BSS=n])
 
+AC_SUBST([SKIP_BOOTLOADER_HASH])
+AC_ARG_ENABLE([skip_bootloader_hash],
+        AS_HELP_STRING([--enable-skip-bootloader-hash@<:@=yes|no@:>@],
+                [skip computing hash in bootloader, only when no DRT]),
+                , [enable_skip_bootloader_hash=no])
+AS_IF([test "x${enable_skip_bootloader_hash}" != "xno"],
+      [SKIP_BOOTLOADER_HASH=y],
+      [SKIP_BOOTLOADER_HASH=n])
+
+
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
 AC_ARG_ENABLE([debug_serial],

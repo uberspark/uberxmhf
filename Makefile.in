@@ -52,6 +52,7 @@ export HIDE_X2APIC := @HIDE_X2APIC@
 export OPTIMIZE_NESTED_VIRT := @OPTIMIZE_NESTED_VIRT@
 export UPDATE_INTEL_UCODE := @UPDATE_INTEL_UCODE@
 export SKIP_RUNTIME_BSS := @SKIP_RUNTIME_BSS@
+export SKIP_BOOTLOADER_HASH := @SKIP_BOOTLOADER_HASH@
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -250,6 +251,11 @@ endif
 ifeq ($(SKIP_RUNTIME_BSS), y)
 	CFLAGS += -D__SKIP_RUNTIME_BSS__
 	VFLAGS += -D__SKIP_RUNTIME_BSS__
+endif
+
+ifeq ($(SKIP_BOOTLOADER_HASH), y)
+	CFLAGS += -D__SKIP_BOOTLOADER_HASH__
+	VFLAGS += -D__SKIP_BOOTLOADER_HASH__
 endif
 
 ifeq ($(NESTED_PAGING), y)

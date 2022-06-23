@@ -10,6 +10,8 @@
 #   --mem MEM: if amd64, set physical memory, default is 0x140000000 (5GiB)
 #   --no-x2apic: hide x2APIC to workaround a bug (--enable-hide-x2apic)
 #   --no-rt-bss: skip runtime bss in image (--enable-skip-runtime-bss)
+#   --no-bl-hash: skip bootloader hashing (--enable-skip-bootloader-hash)
+#   fast: equivalent to --no-rt-bss --no-bl-hash (For running XMHF quickly)
 #   release: equivalent to --drt --dmap --no-dbg (For GitHub actions)
 #   debug: ignored (For GitHub actions)
 #   O0: ignored (For GitHub actions)
@@ -35,6 +37,7 @@ DRY_RUN="n"
 CIRCLE_CI="n"
 NO_X2APIC="n"
 NO_RT_BSS="n"
+NO_BL_HASH="n"
 OPT=""
 
 # Determine LINUX_BASE (may not be 100% correct all the time)
@@ -101,6 +104,9 @@ while [ "$#" -gt 0 ]; do
 			;;
 		--no-rt-bss)
 			NO_RT_BSS="y"
+			;;
+		--no-bl-hash)
+			NO_BL_HASH="y"
 			;;
 		release)
 			# For GitHub actions
@@ -184,6 +190,10 @@ fi
 
 if [ "$NO_RT_BSS" == "y" ]; then
 	CONF+=("--enable-skip-runtime-bss")
+fi
+
+if [ "$NO_BL_HASH" == "y" ]; then
+	CONF+=("--enable-skip-bootloader-hash")
 fi
 
 if [ "$CIRCLE_CI" == "y" ]; then
