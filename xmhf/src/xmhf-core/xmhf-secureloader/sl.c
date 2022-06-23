@@ -161,7 +161,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			u32 rt_bss_phys_begin = rpb->XtVmmRuntimeBssBegin - __TARGET_BASE_SL;
 			u32 rt_bss_size = rpb->XtVmmRuntimeBssEnd - rpb->XtVmmRuntimeBssBegin;
 			// memset((void *)(uintptr_t)rt_bss_phys_begin, 0, rt_bss_size);
-			asm volatile ("rep stosb" : : "a" (0), "c" (rt_bss_size),
+			asm volatile ("cld; rep stosb;" : : "a" (0), "c" (rt_bss_size),
 						  "D" (rt_bss_phys_begin) : "memory", "cc");
 		}
 #endif /* __SKIP_RUNTIME_BSS__ */
