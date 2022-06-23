@@ -133,6 +133,12 @@ RUNTIME_COMPONENTS += xmhf-xmhfcbackend
 #XMHF startup component
 RUNTIME_COMPONENTS += xmhf-startup
 
+OBJCOPY_FLAGS = --output-format=binary
+ifneq ($(SKIP_RUNTIME_BSS), y)
+OBJCOPY_FLAGS += --set-section-flags .palign_data=alloc,load,contents
+OBJCOPY_FLAGS += --set-section-flags .stack=alloc,load,contents
+endif
+
 # targets
 .PHONY: runtimecomponents $(RUNTIME_COMPONENTS)
 runtimecomponents: $(RUNTIME_COMPONENTS)
@@ -152,11 +158,9 @@ runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime.lds
 	$(LD) -T runtime.lds -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	# .palign_data and .stack are NOBITS in the ELF file (similar to .bss), but
 	# we need them in runtime.bin. So use the --set-section-flags option to
-	# force objcopy to zero them and add to runtime.bin.
-	$(OBJCOPY) \
-		--set-section-flags .palign_data=alloc,load,contents \
-		--set-section-flags .stack=alloc,load,contents \
-		--output-format=binary runtime.exe runtime.bin
+	# force objcopy to zero them and add to runtime.bin. See OBJCOPY_FLAGS
+	# above.
+	$(OBJCOPY) $(OBJCOPY_FLAGS) runtime.exe runtime.bin
 	# Optional: use sparse file for runtime.bin to reduce fs space usage
 	-fallocate -d runtime.bin
 	# Compute sha-1 hash

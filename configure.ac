@@ -118,6 +118,15 @@ AS_IF([test "x${enable_update_intel_ucode}" != "xno"],
       [UPDATE_INTEL_UCODE=y],
       [UPDATE_INTEL_UCODE=n])
 
+AC_SUBST([SKIP_RUNTIME_BSS])
+AC_ARG_ENABLE([skip_runtime_bss],
+        AS_HELP_STRING([--enable-skip-runtime-bss@<:@=yes|no@:>@],
+                [do not include runtime's BSS to save time, only when no DRT]),
+                , [enable_skip_runtime_bss=no])
+AS_IF([test "x${enable_skip_runtime_bss}" != "xno"],
+      [SKIP_RUNTIME_BSS=y],
+      [SKIP_RUNTIME_BSS=n])
+
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
 AC_ARG_ENABLE([debug_serial],

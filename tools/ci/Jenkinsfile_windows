@@ -5,7 +5,7 @@
 properties([
     parameters([
         string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64'),
-        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic'),
+        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic --no-rt-bss'),
         booleanParam(name: 'TEST_I386_WIN7_I386_XMHF', defaultValue: true),
         booleanParam(name: 'TEST_I386_WIN10_I386_XMHF', defaultValue: true),
         booleanParam(name: 'TEST_I386_WIN7_AMD64_XMHF', defaultValue: true),

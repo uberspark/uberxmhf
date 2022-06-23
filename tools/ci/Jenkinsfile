@@ -15,8 +15,8 @@
 
 properties([
     parameters([
-        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64', description: ''),
-        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic', description: '')
+        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64'),
+        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic --no-rt-bss')
     ])
 ])
 

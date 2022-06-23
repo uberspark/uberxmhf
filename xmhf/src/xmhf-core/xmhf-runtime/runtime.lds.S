@@ -85,13 +85,20 @@ SECTIONS
     *(.rodata.str1.*)
     *(.comment)
     *(.eh_frame) /* exception-metadata. might be able to discard */
-    *(.bss)
     . = ALIGN(4);
     _begin_xcph_table = .;
     *(.xcph_table)
     _end_xcph_table = .;
-    . = ALIGN(4096);
   } =0x9090
+
+  .bss_data : {
+    . = ALIGN(4);
+#ifdef __SKIP_RUNTIME_BSS__
+    _begin_rt_bss = .;
+#endif /* __SKIP_RUNTIME_BSS__ */
+    *(.bss)
+    . = ALIGN(4096);
+  }
 
   /*
    * This section is marked as NOBITS in runtime.exe. Need to use
@@ -108,6 +115,9 @@ SECTIONS
    */
   .stack : {
     *(.bss.stack)
+#ifdef __SKIP_RUNTIME_BSS__
+    _end_rt_bss = .;
+#endif /* __SKIP_RUNTIME_BSS__ */
     . = ALIGN(4096);
   } =0x9090
 

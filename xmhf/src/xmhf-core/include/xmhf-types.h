@@ -129,6 +129,10 @@ typedef struct {
     sla_t   XtVmmRuntimePhysBase;
     hva_t   XtVmmRuntimeVirtBase;
     hva_t   XtVmmRuntimeSize;
+#ifdef __SKIP_RUNTIME_BSS__
+    u32     XtVmmRuntimeBssBegin;
+    u32     XtVmmRuntimeBssEnd;
+#endif /* __SKIP_RUNTIME_BSS__ */
     hva_t   XtVmmE820Buffer;
     u32     XtVmmE820NumEntries;
     hva_t   XtVmmMPCpuinfoBuffer;

@@ -122,6 +122,10 @@ RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.XtVmmRuntimePhysBase= 0,
 	.XtVmmRuntimeVirtBase= 0,
 	.XtVmmRuntimeSize= 0,
+#ifdef __SKIP_RUNTIME_BSS__
+    .XtVmmRuntimeBssBegin= (uintptr_t)_begin_rt_bss,
+    .XtVmmRuntimeBssEnd= (uintptr_t)_end_rt_bss,
+#endif /* __SKIP_RUNTIME_BSS__ */
 	.XtVmmE820Buffer= (hva_t)g_e820map,
 	.XtVmmE820NumEntries= 0,
 	.XtVmmMPCpuinfoBuffer= (hva_t)g_cpumap,
