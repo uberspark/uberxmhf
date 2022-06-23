@@ -891,7 +891,7 @@ void cstartup(multiboot_info_t *mbi){
 #ifdef __SKIP_RUNTIME_BSS__
     {
         RPB *rpb = (RPB *) (mod_array[0].mod_start + 0x200000);
-        sl_rt_size = PAGE_ALIGN_UP_2M(rpb->XtVmmRuntimeBssEnd - __TARGET_BASE_SL);
+        sl_rt_size = PAGE_ALIGN_UP_2M((u32)rpb->XtVmmRuntimeBssEnd - __TARGET_BASE_SL);
     }
 #endif /* __SKIP_RUNTIME_BSS__ */
 

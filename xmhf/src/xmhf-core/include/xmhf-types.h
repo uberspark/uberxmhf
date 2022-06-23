@@ -109,6 +109,18 @@ typedef struct _integrity_measurement_values {
 //is the default definition
 typedef struct {
     u32     magic;
+#ifdef __SKIP_RUNTIME_BSS__
+#ifdef __XMHF_AMD64__
+    u32     _padding;
+    u64     XtVmmRuntimeBssBegin;
+    u64     XtVmmRuntimeBssEnd;
+#elif __XMHF_I386__
+    u32     XtVmmRuntimeBssBegin;
+    u32     XtVmmRuntimeBssEnd;
+#else /* !defined(__XMHF_I386__) && !defined(__XMHF_AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__XMHF_I386__) && !defined(__XMHF_AMD64__) */
+#endif /* __SKIP_RUNTIME_BSS__ */
     hva_t   XtVmmEntryPoint;
 #ifdef __XMHF_AMD64__
     hva_t   XtVmmPml4Base;
@@ -129,10 +141,6 @@ typedef struct {
     sla_t   XtVmmRuntimePhysBase;
     hva_t   XtVmmRuntimeVirtBase;
     hva_t   XtVmmRuntimeSize;
-#ifdef __SKIP_RUNTIME_BSS__
-    u32     XtVmmRuntimeBssBegin;
-    u32     XtVmmRuntimeBssEnd;
-#endif /* __SKIP_RUNTIME_BSS__ */
     hva_t   XtVmmE820Buffer;
     u32     XtVmmE820NumEntries;
     hva_t   XtVmmMPCpuinfoBuffer;

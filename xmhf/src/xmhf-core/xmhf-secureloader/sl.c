@@ -153,10 +153,14 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
 #ifdef __SKIP_RUNTIME_BSS__
+#ifdef __DRT__
+	#error "__SKIP_RUNTIME_BSS__ not supported when __DRT__"
+#endif /* __DRT__ */
+
 		{
 			u32 rt_bss_phys_begin = rpb->XtVmmRuntimeBssBegin - __TARGET_BASE_SL;
 			u32 rt_bss_size = rpb->XtVmmRuntimeBssEnd - rpb->XtVmmRuntimeBssBegin;
-			memset((void *)rt_bss_phys_begin, 0, rt_bss_size);
+			memset((void *)(uintptr_t)rt_bss_phys_begin, 0, rt_bss_size);
 		}
 #endif /* __SKIP_RUNTIME_BSS__ */
 
