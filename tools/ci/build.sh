@@ -108,6 +108,10 @@ while [ "$#" -gt 0 ]; do
 		--no-bl-hash)
 			NO_BL_HASH="y"
 			;;
+		fast)
+			NO_RT_BSS="y"
+			NO_BL_HASH="y"
+			;;
 		release)
 			# For GitHub actions
 			DRT="y"
