@@ -887,6 +887,14 @@ void cstartup(multiboot_info_t *mbi){
     //find highest 2MB aligned physical memory address that the hypervisor
     //binary must be moved to
     sl_rt_size = mod_array[0].mod_end - mod_array[0].mod_start;
+
+#ifdef __SKIP_RUNTIME_BSS__
+    {
+        RPB *rpb = (RPB *) (mod_array[0].mod_start + 0x200000);
+        sl_rt_size = PAGE_ALIGN_UP_2M((u32)rpb->XtVmmRuntimeBssEnd - __TARGET_BASE_SL);
+    }
+#endif /* __SKIP_RUNTIME_BSS__ */
+
     hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP_2M((sl_rt_size)));
 
     //relocate the hypervisor binary to the above calculated address
@@ -894,6 +902,7 @@ void cstartup(multiboot_info_t *mbi){
 
     HALT_ON_ERRORCOND(sl_rt_size > 0x200000); /* 2M */
 
+#ifndef __SKIP_BOOTLOADER_HASH__
     /* runtime */
     print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
               g_init_gold.sha_runtime, SHA_DIGEST_LENGTH);
@@ -909,7 +918,7 @@ void cstartup(multiboot_info_t *mbi){
               g_init_gold.sha_slabove64K, SHA_DIGEST_LENGTH);
     hashandprint("    INIT(early): *UNTRUSTED* comp SL above 64K): ",
                  (u8*)hypervisor_image_baseaddress+0x10000, 0x200000-0x10000);
-
+#endif /* !__SKIP_BOOTLOADER_HASH__ */
 
     //print out stats
     printf("INIT(early): relocated hypervisor binary image to 0x%08x\n", hypervisor_image_baseaddress);

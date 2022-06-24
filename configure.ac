@@ -118,6 +118,24 @@ AS_IF([test "x${enable_update_intel_ucode}" != "xno"],
       [UPDATE_INTEL_UCODE=y],
       [UPDATE_INTEL_UCODE=n])
 
+AC_SUBST([SKIP_RUNTIME_BSS])
+AC_ARG_ENABLE([skip_runtime_bss],
+        AS_HELP_STRING([--enable-skip-runtime-bss@<:@=yes|no@:>@],
+                [do not include runtime's BSS to save time, only when no DRT]),
+                , [enable_skip_runtime_bss=no])
+AS_IF([test "x${enable_skip_runtime_bss}" != "xno"],
+      [SKIP_RUNTIME_BSS=y],
+      [SKIP_RUNTIME_BSS=n])
+
+AC_SUBST([SKIP_BOOTLOADER_HASH])
+AC_ARG_ENABLE([skip_bootloader_hash],
+        AS_HELP_STRING([--enable-skip-bootloader-hash@<:@=yes|no@:>@],
+                [skip computing hash in bootloader, only when no DRT]),
+                , [enable_skip_bootloader_hash=no])
+AS_IF([test "x${enable_skip_bootloader_hash}" != "xno"],
+      [SKIP_BOOTLOADER_HASH=y],
+      [SKIP_BOOTLOADER_HASH=n])
+
 # Support for nested virtualization
 AC_SUBST([NESTED_VIRTUALIZATION])
 AC_ARG_ENABLE([nested_virtualization],

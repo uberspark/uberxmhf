@@ -152,6 +152,20 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
 		rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
+#ifdef __SKIP_RUNTIME_BSS__
+#ifdef __DRT__
+	#error "__SKIP_RUNTIME_BSS__ not supported when __DRT__"
+#endif /* __DRT__ */
+
+		{
+			u32 rt_bss_phys_begin = rpb->XtVmmRuntimeBssBegin - __TARGET_BASE_SL;
+			u32 rt_bss_size = rpb->XtVmmRuntimeBssEnd - rpb->XtVmmRuntimeBssBegin;
+			// memset((void *)(uintptr_t)rt_bss_phys_begin, 0, rt_bss_size);
+			asm volatile ("cld; rep stosb;" : : "a" (0), "c" (rt_bss_size),
+						  "D" (rt_bss_phys_begin) : "memory", "cc");
+		}
+#endif /* __SKIP_RUNTIME_BSS__ */
+
 		//store revised E820 map and number of entries
 		#ifndef __XMHF_VERIFICATION__
 		memcpy(hva2sla((void *)rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );

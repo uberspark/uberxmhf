@@ -5,7 +5,7 @@
 properties([
     parameters([
         string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64'),
-        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic'),
+        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic fast'),
         booleanParam(name: 'TEST_I386_WIN7_I386_XMHF', defaultValue: true),
         booleanParam(name: 'TEST_I386_WIN10_I386_XMHF', defaultValue: true),
         booleanParam(name: 'TEST_I386_WIN7_AMD64_XMHF', defaultValue: true),
@@ -139,7 +139,7 @@ pipeline {
                 expression { params.TEST_AMD64_WIN10_AMD64_XMHF }
             }
             steps {
-                qemu_test "amd64", "amd64", "win10x64-j.qcow2", "450", "1024M"
+                qemu_test "amd64", "amd64", "win10x64-j.qcow2", "600", "1024M"
             }
         }
     }

@@ -130,6 +130,11 @@ extern volatile u32 g_ap_go_signal __attribute__(( section(".data") ));
 //SMP lock for the above variable
 extern volatile u32 g_lock_ap_go_signal __attribute__(( section(".data") ));
 
+#ifdef __SKIP_RUNTIME_BSS__
+extern u32 _begin_rt_bss[];
+extern u32 _end_rt_bss[];
+#endif /* __SKIP_RUNTIME_BSS__ */
+
 //----------------------------------------------------------------------
 //exported FUNCTIONS
 //----------------------------------------------------------------------
