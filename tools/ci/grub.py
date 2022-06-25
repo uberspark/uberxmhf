@@ -16,6 +16,8 @@ def parse_args():
 	parser.add_argument('--verbose', action='store_true')
 	parser.add_argument('--boot-dir', required=True,
 						help='Contain /boot and MBR image to generate GRUB')
+	parser.add_argument('--full-grub-mods', action='store_true',
+						help='Copy all GRUB module files')
 	args = parser.parse_args()
 	return args
 
@@ -49,12 +51,15 @@ def generate_xmhf_image(args):
 	os.mkdir(grub_dir)
 
 	# As of writing test3.py, GRUB uses less than 4M, XMHF uses less than 1M.
-	ext4_size_mb = 7
+	if args.full_grub_mods:
+		ext4_size_kb = 1024 * 7
+	else:
+		ext4_size_kb = 1440
 
 	# Construct ext4, prepare command file
 	b_img = os.path.join(grub_dir, 'b.img')
-	check_call(['dd', 'if=/dev/zero', 'of=%s' % b_img, 'bs=1M',
-				'seek=%d' % ext4_size_mb, 'count=0'])
+	check_call(['dd', 'if=/dev/zero', 'of=%s' % b_img, 'bs=1K',
+				'seek=%d' % ext4_size_kb, 'count=0'])
 	check_call(['/sbin/mkfs.ext4', b_img])
 	debugfs_cmds = []
 	debugfs_cmds.append('mkdir boot')
@@ -76,7 +81,18 @@ def generate_xmhf_image(args):
 	debugfs_cmds.append('mkdir i386-pc')
 	debugfs_cmds.append('cd i386-pc')
 	mods_dir = download_grub(args)
-	for i in os.listdir(mods_dir):
+	if args.full_grub_mods:
+		mods_list = os.listdir(mods_dir)
+	else:
+		mods_list = [
+			'boot.mod', 'bufio.mod', 'command.lst', 'crypto.mod',
+			'datetime.mod', 'echo.mod', 'extcmd.mod', 'gcry_crc.mod',
+			'gettext.mod', 'gzio.mod', 'linux.mod', 'lsapm.mod', 'mmap.mod',
+			'multiboot.mod', 'net.mod', 'normal.mod', 'priority_queue.mod',
+			'relocator.mod', 'terminal.mod', 'vbe.mod', 'verifiers.mod',
+			'video_fb.mod', 'video.mod',
+		]
+	for i in mods_list:
 		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))
 	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
 	print(*debugfs_cmds, sep='\n', file=open(cmd_file, 'w'))
@@ -100,8 +116,8 @@ def generate_xmhf_image(args):
 	# Concat to c.img
 	a_img = os.path.join(args.boot_dir, 'a.img')
 	c_img = os.path.join(grub_dir, 'c.img')
-	check_call(['dd', 'if=/dev/zero', 'of=%s' % c_img, 'bs=1M',
-				'seek=%d' % (ext4_size_mb + 1), 'count=0'])
+	check_call(['dd', 'if=/dev/zero', 'of=%s' % c_img, 'bs=1K',
+				'seek=%d' % (ext4_size_kb + 1), 'count=0'])
 	check_call(['dd', 'if=%s' % a_img, 'of=%s' % c_img, 'conv=sparse,notrunc',
 				'bs=512', 'count=1M', 'iflag=count_bytes'])
 	check_call(['dd', 'if=%s' % b_img, 'of=%s' % c_img, 'conv=sparse,notrunc',
