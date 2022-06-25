@@ -901,7 +901,8 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	}
 	{
 		// TODO: in the future, need to merge with host's exception bitmap
-		vmcs12->control_exception_bitmap = __vmx_vmread32(0x4004);
+		u32 val = vmcs12->control_exception_bitmap;
+		HALT_ON_ERRORCOND(val == __vmx_vmread32(0x4004));
 	}
 	{
 		u32 val = vmcs12->control_VM_exit_controls;
