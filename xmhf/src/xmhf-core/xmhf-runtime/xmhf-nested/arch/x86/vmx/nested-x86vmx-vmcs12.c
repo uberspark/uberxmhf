@@ -456,11 +456,13 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		// TODO: to support EPT for guest, need to sanitize the entier EPT
 		if (_vmx_hasctl_enable_ept(&ctls)) {
-			HALT_ON_ERRORCOND(0 && "Not implemented");
+			// TODO: construct shadow EPT
+			HALT_ON_ERRORCOND(0 && "TODO frontier");
+			addr = guestmem_gpa2spa_page(&ctx_pair, addr);
+		} else {
+			/* Guest does not use EPT, just use XMHF's EPT */
+			addr = vcpu->vmcs.control_EPT_pointer;
 		}
-		HALT_ON_ERRORCOND(addr == 0);
-		addr = guestmem_gpa2spa_page(&ctx_pair, addr);
-		addr = vcpu->vmcs.control_EPT_pointer;
 		__vmx_vmwrite64(0x201A, addr);
 	}
 	if (0) {
@@ -810,15 +812,15 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	if (1) {
 		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
 		// Since hypervisor needs EPT, this block is unconditional
-		gpa_t addr = vcpu->vmcs.control_EPT_pointer;
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
-		// TODO: to support EPT for guest, need to sanitize the entier EPT
 		if (_vmx_hasctl_enable_ept(&ctls)) {
+			// TODO: to support EPT for guest, need to use shadow EPT
 			HALT_ON_ERRORCOND(0 && "Not implemented");
+		} else {
+			gpa_t addr = vcpu->vmcs.control_EPT_pointer;
+			HALT_ON_ERRORCOND(__vmx_vmread64(0x201A) == addr);
 		}
-		HALT_ON_ERRORCOND(__vmx_vmread64(0x201A) == addr);
-		addr = 0;
-		// vmcs12->control_EPT_pointer = ...
+		/* vmcs12->control_EPT_pointer is ignored here */
 	}
 	if (0) {
 		// Note: EPTP Switching not supported
