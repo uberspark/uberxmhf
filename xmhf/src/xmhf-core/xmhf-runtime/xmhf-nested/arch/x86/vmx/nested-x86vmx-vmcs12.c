@@ -457,9 +457,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
 			/* Construct shadow EPT */
-			gpa_t ept01 = vmcs12->control_EPT_pointer;
-			ept02 =
-				xmhf_nested_arch_x86vmx_ept12_to_ept02(vcpu, &ctx_pair, ept01);
+			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, vmcs12_info);
 		} else {
 			/* Guest does not use EPT, just use XMHF's EPT */
 			ept02 = vcpu->vmcs.control_EPT_pointer;

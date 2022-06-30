@@ -72,6 +72,12 @@
 #define FIELD_PROP_ID_HOST	0x00000040	/* VMCS12 value = VMCS01 value */
 #define FIELD_PROP_SWWRONLY	0x00000080	/* Read-only by hardware */
 
+/* Maximum number of active VMCS per CPU */
+#define VMX_NESTED_MAX_ACTIVE_VMCS 10
+
+/* Number of pages in page_pool in ept02_ctx_t */
+#define EPT02_PAGE_POOL_SIZE 128
+
 struct nested_vmcs12 {
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	u16 name;
@@ -84,8 +90,20 @@ struct nested_vmcs12 {
 #include "nested-x86vmx-vmcs12-fields.h"
 };
 
+/* Format of EPT02 context information */
+typedef struct {
+	/* Context  */
+	hptw_ctx_t ctx;
+	/* List of pages to be allocated by ctx, limit = EPT02_PAGE_POOL_SIZE */
+	u8 (*page_pool)[PAGE_SIZE_4K];
+	/* Whether the corresponding page in page_pool is allocated */
+	u8 *page_alloc;
+} ept02_ctx_t;
+
 /* Format of an active VMCS12 tracked by a CPU */
 typedef struct vmcs12_info {
+	/* Index of this VMCS12 in the CPU */
+	u32 index;
 	/*
 	 * Pointer to VMCS12 in guest.
 	 *
@@ -108,6 +126,8 @@ typedef struct vmcs12_info {
 	/* VMENTRY MSR load area */
 	msr_entry_t vmcs02_vmentry_msr_load_area[VMX_NESTED_MAX_MSR_COUNT]
 		__attribute__((aligned(16)));
+	/* Information for EPT02 */
+	ept02_ctx_t ept02_ctx;
 } vmcs12_info_t;
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);

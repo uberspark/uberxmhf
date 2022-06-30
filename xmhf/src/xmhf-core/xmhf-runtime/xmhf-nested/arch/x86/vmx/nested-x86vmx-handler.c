@@ -51,9 +51,7 @@
 #include "nested-x86vmx-handler.h"
 #include "nested-x86vmx-vmcs12.h"
 #include "nested-x86vmx-vminsterr.h"
-
-/* Maximum number of active VMCS per CPU */
-#define VMX_NESTED_MAX_ACTIVE_VMCS 10
+#include "nested-x86vmx-ept12.h"
 
 #define CUR_VMCS_PTR_INVALID 0xffffffffffffffffULL
 
@@ -223,6 +221,7 @@ static void active_vmcs12_array_init(VCPU * vcpu)
 	int i;
 	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
 		spa_t vmcs02_ptr = hva2spa(cpu_vmcs02[vcpu->idx][i]);
+		cpu_active_vmcs12[vcpu->idx][i].index = i;
 		cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr = CUR_VMCS_PTR_INVALID;
 		cpu_active_vmcs12[vcpu->idx][i].vmcs02_ptr = vmcs02_ptr;
 	}
@@ -265,6 +264,8 @@ static void new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 		   sizeof(vmcs12_info->vmcs02_vmexit_msr_load_area));
 	memset(&vmcs12_info->vmcs02_vmentry_msr_load_area, 0,
 		   sizeof(vmcs12_info->vmcs02_vmentry_msr_load_area));
+	xmhf_nested_arch_x86vmx_ept02_init(vcpu, vmcs12_info,
+									   &vmcs12_info->ept02_ctx);
 }
 
 /*
@@ -576,6 +577,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			xmhf_smpguest_arch_x86vmx_unblock_nmi();
 		}
 	}
+	// TODO: check EPT
 	vmcs12_info = find_current_vmcs12(vcpu);
 	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, vmcs12_info);
 	if (vmcs12_info->vmcs12_value.info_vmexit_reason & 0x80000000U) {

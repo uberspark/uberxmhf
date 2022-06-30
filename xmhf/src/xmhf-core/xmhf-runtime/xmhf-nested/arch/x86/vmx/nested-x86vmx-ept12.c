@@ -50,6 +50,74 @@
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
 
+static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][EPT02_PAGE_POOL_SIZE][PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
+
+static u8 ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][EPT02_PAGE_POOL_SIZE];
+
+static void* ept02_gzp(void *vctx, size_t alignment, size_t sz)
+{
+	ept02_ctx_t *ept02_ctx = (ept02_ctx_t *)vctx;
+	u32 i;
+	HALT_ON_ERRORCOND(alignment == PAGE_SIZE_4K);
+	HALT_ON_ERRORCOND(sz == PAGE_SIZE_4K);
+	for (i = 0; i < EPT02_PAGE_POOL_SIZE; i++) {
+		if (!ept02_ctx->page_alloc[i]) {
+			void *page = ept02_ctx->page_pool[i];
+			ept02_ctx->page_alloc[i] = 1;
+			memset(page, 0, PAGE_SIZE_4K);
+			return page;
+		}
+	}
+	return NULL;
+}
+
+static hpt_pa_t ept02_ptr2pa(void *vctx, void *ptr)
+{
+	(void)vctx;
+	return hva2spa(ptr);
+}
+
+static void* ept02_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
+{
+	(void)vctx;
+	(void)access_type;
+	(void)cpl;
+	*avail_sz = sz;
+	return spa2hva(spa);
+}
+
+/*
+ * Initialize the ept02_ctx_t structure in ept02_ctx.
+ * The current CPU and VMCS12 is vcpu and vmcs12_info.
+ */
+void xmhf_nested_arch_x86vmx_ept02_init(VCPU * vcpu,
+										vmcs12_info_t * vmcs12_info,
+										ept02_ctx_t *ept02_ctx)
+{
+	ept02_ctx->page_pool = ept02_page_pool[vcpu->idx][vmcs12_info->index];
+	ept02_ctx->page_alloc = ept02_page_alloc[vcpu->idx][vmcs12_info->index];
+	ept02_ctx->ctx.gzp = ept02_gzp;
+	ept02_ctx->ctx.pa2ptr = ept02_pa2ptr;
+	ept02_ctx->ctx.ptr2pa = ept02_ptr2pa;
+	ept02_ctx->ctx.root_pa =
+		hva2spa(ept02_gzp(&ept02_ctx->ctx, PAGE_SIZE_4K, PAGE_SIZE_4K));
+	ept02_ctx->ctx.t = HPT_TYPE_EPT;
+}
+
+/*
+ * Get pointer to EPT02 for current VMCS12. Will fill EPT02 as EPT violation
+ * happens.
+ */
+spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu,
+										vmcs12_info_t * vmcs12_info)
+{
+	spa_t addr = (uintptr_t) vmcs12_info->ept02_ctx.page_pool[0];
+	(void)vcpu;
+	return addr | 0x1e;	// TODO: remove magic number
+}
+
+// TODO: should be EPT exit driven
+/*
 spa_t xmhf_nested_arch_x86vmx_ept12_to_ept02(VCPU * vcpu,
 											 guestmem_hptw_ctx_pair_t *
 											 ctx_pair, gpa_t ept12)
@@ -62,3 +130,4 @@ spa_t xmhf_nested_arch_x86vmx_ept12_to_ept02(VCPU * vcpu,
 	//guestmem_gpa2spa_page(&ctx_pair, addr);
 	HALT_ON_ERRORCOND(0 && "TODO frontier");
 }
+*/
