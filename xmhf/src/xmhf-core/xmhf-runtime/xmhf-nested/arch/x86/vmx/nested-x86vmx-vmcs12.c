@@ -51,6 +51,7 @@
 #include "nested-x86vmx-handler.h"
 #include "nested-x86vmx-vmcs12.h"
 #include "nested-x86vmx-vminsterr.h"
+#include "nested-x86vmx-ept12.h"
 
 /*
  * Given a VMCS field encoding (used in VMREAD and VMWRITE)
@@ -452,18 +453,18 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	{
 		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
 		// Since hypervisor needs EPT, this block is unconditional
-		gpa_t addr = vmcs12->control_EPT_pointer;
+		spa_t ept02;
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
-		// TODO: to support EPT for guest, need to sanitize the entier EPT
 		if (_vmx_hasctl_enable_ept(&ctls)) {
-			// TODO: construct shadow EPT
-			HALT_ON_ERRORCOND(0 && "TODO frontier");
-			addr = guestmem_gpa2spa_page(&ctx_pair, addr);
+			/* Construct shadow EPT */
+			gpa_t ept01 = vmcs12->control_EPT_pointer;
+			ept02 =
+				xmhf_nested_arch_x86vmx_ept12_to_ept02(vcpu, &ctx_pair, ept01);
 		} else {
 			/* Guest does not use EPT, just use XMHF's EPT */
-			addr = vcpu->vmcs.control_EPT_pointer;
+			ept02 = vcpu->vmcs.control_EPT_pointer;
 		}
-		__vmx_vmwrite64(0x201A, addr);
+		__vmx_vmwrite64(0x201A, ept02);
 	}
 	if (0) {
 		// Note: EPTP Switching not supported
