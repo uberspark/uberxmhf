@@ -550,14 +550,15 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 {
 	vmcs12_info_t *vmcs12_info;
-	u32 vmexit_reason = __vmx_vmread32(0x4402);
+	u32 vmexit_reason = __vmx_vmread32(VMCSENC_info_vmexit_reason);
 
 	/*
 	 * Check whether this VMEXIT is for quiescing. If so, printing before the
 	 * quiesce is completed will result in deadlock.
 	 */
 	if (vmexit_reason == VMX_VMEXIT_EXCEPTION &&
-		(__vmx_vmread32(0x4404) & INTR_INFO_VECTOR_MASK) == 0x2) {
+		(__vmx_vmread32(VMCSENC_info_vmexit_interrupt_information) &
+		 INTR_INFO_VECTOR_MASK) == 0x2) {
 		/* NMI received by L2 guest */
 		if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
 			xmhf_smpguest_arch_x86vmx_unblock_nmi();

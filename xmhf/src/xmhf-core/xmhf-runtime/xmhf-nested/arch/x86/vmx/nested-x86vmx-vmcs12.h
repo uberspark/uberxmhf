@@ -78,6 +78,15 @@
 /* Number of pages in page_pool in ept02_ctx_t */
 #define EPT02_PAGE_POOL_SIZE 128
 
+enum vmcs_nested_encoding {
+#define DECLARE_FIELD_16(encoding, name, ...) \
+	VMCSENC_##name = encoding,
+#define DECLARE_FIELD_64(encoding, name, ...) DECLARE_FIELD_16(encoding, name)
+#define DECLARE_FIELD_32(encoding, name, ...) DECLARE_FIELD_16(encoding, name)
+#define DECLARE_FIELD_NW(encoding, name, ...) DECLARE_FIELD_16(encoding, name)
+#include "nested-x86vmx-vmcs12-fields.h"
+};
+
 struct nested_vmcs12 {
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	u16 name;
@@ -95,7 +104,7 @@ typedef struct {
 	/* Context  */
 	hptw_ctx_t ctx;
 	/* List of pages to be allocated by ctx, limit = EPT02_PAGE_POOL_SIZE */
-	u8 (*page_pool)[PAGE_SIZE_4K];
+	 u8(*page_pool)[PAGE_SIZE_4K];
 	/* Whether the corresponding page in page_pool is allocated */
 	u8 *page_alloc;
 } ept02_ctx_t;

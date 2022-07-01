@@ -50,13 +50,18 @@
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
 
-static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][EPT02_PAGE_POOL_SIZE][PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
+static u8
+	ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
+	[EPT02_PAGE_POOL_SIZE][PAGE_SIZE_4K]
+	__attribute__((section(".bss.palign_data")));
 
-static u8 ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][EPT02_PAGE_POOL_SIZE];
+static u8
+	ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
+	[EPT02_PAGE_POOL_SIZE];
 
-static void* ept02_gzp(void *vctx, size_t alignment, size_t sz)
+static void *ept02_gzp(void *vctx, size_t alignment, size_t sz)
 {
-	ept02_ctx_t *ept02_ctx = (ept02_ctx_t *)vctx;
+	ept02_ctx_t *ept02_ctx = (ept02_ctx_t *) vctx;
 	u32 i;
 	HALT_ON_ERRORCOND(alignment == PAGE_SIZE_4K);
 	HALT_ON_ERRORCOND(sz == PAGE_SIZE_4K);
@@ -77,7 +82,9 @@ static hpt_pa_t ept02_ptr2pa(void *vctx, void *ptr)
 	return hva2spa(ptr);
 }
 
-static void* ept02_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
+static void *ept02_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
+						  hpt_prot_t access_type, hptw_cpl_t cpl,
+						  size_t *avail_sz)
 {
 	(void)vctx;
 	(void)access_type;
@@ -92,7 +99,7 @@ static void* ept02_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz, hpt_prot_t access
  */
 void xmhf_nested_arch_x86vmx_ept02_init(VCPU * vcpu,
 										vmcs12_info_t * vmcs12_info,
-										ept02_ctx_t *ept02_ctx)
+										ept02_ctx_t * ept02_ctx)
 {
 	ept02_ctx->page_pool = ept02_page_pool[vcpu->idx][vmcs12_info->index];
 	ept02_ctx->page_alloc = ept02_page_alloc[vcpu->idx][vmcs12_info->index];
@@ -113,7 +120,7 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu,
 {
 	spa_t addr = (uintptr_t) vmcs12_info->ept02_ctx.page_pool[0];
 	(void)vcpu;
-	return addr | 0x1e;	// TODO: remove magic number
+	return addr | 0x1e;			// TODO: remove magic number
 }
 
 // TODO: should be EPT exit driven
