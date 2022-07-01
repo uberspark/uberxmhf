@@ -121,18 +121,23 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu,
 	return addr | 0x1e;			// TODO: remove magic number
 }
 
-// TODO: should be EPT exit driven
 /*
-spa_t xmhf_nested_arch_x86vmx_ept12_to_ept02(VCPU * vcpu,
-											 guestmem_hptw_ctx_pair_t *
-											 ctx_pair, gpa_t ept12)
+ * Handles an EPT exit received by L0 when running L2. There are 3 cases.
+ * 1. L2 accesses legitimate memory, but L0 has not processed the EPT entry in
+ *    L1 yet. In this case this function returns 1. XMHF should add EPT entry
+ *    to EPT02 and continue running L2.
+ * 2. L2 accesses memory not in EPT12. In this case this function returns 2.
+ *    XMHF should forward EPT violation to L1.
+ * 3. L2 accesses memory not valid in EPT01 (L1 sets up EPT that accesses
+ *    illegal memory). In this case this function returns 3. XMHF should halt
+ *    for security.
+ */
+int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
+											  vmcs12_info_t * vmcs12_info)
 {
-	spa_t ept01 = vcpu->vmcs.control_EPT_pointer;
-	(void)vcpu;
-	(void)ctx_pair;
-	(void)ept12;
-	(void)ept01;
-	//guestmem_gpa2spa_page(&ctx_pair, addr);
+	guestmem_hptw_ctx_pair_t ctx_pair;
+	guestmem_init(vcpu, &ctx_pair);
 	HALT_ON_ERRORCOND(0 && "TODO frontier");
+	(void)vmcs12_info;
+	return 3;
 }
-*/

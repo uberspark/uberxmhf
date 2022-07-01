@@ -58,8 +58,7 @@ void xmhf_nested_arch_x86vmx_ept02_init(VCPU * vcpu,
 										ept02_ctx_t * ept02_ctx);
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu,
 										vmcs12_info_t * vmcs12_info);
-//spa_t xmhf_nested_arch_x86vmx_ept12_to_ept02(VCPU * vcpu,
-//                                           guestmem_hptw_ctx_pair_t *
-//                                           ctx_pair, gpa_t ept12);
+int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
+											  vmcs12_info_t * vmcs12_info);
 
 #endif							/* _NESTED_X86VMX_EPT12_H_ */

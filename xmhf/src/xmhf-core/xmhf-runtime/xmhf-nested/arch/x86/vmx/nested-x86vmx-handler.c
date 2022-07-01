@@ -590,9 +590,27 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	 * If guest enables EPT, need to manually walk EPT12 and see.
 	 */
 	if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) {
+		int status = 3;
 		if (vmcs12_info->guest_ept_enable) {
-			HALT_ON_ERRORCOND(0 && "TODO frontier");
-		} else {
+			status =
+				xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, vmcs12_info);
+		}
+		switch (status) {
+		case 1:
+			/* EPT handled by L0, continue running L2 */
+			__vmx_vmentry_vmresume(r);
+			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+			break;
+		case 2:
+			/*
+			 * Forward EPT violation to L1.
+			 *
+			 * There is no address L0 physical -> L1 physical address
+			 * translation needed, so just continue.
+			 */
+			break;
+		case 3:
+			/* Guest accesses illegal address, halt for safety */
 			printf("CPU(0x%02x): qualification: 0x%08lx\n", vcpu->id,
 				   __vmx_vmreadNW(VMCSENC_info_exit_qualification));
 			printf("CPU(0x%02x): paddr: 0x%016llx\n", vcpu->id,
@@ -600,6 +618,10 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			printf("CPU(0x%02x): linear addr:   0x%08lx\n", vcpu->id,
 				   __vmx_vmreadNW(VMCSENC_info_guest_linear_address));
 			HALT_ON_ERRORCOND(0 && "Guest accesses illegal memory");
+			break;
+		default:
+			HALT_ON_ERRORCOND(0 && "Unknown status");
+			break;
 		}
 	}
 
