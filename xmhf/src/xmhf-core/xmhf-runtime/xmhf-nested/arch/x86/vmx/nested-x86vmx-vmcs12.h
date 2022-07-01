@@ -73,7 +73,7 @@
 #define FIELD_PROP_SWWRONLY	0x00000080	/* Read-only by hardware */
 
 /* Maximum number of active VMCS per CPU */
-#define VMX_NESTED_MAX_ACTIVE_VMCS 10
+#define VMX_NESTED_MAX_ACTIVE_VMCS 4
 
 /* Number of pages in page_pool in ept02_ctx_t */
 #define EPT02_PAGE_POOL_SIZE 128
