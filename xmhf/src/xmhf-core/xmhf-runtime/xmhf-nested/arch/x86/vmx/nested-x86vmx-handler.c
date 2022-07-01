@@ -550,11 +550,13 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 {
 	vmcs12_info_t *vmcs12_info;
+	u32 vmexit_reason = __vmx_vmread32(0x4402);
+
 	/*
 	 * Check whether this VMEXIT is for quiescing. If so, printing before the
 	 * quiesce is completed will result in deadlock.
 	 */
-	if (__vmx_vmread32(0x4402) == VMX_VMEXIT_EXCEPTION &&
+	if (vmexit_reason == VMX_VMEXIT_EXCEPTION &&
 		(__vmx_vmread32(0x4404) & INTR_INFO_VECTOR_MASK) == 0x2) {
 		/* NMI received by L2 guest */
 		if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
@@ -577,12 +579,22 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			xmhf_smpguest_arch_x86vmx_unblock_nmi();
 		}
 	}
-	// TODO: check EPT
+
+	/*
+	 * Check whether this VMEXIT is caused by EPT violation.
+	 * If guest does not enable EPT, then the guest is doing illegal things.
+	 * If guest enables EPT, need to manually walk EPT12 and see.
+	 */
+	if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) {
+		HALT_ON_ERRORCOND(0 && "TODO frontier");
+	}
+
+	/* Wake the guest hypervisor up for the VMEXIT */
 	vmcs12_info = find_current_vmcs12(vcpu);
 	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, vmcs12_info);
 	if (vmcs12_info->vmcs12_value.info_vmexit_reason & 0x80000000U) {
 		/*
-		 * TODO: Stopping here makes debugging a correct guest hypervisor
+		 * TODO: Stopping here makes debugging with a correct guest hypervisor
 		 * easier. The correct behavior should be injecting the VMEXIT to
 		 * guest hypervisor.
 		 */

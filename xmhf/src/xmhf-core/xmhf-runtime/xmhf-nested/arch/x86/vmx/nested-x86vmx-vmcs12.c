@@ -451,8 +451,10 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 #endif							/* !__DEBUG_QEMU__ */
 	}
 	{
-		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
-		// Since hypervisor needs EPT, this block is unconditional
+		/*
+		 * Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
+		 * Since hypervisor needs EPT, this block is unconditional
+		 */
 		spa_t ept02;
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
@@ -808,17 +810,19 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 #endif							/* !__DEBUG_QEMU__ */
 		// vmcs12->control_Executive_VMCS_pointer = ...;
 	}
-	if (1) {
-		// Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
-		// Since hypervisor needs EPT, this block is unconditional
+	{
+		/*
+		 * Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
+		 * Since hypervisor needs EPT, this block is unconditional
+		 */
+		spa_t ept02;
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
-			// TODO: to support EPT for guest, need to use shadow EPT
-			HALT_ON_ERRORCOND(0 && "Not implemented");
+			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, vmcs12_info);
 		} else {
-			gpa_t addr = vcpu->vmcs.control_EPT_pointer;
-			HALT_ON_ERRORCOND(__vmx_vmread64(0x201A) == addr);
+			ept02 = vcpu->vmcs.control_EPT_pointer;
 		}
+		HALT_ON_ERRORCOND(__vmx_vmread64(0x201A) == ept02);
 		/* vmcs12->control_EPT_pointer is ignored here */
 	}
 	if (0) {
