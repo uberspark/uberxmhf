@@ -815,8 +815,8 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		// TODO: related to SMM, check whether this restriction makes sense
 #ifndef __DEBUG_QEMU__
-		HALT_ON_ERRORCOND(__vmx_vmread64(VMCSENC_control_Executive_VMCS_pointer)
-						  == 0);
+		u16 encoding = VMCSENC_control_Executive_VMCS_pointer;
+		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
 #endif							/* !__DEBUG_QEMU__ */
 		// vmcs12->control_Executive_VMCS_pointer = ...;
 	}
@@ -826,36 +826,35 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		 * Since hypervisor needs EPT, this block is unconditional
 		 */
 		spa_t ept02;
+		u16 encoding = VMCSENC_control_EPT_pointer;
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
 			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, vmcs12_info);
 		} else {
 			ept02 = vcpu->vmcs.control_EPT_pointer;
 		}
-		HALT_ON_ERRORCOND(__vmx_vmread64(VMCSENC_control_EPT_pointer) == ept02);
+		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == ept02);
 		/* vmcs12->control_EPT_pointer is ignored here */
 	}
 	if (0) {
 		// Note: EPTP Switching not supported
 		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(__vmx_vmread64(VMCSENC_control_EPTP_list_address) ==
-						  0);
+		u16 encoding = VMCSENC_control_EPTP_list_address;
+		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
 		// vmcs12->control_EPTP_list_address = ...
 	}
 	if (_vmx_hasctl_sub_page_write_permissions_for_ept(&ctls)) {
 		// Note: Sub-page write permissions for EPT
 		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(__vmx_vmread64
-						  (VMCSENC_control_subpage_permission_table_pointer) ==
-						  0);
+		u16 encoding = VMCSENC_control_subpage_permission_table_pointer;
+		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
 		// vmcs12->control_subpage_permission_table_pointer = ...
 	}
 	if (_vmx_hasctl_activate_tertiary_controls(&ctls)) {
 		// Note: Activate tertiary controls not supported
 		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(__vmx_vmread64
-						  (VMCSENC_control_tertiary_proc_based_VMexec_ctls) ==
-						  0);
+		u16 encoding = VMCSENC_control_tertiary_proc_based_VMexec_ctls;
+		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
 		// vmcs12->control_tertiary_proc_based_VMexec_ctls = ...
 	}
 
@@ -878,8 +877,8 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		if (eax >= 0xA) {
 			cpuid(0xA, &eax, &ebx, &ecx, &edx);
 			if (eax & 0xffU) {
-				HALT_ON_ERRORCOND(__vmx_vmread64
-								  (VMCSENC_host_IA32_PERF_GLOBAL_CTRL) ==
+				u16 encoding = VMCSENC_host_IA32_PERF_GLOBAL_CTRL;
+				HALT_ON_ERRORCOND(__vmx_vmread64(encoding) ==
 								  rdmsr64(IA32_PERF_GLOBAL_CTRL));
 			}
 		}
@@ -927,11 +926,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		// TODO: in the future, need to merge with host's exception bitmap
 		u32 val = vmcs12->control_exception_bitmap;
-		HALT_ON_ERRORCOND(val ==
-						  __vmx_vmread32(VMCSENC_control_exception_bitmap));
+		u16 encoding = VMCSENC_control_exception_bitmap;
+		HALT_ON_ERRORCOND(val == __vmx_vmread32(encoding));
 	}
 	{
 		u32 val = vmcs12->control_VM_exit_controls;
+		u16 encoding = VMCSENC_control_VM_exit_controls;
 		/*
 		 * The "IA-32e mode guest" bit need to match XMHF. A mismatch can only
 		 * happen when amd64 XMHF runs i386 guest hypervisor.
@@ -941,20 +941,19 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 #elif !defined(__I386__)
 #error "Unsupported Arch"
 #endif							/* !defined(__I386__) */
-		HALT_ON_ERRORCOND(val ==
-						  __vmx_vmread32(VMCSENC_control_VM_exit_controls));
+		HALT_ON_ERRORCOND(val == __vmx_vmread32(encoding));
 	}
 	{
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_exit_MSR_store_address;
 
 		/* VMCS02 needs to always process the same fields as VMCS01 */
+		u16 encoding = VMCSENC_control_VM_exit_MSR_store_count;
 		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_exit_MSR_store_count ==
-						  __vmx_vmread32
-						  (VMCSENC_control_VM_exit_MSR_store_count));
+						  __vmx_vmread32(encoding));
+		encoding = VMCSENC_control_VM_exit_MSR_store_address;
 		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmexit_msr_store_area) ==
-						  __vmx_vmread64
-						  (VMCSENC_control_VM_exit_MSR_store_address));
+						  __vmx_vmread64(encoding));
 
 		/* Read MSRs and write to guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_store_count; i++) {
@@ -1002,12 +1001,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		gva_t guest_addr = vmcs12->control_VM_exit_MSR_load_address;
 
 		/* VMCS02 needs to always process the same fields as VMCS01 */
+		u16 encoding = VMCSENC_control_VM_exit_MSR_store_count;
 		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_exit_MSR_load_count ==
-						  __vmx_vmread32
-						  (VMCSENC_control_VM_exit_MSR_store_count));
+						  __vmx_vmread32(encoding));
+		encoding = VMCSENC_control_VM_exit_MSR_load_address;
 		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmexit_msr_load_area) ==
-						  __vmx_vmread64
-						  (VMCSENC_control_VM_exit_MSR_load_address));
+						  __vmx_vmread64(encoding));
 
 		/* Write MSRs as requested by guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_load_count; i++) {
@@ -1054,20 +1053,20 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	}
 	{
 		/* VMCS02 needs to always process the same fields as VMCS01 */
+		u16 encoding = VMCSENC_control_VM_entry_MSR_load_count;
 		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_entry_MSR_load_count ==
-						  __vmx_vmread32
-						  (VMCSENC_control_VM_entry_MSR_load_count));
-		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area) ==
-						  __vmx_vmread64
-						  (VMCSENC_control_VM_entry_MSR_load_address));
+						  __vmx_vmread32(encoding));
+		encoding = VMCSENC_control_VM_entry_MSR_load_address;
+		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area)
+						  == __vmx_vmread64(encoding));
 	}
 	{
 		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is always enabled */
 		u32 val = vmcs12->control_VMX_seccpu_based;
+		u16 encoding = VMCSENC_control_VMX_seccpu_based;
 		/* XMHF needs the guest to run in EPT to protect memory */
 		val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
-		HALT_ON_ERRORCOND(val ==
-						  __vmx_vmread32(VMCSENC_control_VMX_seccpu_based));
+		HALT_ON_ERRORCOND(val == __vmx_vmread32(encoding));
 	}
 
 	/* 32-Bit Read-Only Data Fields */
