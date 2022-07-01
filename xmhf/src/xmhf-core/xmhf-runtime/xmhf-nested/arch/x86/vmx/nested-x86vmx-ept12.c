@@ -50,13 +50,11 @@
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
 
-static u8
-	ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
+static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
 	[EPT02_PAGE_POOL_SIZE][PAGE_SIZE_4K]
 	__attribute__((section(".bss.palign_data")));
 
-static u8
-	ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
+static u8 ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
 	[EPT02_PAGE_POOL_SIZE];
 
 static void *ept02_gzp(void *vctx, size_t alignment, size_t sz)
