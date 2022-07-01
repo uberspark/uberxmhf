@@ -264,6 +264,7 @@ static void new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 		   sizeof(vmcs12_info->vmcs02_vmexit_msr_load_area));
 	memset(&vmcs12_info->vmcs02_vmentry_msr_load_area, 0,
 		   sizeof(vmcs12_info->vmcs02_vmentry_msr_load_area));
+	vmcs12_info->guest_ept_enable = 0;
 	xmhf_nested_arch_x86vmx_ept02_init(vcpu, vmcs12_info,
 									   &vmcs12_info->ept02_ctx);
 }
@@ -581,17 +582,28 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		}
 	}
 
+	vmcs12_info = find_current_vmcs12(vcpu);
+
 	/*
 	 * Check whether this VMEXIT is caused by EPT violation.
 	 * If guest does not enable EPT, then the guest is doing illegal things.
 	 * If guest enables EPT, need to manually walk EPT12 and see.
 	 */
 	if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) {
-		HALT_ON_ERRORCOND(0 && "TODO frontier");
+		if (vmcs12_info->guest_ept_enable) {
+			HALT_ON_ERRORCOND(0 && "TODO frontier");
+		} else {
+			printf("CPU(0x%02x): qualification: 0x%08lx\n", vcpu->id,
+				   __vmx_vmreadNW(VMCSENC_info_exit_qualification));
+			printf("CPU(0x%02x): paddr: 0x%016llx\n", vcpu->id,
+				   __vmx_vmread64(VMCSENC_guest_paddr));
+			printf("CPU(0x%02x): linear addr:   0x%08lx\n", vcpu->id,
+				   __vmx_vmreadNW(VMCSENC_info_guest_linear_address));
+			HALT_ON_ERRORCOND(0 && "Guest accesses illegal memory");
+		}
 	}
 
 	/* Wake the guest hypervisor up for the VMEXIT */
-	vmcs12_info = find_current_vmcs12(vcpu);
 	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, vmcs12_info);
 	if (vmcs12_info->vmcs12_value.info_vmexit_reason & 0x80000000U) {
 		/*

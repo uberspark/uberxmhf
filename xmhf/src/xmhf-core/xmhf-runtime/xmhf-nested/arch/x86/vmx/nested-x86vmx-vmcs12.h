@@ -135,6 +135,8 @@ typedef struct vmcs12_info {
 	/* VMENTRY MSR load area */
 	msr_entry_t vmcs02_vmentry_msr_load_area[VMX_NESTED_MAX_MSR_COUNT]
 		__attribute__((aligned(16)));
+	/* Whether using EPT12 */
+	int guest_ept_enable;
 	/* Information for EPT02 */
 	ept02_ctx_t ept02_ctx;
 } vmcs12_info_t;

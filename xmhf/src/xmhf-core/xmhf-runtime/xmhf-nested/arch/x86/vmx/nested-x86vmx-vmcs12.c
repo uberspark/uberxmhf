@@ -369,10 +369,10 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	vmx_ctls_t ctls;
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	u32 status = _vmcs12_get_ctls(vcpu, vmcs12, &ctls);
-	guestmem_init(vcpu, &ctx_pair);
 	if (status != 0) {
 		return status;
 	}
+	guestmem_init(vcpu, &ctx_pair);
 	/* TODO: Check settings of VMX controls and host-state area */
 
 #define FIELD_CTLS_ARG (&ctls)
@@ -460,9 +460,11 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
 			/* Construct shadow EPT */
+			vmcs12_info->guest_ept_enable = 1;
 			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, vmcs12_info);
 		} else {
 			/* Guest does not use EPT, just use XMHF's EPT */
+			vmcs12_info->guest_ept_enable = 0;
 			ept02 = vcpu->vmcs.control_EPT_pointer;
 		}
 		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
