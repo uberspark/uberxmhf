@@ -185,7 +185,9 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 
 	/* Get the entry in EPT12 and the L1 paddr that is to be accessed */
 	hptw_get_pmeo(&pmeo12, (hptw_ctx_t *) & ept12_ctx, 1, guest2_paddr);
-	HALT_ON_ERRORCOND(hpt_pmeo_is_page(&pmeo12));
+	if (!hpt_pmeo_is_page(&pmeo12)) {
+		return 2;
+	}
 	/* TODO: Large pages not supported yet */
 	HALT_ON_ERRORCOND(pmeo12.lvl == 1);
 	guest1_paddr = hpt_pmeo_get_address(&pmeo12);
@@ -193,7 +195,9 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	/* Get the entry in EPT01 for the L1 paddr */
 	hptw_get_pmeo(&pmeo01, (hptw_ctx_t *) & ept12_ctx.ctx01.host_ctx, 1,
 				  guest1_paddr);
-	HALT_ON_ERRORCOND(hpt_pmeo_is_page(&pmeo01));
+	if (!hpt_pmeo_is_page(&pmeo01)) {
+		return 3;
+	}
 	/* TODO: Large pages not supported yet */
 	HALT_ON_ERRORCOND(pmeo12.lvl == 1);
 	xmhf_paddr = hpt_pmeo_get_address(&pmeo01);
