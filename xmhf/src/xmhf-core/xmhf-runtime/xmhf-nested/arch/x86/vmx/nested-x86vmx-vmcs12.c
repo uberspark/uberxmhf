@@ -460,8 +460,30 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
 			/* Construct shadow EPT */
+			struct {
+				union {
+					struct {
+						u8 mem_type:3;
+						u8 walk_length:3;
+						u8 access_dirty:1;
+						u8 access_right_sup_shadow_stack:1;
+						u8 reserved_11_8:4;
+						u64 ept_pml4t:52;
+					};
+					u64 raw;
+				};
+			} guest_eptp;
 			vmcs12_info->guest_ept_enable = 1;
 			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, vmcs12_info);
+			guest_eptp.raw = vmcs12->control_EPT_pointer;
+			HALT_ON_ERRORCOND(guest_eptp.mem_type == HPT_PMT_WB);
+			HALT_ON_ERRORCOND(guest_eptp.walk_length == 3);
+			/* Setting this bit to 1 is not supported yet. */
+			HALT_ON_ERRORCOND(guest_eptp.access_dirty == 0);
+			/* Setting this bit to 1 is not supported yet. */
+			HALT_ON_ERRORCOND(guest_eptp.access_right_sup_shadow_stack == 0);
+			HALT_ON_ERRORCOND(guest_eptp.reserved_11_8 == 0);
+			vmcs12_info->guest_ept_root = guest_eptp.ept_pml4t << PAGE_SHIFT_4K;
 		} else {
 			/* Guest does not use EPT, just use XMHF's EPT */
 			vmcs12_info->guest_ept_enable = 0;

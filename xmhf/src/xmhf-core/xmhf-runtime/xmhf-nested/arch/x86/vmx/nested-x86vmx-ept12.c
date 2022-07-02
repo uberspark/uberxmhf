@@ -50,6 +50,14 @@
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
 
+/* Format of EPT12 context information */
+typedef struct {
+	/* Context of EPT12 */
+	hptw_ctx_t ctx;
+	/* Context of EPT01 */
+	guestmem_hptw_ctx_pair_t ctx01;
+} ept12_ctx_t;
+
 static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
 	[EPT02_PAGE_POOL_SIZE][PAGE_SIZE_4K]
 	__attribute__((section(".bss.palign_data")));
@@ -89,6 +97,34 @@ static void *ept02_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
 	(void)cpl;
 	*avail_sz = sz;
 	return spa2hva(spa);
+}
+
+static void *ept12_gzp(void *vctx, size_t alignment, size_t sz)
+{
+	(void)vctx;
+	(void)alignment;
+	(void)sz;
+	HALT_ON_ERRORCOND(0 && "EPT12 should not call gzp()");
+	return NULL;
+}
+
+static hpt_pa_t ept12_ptr2pa(void *vctx, void *ptr)
+{
+	(void)vctx;
+	return hva2spa(ptr);
+}
+
+static void *ept12_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
+						  hpt_prot_t access_type, hptw_cpl_t cpl,
+						  size_t *avail_sz)
+{
+	ept12_ctx_t *ctx = vctx;
+	return hptw_checked_access_va(&ctx->ctx01.host_ctx,
+									access_type,
+									cpl,
+									spa,
+									sz,
+									avail_sz);
 }
 
 /*
@@ -135,8 +171,22 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu,
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info)
 {
-	guestmem_hptw_ctx_pair_t ctx_pair;
-	guestmem_init(vcpu, &ctx_pair);
+	ept12_ctx_t ept12_ctx;
+	spa_t guest_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
+	ept12_ctx.ctx.ptr2pa = ept12_ptr2pa;
+	ept12_ctx.ctx.pa2ptr = ept12_pa2ptr;
+	ept12_ctx.ctx.gzp = ept12_gzp;
+	ept12_ctx.ctx.root_pa = vmcs12_info->guest_ept_root;
+	ept12_ctx.ctx.t = HPT_TYPE_EPT;
+	guestmem_init(vcpu, &ept12_ctx.ctx01);
+	{
+		u64 a;
+		hptw_ctx_t *ctx = (hptw_ctx_t *) &ept12_ctx;
+		int result = hptw_checked_copy_from_va(ctx, 0, &a, guest_paddr, 8);
+		HALT_ON_ERRORCOND(result == 0);
+		HALT_ON_ERRORCOND(0 && "TODO frontier");
+	}
+
 	HALT_ON_ERRORCOND(0 && "TODO frontier");
 	(void)vmcs12_info;
 	return 3;

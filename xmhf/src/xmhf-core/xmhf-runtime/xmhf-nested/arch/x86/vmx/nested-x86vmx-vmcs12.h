@@ -137,6 +137,8 @@ typedef struct vmcs12_info {
 		__attribute__((aligned(16)));
 	/* Whether using EPT12 */
 	int guest_ept_enable;
+	/* When guest_ept_enable, pointer to EPT12 root */
+	gpa_t guest_ept_root;
 	/* Information for EPT02 */
 	ept02_ctx_t ept02_ctx;
 } vmcs12_info_t;

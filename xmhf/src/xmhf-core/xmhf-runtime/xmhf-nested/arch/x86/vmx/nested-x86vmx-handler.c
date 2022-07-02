@@ -265,6 +265,7 @@ static void new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 	memset(&vmcs12_info->vmcs02_vmentry_msr_load_area, 0,
 		   sizeof(vmcs12_info->vmcs02_vmentry_msr_load_area));
 	vmcs12_info->guest_ept_enable = 0;
+	vmcs12_info->guest_ept_root = 0;
 	xmhf_nested_arch_x86vmx_ept02_init(vcpu, vmcs12_info,
 									   &vmcs12_info->ept02_ctx);
 }
