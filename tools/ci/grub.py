@@ -60,7 +60,7 @@ def generate_xmhf_image(args):
 	b_img = os.path.join(grub_dir, 'b.img')
 	check_call(['dd', 'if=/dev/zero', 'of=%s' % b_img, 'bs=1K',
 				'seek=%d' % ext4_size_kb, 'count=0'])
-	check_call(['/sbin/mkfs.ext4', b_img])
+	check_call(['/sbin/mkfs.ext2', b_img])
 	debugfs_cmds = []
 	debugfs_cmds.append('mkdir boot')
 	debugfs_cmds.append('cd boot')
