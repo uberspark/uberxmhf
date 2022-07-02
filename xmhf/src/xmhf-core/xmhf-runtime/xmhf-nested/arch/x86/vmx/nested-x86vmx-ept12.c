@@ -120,11 +120,7 @@ static void *ept12_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
 {
 	ept12_ctx_t *ctx = vctx;
 	return hptw_checked_access_va(&ctx->ctx01.host_ctx,
-									access_type,
-									cpl,
-									spa,
-									sz,
-									avail_sz);
+								  access_type, cpl, spa, sz, avail_sz);
 }
 
 /*
@@ -172,22 +168,73 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info)
 {
 	ept12_ctx_t ept12_ctx;
-	spa_t guest_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
+	u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
+	gpa_t guest1_paddr;
+	spa_t xmhf_paddr;
+	hpt_pmeo_t pmeo12;
+	hpt_pmeo_t pmeo01;
+	hpt_pmeo_t pmeo02;
+
+	// TODO: should be able to cache ept12_ctx
 	ept12_ctx.ctx.ptr2pa = ept12_ptr2pa;
 	ept12_ctx.ctx.pa2ptr = ept12_pa2ptr;
 	ept12_ctx.ctx.gzp = ept12_gzp;
 	ept12_ctx.ctx.root_pa = vmcs12_info->guest_ept_root;
 	ept12_ctx.ctx.t = HPT_TYPE_EPT;
 	guestmem_init(vcpu, &ept12_ctx.ctx01);
+
+	/* Get the entry in EPT12 and the L1 paddr that is to be accessed */
+	hptw_get_pmeo(&pmeo12, (hptw_ctx_t *) & ept12_ctx, 1, guest2_paddr);
+	HALT_ON_ERRORCOND(hpt_pmeo_is_page(&pmeo12));
+	/* TODO: Large pages not supported yet */
+	HALT_ON_ERRORCOND(pmeo12.lvl == 1);
+	guest1_paddr = hpt_pmeo_get_address(&pmeo12);
+
+	/* Get the entry in EPT01 for the L1 paddr */
+	hptw_get_pmeo(&pmeo01, (hptw_ctx_t *) & ept12_ctx.ctx01.host_ctx, 1,
+				  guest1_paddr);
+	HALT_ON_ERRORCOND(hpt_pmeo_is_page(&pmeo01));
+	/* TODO: Large pages not supported yet */
+	HALT_ON_ERRORCOND(pmeo12.lvl == 1);
+	xmhf_paddr = hpt_pmeo_get_address(&pmeo01);
+
+	/* TODO: need some logic to decide whether should return 2 or 3. */
+
+	/* Construct page map entry for EPT02 */
+	pmeo02.pme = 0;
+	pmeo02.t = HPT_TYPE_EPT;
+	pmeo02.lvl = 1;
+	hpt_pmeo_set_address(&pmeo02, xmhf_paddr);
 	{
-		u64 a;
-		hptw_ctx_t *ctx = (hptw_ctx_t *) &ept12_ctx;
-		int result = hptw_checked_copy_from_va(ctx, 0, &a, guest_paddr, 8);
-		HALT_ON_ERRORCOND(result == 0);
-		HALT_ON_ERRORCOND(0 && "TODO frontier");
+		hpt_prot_t prot01 = hpt_pmeo_getprot(&pmeo01);
+		hpt_prot_t prot12 = hpt_pmeo_getprot(&pmeo12);
+		hpt_pmeo_setprot(&pmeo02, prot01 & prot12);
+	}
+	{
+		hpt_pmt_t cache01 = hpt_pmeo_getcache(&pmeo01);
+		hpt_pmt_t cache12 = hpt_pmeo_getcache(&pmeo12);
+		hpt_pmt_t cache02 = HPT_PMT_UC;
+		/*
+		 * TODO: full support of cache type operations not supported. Currently
+		 * only support WB and UC.
+		 */
+		HALT_ON_ERRORCOND(cache01 == HPT_PMT_UC || cache01 == HPT_PMT_WB);
+		HALT_ON_ERRORCOND(cache12 == HPT_PMT_UC || cache12 == HPT_PMT_WB);
+		if (cache01 == HPT_PMT_WB && cache12 == HPT_PMT_WB) {
+			cache02 = HPT_PMT_WB;
+		}
+		hpt_pmeo_setcache(&pmeo02, cache02);
+	}
+	{
+		bool user01 = hpt_pmeo_getuser(&pmeo01);
+		bool user12 = hpt_pmeo_getuser(&pmeo12);
+		hpt_pmeo_setuser(&pmeo02, user01 && user12);
 	}
 
-	HALT_ON_ERRORCOND(0 && "TODO frontier");
-	(void)vmcs12_info;
-	return 3;
+	/* Put page map entry into EPT02 */
+	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(&vmcs12_info->ept02_ctx.ctx,
+											 &pmeo02, guest2_paddr) == 0);
+	printf("CPU(0x%02x): EPT: 0x%08llx 0x%08llx 0x%08llx\n", vcpu->id,
+		   guest2_paddr, guest1_paddr, xmhf_paddr);
+	return 1;
 }
