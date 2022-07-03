@@ -474,6 +474,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 				};
 			} guest_eptp;
 			vmcs12_info->guest_ept_enable = 1;
+			xmhf_nested_arch_x86vmx_ept02_init(vcpu, vmcs12_info,
+											   &vmcs12_info->ept02_ctx);
 			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, vmcs12_info);
 			guest_eptp.raw = vmcs12->control_EPT_pointer;
 			HALT_ON_ERRORCOND(guest_eptp.mem_type == HPT_PMT_WB);

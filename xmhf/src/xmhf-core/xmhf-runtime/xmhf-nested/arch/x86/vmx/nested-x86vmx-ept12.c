@@ -131,14 +131,20 @@ void xmhf_nested_arch_x86vmx_ept02_init(VCPU * vcpu,
 										vmcs12_info_t * vmcs12_info,
 										ept02_ctx_t * ept02_ctx)
 {
+	u32 i;
+	spa_t root_pa;
 	ept02_ctx->page_pool = ept02_page_pool[vcpu->idx][vmcs12_info->index];
 	ept02_ctx->page_alloc = ept02_page_alloc[vcpu->idx][vmcs12_info->index];
+	for (i = 0; i < EPT02_PAGE_POOL_SIZE; i++) {
+		ept02_ctx->page_alloc[i] = 0;
+	}
 	ept02_ctx->ctx.gzp = ept02_gzp;
 	ept02_ctx->ctx.pa2ptr = ept02_pa2ptr;
 	ept02_ctx->ctx.ptr2pa = ept02_ptr2pa;
-	ept02_ctx->ctx.root_pa =
-		hva2spa(ept02_gzp(&ept02_ctx->ctx, PAGE_SIZE_4K, PAGE_SIZE_4K));
+	root_pa = hva2spa(ept02_gzp(&ept02_ctx->ctx, PAGE_SIZE_4K, PAGE_SIZE_4K));
+	ept02_ctx->ctx.root_pa = root_pa;
 	ept02_ctx->ctx.t = HPT_TYPE_EPT;
+	__vmx_invept(VMX_INVEPT_SINGLECONTEXT, root_pa);
 }
 
 /*
@@ -148,7 +154,7 @@ void xmhf_nested_arch_x86vmx_ept02_init(VCPU * vcpu,
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu,
 										vmcs12_info_t * vmcs12_info)
 {
-	spa_t addr = (uintptr_t) vmcs12_info->ept02_ctx.page_pool[0];
+	spa_t addr = (uintptr_t) vmcs12_info->ept02_ctx.ctx.root_pa;
 	(void)vcpu;
 	return addr | 0x1e;			// TODO: remove magic number
 }
