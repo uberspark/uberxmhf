@@ -596,6 +596,9 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
   /* flush TLB for page table modifications to take effect */
   xmhf_memprot_flushmappings(vcpu);
 
+  /* make sure other CPUs flush the TLB after quiesce */
+  g_vmx_flush_all_tlb_signal = 1;
+
 #ifdef __DMAP__
     /* Disable device accesses to these memory (via IOMMU) */
 	xmhf_dmaprot_invalidate_cache();
@@ -701,6 +704,9 @@ u64 scode_unregister(VCPU * vcpu, u64 gvaddr)
   }
   /* flush TLB for page table modifications to take effect */
   xmhf_memprot_flushmappings(vcpu);
+
+  /* make sure other CPUs flush the TLB after quiesce */
+  g_vmx_flush_all_tlb_signal = 1;
 
   /* delete entry from scode whitelist */
   /* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
@@ -1055,6 +1061,13 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
   hpt_emhf_set_root_pm_pa( vcpu, whitelist[curr].hptw_pal_host_ctx.super.root_pa);
   VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
   xmhf_memprot_flushmappings(vcpu); /* XXX */
+
+  /*
+   * make sure other CPUs flush the TLB after quiesce
+   * TODO: this may be unnecessary. Review and see whether can remove.
+   */
+  g_vmx_flush_all_tlb_signal = 1;
+
   if (whitelist[curr].hptw_pal_checked_guest_ctx.super.t == HPT_TYPE_PAE) {
     /* For PAE paging, need to update VMCS PDPTEs manually */
     hptw_ctx_t *ctx = &whitelist[curr].hptw_pal_host_ctx.super;
@@ -1258,6 +1271,13 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   hpt_emhf_set_root_pm(vcpu, g_reg_npmo_root.pm);
   VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
   xmhf_memprot_flushmappings(vcpu); /* XXX */
+
+  /*
+   * make sure other CPUs flush the TLB after quiesce
+   * TODO: this may be unnecessary. Review and see whether can remove.
+   */
+  g_vmx_flush_all_tlb_signal = 1;
+
   if (whitelist[curr].hptw_pal_checked_guest_ctx.super.t == HPT_TYPE_PAE) {
     /* For PAE paging, need to update VMCS PDPTEs manually */
     hptw_ctx_t *ctx = &whitelist[curr].hptw_pal_host_ctx.super;
@@ -1467,6 +1487,9 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 
   /* flush TLB for page table modifications to take effect */
   xmhf_memprot_flushmappings(vcpu);
+
+  /* make sure other CPUs flush the TLB after quiesce */
+  g_vmx_flush_all_tlb_signal = 1;
 
   err=0;
 out:
