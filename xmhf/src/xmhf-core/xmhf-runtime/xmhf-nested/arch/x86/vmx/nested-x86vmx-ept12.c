@@ -222,6 +222,8 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
 		}
 	}
 	if (!hit) {
+		printf("CPU(0x%02x): EPT cache miss for EP4TA 0x%016llx\n", vcpu->id,
+			   ept12);
 		HALT_ON_ERRORCOND(evict_index < VMX_NESTED_MAX_ACTIVE_EPT);
 		ans = evict_index;
 		ept02_ctx_init(vcpu, ans, &ept02_cache[vcpu->id][ans].ept02_ctx);
