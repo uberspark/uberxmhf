@@ -578,7 +578,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_CR4_shadow = 0;
 
 	//flush guest TLB to start with
-	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
+	xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
 }
 
 
