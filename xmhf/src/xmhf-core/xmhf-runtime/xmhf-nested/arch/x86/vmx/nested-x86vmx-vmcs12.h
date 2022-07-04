@@ -75,9 +75,6 @@
 /* Maximum number of active VMCS per CPU */
 #define VMX_NESTED_MAX_ACTIVE_VMCS 4
 
-/* Number of pages in page_pool in ept02_ctx_t */
-#define EPT02_PAGE_POOL_SIZE 128
-
 enum vmcs_nested_encoding {
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	VMCSENC_##name = encoding,
@@ -98,16 +95,6 @@ struct nested_vmcs12 {
 	ulong_t name;
 #include "nested-x86vmx-vmcs12-fields.h"
 };
-
-/* Format of EPT02 context information */
-typedef struct {
-	/* Context  */
-	hptw_ctx_t ctx;
-	/* List of pages to be allocated by ctx, limit = EPT02_PAGE_POOL_SIZE */
-	 u8(*page_pool)[PAGE_SIZE_4K];
-	/* Whether the corresponding page in page_pool is allocated */
-	u8 *page_alloc;
-} ept02_ctx_t;
 
 /* Format of an active VMCS12 tracked by a CPU */
 typedef struct vmcs12_info {
@@ -137,10 +124,10 @@ typedef struct vmcs12_info {
 		__attribute__((aligned(16)));
 	/* Whether using EPT12 */
 	int guest_ept_enable;
+	/* When guest_ept_enable, index to nested-x86vmx-ept12.c cache */
+	u32 guest_ept_cache_index;
 	/* When guest_ept_enable, pointer to EPT12 root */
 	gpa_t guest_ept_root;
-	/* Information for EPT02 */
-	ept02_ctx_t ept02_ctx;
 } vmcs12_info_t;
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);

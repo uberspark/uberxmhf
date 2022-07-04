@@ -473,11 +473,11 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 					u64 raw;
 				};
 			} guest_eptp;
-			vmcs12_info->guest_ept_enable = 1;
-			xmhf_nested_arch_x86vmx_ept02_init(vcpu, vmcs12_info,
-											   &vmcs12_info->ept02_ctx);
-			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, vmcs12_info);
+			gpa_t ept12;
+			u32 cache_index;
+			bool cache_hit;
 			guest_eptp.raw = vmcs12->control_EPT_pointer;
+			vmcs12_info->guest_ept_enable = 1;
 			HALT_ON_ERRORCOND(guest_eptp.mem_type == HPT_PMT_WB);
 			HALT_ON_ERRORCOND(guest_eptp.walk_length == 3);
 			/* Setting this bit to 1 is not supported yet. */
@@ -485,7 +485,11 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 			/* Setting this bit to 1 is not supported yet. */
 			HALT_ON_ERRORCOND(guest_eptp.access_right_sup_shadow_stack == 0);
 			HALT_ON_ERRORCOND(guest_eptp.reserved_11_8 == 0);
-			vmcs12_info->guest_ept_root = guest_eptp.ept_pml4t << PAGE_SHIFT_4K;
+			ept12 = guest_eptp.ept_pml4t << PAGE_SHIFT_4K;
+			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, 
+													  &cache_index, &cache_hit);
+			vmcs12_info->guest_ept_cache_index = cache_index;
+			vmcs12_info->guest_ept_root = ept12;
 		} else {
 			/* Guest does not use EPT, just use XMHF's EPT */
 			vmcs12_info->guest_ept_enable = 0;
@@ -853,7 +857,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		u16 encoding = VMCSENC_control_EPT_pointer;
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
-			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, vmcs12_info);
+			gpa_t ept12 = vmcs12_info->guest_ept_root;
+			u32 cache_index;
+			bool cache_hit;
+			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_index,
+													  &cache_hit);
+			HALT_ON_ERRORCOND(cache_hit);
 		} else {
 			ept02 = vcpu->vmcs.control_EPT_pointer;
 		}

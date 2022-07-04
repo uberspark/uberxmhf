@@ -50,6 +50,12 @@
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
 
+/* Maximum number of active EPTs per CPU */
+#define VMX_NESTED_MAX_ACTIVE_EPT 4
+
+/* Number of pages in page_pool in ept02_ctx_t */
+#define EPT02_PAGE_POOL_SIZE 128
+
 /* Format of EPT12 context information */
 typedef struct {
 	/* Context of EPT12 */
@@ -58,11 +64,39 @@ typedef struct {
 	guestmem_hptw_ctx_pair_t ctx01;
 } ept12_ctx_t;
 
-static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
+/* Format of EPT02 context information */
+typedef struct {
+	/* Context */
+	hptw_ctx_t ctx;
+	/* List of pages to be allocated by ctx, limit = EPT02_PAGE_POOL_SIZE */
+	 u8(*page_pool)[PAGE_SIZE_4K];
+	/* Whether the corresponding page in page_pool is allocated */
+	u8 *page_alloc;
+} ept02_ctx_t;
+
+/* Track list of EPT12's */
+typedef struct {
+	/*
+	 * If 0, invalid (need to initialize). Otherwise, track LRU (1 is most
+	 * recently used; when all valid, VMX_NESTED_MAX_ACTIVE_EPT is LRU).
+	 */
+	u32 valid;
+	/* Guest physical address of EPT12 (4K aligned) */
+	gpa_t ept12;
+	/* Point to EPT02 context */
+	ept02_ctx_t ept02_ctx;
+} ept02_cache_t;
+
+/* For each CPU, information about all EPT12 -> EPT02 it caches */
+static ept02_cache_t ept02_cache[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT];
+
+/* Page pool for ept02_cache */
+static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT]
 	[EPT02_PAGE_POOL_SIZE][PAGE_SIZE_4K]
 	__attribute__((section(".bss.palign_data")));
 
-static u8 ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
+/* Page allocation flags for ept02_cache */
+static u8 ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT]
 	[EPT02_PAGE_POOL_SIZE];
 
 static void *ept02_gzp(void *vctx, size_t alignment, size_t sz)
@@ -124,17 +158,15 @@ static void *ept12_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
 }
 
 /*
- * Initialize the ept02_ctx_t structure in ept02_ctx.
- * The current CPU and VMCS12 is vcpu and vmcs12_info.
+ * Initialize the ept02_ctx_t structure in pointed to by ept02_ctx.
+ * The current CPU is vcpu. The index of ept02_ctx in the CPU is index.
  */
-void xmhf_nested_arch_x86vmx_ept02_init(VCPU * vcpu,
-										vmcs12_info_t * vmcs12_info,
-										ept02_ctx_t * ept02_ctx)
+static void ept02_ctx_init(VCPU *vcpu, u32 index, ept02_ctx_t *ept02_ctx)
 {
 	u32 i;
 	spa_t root_pa;
-	ept02_ctx->page_pool = ept02_page_pool[vcpu->idx][vmcs12_info->index];
-	ept02_ctx->page_alloc = ept02_page_alloc[vcpu->idx][vmcs12_info->index];
+	ept02_ctx->page_pool = ept02_page_pool[vcpu->idx][index];
+	ept02_ctx->page_alloc = ept02_page_alloc[vcpu->idx][index];
 	for (i = 0; i < EPT02_PAGE_POOL_SIZE; i++) {
 		ept02_ctx->page_alloc[i] = 0;
 	}
@@ -148,14 +180,65 @@ void xmhf_nested_arch_x86vmx_ept02_init(VCPU * vcpu,
 }
 
 /*
+ * Find ept12 in ept02_cache, return the index.
+ * When cache hit, cache_hit = true.
+ * When cache miss, evict a cache entry and cache_hit = false.
+ */
+static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
+{
+	u32 ans;
+	u32 index;
+	u32 evict_index = VMX_NESTED_MAX_ACTIVE_EPT;
+	/* When updating LRU, do not exceed this amount */
+	u32 max_valid = VMX_NESTED_MAX_ACTIVE_EPT;
+	bool hit = false;
+	for (index = 0; index < VMX_NESTED_MAX_ACTIVE_EPT; index++) {
+		/* Prepare for cold miss */
+		if (ept02_cache[vcpu->id][index].valid == 0) {
+			evict_index = index;
+		}
+		/* Prepare for capacity miss */
+		if (ept02_cache[vcpu->id][index].valid == VMX_NESTED_MAX_ACTIVE_EPT) {
+			evict_index = index;
+		}
+		/* Cache hit */
+		if (ept02_cache[vcpu->id][index].ept12 == ept12) {
+			hit = true;
+			ans = index;
+			max_valid = ept02_cache[vcpu->id][index].valid;
+			break;
+		}
+	}
+	if (!hit) {
+		HALT_ON_ERRORCOND(evict_index < VMX_NESTED_MAX_ACTIVE_EPT);
+		ans = evict_index;
+		ept02_ctx_init(vcpu, ans, &ept02_cache[vcpu->id][ans].ept02_ctx);
+		ept02_cache[vcpu->id][ans].ept12 = ept12;
+	}
+
+	/* Update LRU */
+	for (index = 0; index < VMX_NESTED_MAX_ACTIVE_EPT; index++) {
+		if (ept02_cache[vcpu->id][index].valid &&
+			ept02_cache[vcpu->id][index].valid < max_valid) {
+			ept02_cache[vcpu->id][index].valid++;
+		}
+	}
+	ept02_cache[vcpu->id][ans].valid = 1;
+
+	*cache_hit = hit;
+	return ans;
+}
+
+/*
  * Get pointer to EPT02 for current VMCS12. Will fill EPT02 as EPT violation
  * happens.
  */
-spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu,
-										vmcs12_info_t * vmcs12_info)
+spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
+										u32 *cache_index, bool *cache_hit)
 {
-	spa_t addr = (uintptr_t) vmcs12_info->ept02_ctx.ctx.root_pa;
-	(void)vcpu;
+	u32 index = ept02_cache_get(vcpu, ept12, cache_hit);
+	spa_t addr = (uintptr_t) ept02_cache[vcpu->id][index].ept02_ctx.ctx.root_pa;
+	*cache_index = index;
 	return addr | 0x1e;			// TODO: remove magic number
 }
 
@@ -171,7 +254,8 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu,
  *    for security.
  */
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
-											  vmcs12_info_t * vmcs12_info)
+											  vmcs12_info_t * vmcs12_info,
+											  u32 cache_index)
 {
 	ept12_ctx_t ept12_ctx;
 	u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
@@ -242,8 +326,11 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	}
 
 	/* Put page map entry into EPT02 */
-	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(&vmcs12_info->ept02_ctx.ctx,
-											 &pmeo02, guest2_paddr) == 0);
+	HALT_ON_ERRORCOND(ept02_cache[vcpu->id][cache_index].ept12 ==
+					  vmcs12_info->guest_ept_root);
+	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(
+		&ept02_cache[vcpu->id][cache_index].ept02_ctx.ctx, &pmeo02,
+		guest2_paddr) == 0);
 	printf("CPU(0x%02x): EPT: 0x%08llx 0x%08llx 0x%08llx\n", vcpu->id,
 		   guest2_paddr, guest1_paddr, xmhf_paddr);
 	return 1;
