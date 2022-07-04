@@ -515,8 +515,6 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 		u64 mask = ~(1ULL << (32 + VMX_SECPROCBASED_ENABLE_VPID));
 		/* "VMCS shadowing" not supported */
 		mask &= ~(1ULL << (32 + VMX_SECPROCBASED_VMCS_SHADOWING));
-		/* "Enable EPT" not supported */
-		mask &= ~(1ULL << (32 + VMX_SECPROCBASED_ENABLE_EPT));
 		/* "Unrestricted guest" not supported */
 		mask &= ~(1ULL << (32 + VMX_SECPROCBASED_UNRESTRICTED_GUEST));
 		/* "Sub-page write permissions for EPT" not supported */
@@ -524,6 +522,15 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 			~(1ULL <<
 			  (32 + VMX_SECPROCBASED_SUB_PAGE_WRITE_PERMISSIONS_FOR_EPT));
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] &= mask;
+	}
+	{
+		/* "configure a EPT PDE to map a 2-Mbyte page" not supported */
+		u64 mask = ~(1ULL << 16);
+		/* "configure a EPT PDPTE to map a 1-Gbyte page" not supported */
+		mask &= ~(1ULL << 17);
+		/* "accessed and dirty flags for EPT" not supported */
+		mask &= ~(1ULL << 21);
+		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_EPT_VPID_CAP_MSR] &= mask;
 	}
 	/* Select IA32_VMX_* or IA32_VMX_TRUE_* in guest mode */
 	if (vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 55)) {
