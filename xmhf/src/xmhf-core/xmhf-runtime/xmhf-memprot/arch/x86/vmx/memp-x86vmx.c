@@ -535,15 +535,15 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 
 //flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
-  __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
-          (u64)vcpu->vmcs.control_EPT_pointer);
+  HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_SINGLECONTEXT,
+                                 (u64)vcpu->vmcs.control_EPT_pointer));
 }
 
 //flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu){
-	(void)vcpu;
-  __vmx_invept(VMX_INVEPT_GLOBAL,
-          (u64)0);
+  (void)vcpu;
+  HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_GLOBAL,
+                                 (u64)0));
 }
 
 //set protection for a given physical memory address
