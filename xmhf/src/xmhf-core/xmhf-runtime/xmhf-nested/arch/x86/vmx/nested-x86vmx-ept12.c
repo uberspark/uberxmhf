@@ -83,8 +83,10 @@ typedef struct {
 	u32 valid;
 	/* Guest physical address of EPT12 (4K aligned) */
 	gpa_t ept12;
-	/* Point to EPT02 context */
+	/* EPT02 context (for allocating pages) */
 	ept02_ctx_t ept02_ctx;
+	/* EPT12 context (for accessing guest EPT) */
+	ept12_ctx_t ept12_ctx;
 } ept02_cache_t;
 
 /* For each CPU, information about all EPT12 -> EPT02 it caches */
@@ -179,6 +181,16 @@ static void ept02_ctx_init(VCPU *vcpu, u32 index, ept02_ctx_t *ept02_ctx)
 	__vmx_invept(VMX_INVEPT_SINGLECONTEXT, root_pa);
 }
 
+static void ept12_ctx_init(VCPU *vcpu, ept12_ctx_t *ept12_ctx, gpa_t ept12)
+{
+	ept12_ctx->ctx.ptr2pa = ept12_ptr2pa;
+	ept12_ctx->ctx.pa2ptr = ept12_pa2ptr;
+	ept12_ctx->ctx.gzp = ept12_gzp;
+	ept12_ctx->ctx.root_pa = ept12;
+	ept12_ctx->ctx.t = HPT_TYPE_EPT;
+	guestmem_init(vcpu, &ept12_ctx->ctx01);
+}
+
 /*
  * Find ept12 in ept02_cache, return the index.
  * When cache hit, cache_hit = true.
@@ -213,6 +225,7 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
 		HALT_ON_ERRORCOND(evict_index < VMX_NESTED_MAX_ACTIVE_EPT);
 		ans = evict_index;
 		ept02_ctx_init(vcpu, ans, &ept02_cache[vcpu->id][ans].ept02_ctx);
+		ept12_ctx_init(vcpu, &ept02_cache[vcpu->id][ans].ept12_ctx, ept12);
 		ept02_cache[vcpu->id][ans].ept12 = ept12;
 	}
 
@@ -257,7 +270,8 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info,
 											  u32 cache_index)
 {
-	ept12_ctx_t ept12_ctx;
+	ept02_cache_t *ept02_cache_obj;
+	ept12_ctx_t *ept12_ctx;
 	u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
 	gpa_t guest1_paddr;
 	spa_t xmhf_paddr;
@@ -265,16 +279,13 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	hpt_pmeo_t pmeo01;
 	hpt_pmeo_t pmeo02;
 
-	// TODO: should be able to cache ept12_ctx
-	ept12_ctx.ctx.ptr2pa = ept12_ptr2pa;
-	ept12_ctx.ctx.pa2ptr = ept12_pa2ptr;
-	ept12_ctx.ctx.gzp = ept12_gzp;
-	ept12_ctx.ctx.root_pa = vmcs12_info->guest_ept_root;
-	ept12_ctx.ctx.t = HPT_TYPE_EPT;
-	guestmem_init(vcpu, &ept12_ctx.ctx01);
+	ept02_cache_obj = &ept02_cache[vcpu->id][cache_index];
+	HALT_ON_ERRORCOND(ept02_cache_obj->ept12 ==
+					  vmcs12_info->guest_ept_root);
+	ept12_ctx = &ept02_cache_obj->ept12_ctx;
 
 	/* Get the entry in EPT12 and the L1 paddr that is to be accessed */
-	hptw_get_pmeo(&pmeo12, (hptw_ctx_t *) & ept12_ctx, 1, guest2_paddr);
+	hptw_get_pmeo(&pmeo12, &ept12_ctx->ctx, 1, guest2_paddr);
 	if (!hpt_pmeo_is_page(&pmeo12)) {
 		return 2;
 	}
@@ -283,7 +294,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	guest1_paddr = hpt_pmeo_get_address(&pmeo12);
 
 	/* Get the entry in EPT01 for the L1 paddr */
-	hptw_get_pmeo(&pmeo01, (hptw_ctx_t *) & ept12_ctx.ctx01.host_ctx, 1,
+	hptw_get_pmeo(&pmeo01, & ept12_ctx->ctx01.host_ctx, 1,
 				  guest1_paddr);
 	if (!hpt_pmeo_is_page(&pmeo01)) {
 		return 3;
@@ -326,11 +337,8 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	}
 
 	/* Put page map entry into EPT02 */
-	HALT_ON_ERRORCOND(ept02_cache[vcpu->id][cache_index].ept12 ==
-					  vmcs12_info->guest_ept_root);
-	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(
-		&ept02_cache[vcpu->id][cache_index].ept02_ctx.ctx, &pmeo02,
-		guest2_paddr) == 0);
+	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(&ept02_cache_obj->ept02_ctx.ctx,
+											 &pmeo02, guest2_paddr) == 0);
 	printf("CPU(0x%02x): EPT: 0x%08llx 0x%08llx 0x%08llx\n", vcpu->id,
 		   guest2_paddr, guest1_paddr, xmhf_paddr);
 	return 1;
