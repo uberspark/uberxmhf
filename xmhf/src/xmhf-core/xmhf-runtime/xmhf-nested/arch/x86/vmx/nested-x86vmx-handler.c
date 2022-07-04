@@ -571,6 +571,17 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
 			xmhf_smpguest_arch_x86vmx_unblock_nmi();
 			/*
+			 * Make sure that there is no interruption. (Not implemented if
+			 * there is one. In this case re-injecting the event is likely the
+			 * correct thing to do.)
+			 */
+			{
+				u32 idt_info;
+				u16 encoding = VMCSENC_info_IDT_vectoring_information;
+				idt_info = __vmx_vmread32(encoding);
+				HALT_ON_ERRORCOND((idt_info & 0x80000000U) == 0);
+			}
+			/*
 			 * This is the rare case where we have L2 -> L0 -> L2. Usually it
 			 * is L2 -> L0 -> L1.
 			 */
@@ -649,6 +660,11 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			HALT_ON_ERRORCOND(0 && "Unknown status");
 			break;
 		}
+	}
+
+	// TODO: handle EPT misconfiguration
+	if (vmexit_reason == VMX_VMEXIT_EPT_MISCONFIGURATION) {
+		HALT_ON_ERRORCOND(0 && "EPT misconfiguration not implemented");
 	}
 
 	/* Wake the guest hypervisor up for the VMEXIT */
