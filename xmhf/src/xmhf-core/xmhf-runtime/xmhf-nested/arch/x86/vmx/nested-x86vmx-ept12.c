@@ -163,7 +163,7 @@ static void *ept12_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
  * Initialize the ept02_ctx_t structure in pointed to by ept02_ctx.
  * The current CPU is vcpu. The index of ept02_ctx in the CPU is index.
  */
-static void ept02_ctx_init(VCPU *vcpu, u32 index, ept02_ctx_t *ept02_ctx)
+static void ept02_ctx_init(VCPU * vcpu, u32 index, ept02_ctx_t * ept02_ctx)
 {
 	u32 i;
 	spa_t root_pa;
@@ -181,7 +181,7 @@ static void ept02_ctx_init(VCPU *vcpu, u32 index, ept02_ctx_t *ept02_ctx)
 	__vmx_invept(VMX_INVEPT_SINGLECONTEXT, root_pa);
 }
 
-static void ept12_ctx_init(VCPU *vcpu, ept12_ctx_t *ept12_ctx, gpa_t ept12)
+static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx, gpa_t ept12)
 {
 	ept12_ctx->ctx.ptr2pa = ept12_ptr2pa;
 	ept12_ctx->ctx.pa2ptr = ept12_pa2ptr;
@@ -247,7 +247,7 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
  * happens.
  */
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
-										u32 *cache_index, bool *cache_hit)
+										u32 * cache_index, bool *cache_hit)
 {
 	u32 index = ept02_cache_get(vcpu, ept12, cache_hit);
 	spa_t addr = (uintptr_t) ept02_cache[vcpu->id][index].ept02_ctx.ctx.root_pa;
@@ -280,8 +280,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	hpt_pmeo_t pmeo02;
 
 	ept02_cache_obj = &ept02_cache[vcpu->id][cache_index];
-	HALT_ON_ERRORCOND(ept02_cache_obj->ept12 ==
-					  vmcs12_info->guest_ept_root);
+	HALT_ON_ERRORCOND(ept02_cache_obj->ept12 == vmcs12_info->guest_ept_root);
 	ept12_ctx = &ept02_cache_obj->ept12_ctx;
 
 	/* Get the entry in EPT12 and the L1 paddr that is to be accessed */
@@ -294,8 +293,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	guest1_paddr = hpt_pmeo_get_address(&pmeo12);
 
 	/* Get the entry in EPT01 for the L1 paddr */
-	hptw_get_pmeo(&pmeo01, & ept12_ctx->ctx01.host_ctx, 1,
-				  guest1_paddr);
+	hptw_get_pmeo(&pmeo01, &ept12_ctx->ctx01.host_ctx, 1, guest1_paddr);
 	if (!hpt_pmeo_is_page(&pmeo01)) {
 		return 3;
 	}

@@ -54,7 +54,7 @@
 #include "nested-x86vmx-vmcs12.h"
 
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
-										u32 *cache_index, bool *cache_hit);
+										u32 * cache_index, bool *cache_hit);
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info,
 											  u32 cache_index);
