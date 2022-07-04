@@ -597,7 +597,24 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		}
 		switch (status) {
 		case 1:
-			/* EPT handled by L0, continue running L2 */
+			/*
+			 * EPT handled by L0, continue running L2.
+			 * First re-inject interruption to make sure interrupts etc. are
+			 * not lost.
+			 */
+			{
+				u16 encoding;
+				u32 idt_info, idt_errcode;
+				encoding = VMCSENC_info_IDT_vectoring_information;
+				idt_info = __vmx_vmread32(encoding);
+				encoding = VMCSENC_control_VM_entry_interruption_information;
+				__vmx_vmwrite32(encoding, idt_info);
+				encoding = VMCSENC_info_IDT_vectoring_error_code;
+				idt_errcode = __vmx_vmread32(encoding);
+				encoding = VMCSENC_control_VM_entry_exception_errorcode;
+				__vmx_vmwrite32(encoding, idt_errcode);
+			}
+			/* Call VMRESUME */
 			__vmx_vmentry_vmresume(r);
 			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 			break;
