@@ -178,7 +178,8 @@ static void ept02_ctx_init(VCPU * vcpu, u32 index, ept02_ctx_t * ept02_ctx)
 	root_pa = hva2spa(ept02_gzp(&ept02_ctx->ctx, PAGE_SIZE_4K, PAGE_SIZE_4K));
 	ept02_ctx->ctx.root_pa = root_pa;
 	ept02_ctx->ctx.t = HPT_TYPE_EPT;
-	__vmx_invept(VMX_INVEPT_SINGLECONTEXT, root_pa);
+	HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_SINGLECONTEXT,
+								   root_pa | 0x1eULL));
 }
 
 static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx, gpa_t ept12)
