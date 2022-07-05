@@ -149,7 +149,9 @@ void udelay(u32 usecs){
     outb(val , 0x42);
 
     //wait for countdown
-    while(!(inb(0x61) & 0x20));
+    while (!(inb(0x61) & 0x20)) {
+        asm volatile ("pause");     /* Save energy when waiting */
+    }
 
     //disable ch-2 counter
     val = inb(0x61);
@@ -176,11 +178,8 @@ void send_init_ipi_to_all_APs(void) {
     *icr = 0x000c4500UL;
     udelay(10000);
     //wait for command completion
-    {
-        u32 val;
-        do{
-            val = *icr;
-        }while(--timeout > 0 && (val & 0x1000) );
+    while (--timeout > 0 && ((*icr) & 0x00001000U)) {
+        asm volatile ("pause");     /* Save energy when waiting */
     }
     if(timeout == 0) {
         printf("\nERROR: send_init_ipi_to_all_APs() TIMEOUT!\n");
@@ -761,33 +760,27 @@ void wakeupAPs(void){
 
     //our test code is at 1000:0000, we need to send 10 as vector
     //send INIT
-    printf("Sending INIT IPI to all APs...\n");
+    printf("Sending INIT IPI to all APs...");
     *icr = 0x000c4500UL;
-    udelay(10000);
     //wait for command completion
-    {
-        u32 val;
-        do{
-            val = *icr;
-        }while( (val & 0x1000) );
+    while ((*icr) & 0x1000U) {
+        asm volatile ("pause");     /* Save energy when waiting */
     }
-    printf("Done.");
+    udelay(10000);
+    printf("Done.\n");
 
     //send SIPI (twice as per the MP protocol)
     {
         int i;
         for(i=0; i < 2; i++){
-            printf("Sending SIPI-%u...\n", i);
+            printf("Sending SIPI-%u...", i);
             *icr = 0x000c4610UL;
-            udelay(200);
             //wait for command completion
-            {
-                u32 val;
-                do{
-                    val = *icr;
-                }while( (val & 0x1000) );
+            while ((*icr) & 0x1000U) {
+                asm volatile ("pause");     /* Save energy when waiting */
             }
-            printf("Done.");
+            udelay(200);
+            printf("Done.\n");
         }
     }
 
@@ -1066,7 +1059,9 @@ void mp_cstartup (VCPU *vcpu){
 
         //wait for cpus_active to become midtable_numentries -1 to indicate
         //that all APs have been successfully started
-        while(cpus_active < midtable_numentries);
+        while (cpus_active < midtable_numentries) {
+            asm volatile ("pause");     /* Save energy when waiting */
+        }
 
 
         //put all APs in INIT state
