@@ -50,23 +50,33 @@
 //---spinlock/unlock------------------------------------------------------------
 .section .text
 
-  .global spin_lock
-  spin_lock:
-    pushl %esi
-    movl 0x8(%esp), %esi
-    spin:	btl	$0, (%esi)		//mutex is available?
-      	jnc	spin			      //wait till it is
+// Implement test and test-and-set lock
+.global spin_lock
+spin_lock:
+    pushl   %esi
+    movl    0x8(%esp), %esi
 
-      	lock				        //lock the bus (exclusive access)
-        btrl	$0, (%esi)		    //and try to grab the mutex
-        jnc	spin			      //spin until successful --> spinlock :p
-    popl %esi
+spin:
+    btl     $0, (%esi)      //mutex is available?
+    jnc     spin_pause      //wait till it is
+
+    lock                    //lock the bus (exclusive access)
+    btrl    $0, (%esi)      //and try to grab the mutex
+    jnc     spin_pause      //spin until successful --> spinlock :p
+
+    popl    %esi
     ret
 
-  .global spin_unlock
-  spin_unlock:
-      pushl %esi
-      movl 0x8(%esp), %esi
-      btsl	$0, (%esi)		       //release the spinlock
-      popl %esi
-      ret
+spin_pause:
+    pause                   //pause improves performance in spin loop
+    jmp     spin
+
+
+.global spin_unlock
+spin_unlock:
+    pushl   %esi
+    movl    0x8(%esp), %esi
+    btsl    $0, (%esi)      //release the spinlock
+    popl    %esi
+    ret
+

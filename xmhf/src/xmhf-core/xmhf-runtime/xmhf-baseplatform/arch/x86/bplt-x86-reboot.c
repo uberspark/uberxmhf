@@ -54,12 +54,12 @@
 
 //generic x86 platform reboot
 void xmhf_baseplatform_arch_x86_reboot(void){
-	unsigned char flush = 0x02;
 
 #ifndef __XMHF_VERIFICATION__
 
-	while ((flush & 0x02) != 0)
-		flush = inb(0x64);
+	while ((inb(0x64) & 0x02) != 0) {
+		asm volatile ("pause");		/* Save energy when waiting */
+	}
 	outb(0xFE, 0x64);
 
 	//never get here

@@ -472,7 +472,6 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
     volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
     u32 icr_high_value= 0xFFUL << 24;
     u32 prev_icr_high_value;
-    u32 delivered;
 
     prev_icr_high_value = *icr_high;
 
@@ -482,11 +481,9 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
     //check if IPI has been delivered successfully
     //printf("%s: CPU(0x%02x): firing NMIs...\n", __FUNCTION__, vcpu->id);
 #ifndef __XMHF_VERIFICATION__
-    do {
-      // TODO: should this be icr_low?
-      delivered = *icr_high;
-      delivered &= 0x00001000;
-    } while (delivered);
+    while ((*icr_low) & 0x00001000U) {
+      asm volatile ("pause");   /* Save energy when waiting */
+    }
 #else
     //TODO: plug in h/w model of LAPIC, for now assume hardware just
     //works
@@ -559,7 +556,9 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
         //wait for all the remaining CPUs to quiesce
         //printf("CPU(0x%02x): waiting for other CPUs to respond...\n", vcpu->id);
-        while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
+        while (g_vmx_quiesce_counter < (g_midtable_numentries-1)) {
+            asm volatile ("pause");     /* Save energy when waiting */
+        }
         //printf("CPU(0x%02x): all CPUs quiesced successfully.\n", vcpu->id);
 
         /*
@@ -598,7 +597,9 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         //printf("CPU(0x%02x): waiting for other CPUs to resume...\n", vcpu->id);
         g_vmx_quiesce_resume_signal=1;
 
-        while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
+        while (g_vmx_quiesce_resume_counter < (g_midtable_numentries-1)) {
+            asm volatile ("pause");     /* Save energy when waiting */
+        }
 
         vcpu->quiesced=0;
 
@@ -651,7 +652,9 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 
 		//wait until quiesceing is finished
 		//printf("CPU(0x%02x): Quiesced\n", vcpu->id);
-		while(!g_vmx_quiesce_resume_signal);
+		while (!g_vmx_quiesce_resume_signal) {
+			asm volatile ("pause");		/* Save energy when waiting */
+		}
 		//printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
 
 		// Flush EPT TLB, if instructed so
