@@ -91,12 +91,9 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
   //wait for command completion
   #ifndef __XMHF_VERIFICATION__
 	//TODO: plug in LAPIC h/w model
-	  {
-	    u32 val;
-	    do{
-	      val = *icr;
-	    }while( (val & 0x1000) );
-	  }
+	while ((*icr) & 0x1000U) {
+	  asm volatile ("pause");     /* Save energy when waiting */
+	}
   #endif
 
   //send SIPI (twice as per the MP protocol)
@@ -111,11 +108,8 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
         //wait for command completion
         #ifndef __XMHF_VERIFICATION__
 		//TODO: plug in LAPIC h/w model
-		{
-		  u32 val;
-		  do{
-		    val = *icr;
-		  }while( (val & 0x1000) );
+		while ((*icr) & 0x1000U) {
+		  asm volatile ("pause");     /* Save energy when waiting */
 		}
         #endif
       }
@@ -178,12 +172,12 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
-	  //step:1 rally all APs up, make sure all of them started, this is
+  //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
   if(xmhf_baseplatform_arch_x86_isbsp()){
-    vcpu->isbsp = 1;	//this core is a BSP
+    vcpu->isbsp = 1;    //this core is a BSP
 
-	printf("BSP rallying APs...\n");
+    printf("BSP rallying APs...\n");
 #ifdef __AMD64__
     printf("BSP(0x%02x): My RSP is 0x%016lx\n", vcpu->id, vcpu->rsp);
 #elif defined(__I386__)
@@ -199,7 +193,9 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 
     //wait for g_cpus_active to become g_midtable_numentries -1 to indicate
     //that all APs have been successfully started
-    while(g_cpus_active < g_midtable_numentries);
+    while (g_cpus_active < g_midtable_numentries) {
+        asm volatile ("pause");     /* Save energy when waiting */
+    }
 
     printf("APs all awake...Setting them free...\n");
     spin_lock(&g_lock_ap_go_signal);
@@ -211,13 +207,16 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     //we are an AP, so we need to simply update the AP startup counter
     //and wait until we are told to proceed
     //increment active CPUs
-	vcpu->isbsp=0;	//this core is a AP
+    vcpu->isbsp=0;  //this core is a AP
 
     spin_lock(&g_lock_cpus_active);
     g_cpus_active++;
     spin_unlock(&g_lock_cpus_active);
 
-    while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
+    //Just wait for the BSP to tell us all is well.
+    while (!g_ap_go_signal) {
+        asm volatile ("pause");     /* Save energy when waiting */
+    }
 
 #ifdef __AMD64__
     printf("AP(0x%02x): My RSP is 0x%016lx, proceeding...\n", vcpu->id, vcpu->rsp);
