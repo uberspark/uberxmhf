@@ -50,20 +50,26 @@
 //---spinlock/unlock------------------------------------------------------------
 .section .text
 
-/* the lock size is 32-bits (u32, same as x86) */
+/* the lock size is 32-bits (u32, same as i386) */
 
-  .global spin_lock
-  spin_lock:
-    btl $0, (%rdi)
-    jnc spin_lock
+/* Implement test and test-and-set lock */
+.global spin_lock
+spin_lock:
+    btl     $0, (%rdi)
+    jnc     spin_pause
 
     lock
-    btrl $0, (%rdi)
-    jnc spin_lock
+    btrl    $0, (%rdi)
+    jnc     spin_pause
 
     ret
 
-  .global spin_unlock
-  spin_unlock:
+spin_pause:
+    pause
+    jmp     spin_lock
+
+
+.global spin_unlock
+spin_unlock:
     btsl $0, (%rdi)
     ret
