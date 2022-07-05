@@ -214,4 +214,3 @@
 			_line->valid = 0; \
 		} \
 	} while (0)
-

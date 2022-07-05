@@ -97,9 +97,9 @@ void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12);
 void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu);
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 										bool *cache_hit,
-										ept02_cache_line_t **cache_line);
+										ept02_cache_line_t ** cache_line);
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info,
-											  ept02_cache_line_t *cache_line);
+											  ept02_cache_line_t * cache_line);
 
 #endif							/* _NESTED_X86VMX_EPT12_H_ */

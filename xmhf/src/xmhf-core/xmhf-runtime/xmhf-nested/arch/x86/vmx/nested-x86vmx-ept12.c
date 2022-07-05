@@ -155,7 +155,8 @@ static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx)
  * Most fields in ept02_ctx_t do not change, so this function only updates the
  * fields that change. This function also flushes L0's EPT TLB.
  */
-static void ept02_ctx_reset(ept02_ctx_t * ept02_ctx) {
+static void ept02_ctx_reset(ept02_ctx_t * ept02_ctx)
+{
 	u32 i;
 	spa_t root_pa;
 	for (i = 0; i < EPT02_PAGE_POOL_SIZE; i++) {
@@ -259,14 +260,14 @@ void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu)
  */
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 										bool *cache_hit,
-										ept02_cache_line_t **cache_line)
+										ept02_cache_line_t ** cache_line)
 {
 	bool hit;
 	spa_t addr;
 	ept02_cache_index_t index;
 	ept02_cache_line_t *line = LRU_SET_FIND_EVICT(&ept02_cache[vcpu->id],
 												  ept12, index, hit);
-	(void) index;
+	(void)index;
 	if (!hit) {
 		ept02_ctx_reset(&line->value.ept02_ctx);
 		ept12_ctx_update(vcpu, &line->value.ept12_ctx, ept12);
@@ -290,7 +291,7 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
  */
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info,
-											  ept02_cache_line_t *cache_line)
+											  ept02_cache_line_t * cache_line)
 {
 	ept12_ctx_t *ept12_ctx;
 	u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
