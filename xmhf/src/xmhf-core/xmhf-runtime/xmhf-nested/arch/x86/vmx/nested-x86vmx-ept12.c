@@ -260,6 +260,47 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool ro, bool *cache_hit)
 	return ans;
 }
 
+/*
+ * Return whether bits 0 - 11 of eptp12 are legal for VMENTRY
+ * When return true, ept_pml4t is the address of PML4T (page aligned)
+ */
+bool xmhf_nested_arch_x86vmx_check_ept_lower_bits(u64 eptp12, gpa_t * ept_pml4t)
+{
+	struct {
+		union {
+			struct {
+				u8 mem_type:3;
+				u8 walk_length:3;
+				u8 access_dirty:1;
+				u8 access_right_sup_shadow_stack:1;
+				u8 reserved_11_8:4;
+				u64 ept_pml4t:52;
+			};
+			u64 raw;
+		};
+	} guest_eptp;
+	guest_eptp.raw = eptp12;
+	if (guest_eptp.mem_type != HPT_PMT_WB) {
+		return false;
+	}
+	if (guest_eptp.walk_length != 3) {
+		return false;
+	}
+	/* Setting this bit to 1 is not supported yet. */
+	if (guest_eptp.access_dirty) {
+		return false;
+	}
+	/* Setting this bit to 1 is not supported yet. */
+	if (guest_eptp.access_right_sup_shadow_stack) {
+		return false;
+	}
+	if (guest_eptp.reserved_11_8) {
+		return false;
+	}
+	*ept_pml4t = guest_eptp.ept_pml4t << PAGE_SHIFT_4K;
+	return true;
+}
+
 /* Invalidate ept12 */
 void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12)
 {

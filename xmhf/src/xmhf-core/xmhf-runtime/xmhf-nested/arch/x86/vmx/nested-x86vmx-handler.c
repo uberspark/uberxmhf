@@ -747,23 +747,19 @@ void xmhf_nested_arch_x86vmx_handle_invept(VCPU * vcpu, struct regs *r)
 		}
 		switch (type) {
 		case VMX_INVEPT_SINGLECONTEXT:
-			/*
-			 * Check whether EPTP will result in VMENTRY failure
-			 * TODO: the check is not comprehensive.
-			 */
-			if (((descriptor.eptp & 0x7) != 0 &&
-				 (descriptor.eptp & 0x7) != 6) ||
-				((descriptor.eptp >> 3) & 0x7) != 3 ||
-				(descriptor.eptp & 0xfc0U) != 0) {
-				printf("CPU(0x%02x): warning: INVEPT rejects EPTP 0x%016llx\n",
-					   vcpu->id, descriptor.eptp);
-				_vmx_nested_vm_fail
-					(vcpu, VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID);
-			} else {
-				gpa_t eptp = PA_PAGE_ALIGN_4K(descriptor.eptp);
-				printf("CPU(0x%02x): info: INVEPT 1 from guest hv\n", vcpu->id);
-				xmhf_nested_arch_x86vmx_invept_single_context(vcpu, eptp);
-				_vmx_nested_vm_succeed(vcpu);
+			{
+				gpa_t ept12;
+				/* Check whether EPTP will result in VMENTRY failure */
+				if (!xmhf_nested_arch_x86vmx_check_ept_lower_bits
+					(descriptor.eptp, &ept12)) {
+					u32 errno = VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID;
+					printf("CPU(0x%02x): INVEPT rejects EPTP 0x%016llx\n",
+						   vcpu->id, descriptor.eptp);
+					_vmx_nested_vm_fail(vcpu, errno);
+				} else {
+					xmhf_nested_arch_x86vmx_invept_single_context(vcpu, ept12);
+					_vmx_nested_vm_succeed(vcpu);
+				}
 			}
 			break;
 		case VMX_INVEPT_GLOBAL:

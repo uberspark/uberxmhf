@@ -53,6 +53,8 @@
 
 #include "nested-x86vmx-vmcs12.h"
 
+bool xmhf_nested_arch_x86vmx_check_ept_lower_bits(u64 eptp12,
+												  gpa_t * ept_pml4t);
 void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12);
 void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu);
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
