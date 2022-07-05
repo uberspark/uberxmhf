@@ -652,7 +652,7 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 
 		//wait until quiesceing is finished
 		//printf("CPU(0x%02x): Quiesced\n", vcpu->id);
-		while (g_vmx_quiesce_resume_signal) {
+		while (!g_vmx_quiesce_resume_signal) {
 			asm volatile ("pause");		/* Save energy when waiting */
 		}
 		//printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
