@@ -478,6 +478,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 			bool cache_hit;
 			guest_eptp.raw = vmcs12->control_EPT_pointer;
 			vmcs12_info->guest_ept_enable = 1;
+			// TODO: extract this check as a function
 			HALT_ON_ERRORCOND(guest_eptp.mem_type == HPT_PMT_WB);
 			HALT_ON_ERRORCOND(guest_eptp.walk_length == 3);
 			/* Setting this bit to 1 is not supported yet. */

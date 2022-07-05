@@ -194,13 +194,16 @@ static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx, gpa_t ept12)
 
 /*
  * Find ept12 in ept02_cache, return the index.
+ * When ro = false, updates LRU order and evicts when cache is full.
+ * When ro = true, do not update LRU order. When cache is full return undefined.
  * When cache hit, cache_hit = true.
  * When cache miss, evict a cache entry and cache_hit = false.
  */
-static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
+static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool ro, bool *cache_hit)
 {
-	u32 ans;
+	u32 ans = VMX_NESTED_MAX_ACTIVE_EPT;
 	u32 index;
+	u32 available_index = VMX_NESTED_MAX_ACTIVE_EPT;
 	u32 evict_index = VMX_NESTED_MAX_ACTIVE_EPT;
 	/* When updating LRU, do not exceed this amount */
 	u32 max_valid = VMX_NESTED_MAX_ACTIVE_EPT;
@@ -208,11 +211,13 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
 	for (index = 0; index < VMX_NESTED_MAX_ACTIVE_EPT; index++) {
 		/* Prepare for cold miss */
 		if (ept02_cache[vcpu->id][index].valid == 0) {
-			evict_index = index;
+			available_index = index;
+			continue;
 		}
 		/* Prepare for capacity miss */
 		if (ept02_cache[vcpu->id][index].valid == VMX_NESTED_MAX_ACTIVE_EPT) {
 			evict_index = index;
+			continue;
 		}
 		/* Cache hit */
 		if (ept02_cache[vcpu->id][index].ept12 == ept12) {
@@ -222,11 +227,22 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
 			break;
 		}
 	}
+
+	*cache_hit = hit;
+
+	if (ro) {
+		return ans;
+	}
+
 	if (!hit) {
 		printf("CPU(0x%02x): EPT cache miss for EP4TA 0x%016llx\n", vcpu->id,
 			   ept12);
-		HALT_ON_ERRORCOND(evict_index < VMX_NESTED_MAX_ACTIVE_EPT);
-		ans = evict_index;
+		if (available_index < VMX_NESTED_MAX_ACTIVE_EPT) {
+			ans = available_index;
+		} else {
+			HALT_ON_ERRORCOND(evict_index < VMX_NESTED_MAX_ACTIVE_EPT);
+			ans = evict_index;
+		}
 		ept02_ctx_init(vcpu, ans, &ept02_cache[vcpu->id][ans].ept02_ctx);
 		ept12_ctx_init(vcpu, &ept02_cache[vcpu->id][ans].ept12_ctx, ept12);
 		ept02_cache[vcpu->id][ans].ept12 = ept12;
@@ -241,8 +257,38 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
 	}
 	ept02_cache[vcpu->id][ans].valid = 1;
 
-	*cache_hit = hit;
 	return ans;
+}
+
+/* Invalidate ept12 */
+void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12)
+{
+	bool cache_hit;
+	u32 index = ept02_cache_get(vcpu, ept12, true, &cache_hit);
+	if (cache_hit) {
+		HALT_ON_ERRORCOND(ept02_cache[vcpu->id][index].ept12 == ept12);
+		HALT_ON_ERRORCOND(ept02_cache[vcpu->id][index].valid);
+		ept02_cache[vcpu->id][index].valid = 0;
+		/*
+		 * INVEPT will be executed in ept02_ctx_init() when this EPT02 is used
+		 * the next time.
+		 */
+	}
+}
+
+/* Invalidate all EPTs */
+void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu)
+{
+	u32 index;
+	for (index = 0; index < VMX_NESTED_MAX_ACTIVE_EPT; index++) {
+		if (ept02_cache[vcpu->id][index].valid) {
+			ept02_cache[vcpu->id][index].valid = 0;
+			/*
+			 * INVEPT will be executed in ept02_ctx_init() when this EPT02 is
+			 * used the next time.
+			 */
+		}
+	}
 }
 
 /*
@@ -252,7 +298,7 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool *cache_hit)
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 										u32 * cache_index, bool *cache_hit)
 {
-	u32 index = ept02_cache_get(vcpu, ept12, cache_hit);
+	u32 index = ept02_cache_get(vcpu, ept12, false, cache_hit);
 	spa_t addr = (uintptr_t) ept02_cache[vcpu->id][index].ept02_ctx.ctx.root_pa;
 	*cache_index = index;
 	return addr | 0x1e;			// TODO: remove magic number

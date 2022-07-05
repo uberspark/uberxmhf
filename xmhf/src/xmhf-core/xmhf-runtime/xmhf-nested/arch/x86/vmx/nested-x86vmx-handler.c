@@ -171,7 +171,7 @@ static gva_t _vmx_decode_mem_operand(VCPU * vcpu, struct regs *r)
  * ppdescriptor.
  */
 static void _vmx_decode_r_m128(VCPU * vcpu, struct regs *r, ulong_t * ptype,
-							   gva_t *ppdescriptor)
+							   gva_t * ppdescriptor)
 {
 	union _vmx_decode_vm_inst_info inst_info;
 	size_t size = (VCPU_g64(vcpu) ? sizeof(u64) : sizeof(u32));
@@ -731,14 +731,44 @@ void xmhf_nested_arch_x86vmx_handle_invept(VCPU * vcpu, struct regs *r)
 	} else {
 		ulong_t type;
 		gva_t pdescriptor;
+		struct {
+			u64 eptp;
+			u64 reserved;
+		} descriptor;
+		guestmem_hptw_ctx_pair_t ctx_pair;
 		_vmx_decode_r_m128(vcpu, r, &type, &pdescriptor);
+		guestmem_init(vcpu, &ctx_pair);
+		guestmem_copy_gv2h(&ctx_pair, 0, &descriptor, pdescriptor,
+						   sizeof(descriptor));
+		if (descriptor.reserved) {
+			/* SDM does not say should fail, so just print a warning */
+			printf("CPU(0x%02x): warning: INVEPT reserved 0x%016llx != 0\n",
+				   vcpu->id, descriptor.reserved);
+		}
 		switch (type) {
 		case VMX_INVEPT_SINGLECONTEXT:
-			(void) pdescriptor;
-			HALT_ON_ERRORCOND(0 && "INVEPT 1 not implemented");
+			/*
+			 * Check whether EPTP will result in VMENTRY failure
+			 * TODO: the check is not comprehensive.
+			 */
+			if (((descriptor.eptp & 0x7) != 0 &&
+				 (descriptor.eptp & 0x7) != 6) ||
+				((descriptor.eptp >> 3) & 0x7) != 3 ||
+				(descriptor.eptp & 0xfc0U) != 0) {
+				printf("CPU(0x%02x): warning: INVEPT rejects EPTP 0x%016llx\n",
+					   vcpu->id, descriptor.eptp);
+				_vmx_nested_vm_fail
+					(vcpu, VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID);
+			} else {
+				gpa_t eptp = PA_PAGE_ALIGN_4K(descriptor.eptp);
+				printf("CPU(0x%02x): info: INVEPT 1 from guest hv\n", vcpu->id);
+				xmhf_nested_arch_x86vmx_invept_single_context(vcpu, eptp);
+				_vmx_nested_vm_succeed(vcpu);
+			}
 			break;
 		case VMX_INVEPT_GLOBAL:
-			HALT_ON_ERRORCOND(0 && "INVEPT 2 not implemented");
+			xmhf_nested_arch_x86vmx_invept_global(vcpu);
+			_vmx_nested_vm_succeed(vcpu);
 			break;
 		default:
 			_vmx_nested_vm_fail(vcpu,
@@ -769,17 +799,18 @@ void xmhf_nested_arch_x86vmx_handle_invvpid(VCPU * vcpu, struct regs *r)
 		_vmx_decode_r_m128(vcpu, r, &type, &pdescriptor);
 		switch (type) {
 		case VMX_INVVPID_INDIVIDUALADDRESS:
-			(void) pdescriptor;
+			(void)pdescriptor;
 			HALT_ON_ERRORCOND(0 && "INVVPID 0 not implemented");
 			break;
 		case VMX_INVVPID_SINGLECONTEXT:
-			(void) pdescriptor;
+			(void)pdescriptor;
 			HALT_ON_ERRORCOND(0 && "INVVPID 1 not implemented");
 			break;
 		case VMX_INVVPID_ALLCONTEXTS:
 			HALT_ON_ERRORCOND(0 && "INVVPID 2 not implemented");
 			break;
 		case VMX_INVVPID_SINGLECONTEXTGLOBAL:
+			(void)pdescriptor;
 			HALT_ON_ERRORCOND(0 && "INVVPID 3 not implemented");
 			break;
 		default:
