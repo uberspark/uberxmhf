@@ -691,6 +691,20 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	__vmx_vmentry_vmresume(r);
 }
 
+void xmhf_nested_arch_x86vmx_handle_invept(VCPU * vcpu, struct regs *r)
+{
+	(void)vcpu;
+	(void)r;
+	HALT_ON_ERRORCOND(0 && "INVEPT handler not implemented yet");
+}
+
+void xmhf_nested_arch_x86vmx_handle_invvpid(VCPU * vcpu, struct regs *r)
+{
+	(void)vcpu;
+	(void)r;
+	HALT_ON_ERRORCOND(0 && "INVVPID handler not implemented yet");
+}
+
 void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 {
 	if (_vmx_nested_check_ud(vcpu, 0)) {
