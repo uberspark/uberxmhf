@@ -428,8 +428,16 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		u16 control_vpid = vmcs12->control_vpid;
 		// Note: VIRTUAL PROCESSOR IDENTIFIERS (VPIDS) not supported yet
 		// Need to multiplex vmcs12->control_vpid
+		HALT_ON_ERRORCOND(0 && "VPID not implemented");
 		control_vpid = 0;
 		__vmx_vmwrite16(VMCSENC_control_vpid, control_vpid);
+	} else {
+		/*
+		 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result in
+		 * flushing linear and combination TLB. We simulate this effect
+		 * here.
+		 */
+		HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
 	}
 
 	/* 16-Bit Guest-State Fields */
@@ -799,8 +807,16 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	if (_vmx_hasctl_enable_vpid(&ctls)) {
 		// Note: VIRTUAL PROCESSOR IDENTIFIERS (VPIDS) not supported yet
 		// Need to multiplex vmcs12->control_vpid
+		HALT_ON_ERRORCOND(0 && "VPID not implemented");
 		HALT_ON_ERRORCOND(__vmx_vmread16(VMCSENC_control_vpid) == 0);
 		// vmcs12->control_vpid = __vmx_vmread16(VMCSENC_control_vpid);
+	} else {
+		/*
+		 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result in
+		 * flushing linear and combination TLB. We simulate this effect
+		 * here.
+		 */
+		HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
 	}
 
 	/* 16-Bit Guest-State Fields */
