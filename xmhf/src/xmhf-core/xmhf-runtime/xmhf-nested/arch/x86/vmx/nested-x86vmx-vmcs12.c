@@ -470,15 +470,15 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 			/* Construct shadow EPT */
 			u64 eptp12 = vmcs12->control_EPT_pointer;
 			gpa_t ept12;
-			u32 cache_index;
+			ept02_cache_line_t *cache_line;
 			bool cache_hit;
 			vmcs12_info->guest_ept_enable = 1;
 			if (!xmhf_nested_arch_x86vmx_check_ept_lower_bits(eptp12, &ept12)) {
 				return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
 			}
-			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_index,
-													  &cache_hit);
-			vmcs12_info->guest_ept_cache_index = cache_index;
+			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_hit,
+													  &cache_line);
+			vmcs12_info->guest_ept_cache_line = cache_line;
 			vmcs12_info->guest_ept_root = ept12;
 		} else {
 			/* Guest does not use EPT, just use XMHF's EPT */
@@ -856,10 +856,10 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
 			gpa_t ept12 = vmcs12_info->guest_ept_root;
-			u32 cache_index;
+			ept02_cache_line_t *cache_line;
 			bool cache_hit;
-			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_index,
-													  &cache_hit);
+			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_hit,
+													  &cache_line);
 			HALT_ON_ERRORCOND(cache_hit);
 		} else {
 			ept02 = vcpu->vmcs.control_EPT_pointer;

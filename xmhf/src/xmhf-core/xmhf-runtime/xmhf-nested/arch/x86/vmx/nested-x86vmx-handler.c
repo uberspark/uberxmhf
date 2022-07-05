@@ -633,10 +633,10 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) {
 		int status = 3;
 		if (vmcs12_info->guest_ept_enable) {
-			u32 cache_index = vmcs12_info->guest_ept_cache_index;
+			ept02_cache_line_t *cache_line = vmcs12_info->guest_ept_cache_line;
 			status =
 				xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, vmcs12_info,
-														  cache_index);
+														  cache_line);
 		}
 		switch (status) {
 		case 1:

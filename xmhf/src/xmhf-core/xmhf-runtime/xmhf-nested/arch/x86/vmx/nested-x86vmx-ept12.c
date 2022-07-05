@@ -50,30 +50,10 @@
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
 
-/* Maximum number of active EPTs per CPU */
-#define VMX_NESTED_MAX_ACTIVE_EPT 4
-
 /* Number of pages in page_pool in ept02_ctx_t */
 #define EPT02_PAGE_POOL_SIZE 128
 
-/* Format of EPT12 context information */
-typedef struct {
-	/* Context of EPT12 */
-	hptw_ctx_t ctx;
-	/* Context of EPT01 */
-	guestmem_hptw_ctx_pair_t ctx01;
-} ept12_ctx_t;
-
-/* Format of EPT02 context information */
-typedef struct {
-	/* Context */
-	hptw_ctx_t ctx;
-	/* List of pages to be allocated by ctx, limit = EPT02_PAGE_POOL_SIZE */
-	 u8(*page_pool)[PAGE_SIZE_4K];
-	/* Whether the corresponding page in page_pool is allocated */
-	u8 *page_alloc;
-} ept02_ctx_t;
-
+#if 0	// TODO
 /* Track list of EPT12's */
 typedef struct {
 	/*
@@ -88,9 +68,10 @@ typedef struct {
 	/* EPT12 context (for accessing guest EPT) */
 	ept12_ctx_t ept12_ctx;
 } ept02_cache_t;
+#endif
 
 /* For each CPU, information about all EPT12 -> EPT02 it caches */
-static ept02_cache_t ept02_cache[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT];
+static ept02_cache_set_t ept02_cache[MAX_VCPU_ENTRIES];
 
 /* Page pool for ept02_cache */
 static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT]
@@ -192,6 +173,7 @@ static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx, gpa_t ept12)
 	guestmem_init(vcpu, &ept12_ctx->ctx01);
 }
 
+#if 0	// TODO
 /*
  * Find ept12 in ept02_cache, return the index.
  * When ro = false, updates LRU order and evicts when cache is full.
@@ -259,6 +241,7 @@ static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool ro, bool *cache_hit)
 
 	return ans;
 }
+#endif
 
 /*
  * Return whether bits 0 - 11 of eptp12 are legal for VMENTRY
@@ -304,12 +287,8 @@ bool xmhf_nested_arch_x86vmx_check_ept_lower_bits(u64 eptp12, gpa_t * ept_pml4t)
 /* Invalidate ept12 */
 void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12)
 {
-	bool cache_hit;
-	u32 index = ept02_cache_get(vcpu, ept12, true, &cache_hit);
-	if (cache_hit) {
-		HALT_ON_ERRORCOND(ept02_cache[vcpu->id][index].ept12 == ept12);
-		HALT_ON_ERRORCOND(ept02_cache[vcpu->id][index].valid);
-		ept02_cache[vcpu->id][index].valid = 0;
+	ept02_cache_line_t *line;
+	if (LRU_SET_INVALIDATE(&ept02_cache[vcpu->id], ept12, line)) {
 		/*
 		 * INVEPT will be executed in ept02_ctx_init() when this EPT02 is used
 		 * the next time.
@@ -320,16 +299,11 @@ void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12)
 /* Invalidate all EPTs */
 void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu)
 {
-	u32 index;
-	for (index = 0; index < VMX_NESTED_MAX_ACTIVE_EPT; index++) {
-		if (ept02_cache[vcpu->id][index].valid) {
-			ept02_cache[vcpu->id][index].valid = 0;
-			/*
-			 * INVEPT will be executed in ept02_ctx_init() when this EPT02 is
-			 * used the next time.
-			 */
-		}
-	}
+	LRU_SET_INVALIDATE_ALL(&ept02_cache[vcpu->id]);
+	/*
+	 * INVEPT will be executed in ept02_ctx_init() when the EPT02 is used the
+	 * next time.
+	 */
 }
 
 /*
@@ -337,11 +311,21 @@ void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu)
  * happens.
  */
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
-										u32 * cache_index, bool *cache_hit)
+										bool *cache_hit,
+										ept02_cache_line_t **cache_line)
 {
-	u32 index = ept02_cache_get(vcpu, ept12, false, cache_hit);
-	spa_t addr = (uintptr_t) ept02_cache[vcpu->id][index].ept02_ctx.ctx.root_pa;
-	*cache_index = index;
+	bool hit;
+	spa_t addr;
+	ept02_cache_index_t index;
+	ept02_cache_line_t *line = LRU_SET_FIND_EVICT(&ept02_cache[vcpu->id],
+												  ept12, index, hit);
+	if (!hit) {
+		ept02_ctx_init(vcpu, index, &line->value.ept02_ctx);
+		ept12_ctx_init(vcpu, &line->value.ept12_ctx, ept12);
+	}
+	*cache_hit = hit;
+	*cache_line = line;
+	addr = line->value.ept02_ctx.ctx.root_pa;
 	return addr | 0x1e;			// TODO: remove magic number
 }
 
@@ -358,9 +342,8 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
  */
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info,
-											  u32 cache_index)
+											  ept02_cache_line_t *cache_line)
 {
-	ept02_cache_t *ept02_cache_obj;
 	ept12_ctx_t *ept12_ctx;
 	u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
 	gpa_t guest1_paddr;
@@ -371,10 +354,9 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	hpt_prot_t access_type;
 	ulong_t qualification = __vmx_vmreadNW(VMCSENC_info_exit_qualification);
 
-	ept02_cache_obj = &ept02_cache[vcpu->id][cache_index];
-	HALT_ON_ERRORCOND(ept02_cache_obj->valid);
-	HALT_ON_ERRORCOND(ept02_cache_obj->ept12 == vmcs12_info->guest_ept_root);
-	ept12_ctx = &ept02_cache_obj->ept12_ctx;
+	HALT_ON_ERRORCOND(cache_line->valid);
+	HALT_ON_ERRORCOND(cache_line->key == vmcs12_info->guest_ept_root);
+	ept12_ctx = &cache_line->value.ept12_ctx;
 	access_type = 0;
 	if (qualification & (1UL << 0)) {
 		access_type |= HPT_PROT_READ_MASK;
@@ -437,7 +419,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	}
 
 	/* Put page map entry into EPT02 */
-	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(&ept02_cache_obj->ept02_ctx.ctx,
+	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(&cache_line->value.ept02_ctx.ctx,
 											 &pmeo02, guest2_paddr) == 0);
 	printf("CPU(0x%02x): EPT: 0x%08llx 0x%08llx 0x%08llx\n", vcpu->id,
 		   guest2_paddr, guest1_paddr, xmhf_paddr);
