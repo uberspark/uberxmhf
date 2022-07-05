@@ -96,6 +96,9 @@ void xmhf_memprot_flushmappings(VCPU *vcpu);
 //flush the TLB of all nested page tables in the current core
 void xmhf_memprot_flushmappings_localtlb(VCPU *vcpu);
 
+// flush the TLB of all nested page tables in all cores
+void xmhf_memprot_flushmappings_alltlb(VCPU *vcpu);
+
 //set protection for a given physical memory address
 void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype);
 

@@ -504,6 +504,37 @@ static void _vtd_invalidatecaches(void)
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Within DMAP component
+
+//! Return the spaddr of the VT-d page root
+//! [NOTE] This function is used by dmap module only, and hence is not exported.
+spa_t xmhf_dmaprot_arch_x86_vmx_get_eap_vtd_pt_root(void)
+{
+    spa_t result = INVALID_SPADDR;
+
+    if (g_vtd_cap.sagaw & 0x4)
+    {
+        // 4-level PT
+        result = l_vtd_pml4t_paddr;
+    }
+    else if (g_vtd_cap.sagaw & 0x2)
+    {
+        // VT-d uses 3-level PT
+        result = l_vtd_pdpt_paddr;
+    }
+    else
+    {
+        // Unsupported IOMMU
+        result = INVALID_SPADDR;
+    }
+
+    return result;
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
 u32 xmhf_dmaprot_arch_x86_vmx_enable(spa_t protectedbuffer_paddr,
