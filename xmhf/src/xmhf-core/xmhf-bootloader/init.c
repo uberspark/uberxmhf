@@ -762,11 +762,11 @@ void wakeupAPs(void){
     //send INIT
     printf("Sending INIT IPI to all APs...");
     *icr = 0x000c4500UL;
+    udelay(10000);
     //wait for command completion
     while ((*icr) & 0x1000U) {
         asm volatile ("pause");     /* Save energy when waiting */
     }
-    udelay(10000);
     printf("Done.\n");
 
     //send SIPI (twice as per the MP protocol)
@@ -775,11 +775,11 @@ void wakeupAPs(void){
         for(i=0; i < 2; i++){
             printf("Sending SIPI-%u...", i);
             *icr = 0x000c4610UL;
+            udelay(200);
             //wait for command completion
             while ((*icr) & 0x1000U) {
                 asm volatile ("pause");     /* Save energy when waiting */
             }
-            udelay(200);
             printf("Done.\n");
         }
     }
