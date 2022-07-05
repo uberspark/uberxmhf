@@ -64,15 +64,17 @@
  * Instruction-Information Field as Used for VMREAD and VMWRITE in Intel's
  * System Programming Guide, Order Number 325384. It covers all structures in
  * Table 26-13. Format of the VM-Exit Instruction-Information Field as Used
- * for VMCLEAR, VMPTRLD, VMPTRST, VMXON, XRSTORS, and XSAVES.
+ * for VMCLEAR, VMPTRLD, VMPTRST, VMXON, XRSTORS, and XSAVES. It also covers
+ * all structures in Table 26-9. Format of the VM-Exit Instruction-Information
+ * Field as Used for INVEPT, INVPCID, and INVVPID.
  */
 union _vmx_decode_vm_inst_info {
 	struct {
 		u32 scaling:2;
 		u32 undefined2:1;
-		u32 reg1:4;				/* Undefined in Table 26-13. */
+		u32 reg1:4;				/* Undefined in Table 26-9 and 26-13. */
 		u32 address_size:3;
-		u32 mem_reg:1;			/* Cleared to 0 in Table 26-13. */
+		u32 mem_reg:1;			/* Cleared to 0 in Table 26-9 and 26-13. */
 		u32 undefined14_11:4;
 		u32 segment_register:3;
 		u32 index_reg:4;
@@ -161,10 +163,31 @@ static gva_t _vmx_decode_mem_operand(VCPU * vcpu, struct regs *r)
 }
 
 /*
+ * Decode the operand for instructions that take one register operand and one
+ * m64 operand. Following Table 26-9. Format of the VM-Exit
+ * Instruction-Information Field as Used for INVEPT, INVPCID, and INVVPID in
+ * Intel's System Programming Guide, Order Number 325384. The register operand
+ * is returned in ptype. The address of memory operand is returned in
+ * ppdescriptor.
+ */
+static void _vmx_decode_r_m128(VCPU * vcpu, struct regs *r, ulong_t * ptype,
+							   gva_t *ppdescriptor)
+{
+	union _vmx_decode_vm_inst_info inst_info;
+	size_t size = (VCPU_g64(vcpu) ? sizeof(u64) : sizeof(u32));
+	uintptr_t *type;
+	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
+	HALT_ON_ERRORCOND(inst_info.mem_reg == 0);
+	type = _vmx_decode_reg(inst_info.reg2, vcpu, r);
+	memcpy(ptype, type, size);
+	*ppdescriptor = _vmx_decode_mem_operand(vcpu, r);
+}
+
+/*
  * Decode the operand for instructions that take one m64 operand. Following
  * Table 26-13. Format of the VM-Exit Instruction-Information Field as Used
  * for VMCLEAR, VMPTRLD, VMPTRST, VMXON, XRSTORS, and XSAVES in Intel's
- * System Programming Guide, Order Number 325384
+ * System Programming Guide, Order Number 325384.
  */
 static gva_t _vmx_decode_m64(VCPU * vcpu, struct regs *r)
 {
@@ -693,16 +716,79 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_invept(VCPU * vcpu, struct regs *r)
 {
-	(void)vcpu;
-	(void)r;
-	HALT_ON_ERRORCOND(0 && "INVEPT handler not implemented yet");
+	if (_vmx_nested_check_ud(vcpu, 0)) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+	} else {
+		ulong_t type;
+		gva_t pdescriptor;
+		_vmx_decode_r_m128(vcpu, r, &type, &pdescriptor);
+		switch (type) {
+		case VMX_INVEPT_SINGLECONTEXT:
+			(void) pdescriptor;
+			HALT_ON_ERRORCOND(0 && "INVEPT 1 not implemented");
+			break;
+		case VMX_INVEPT_GLOBAL:
+			HALT_ON_ERRORCOND(0 && "INVEPT 2 not implemented");
+			break;
+		default:
+			_vmx_nested_vm_fail(vcpu,
+								VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID);
+			break;
+		}
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	}
 }
 
 void xmhf_nested_arch_x86vmx_handle_invvpid(VCPU * vcpu, struct regs *r)
 {
-	(void)vcpu;
-	(void)r;
-	HALT_ON_ERRORCOND(0 && "INVVPID handler not implemented yet");
+	if (_vmx_nested_check_ud(vcpu, 0)) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+	} else {
+		ulong_t type;
+		gva_t pdescriptor;
+		_vmx_decode_r_m128(vcpu, r, &type, &pdescriptor);
+		switch (type) {
+		case VMX_INVVPID_INDIVIDUALADDRESS:
+			(void) pdescriptor;
+			HALT_ON_ERRORCOND(0 && "INVVPID 0 not implemented");
+			break;
+		case VMX_INVVPID_SINGLECONTEXT:
+			(void) pdescriptor;
+			HALT_ON_ERRORCOND(0 && "INVVPID 1 not implemented");
+			break;
+		case VMX_INVVPID_ALLCONTEXTS:
+			HALT_ON_ERRORCOND(0 && "INVVPID 2 not implemented");
+			break;
+		case VMX_INVVPID_SINGLECONTEXTGLOBAL:
+			HALT_ON_ERRORCOND(0 && "INVVPID 3 not implemented");
+			break;
+		default:
+			_vmx_nested_vm_fail(vcpu,
+								VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID);
+			break;
+		}
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	}
 }
 
 void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
