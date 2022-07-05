@@ -205,7 +205,7 @@ void xmhf_nested_arch_x86vmx_vpid_init(VCPU * vcpu)
 		 * map VPID01 = 1 - 65535 to VPID02 = 2 - 65535. However, here we only
 		 * use VPID02 = 2 - (2 + VMX_NESTED_MAX_ACTIVE_VPID).
 		 */
-		HALT_ON_ERRORCOND(index + 2 == 0);
+		HALT_ON_ERRORCOND(index + 2 > 0);
 		line->value = index + 2;
 	}
 }
@@ -274,6 +274,48 @@ void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu)
 }
 
 /*
+ * Invalidate one address for one VPID. Return whether successful.
+ * This function may fail by returning false when address is not canonical.
+ */
+bool xmhf_nested_arch_x86vmx_invvpid_indiv_addr(VCPU * vcpu, u16 vpid12,
+												u64 address)
+{
+	vpid02_cache_line_t *line;
+	ulong_t addr = address;
+
+	/* Check whether the address is canonical */
+	{
+		u64 linaddrmask;
+#ifdef __AMD64__
+		u32 eax, ebx, ecx, edx;
+		/* Check whether CPUID 0x80000008 is supported */
+		cpuid(0x80000000U, &eax, &ebx, &ecx, &edx);
+		HALT_ON_ERRORCOND(eax >= 0x80000008U);
+		/* Compute paddrmask from CPUID.80000008H:EAX[15:8] (max lin addr) */
+		cpuid(0x80000008U, &eax, &ebx, &ecx, &edx);
+		eax >>= 8;
+		eax &= 0xFFU;
+		HALT_ON_ERRORCOND(eax >= 32 && eax < 64);
+		linaddrmask = (1ULL << eax) - 0x1ULL;
+#elif defined(__I386__)
+		linaddrmask = (1ULL << 32) - 0x1ULL;
+#else							/* !defined(__I386__) && !defined(__AMD64__) */
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) && !defined(__AMD64__) */
+		if (address & ~linaddrmask) {
+			return false;
+		}
+	}
+
+	if (LRU_SET_FIND_IMMUTABLE(&vpid02_cache[vcpu->id], vpid12, line)) {
+		u16 vpid02 = line->value;
+		HALT_ON_ERRORCOND(__vmx_invvpid
+						  (VMX_INVVPID_INDIVIDUALADDRESS, vpid02, addr));
+	}
+	return true;
+}
+
+/*
  * Get pointer to EPT02 for current VMCS12. Will fill EPT02 as EPT violation
  * happens.
  */
@@ -306,7 +348,8 @@ u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12, bool *cache_hit)
 												   vpid12, index, hit);
 	(void)index;
 	if (!hit) {
-		__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, line->value, 0);
+		HALT_ON_ERRORCOND(__vmx_invvpid
+						  (VMX_INVVPID_SINGLECONTEXT, line->value, 0));
 	}
 	*cache_hit = hit;
 	return vpid12;

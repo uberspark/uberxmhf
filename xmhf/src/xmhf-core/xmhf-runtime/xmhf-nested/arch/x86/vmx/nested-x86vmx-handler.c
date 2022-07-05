@@ -354,7 +354,7 @@ static u32 _vmx_check_physical_addr_width(VCPU * vcpu, u64 addr)
 	HALT_ON_ERRORCOND(eax >= 32 && eax < 64);
 	paddrmask = (1ULL << eax) - 0x1ULL;
 	if (vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR] & (1ULL << 48)) {
-		paddrmask &= (1ULL << 32);
+		paddrmask &= (1ULL << 32) - 1ULL;
 	}
 	// TODO: paddrmask can be cached, maybe move code to part-*.c
 	return (addr & ~paddrmask) == 0;
@@ -575,8 +575,9 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 	}
 
-	/* Initialize EPT cache */
+	/* Initialize EPT and VPID cache */
 	xmhf_nested_arch_x86vmx_ept_init(vcpu);
+	xmhf_nested_arch_x86vmx_vpid_init(vcpu);
 }
 
 /* Handle VMEXIT from nested guest */
@@ -794,27 +795,46 @@ void xmhf_nested_arch_x86vmx_handle_invvpid(VCPU * vcpu, struct regs *r)
 	} else {
 		ulong_t type;
 		gva_t pdescriptor;
+		bool succeed = false;
+		struct {
+			u16 vpid;
+			u16 reserved_31_16;
+			u32 reserved_63_32;
+			u64 linear_addr;
+		} descriptor;
+		guestmem_hptw_ctx_pair_t ctx_pair;
 		_vmx_decode_r_m128(vcpu, r, &type, &pdescriptor);
-		switch (type) {
-		case VMX_INVVPID_INDIVIDUALADDRESS:
-			(void)pdescriptor;
-			HALT_ON_ERRORCOND(0 && "INVVPID 0 not implemented");
-			break;
-		case VMX_INVVPID_SINGLECONTEXT:
-			(void)pdescriptor;
-			HALT_ON_ERRORCOND(0 && "INVVPID 1 not implemented");
-			break;
-		case VMX_INVVPID_ALLCONTEXTS:
-			HALT_ON_ERRORCOND(0 && "INVVPID 2 not implemented");
-			break;
-		case VMX_INVVPID_SINGLECONTEXTGLOBAL:
-			(void)pdescriptor;
-			HALT_ON_ERRORCOND(0 && "INVVPID 3 not implemented");
-			break;
-		default:
+		guestmem_init(vcpu, &ctx_pair);
+		guestmem_copy_gv2h(&ctx_pair, 0, &descriptor, pdescriptor,
+						   sizeof(descriptor));
+		if (!descriptor.reserved_31_16 && !descriptor.reserved_63_32) {
+			switch (type) {
+			case VMX_INVVPID_INDIVIDUALADDRESS:
+				if (descriptor.vpid) {
+					if (xmhf_nested_arch_x86vmx_invvpid_indiv_addr
+						(vcpu, descriptor.vpid, descriptor.linear_addr)) {
+						succeed = true;
+					}
+				}
+				break;
+			case VMX_INVVPID_SINGLECONTEXT:
+				HALT_ON_ERRORCOND(0 && "INVVPID 1 not implemented");
+				break;
+			case VMX_INVVPID_ALLCONTEXTS:
+				HALT_ON_ERRORCOND(0 && "INVVPID 2 not implemented");
+				break;
+			case VMX_INVVPID_SINGLECONTEXTGLOBAL:
+				HALT_ON_ERRORCOND(0 && "INVVPID 3 not implemented");
+				break;
+			default:
+				break;
+			}
+		}
+		if (succeed) {
+			_vmx_nested_vm_succeed(vcpu);
+		} else {
 			_vmx_nested_vm_fail(vcpu,
 								VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID);
-			break;
 		}
 		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	}

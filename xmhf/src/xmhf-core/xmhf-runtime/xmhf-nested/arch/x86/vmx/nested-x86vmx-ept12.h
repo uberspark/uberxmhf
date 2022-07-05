@@ -101,10 +101,13 @@ LRU_NEW_SET(vpid02_cache_set_t, vpid02_cache_line_t, VMX_NESTED_MAX_ACTIVE_VPID,
 			vpid02_cache_index_t, vpid02_cache_key_t, vpid02_cache_value_t);
 
 void xmhf_nested_arch_x86vmx_ept_init(VCPU * vcpu);
+void xmhf_nested_arch_x86vmx_vpid_init(VCPU * vcpu);
 bool xmhf_nested_arch_x86vmx_check_ept_lower_bits(u64 eptp12,
 												  gpa_t * ept_pml4t);
 void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12);
 void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu);
+bool xmhf_nested_arch_x86vmx_invvpid_indiv_addr(VCPU * vcpu, u16 vpid12,
+												u64 address);
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 										bool *cache_hit,
 										ept02_cache_line_t ** cache_line);
