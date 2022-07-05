@@ -535,10 +535,8 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 	/* INDEX_IA32_VMX_CR4_FIXED1_MSR: not changed */
 	/* INDEX_IA32_VMX_VMCS_ENUM_MSR: not changed */
 	{
-		/* "Enable VPID" not supported */
-		u64 mask = ~(1ULL << (32 + VMX_SECPROCBASED_ENABLE_VPID));
 		/* "VMCS shadowing" not supported */
-		mask &= ~(1ULL << (32 + VMX_SECPROCBASED_VMCS_SHADOWING));
+		u64 mask = ~(1ULL << (32 + VMX_SECPROCBASED_VMCS_SHADOWING));
 		/* "Unrestricted guest" not supported */
 		mask &= ~(1ULL << (32 + VMX_SECPROCBASED_UNRESTRICTED_GUEST));
 		/* "Sub-page write permissions for EPT" not supported */

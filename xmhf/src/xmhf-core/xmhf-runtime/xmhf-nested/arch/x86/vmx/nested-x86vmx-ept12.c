@@ -65,6 +65,9 @@ static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT]
 static u8 ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT]
 	[EPT02_PAGE_POOL_SIZE];
 
+/* For each CPU, information about all VPID12 -> VPID02 it caches */
+static vpid02_cache_set_t vpid02_cache[MAX_VCPU_ENTRIES];
+
 static void *ept02_gzp(void *vctx, size_t alignment, size_t sz)
 {
 	ept02_ctx_t *ept02_ctx = (ept02_ctx_t *) vctx;
@@ -191,6 +194,22 @@ void xmhf_nested_arch_x86vmx_ept_init(VCPU * vcpu)
 	}
 }
 
+void xmhf_nested_arch_x86vmx_vpid_init(VCPU * vcpu)
+{
+	vpid02_cache_index_t index;
+	vpid02_cache_line_t *line;
+	LRU_SET_INIT(&vpid02_cache[vcpu->id]);
+	LRU_FOREACH(index, line, &vpid02_cache[vcpu->id]) {
+		/*
+		 * VPID 0 is reserved by hardware, VPID 1 is for L1 guest. Ideally we
+		 * map VPID01 = 1 - 65535 to VPID02 = 2 - 65535. However, here we only
+		 * use VPID02 = 2 - (2 + VMX_NESTED_MAX_ACTIVE_VPID).
+		 */
+		HALT_ON_ERRORCOND(index + 2 == 0);
+		line->value = index + 2;
+	}
+}
+
 /*
  * Return whether bits 0 - 11 of eptp12 are legal for VMENTRY
  * When return true, ept_pml4t is the address of PML4T (page aligned)
@@ -276,6 +295,21 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 	*cache_line = line;
 	addr = line->value.ept02_ctx.ctx.root_pa;
 	return addr | 0x1e;			// TODO: remove magic number
+}
+
+/* Get value of a VPID02 for current VPID12 */
+u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12, bool *cache_hit)
+{
+	bool hit;
+	vpid02_cache_index_t index;
+	vpid02_cache_line_t *line = LRU_SET_FIND_EVICT(&vpid02_cache[vcpu->id],
+												   vpid12, index, hit);
+	(void)index;
+	if (!hit) {
+		__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, line->value, 0);
+	}
+	*cache_hit = hit;
+	return vpid12;
 }
 
 /*

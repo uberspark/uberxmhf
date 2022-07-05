@@ -57,6 +57,9 @@
 /* Maximum number of active EPTs per CPU */
 #define VMX_NESTED_MAX_ACTIVE_EPT 4
 
+/* Maximum number of active VPIDs per CPU */
+#define VMX_NESTED_MAX_ACTIVE_VPID 4
+
 /* Format of EPT12 context information */
 typedef struct {
 	/* Context of EPT12 */
@@ -90,6 +93,13 @@ typedef struct {
 LRU_NEW_SET(ept02_cache_set_t, ept02_cache_line_t, VMX_NESTED_MAX_ACTIVE_EPT,
 			ept02_cache_index_t, ept02_cache_key_t, ept02_cache_value_t);
 
+typedef u16 vpid02_cache_index_t;
+typedef u16 vpid02_cache_key_t;
+typedef u16 vpid02_cache_value_t;
+
+LRU_NEW_SET(vpid02_cache_set_t, vpid02_cache_line_t, VMX_NESTED_MAX_ACTIVE_VPID,
+			vpid02_cache_index_t, vpid02_cache_key_t, vpid02_cache_value_t);
+
 void xmhf_nested_arch_x86vmx_ept_init(VCPU * vcpu);
 bool xmhf_nested_arch_x86vmx_check_ept_lower_bits(u64 eptp12,
 												  gpa_t * ept_pml4t);
@@ -98,6 +108,8 @@ void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu);
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 										bool *cache_hit,
 										ept02_cache_line_t ** cache_line);
+u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12,
+									   bool *cache_hit);
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info,
 											  ept02_cache_line_t * cache_line);

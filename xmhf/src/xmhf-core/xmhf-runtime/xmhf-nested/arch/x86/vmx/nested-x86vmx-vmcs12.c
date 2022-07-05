@@ -424,20 +424,28 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 #include "nested-x86vmx-vmcs12-guesthost.h"
 
 	/* 16-Bit Control Fields */
-	if (_vmx_hasctl_enable_vpid(&ctls)) {
-		u16 control_vpid = vmcs12->control_vpid;
-		// Note: VIRTUAL PROCESSOR IDENTIFIERS (VPIDS) not supported yet
-		// Need to multiplex vmcs12->control_vpid
-		HALT_ON_ERRORCOND(0 && "VPID not implemented");
-		control_vpid = 0;
-		__vmx_vmwrite16(VMCSENC_control_vpid, control_vpid);
-	} else {
-		/*
-		 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result in
-		 * flushing linear and combination TLB. We simulate this effect
-		 * here.
-		 */
-		HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
+	{
+		u16 vpid02;
+		if (_vmx_hasctl_enable_vpid(&ctls)) {
+			bool cache_hit;
+			u16 vpid12 = vmcs12->control_vpid;
+			if (vpid12 == 0) {
+				return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+			}
+			vpid02 = xmhf_nested_arch_x86vmx_get_vpid02(vcpu, vpid12,
+														&cache_hit);
+		} else {
+			/*
+			 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result
+			 * in flushing linear and combination TLB. We simulate this effect
+			 * here by setting VPID of L2 guest to the same as L1 guest
+			 * (VPID = 1) and manually executing INVVPID for every VNENTRY and
+			 * VMEXIT.
+			 */
+			vpid02 = 1;
+			HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
+		}
+		__vmx_vmwrite16(VMCSENC_control_vpid, vpid02);
 	}
 
 	/* 16-Bit Guest-State Fields */
@@ -804,19 +812,27 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 #include "nested-x86vmx-vmcs12-guesthost.h"
 
 	/* 16-Bit Control Fields */
-	if (_vmx_hasctl_enable_vpid(&ctls)) {
-		// Note: VIRTUAL PROCESSOR IDENTIFIERS (VPIDS) not supported yet
-		// Need to multiplex vmcs12->control_vpid
-		HALT_ON_ERRORCOND(0 && "VPID not implemented");
-		HALT_ON_ERRORCOND(__vmx_vmread16(VMCSENC_control_vpid) == 0);
-		// vmcs12->control_vpid = __vmx_vmread16(VMCSENC_control_vpid);
-	} else {
-		/*
-		 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result in
-		 * flushing linear and combination TLB. We simulate this effect
-		 * here.
-		 */
-		HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
+	{
+		u16 vpid02;
+		if (_vmx_hasctl_enable_vpid(&ctls)) {
+			bool cache_hit;
+			u16 vpid12 = vmcs12->control_vpid;
+			HALT_ON_ERRORCOND(vpid12 != 0);
+			vpid02 = xmhf_nested_arch_x86vmx_get_vpid02(vcpu, vpid12,
+														&cache_hit);
+			HALT_ON_ERRORCOND(cache_hit);
+		} else {
+			/*
+			 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result
+			 * in flushing linear and combination TLB. We simulate this effect
+			 * here by setting VPID of L2 guest to the same as L1 guest
+			 * (VPID = 1) and manually executing INVVPID for every VNENTRY and
+			 * VMEXIT.
+			 */
+			vpid02 = 1;
+			HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
+		}
+		HALT_ON_ERRORCOND(__vmx_vmread16(VMCSENC_control_vpid) == vpid02);
 	}
 
 	/* 16-Bit Guest-State Fields */
