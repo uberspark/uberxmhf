@@ -368,16 +368,28 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	hpt_pmeo_t pmeo12;
 	hpt_pmeo_t pmeo01;
 	hpt_pmeo_t pmeo02;
+	hpt_prot_t access_type;
+	ulong_t qualification = __vmx_vmreadNW(VMCSENC_info_exit_qualification);
 
 	ept02_cache_obj = &ept02_cache[vcpu->id][cache_index];
 	HALT_ON_ERRORCOND(ept02_cache_obj->valid);
 	HALT_ON_ERRORCOND(ept02_cache_obj->ept12 == vmcs12_info->guest_ept_root);
 	ept12_ctx = &ept02_cache_obj->ept12_ctx;
+	access_type = 0;
+	if (qualification & (1UL << 0)) {
+		access_type |= HPT_PROT_READ_MASK;
+	}
+	if (qualification & (1UL << 1)) {
+		access_type |= HPT_PROT_WRITE_MASK;
+	}
+	if (qualification & (1UL << 2)) {
+		access_type |= HPT_PROT_EXEC_MASK;
+	}
+	HALT_ON_ERRORCOND(access_type);
 
 	/* Get the entry in EPT12 and the L1 paddr that is to be accessed */
-	// TODO: should use something other than hptw_get_pmeo(), need to check RWX
-	hptw_get_pmeo(&pmeo12, &ept12_ctx->ctx, 1, guest2_paddr);
-	if (!hpt_pmeo_is_present(&pmeo12) || !hpt_pmeo_is_page(&pmeo12)) {
+	if (hptw_checked_get_pmeo(&pmeo12, &ept12_ctx->ctx, access_type, 0,
+							  guest2_paddr) != 0) {
 		return 2;
 	}
 	/* TODO: Large pages not supported yet */
@@ -385,16 +397,13 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	guest1_paddr = hpt_pmeo_get_address(&pmeo12);
 
 	/* Get the entry in EPT01 for the L1 paddr */
-	// TODO: should use something other than hptw_get_pmeo(), need to check RWX
-	hptw_get_pmeo(&pmeo01, &ept12_ctx->ctx01.host_ctx, 1, guest1_paddr);
-	if (!hpt_pmeo_is_present(&pmeo01) || !hpt_pmeo_is_page(&pmeo01)) {
+	if (hptw_checked_get_pmeo(&pmeo01, &ept12_ctx->ctx01.host_ctx, access_type,
+							  0, guest1_paddr) != 0) {
 		return 3;
 	}
 	/* TODO: Large pages not supported yet */
 	HALT_ON_ERRORCOND(pmeo12.lvl == 1);
 	xmhf_paddr = hpt_pmeo_get_address(&pmeo01);
-
-	/* TODO: need some logic to decide whether should return 2 or 3. */
 
 	/* Construct page map entry for EPT02 */
 	pmeo02.pme = 0;
