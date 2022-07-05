@@ -53,23 +53,6 @@
 /* Number of pages in page_pool in ept02_ctx_t */
 #define EPT02_PAGE_POOL_SIZE 128
 
-#if 0	// TODO
-/* Track list of EPT12's */
-typedef struct {
-	/*
-	 * If 0, invalid (need to initialize). Otherwise, track LRU (1 is most
-	 * recently used; when all valid, VMX_NESTED_MAX_ACTIVE_EPT is LRU).
-	 */
-	u32 valid;
-	/* Guest physical address of EPT12 (4K aligned) */
-	gpa_t ept12;
-	/* EPT02 context (for allocating pages) */
-	ept02_ctx_t ept02_ctx;
-	/* EPT12 context (for accessing guest EPT) */
-	ept12_ctx_t ept12_ctx;
-} ept02_cache_t;
-#endif
-
 /* For each CPU, information about all EPT12 -> EPT02 it caches */
 static ept02_cache_set_t ept02_cache[MAX_VCPU_ENTRIES];
 
@@ -172,76 +155,6 @@ static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx, gpa_t ept12)
 	ept12_ctx->ctx.t = HPT_TYPE_EPT;
 	guestmem_init(vcpu, &ept12_ctx->ctx01);
 }
-
-#if 0	// TODO
-/*
- * Find ept12 in ept02_cache, return the index.
- * When ro = false, updates LRU order and evicts when cache is full.
- * When ro = true, do not update LRU order. When cache is full return undefined.
- * When cache hit, cache_hit = true.
- * When cache miss, evict a cache entry and cache_hit = false.
- */
-static u32 ept02_cache_get(VCPU * vcpu, gpa_t ept12, bool ro, bool *cache_hit)
-{
-	u32 ans = VMX_NESTED_MAX_ACTIVE_EPT;
-	u32 index;
-	u32 available_index = VMX_NESTED_MAX_ACTIVE_EPT;
-	u32 evict_index = VMX_NESTED_MAX_ACTIVE_EPT;
-	/* When updating LRU, do not exceed this amount */
-	u32 max_valid = VMX_NESTED_MAX_ACTIVE_EPT;
-	bool hit = false;
-	for (index = 0; index < VMX_NESTED_MAX_ACTIVE_EPT; index++) {
-		/* Prepare for cold miss */
-		if (ept02_cache[vcpu->id][index].valid == 0) {
-			available_index = index;
-			continue;
-		}
-		/* Prepare for capacity miss */
-		if (ept02_cache[vcpu->id][index].valid == VMX_NESTED_MAX_ACTIVE_EPT) {
-			evict_index = index;
-			continue;
-		}
-		/* Cache hit */
-		if (ept02_cache[vcpu->id][index].ept12 == ept12) {
-			hit = true;
-			ans = index;
-			max_valid = ept02_cache[vcpu->id][index].valid;
-			break;
-		}
-	}
-
-	*cache_hit = hit;
-
-	if (ro) {
-		return ans;
-	}
-
-	if (!hit) {
-		printf("CPU(0x%02x): EPT cache miss for EP4TA 0x%016llx\n", vcpu->id,
-			   ept12);
-		if (available_index < VMX_NESTED_MAX_ACTIVE_EPT) {
-			ans = available_index;
-		} else {
-			HALT_ON_ERRORCOND(evict_index < VMX_NESTED_MAX_ACTIVE_EPT);
-			ans = evict_index;
-		}
-		ept02_ctx_init(vcpu, ans, &ept02_cache[vcpu->id][ans].ept02_ctx);
-		ept12_ctx_init(vcpu, &ept02_cache[vcpu->id][ans].ept12_ctx, ept12);
-		ept02_cache[vcpu->id][ans].ept12 = ept12;
-	}
-
-	/* Update LRU */
-	for (index = 0; index < VMX_NESTED_MAX_ACTIVE_EPT; index++) {
-		if (ept02_cache[vcpu->id][index].valid &&
-			ept02_cache[vcpu->id][index].valid < max_valid) {
-			ept02_cache[vcpu->id][index].valid++;
-		}
-	}
-	ept02_cache[vcpu->id][ans].valid = 1;
-
-	return ans;
-}
-#endif
 
 /*
  * Return whether bits 0 - 11 of eptp12 are legal for VMENTRY

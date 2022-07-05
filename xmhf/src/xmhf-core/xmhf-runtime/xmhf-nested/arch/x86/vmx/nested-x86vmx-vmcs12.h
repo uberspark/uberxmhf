@@ -124,8 +124,12 @@ typedef struct vmcs12_info {
 		__attribute__((aligned(16)));
 	/* Whether using EPT12 */
 	int guest_ept_enable;
-	/* When guest_ept_enable, index to nested-x86vmx-ept12.c cache */
-	void *guest_ept_cache_line;	// TODO: use real type
+	/*
+	 * When guest_ept_enable, EPT02 cache line.
+	 * The type of this member should be ept02_cache_line_t *. However,
+	 * currently casting to void * to avoid circular includes in header files.
+	 */
+	void *guest_ept_cache_line;
 	/* When guest_ept_enable, pointer to EPT12 root */
 	gpa_t guest_ept_root;
 } vmcs12_info_t;

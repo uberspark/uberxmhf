@@ -61,8 +61,18 @@
 #define LRU_NEW_SET(LRU_SET_TYPE, LRU_LINE_TYPE, LRU_SIZE, LRU_INDEX_TYPE, \
 					LRU_KEY_TYPE, LRU_VALUE_TYPE) \
 	typedef struct LRU_LINE_TYPE { \
+		/*
+		 * If 0, cache line is invalid. Otherwise, track LRU order (1 is most
+		 * recently used; when all valid, LRU_SIZE is LRU).
+		 *
+		 * When considering the valid fields of all lines in a set, the
+		 * non-zero values never repeat and are within 1 and LRU_SIZE
+		 * (inclusive).
+		 */ \
 		LRU_INDEX_TYPE valid; \
+		/* The key to determine whether cache matches, using operator "==" */ \
 		LRU_KEY_TYPE key; \
+		/* The value of the cache */ \
 		LRU_VALUE_TYPE value; \
 	} LRU_LINE_TYPE; \
 	\
@@ -121,11 +131,16 @@
  */
 #define LRU_SET_FIND_EVICT(LRU_SET, KEY, INDEX, CACHE_HIT) \
 	({ \
+		/* _nlines = LRU_SIZE */ \
 		const typeof((LRU_SET)->elems[0].valid) _nlines = \
 			(sizeof((LRU_SET)->elems) / sizeof((LRU_SET)->elems[0])); \
+		/* Index to be returned */ \
 		typeof((LRU_SET)->elems[0].valid) _ans_index = _nlines; \
+		/* Index of invalid entry during search (more preferred than LRU) */ \
 		typeof((LRU_SET)->elems[0].valid) _available_index = _nlines; \
+		/* Index of LRU entry during search (less preferred than invalid) */ \
 		typeof((LRU_SET)->elems[0].valid) _evict_index = _nlines; \
+		/* When updating LRU order, do not exceed this amount */ \
 		typeof((LRU_SET)->elems[0].valid) _max_valid = _nlines; \
 		typeof((LRU_SET)->elems[0].valid) _index; \
 		typeof(&((LRU_SET)->elems[0])) _line; \
@@ -146,21 +161,24 @@
 		} \
 		if (!_cache_hit) { \
 			if (_available_index < _nlines) { \
+				/* Cold miss */ \
 				_ans_index = _available_index; \
 			} else { \
+				/* Capacity miss */ \
 				_ans_index = _evict_index; \
 			} \
 			_ans_line = &((LRU_SET)->elems[_ans_index]); \
 		} \
+		/* Update LRU order */ \
 		LRU_FOREACH(_index, _line, LRU_SET) { \
 			if (_line->valid && _line->valid < _max_valid) { \
 				_line->valid++; \
 			} \
 		} \
-		(INDEX) = _ans_index; \
-		(CACHE_HIT) = _cache_hit; \
 		_ans_line->valid = 1; \
 		_ans_line->key = (KEY); \
+		(INDEX) = _ans_index; \
+		(CACHE_HIT) = _cache_hit; \
 		_ans_line; \
 	})
 
