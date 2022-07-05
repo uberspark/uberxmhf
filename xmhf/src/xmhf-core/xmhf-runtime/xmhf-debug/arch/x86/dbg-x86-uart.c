@@ -66,7 +66,9 @@ uart_config_t g_uart_config = {115200,
 //low-level UART character output
 static void dbg_x86_uart_putc_bare(char ch){
   //wait for xmit hold register to be empty
-  while ( ! (inb(g_uart_config.port+0x5) & 0x20) );
+  while ( ! (inb(g_uart_config.port+0x5) & 0x20) ) {
+    asm volatile ("pause");     /* Save energy when waiting */
+  }
 
   //write the character
   outb((u8)ch, g_uart_config.port);
