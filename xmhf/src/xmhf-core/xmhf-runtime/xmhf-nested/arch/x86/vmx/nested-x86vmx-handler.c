@@ -818,13 +818,22 @@ void xmhf_nested_arch_x86vmx_handle_invvpid(VCPU * vcpu, struct regs *r)
 				}
 				break;
 			case VMX_INVVPID_SINGLECONTEXT:
-				HALT_ON_ERRORCOND(0 && "INVVPID 1 not implemented");
+				if (descriptor.vpid) {
+					xmhf_nested_arch_x86vmx_invvpid_single_ctx(vcpu,
+															   descriptor.vpid);
+					succeed = true;
+				}
 				break;
 			case VMX_INVVPID_ALLCONTEXTS:
-				HALT_ON_ERRORCOND(0 && "INVVPID 2 not implemented");
+				xmhf_nested_arch_x86vmx_invvpid_all_ctx(vcpu);
+				succeed = true;
 				break;
 			case VMX_INVVPID_SINGLECONTEXTGLOBAL:
-				HALT_ON_ERRORCOND(0 && "INVVPID 3 not implemented");
+				if (descriptor.vpid) {
+					xmhf_nested_arch_x86vmx_invvpid_single_ctx_global
+						(vcpu, descriptor.vpid);
+					succeed = true;
+				}
 				break;
 			default:
 				break;

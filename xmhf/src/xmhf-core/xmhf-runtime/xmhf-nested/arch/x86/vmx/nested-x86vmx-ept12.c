@@ -315,6 +315,39 @@ bool xmhf_nested_arch_x86vmx_invvpid_indiv_addr(VCPU * vcpu, u16 vpid12,
 	return true;
 }
 
+/* Invalidate one VPID */
+void xmhf_nested_arch_x86vmx_invvpid_single_ctx(VCPU * vcpu, u16 vpid12)
+{
+	vpid02_cache_line_t *line;
+	if (LRU_SET_INVALIDATE(&vpid02_cache[vcpu->id], vpid12, line)) {
+		/*
+		 * INVVPID will be executed in xmhf_nested_arch_x86vmx_get_vpid02()
+		 * when this VPID02 is used the next time.
+		 */
+	}
+}
+
+/* Invalidate all VPIDs */
+void xmhf_nested_arch_x86vmx_invvpid_all_ctx(VCPU * vcpu)
+{
+	LRU_SET_INVALIDATE_ALL(&vpid02_cache[vcpu->id]);
+	/*
+	 * INVVPID will be executed in xmhf_nested_arch_x86vmx_get_vpid02() when
+	 * the VPID02 is used the next time.
+	 */
+}
+
+/* Invalidate one VPID except global transitions */
+void xmhf_nested_arch_x86vmx_invvpid_single_ctx_global(VCPU * vcpu, u16 vpid12)
+{
+	vpid02_cache_line_t *line;
+	if (LRU_SET_FIND_IMMUTABLE(&vpid02_cache[vcpu->id], vpid12, line)) {
+		u16 vpid02 = line->value;
+		HALT_ON_ERRORCOND(__vmx_invvpid
+						  (VMX_INVVPID_SINGLECONTEXTGLOBAL, vpid02, 0));
+	}
+}
+
 /*
  * Get pointer to EPT02 for current VMCS12. Will fill EPT02 as EPT violation
  * happens.

@@ -108,6 +108,9 @@ void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12);
 void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu);
 bool xmhf_nested_arch_x86vmx_invvpid_indiv_addr(VCPU * vcpu, u16 vpid12,
 												u64 address);
+void xmhf_nested_arch_x86vmx_invvpid_single_ctx(VCPU * vcpu, u16 vpid12);
+void xmhf_nested_arch_x86vmx_invvpid_all_ctx(VCPU * vcpu);
+void xmhf_nested_arch_x86vmx_invvpid_single_ctx_global(VCPU * vcpu, u16 vpid12);
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 										bool *cache_hit,
 										ept02_cache_line_t ** cache_line);
