@@ -481,6 +481,7 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 	vcpu->vmx_nested_vmxon_pointer = 0;
 	vcpu->vmx_nested_is_vmx_root_operation = 0;
 	vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
+
 	/* Compute MSRs for the guest */
 	for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
 		vcpu->vmx_nested_msrs[i] = vcpu->vmx_msrs[i];
@@ -575,6 +576,9 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 		vcpu->vmx_nested_entry_ctls =
 			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 	}
+
+	/* Initialize EPT cache */
+	xmhf_nested_arch_x86vmx_ept_init(vcpu);
 }
 
 /* Handle VMEXIT from nested guest */

@@ -129,31 +129,65 @@ static void *ept12_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
  */
 static void ept02_ctx_init(VCPU * vcpu, u32 index, ept02_ctx_t * ept02_ctx)
 {
-	u32 i;
-	spa_t root_pa;
 	ept02_ctx->page_pool = ept02_page_pool[vcpu->idx][index];
 	ept02_ctx->page_alloc = ept02_page_alloc[vcpu->idx][index];
-	for (i = 0; i < EPT02_PAGE_POOL_SIZE; i++) {
-		ept02_ctx->page_alloc[i] = 0;
-	}
 	ept02_ctx->ctx.gzp = ept02_gzp;
 	ept02_ctx->ctx.pa2ptr = ept02_pa2ptr;
 	ept02_ctx->ctx.ptr2pa = ept02_ptr2pa;
-	root_pa = hva2spa(ept02_gzp(&ept02_ctx->ctx, PAGE_SIZE_4K, PAGE_SIZE_4K));
-	ept02_ctx->ctx.root_pa = root_pa;
+	/* root_pa will be assigned to by ept02_ctx_update() later */
+	ept02_ctx->ctx.root_pa = 0;
 	ept02_ctx->ctx.t = HPT_TYPE_EPT;
-	HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_SINGLECONTEXT,
-								   root_pa | 0x1eULL));
 }
 
-static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx, gpa_t ept12)
+static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx)
 {
 	ept12_ctx->ctx.ptr2pa = ept12_ptr2pa;
 	ept12_ctx->ctx.pa2ptr = ept12_pa2ptr;
 	ept12_ctx->ctx.gzp = ept12_gzp;
-	ept12_ctx->ctx.root_pa = ept12;
+	/* root_pa will be assigned to by ept12_ctx_update_ept12() later */
+	ept12_ctx->ctx.root_pa = 0;
 	ept12_ctx->ctx.t = HPT_TYPE_EPT;
 	guestmem_init(vcpu, &ept12_ctx->ctx01);
+}
+
+/*
+ * Handle EPT02 reset (e.g. due to EPT TLB flush).
+ * Most fields in ept02_ctx_t do not change, so this function only updates the
+ * fields that change. This function also flushes L0's EPT TLB.
+ */
+static void ept02_ctx_reset(ept02_ctx_t * ept02_ctx) {
+	u32 i;
+	spa_t root_pa;
+	for (i = 0; i < EPT02_PAGE_POOL_SIZE; i++) {
+		ept02_ctx->page_alloc[i] = 0;
+	}
+	root_pa = hva2spa(ept02_gzp(&ept02_ctx->ctx, PAGE_SIZE_4K, PAGE_SIZE_4K));
+	ept02_ctx->ctx.root_pa = root_pa;
+	HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_SINGLECONTEXT,
+								   root_pa | 0x1eULL));
+}
+
+/*
+ * Most fields in ept12_ctx_t do not change. This function only updates the
+ * fields that change. The fields are EPT12 (in argument) and EPT01 (from
+ * vcpu).
+ */
+static void ept12_ctx_update(VCPU * vcpu, ept12_ctx_t * ept12_ctx, gpa_t ept12)
+{
+	ept12_ctx->ctx01.host_ctx.root_pa =
+		hpt_eptp_get_address(HPT_TYPE_EPT, vcpu->vmcs.control_EPT_pointer);
+	ept12_ctx->ctx.root_pa = ept12;
+}
+
+void xmhf_nested_arch_x86vmx_ept_init(VCPU * vcpu)
+{
+	ept02_cache_index_t index;
+	ept02_cache_line_t *line;
+	LRU_SET_INIT(&ept02_cache[vcpu->id]);
+	LRU_FOREACH(index, line, &ept02_cache[vcpu->id]) {
+		ept02_ctx_init(vcpu, index, &line->value.ept02_ctx);
+		ept12_ctx_init(vcpu, &line->value.ept12_ctx);
+	}
 }
 
 /*
@@ -232,9 +266,10 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 	ept02_cache_index_t index;
 	ept02_cache_line_t *line = LRU_SET_FIND_EVICT(&ept02_cache[vcpu->id],
 												  ept12, index, hit);
+	(void) index;
 	if (!hit) {
-		ept02_ctx_init(vcpu, index, &line->value.ept02_ctx);
-		ept12_ctx_init(vcpu, &line->value.ept12_ctx, ept12);
+		ept02_ctx_reset(&line->value.ept02_ctx);
+		ept12_ctx_update(vcpu, &line->value.ept12_ctx, ept12);
 	}
 	*cache_hit = hit;
 	*cache_line = line;

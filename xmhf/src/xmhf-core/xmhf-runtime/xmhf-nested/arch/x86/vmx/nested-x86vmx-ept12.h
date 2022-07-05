@@ -90,6 +90,7 @@ typedef struct {
 LRU_NEW_SET(ept02_cache_set_t, ept02_cache_line_t, VMX_NESTED_MAX_ACTIVE_EPT,
 			ept02_cache_index_t, ept02_cache_key_t, ept02_cache_value_t);
 
+void xmhf_nested_arch_x86vmx_ept_init(VCPU * vcpu);
 bool xmhf_nested_arch_x86vmx_check_ept_lower_bits(u64 eptp12,
 												  gpa_t * ept_pml4t);
 void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12);
