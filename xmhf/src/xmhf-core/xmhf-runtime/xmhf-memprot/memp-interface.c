@@ -92,6 +92,15 @@ void xmhf_memprot_flushmappings_localtlb(VCPU *vcpu){
 	xmhf_memprot_arch_flushmappings_localtlb(vcpu);
 }
 
+// flush the TLB of all nested page tables in all cores
+// Requirement: Other cores has been quiesced
+void xmhf_memprot_flushmappings_alltlb(VCPU *vcpu)
+{
+    // Notice all cores to flush EPT TLB
+	g_vmx_flush_all_tlb_signal = 1;
+
+	xmhf_memprot_flushmappings_localtlb(vcpu);
+}
 
 //set protection for a given physical memory address
 void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
