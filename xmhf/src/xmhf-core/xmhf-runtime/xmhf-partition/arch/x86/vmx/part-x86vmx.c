@@ -671,7 +671,7 @@ void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
 	assert( vcpu->vmcs.control_EPT_pointer == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E) );
-	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) );
+	assert( (vcpu->vmcs.control_VMX_seccpu_based & (1U << VMX_SECPROCBASED_ENABLE_EPT)) );
 	assert( vcpu->vmcs.host_RIP == 0xDEADBEEF);
 #endif
 
