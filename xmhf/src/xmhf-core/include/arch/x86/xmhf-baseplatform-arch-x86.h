@@ -614,7 +614,8 @@ static inline void VCPU_gnmiblock_set(VCPU *vcpu, int block)
 /* Return whether guest OS is in long mode (return 1 or 0) */
 static inline u32 VCPU_glm(VCPU *vcpu) {
     if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-        return (vcpu->vmcs.control_VM_entry_controls >> 9) & 1U;
+        return (vcpu->vmcs.control_VM_entry_controls >>
+                VMX_VMENTRY_IA_32E_MODE_GUEST) & 1U;
     } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
         /* Not implemented */
         HALT_ON_ERRORCOND(false);
