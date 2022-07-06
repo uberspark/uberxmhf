@@ -154,7 +154,7 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	// Use the registers returned by <xmhf_app_handlecpuid>
 	xmhf_app_handlecpuid(vcpu, r, old_eax);
 
-	if (old_eax == 0x1) {
+	if (old_eax == 0x1U) {
 #ifndef __NESTED_VIRTUALIZATION__
 		/* Clear VMX capability */
 		r->ecx &= ~(1U << 5);
@@ -167,12 +167,23 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 		/*
 		 * Set Hypervisor Present bit.
 		 * Fedora 35's AP will retry updating Intel microcode forever if the
-		 * update fails. So we set the hypervisor present bit to solve this
-		 * problem.
+		 * update fails. So we set the hypervisor present bit to work around
+		 * this problem.
 		 */
 		r->ecx |= (1U << 31);
 #endif /* !__UPDATE_INTEL_UCODE__ */
 	}
+#ifdef __I386__
+	/*
+	 * For i386 XMHF running on an AMD64 CPU, make the guest think that the CPU
+	 * is i386 (i.e. 32-bits).
+	 */
+	if (old_eax == 0x80000001U) {
+		r->edx &= ~(1U << 29);
+	}
+#elif !defined(__AMD64__)
+    #error "Unsupported Arch"
+#endif /* !defined(__AMD64__) */
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
 
