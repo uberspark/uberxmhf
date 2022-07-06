@@ -219,8 +219,8 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
-		printf("CPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x\n", vcpu->id,
-		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
+		printf("CPU(0x%02x): INT 15(e820): EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x\n",
+		vcpu->id, (u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
 
 		//HALT_ON_ERRORCOND(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
 		//HALT_ON_ERRORCOND(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
@@ -296,7 +296,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (hva_t)gueststackregion);
 					#endif
 					if((sla_t)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
-						printf("INT15 (E820): V86 mode, gueststackregion translated from %08x to %08x\n",
+						printf("INT15 (E820): V86 mode, gueststackregion translated from 0x%08lx to 0x%08lx\n",
 							(hva_t)gueststackregion, (sla_t)gueststackregionphysical);
 						gueststackregion = (u16 *)gueststackregionphysical;
 					}else{
@@ -747,7 +747,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	cr0_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 	old_cr0 = vcpu->vmcs.guest_CR0;
 
-	//printf("[cr0-%02x] MOV TO, old=0x%08llx, new=0x%08llx, shadow=0x%08llx\n",
+	//printf("[cr0-%02x] MOV TO, old=0x%08lx, new=0x%08lx, shadow=0x%08lx\n",
 	//	vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
 
 	/*
@@ -786,7 +786,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 			 */
 			vcpu->vmcs.guest_CR0 &= ~pg_pe_mask;
 			vcpu->vmcs.guest_CR0 |= old_cr0 & pg_pe_mask;
-			//printf("[cr0-%02x] RETRY:  old=0x%08llx\n", vcpu->id,
+			//printf("[cr0-%02x] RETRY:  old=0x%08lx\n", vcpu->id,
 			//	vcpu->vmcs.guest_CR0);
 			/* Sanity check: for bits masked, requested value = CR0 shadow */
 			HALT_ON_ERRORCOND(
@@ -856,11 +856,11 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
 	cr4_proposed_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 
-	printf("CPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx\n", vcpu->id,
-		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
+	printf("CPU(0x%02x): CS:RIP=0x%04x:0x%08lx MOV CR4, xx\n", vcpu->id,
+			(u32)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP);
 
-	printf("MOV TO CR4 (flush TLB?), current=0x%08x, proposed=0x%08x\n",
-			(u32)vcpu->vmcs.guest_CR4, cr4_proposed_value);
+	printf("MOV TO CR4 (flush TLB?), current=0x%08lx, proposed=0x%08lx\n",
+			vcpu->vmcs.guest_CR4, cr4_proposed_value);
 
 	/*
 	 * CR4 mask is the IA32_VMX_CR4_FIXED0 MSR. Modify CR4 shadow to let the
@@ -891,13 +891,13 @@ static void _vmx_handle_intercept_xsetbv(VCPU *vcpu, struct regs *r){
 
 	//XXX: TODO: check for invalid states and inject GP accordingly
 
-	printf("%s: xcr_value=%llx\n", __FUNCTION__, xcr_value);
+	printf("%s: xcr_value=0x%llx\n", __FUNCTION__, xcr_value);
 
 	//XXX: debug: dump CR4 contents
 	{
-		u32 t_cr4;
+		ulong_t t_cr4;
 		t_cr4 = read_cr4();
-		printf("%s: host cr4 value=%08x\n", __FUNCTION__, t_cr4);
+		printf("%s: host cr4 value=0x%08lx\n", __FUNCTION__, t_cr4);
 	}
 
 	//set XCR with supplied value
@@ -999,18 +999,18 @@ u32 xmhf_parteventhub_arch_x86vmx_print_guest(VCPU *vcpu, struct regs *r)
 	if (vcpu->vmcs.control_VM_entry_controls & (1U << VMX_VMENTRY_IA_32E_MODE_GUEST)) 
 	{
 		// amd64 mode
-		printf("	CPU(0x%02x): RFLAGS=0x%016llx\n",
+		printf("	CPU(0x%02x): RFLAGS=0x%016lx\n",
 				vcpu->id, vcpu->vmcs.guest_RFLAGS);
-		printf("	SS:RSP =0x%04x:0x%016llx\n",
+		printf("	SS:RSP =0x%04x:0x%016lx\n",
 				(u16)vcpu->vmcs.guest_SS_selector,
 				vcpu->vmcs.guest_RSP);
-		printf("	CS:RIP =0x%04x:0x%016llx\n",
+		printf("	CS:RIP =0x%04x:0x%016lx\n",
 				(u16)vcpu->vmcs.guest_CS_selector,
 				vcpu->vmcs.guest_RIP);
-		printf("	IDTR base:limit=0x%016llx:0x%04x\n",
+		printf("	IDTR base:limit=0x%016lx:0x%04x\n",
 				vcpu->vmcs.guest_IDTR_base,
 				(u16)vcpu->vmcs.guest_IDTR_limit);
-		printf("	GDTR base:limit=0x%016llx:0x%04x\n",
+		printf("	GDTR base:limit=0x%016lx:0x%04x\n",
 				vcpu->vmcs.guest_GDTR_base,
 				(u16)vcpu->vmcs.guest_GDTR_limit);
 		if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
@@ -1024,18 +1024,18 @@ u32 xmhf_parteventhub_arch_x86vmx_print_guest(VCPU *vcpu, struct regs *r)
 	#error "Unsupported Arch"
 #endif /* !defined(__I386__) */
 	// i386 mode
-	printf("	CPU(0x%02x): EFLAGS=0x%08x\n",
+	printf("	CPU(0x%02x): EFLAGS=0x%08lx\n",
 			vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
-	printf("	SS:ESP =0x%04x:0x%08x\n",
+	printf("	SS:ESP =0x%04x:0x%08lx\n",
 			(u16)vcpu->vmcs.guest_SS_selector,
 			(u32)vcpu->vmcs.guest_RSP);
-	printf("	CS:EIP =0x%04x:0x%08x\n",
+	printf("	CS:EIP =0x%04x:0x%08lx\n",
 			(u16)vcpu->vmcs.guest_CS_selector,
 			(u32)vcpu->vmcs.guest_RIP);
-	printf("	IDTR base:limit=0x%08x:0x%04x\n",
+	printf("	IDTR base:limit=0x%08lx:0x%04x\n",
 			(u32)vcpu->vmcs.guest_IDTR_base,
 			(u16)vcpu->vmcs.guest_IDTR_limit);
-	printf("	GDTR base:limit=0x%08x:0x%04x\n",
+	printf("	GDTR base:limit=0x%08lx:0x%04x\n",
 			(u32)vcpu->vmcs.guest_GDTR_base,
 			(u16)vcpu->vmcs.guest_GDTR_limit);
 	if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
@@ -1155,12 +1155,12 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 				default:
 					printf("VMEXIT-EXCEPTION:\n");
-					printf("control_exception_bitmap=0x%08lx\n",
-						(unsigned long)vcpu->vmcs.control_exception_bitmap);
-					printf("interruption information=0x%08lx\n",
-						(unsigned long)vcpu->vmcs.info_vmexit_interrupt_information);
-					printf("errorcode=0x%08lx\n",
-						(unsigned long)vcpu->vmcs.info_vmexit_interrupt_error_code);
+					printf("control_exception_bitmap=0x%08x\n",
+						vcpu->vmcs.control_exception_bitmap);
+					printf("interruption information=0x%08x\n",
+						vcpu->vmcs.info_vmexit_interrupt_information);
+					printf("errorcode=0x%08x\n",
+						vcpu->vmcs.info_vmexit_interrupt_error_code);
 
 					xmhf_parteventhub_arch_x86vmx_print_guest(vcpu, r);
 					HALT();
@@ -1280,21 +1280,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 
 		default:{
-#ifdef __AMD64__
-			if (vcpu->vmcs.control_VM_entry_controls &
-				(1U << VMX_VMENTRY_IA_32E_MODE_GUEST)) {
-				/* amd64 mode */
-				printf("CPU(0x%02x): Unhandled intercept in long mode: %d (0x%08x)\n",
-						vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
-						(u32)vcpu->vmcs.info_vmexit_reason);
-			}
-#elif !defined(__I386__)
-    #error "Unsupported Arch"
-#endif /* !defined(__I386__) */
-			/* x86 mode */
 			printf("CPU(0x%02x): Unhandled intercept: %d (0x%08x)\n",
-					vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason,
-					(u32)vcpu->vmcs.info_vmexit_reason);
+					vcpu->id, vcpu->vmcs.info_vmexit_reason,
+					vcpu->vmcs.info_vmexit_reason);
 			xmhf_parteventhub_arch_x86vmx_print_guest(vcpu, r);
 			HALT();
 		}
