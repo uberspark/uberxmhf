@@ -124,7 +124,9 @@ typedef struct {
     hva_t   XtVmmEntryPoint;
 #ifdef __XMHF_AMD64__
     hva_t   XtVmmPml4Base;
-#endif /* __XMHF_AMD64__ */
+#elif !defined(__XMHF_I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__XMHF_I386__) */
     hva_t   XtVmmPdptBase;
     hva_t   XtVmmPdtsBase;
     hva_t   XtGuestOSBootModuleBase;

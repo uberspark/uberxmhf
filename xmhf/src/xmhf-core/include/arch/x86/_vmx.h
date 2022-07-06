@@ -639,7 +639,7 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
 #define VMX_INVVPID_ALLCONTEXTS				2
 #define VMX_INVVPID_SINGLECONTEXTGLOBAL		3
 
-static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
+static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, uintptr_t linearaddress){
 	//return status (1 or 0)
 	u32 status;
 
