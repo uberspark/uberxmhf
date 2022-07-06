@@ -787,16 +787,17 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
 //---CR0 access handler-------------------------------------------------
 static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
-	ulong_t cr0_value, old_cr0;
+	ulong_t cr0_value, old_cr0, old_cr0_shadow;
 	ulong_t fixed_1_fields;
 
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 
 	cr0_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 	old_cr0 = vcpu->vmcs.guest_CR0;
+	old_cr0_shadow = vcpu->vmcs.control_CR0_shadow;
 
 	//printf("[cr0-%02x] MOV TO, old=0x%08lx, new=0x%08lx, shadow=0x%08lx\n",
-	//	vcpu->id, old_cr0, cr0_value, vcpu->vmcs.control_CR0_shadow);
+	//	vcpu->id, old_cr0, cr0_value, old_cr0_shadow);
 
 	/*
 	 * Make the guest think that move to CR0 succeeds (by changing shadow).
@@ -824,10 +825,11 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		/* Make sure that CR0.PG and CR0.PE are not masked */
 		if (!(pg_pe_mask & vcpu->vmcs.control_CR0_mask)) {
 			/*
-			 * The original MOV CR0 must also change some bits not related to
-			 * CR0.PG or CR0.PE.
+			 * The original MOV CR0 must also change some bits in CR0 mask
+			 * (not related to CR0.PG or CR0.PE due to previous check).
 			 */
-			HALT_ON_ERRORCOND((old_cr0 ^ cr0_value) & ~pg_pe_mask);
+			HALT_ON_ERRORCOND((old_cr0_shadow ^ cr0_value) &
+							  vcpu->vmcs.control_CR0_mask);
 			/*
 			 * Change VMCS's guest CR0 to requested value, except CR0.PG and
 			 * CR0.PE.
