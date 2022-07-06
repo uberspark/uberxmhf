@@ -849,9 +849,11 @@ void cstartup(multiboot_info_t *mbi){
 	printf("Build revision: %s\n", ___XMHF_BUILD_REVISION___);
 #ifdef __XMHF_AMD64__
 	printf("Subarch: amd64\n\n");
-#else /* !__XMHF_AMD64__ */
+#elif __XMHF_I386__
 	printf("Subarch: i386\n\n");
-#endif /* __XMHF_AMD64__ */
+#else /* !defined(__XMHF_I386__) && !defined(__XMHF_AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__XMHF_I386__) && !defined(__XMHF_AMD64__) */
 
     printf("INIT(early): initializing, total modules=%u\n", mods_count);
 
@@ -873,6 +875,19 @@ void cstartup(multiboot_info_t *mbi){
     } else {
         printf("INIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
     }
+
+#ifdef __XMHF_AMD64__
+    //check whether 64-bit is supported by the CPU
+    {
+        uint32_t eax, edx, ebx, ecx;
+        cpuid(0x80000000U, &eax, &ebx, &ecx, &edx);
+        HALT_ON_ERRORCOND(eax >= 0x80000001U);
+        cpuid(0x80000001U, &eax, &ebx, &ecx, &edx);
+        HALT_ON_ERRORCOND((edx & (1U << 29)) && "64-bit not supported");
+    }
+#elif !defined(__XMHF_I386__)
+    #error "Unsupported Arch"
+#endif /* !defined(__XMHF_I386__) */
 
     //deal with MP and get CPU table
     dealwithMP();
