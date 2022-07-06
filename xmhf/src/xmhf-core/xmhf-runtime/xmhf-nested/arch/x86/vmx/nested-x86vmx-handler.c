@@ -179,6 +179,7 @@ static void _vmx_decode_r_m128(VCPU * vcpu, struct regs *r, ulong_t * ptype,
 	inst_info.raw = vcpu->vmcs.info_vmx_instruction_information;
 	HALT_ON_ERRORCOND(inst_info.mem_reg == 0);
 	type = _vmx_decode_reg(inst_info.reg2, vcpu, r);
+	*ptype = 0;
 	memcpy(ptype, type, size);
 	*ppdescriptor = _vmx_decode_mem_operand(vcpu, r);
 }
