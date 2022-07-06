@@ -538,8 +538,6 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 	{
 		/* "VMCS shadowing" not supported */
 		u64 mask = ~(1ULL << (32 + VMX_SECPROCBASED_VMCS_SHADOWING));
-		/* "Unrestricted guest" not supported */
-		mask &= ~(1ULL << (32 + VMX_SECPROCBASED_UNRESTRICTED_GUEST));
 		/* "Sub-page write permissions for EPT" not supported */
 		mask &=
 			~(1ULL <<

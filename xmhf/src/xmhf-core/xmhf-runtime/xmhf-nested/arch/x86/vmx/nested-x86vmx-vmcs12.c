@@ -343,8 +343,8 @@ static u32 _vmcs12_get_ctls(VCPU * vcpu, struct nested_vmcs12 *vmcs12,
 	}
 	{
 		u32 val = 0;
-		u32 fixed0 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
-		u32 fixed1 = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
+		u32 fixed0 = vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
+		u32 fixed1 = vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
 		/* Check whether guest enables secondary controls */
 		if (_vmx_hasctl_activate_secondary_controls(ctls)) {
 			val = vmcs12->control_VMX_seccpu_based;
