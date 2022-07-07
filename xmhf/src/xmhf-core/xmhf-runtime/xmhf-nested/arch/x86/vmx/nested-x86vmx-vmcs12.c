@@ -344,7 +344,8 @@ static u32 _vmcs12_get_ctls(VCPU * vcpu, struct nested_vmcs12 *vmcs12,
 	{
 		u32 val = 0;
 		u32 fixed0 = vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
-		u32 fixed1 = vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
+		u32 fixed1 =
+			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] >> 32;
 		/* Check whether guest enables secondary controls */
 		if (_vmx_hasctl_activate_secondary_controls(ctls)) {
 			val = vmcs12->control_VMX_seccpu_based;
@@ -521,7 +522,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 				HALT_ON_ERRORCOND(0 && "Unknown status");
 				break;
 			}
-#endif /* !__DEBUG_QEMU__ */
+#endif							/* !__DEBUG_QEMU__ */
 		} else {
 			/* Guest does not use EPT, just use XMHF's EPT */
 			vmcs12_info->guest_ept_enable = 0;
