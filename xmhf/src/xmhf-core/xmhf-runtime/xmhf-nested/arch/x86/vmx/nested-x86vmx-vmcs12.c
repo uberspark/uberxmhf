@@ -1133,8 +1133,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		}
 	}
 	{
-		HALT_ON_ERRORCOND(vmcs12->control_VM_entry_controls ==
-						  __vmx_vmread32(VMCSENC_control_VM_entry_controls));
+		u32 val = __vmx_vmread32(VMCSENC_control_VM_entry_controls);
+		/* mask is bits that cannot change */
+		u32 mask = ~(1U << VMX_VMENTRY_IA_32E_MODE_GUEST);
+		HALT_ON_ERRORCOND((vmcs12->control_VM_entry_controls & mask) ==
+						  (val & mask));
+		vmcs12->control_VM_entry_controls = val;
 	}
 	{
 		/* VMCS02 needs to always process the same fields as VMCS01 */
