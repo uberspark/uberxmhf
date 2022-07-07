@@ -636,9 +636,14 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		int status = 3;
 		if (vmcs12_info->guest_ept_enable) {
 			ept02_cache_line_t *cache_line = vmcs12_info->guest_ept_cache_line;
-			status =
-				xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, vmcs12_info,
-														  cache_line);
+			u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
+			ulong_t qualification =
+				__vmx_vmreadNW(VMCSENC_info_exit_qualification);
+			status = xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu,
+															   vmcs12_info,
+															   cache_line,
+															   guest2_paddr,
+															   qualification);
 		}
 		switch (status) {
 		case 1:

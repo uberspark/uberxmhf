@@ -401,17 +401,17 @@ u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12, bool *cache_hit)
  */
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info,
-											  ept02_cache_line_t * cache_line)
+											  ept02_cache_line_t * cache_line,
+											  u64 guest2_paddr,
+											  ulong_t qualification)
 {
 	ept12_ctx_t *ept12_ctx;
-	u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
 	gpa_t guest1_paddr;
 	spa_t xmhf_paddr;
 	hpt_pmeo_t pmeo12;
 	hpt_pmeo_t pmeo01;
 	hpt_pmeo_t pmeo02;
 	hpt_prot_t access_type;
-	ulong_t qualification = __vmx_vmreadNW(VMCSENC_info_exit_qualification);
 
 	HALT_ON_ERRORCOND(cache_line->valid);
 	HALT_ON_ERRORCOND(cache_line->key == vmcs12_info->guest_ept_root);
