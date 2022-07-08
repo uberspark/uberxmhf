@@ -90,7 +90,7 @@ def generate_xmhf_image(args):
 			'gettext.mod', 'gzio.mod', 'linux.mod', 'lsapm.mod', 'mmap.mod',
 			'multiboot.mod', 'net.mod', 'normal.mod', 'priority_queue.mod',
 			'relocator.mod', 'terminal.mod', 'vbe.mod', 'verifiers.mod',
-			'video_fb.mod', 'video.mod',
+			'video_fb.mod', 'video.mod', 'test.mod',
 		]
 	for i in mods_list:
 		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))

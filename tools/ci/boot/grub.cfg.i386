@@ -9,11 +9,36 @@ set menu_color_normal=cyan/blue
 set menu_color_highlight=white/blue
 
 menuentry "XMHF-i386" {
-	set root='(hd0,msdos1)'		# point to file system for /
+	echo "root = $root"
+	if [ "${root}" = "hd0,msdos1" ] ; then
+		set new_root='hd1,msdos1'
+		set boot_drive='0x81'
+		set new_grub='(hd1)+1'
+	fi
+	if [ "${root}" = "hd1,msdos1" ] ; then
+		set new_root='hd2,msdos1'
+		set boot_drive='0x82'
+		set new_grub='(hd2)+1'
+	fi
+	if [ "${root}" = "hd2,msdos1" ] ; then
+		set new_root='hd3,msdos1'
+		set boot_drive='0x83'
+		set new_grub='(hd3)+1'
+	fi
+	if [ "${root}" = "hd3,msdos1" ] ; then
+		set new_root='hd4,msdos1'
+		set boot_drive='0x84'
+		set new_grub='(hd4)+1'
+	fi
+	if [ "${root}" = "hd4,msdos1" ] ; then
+		set new_root='hd5,msdos1'
+		set boot_drive='0x85'
+		set new_grub='(hd5)+1'
+	fi
+	set root="$new_root"
 	set kernel='/boot/init-x86-i386.bin'
-	set boot_drive='0x81'	# should point to where grub is installed
 	echo "Loading ${kernel}..."
 	multiboot ${kernel} serial=115200,8n1,0x3f8 boot_drive=${boot_drive}
 	module /boot/hypervisor-x86-i386.bin.gz
-	module --nounzip (hd1)+1	# should point to where grub is installed
+	module --nounzip ${new_grub}
 }
