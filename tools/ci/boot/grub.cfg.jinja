@@ -39,8 +39,8 @@ menuentry "{{ menuentry }}" {
 		set boot_drive='0x85'
 		set new_grub='(hd5)+1'
 	fi
-	set root="$new_root"
 	{%- if subarch == 'windows' %}
+	set root="$new_root"
 	parttool ${root} hidden-
 	drivemap -s (hd0) ${root}
 	chainloader +1
