@@ -8,7 +8,7 @@ set timeout=0
 set menu_color_normal=cyan/blue
 set menu_color_highlight=white/blue
 
-menuentry "XMHF-amd64" {
+menuentry "XMHF-i386" {
 	echo "root = $root"
 	if [ "${root}" = "hd0,msdos1" ] ; then
 		set new_root='hd1,msdos1'
@@ -36,9 +36,9 @@ menuentry "XMHF-amd64" {
 		set new_grub='(hd5)+1'
 	fi
 	set root="$new_root"
-	set kernel='/boot/init-x86-amd64.bin'
+	set kernel='/boot/init-x86-i386.bin'
 	echo "Loading ${kernel}..."
 	multiboot ${kernel} serial=115200,8n1,0x3f8 boot_drive=${boot_drive}
-	module /boot/hypervisor-x86-amd64.bin.gz
+	module /boot/hypervisor-x86-i386.bin.gz
 	module --nounzip ${new_grub}
 }
