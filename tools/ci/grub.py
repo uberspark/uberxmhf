@@ -3,7 +3,7 @@
 '''
 
 from subprocess import Popen, check_call
-import argparse, os, re
+import argparse, os, re, jinja2
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -44,6 +44,19 @@ def download_grub(args):
 		assert count >= 284
 	return mods_dir
 
+def generate_grub_cfg(args, grub_dir):
+	if args.subarch in ['i386', 'amd64']:
+		content = open(os.path.join(args.boot_dir, 'grub.cfg.i386')).read()
+		if args.subarch == 'amd64':
+			content = content.replace('i386', 'amd64')
+	elif args.subarch == 'windows':
+		content = open(os.path.join(args.boot_dir, 'grub.cfg.i386')).read()
+	else:
+		raise Exception('Unknown subarch: %s' % repr(args.subarch))
+	cfg_file = os.path.join(grub_dir, 'grub.cfg')
+	open(cfg_file, 'w').write(content)
+	return cfg_file
+
 def generate_xmhf_image(args):
 	grub_dir = os.path.join(args.work_dir, 'grub')
 	check_call(['rm', '-rf', grub_dir])
@@ -75,9 +88,7 @@ def generate_xmhf_image(args):
 		raise Exception('Unknown subarch: %s' % repr(args.subarch))
 	debugfs_cmds.append('mkdir grub')
 	debugfs_cmds.append('cd grub')
-	debugfs_cmds.append('write %s grub.cfg' %
-						os.path.join(args.boot_dir,
-									'grub.cfg.%s' % args.subarch))
+	debugfs_cmds.append('write %s grub.cfg' % generate_grub_cfg(args, grub_dir))
 	debugfs_cmds.append('mkdir i386-pc')
 	debugfs_cmds.append('cd i386-pc')
 	mods_dir = download_grub(args)
