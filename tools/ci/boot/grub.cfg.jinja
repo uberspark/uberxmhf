@@ -5,8 +5,8 @@ terminal_output console
 set timeout_style=menu
 set timeout={{ timeout }}
 
-set menu_color_normal=cyan/blue
-set menu_color_highlight=white/blue
+set menu_color_normal=cyan/{{ menu_bg }}
+set menu_color_highlight=white/{{ menu_bg }}
 
 menuentry "{{ menuentry }}" {
 	echo "root = $root"

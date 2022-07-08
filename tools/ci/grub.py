@@ -20,6 +20,7 @@ def parse_args():
 						help='Copy all GRUB module files')
 	parser.add_argument('--grub-timeout', type=int, default=0)
 	parser.add_argument('--grub-menuentry', default='')
+	parser.add_argument('--grub-menu-bg', default='blue')
 	args = parser.parse_args()
 	return args
 
@@ -61,6 +62,7 @@ def generate_grub_cfg(args, grub_dir):
 		'subarch': args.subarch,
 		'menuentry': menuentry,
 		'timeout': args.grub_timeout,
+		'menu_bg': args.grub_menu_bg,
 	}
 	content = template.render(**dict_render)
 	cfg_file_path = os.path.join(grub_dir, 'grub.cfg')
