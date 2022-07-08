@@ -3,13 +3,17 @@ menuentry_id_option=""
 terminal_input console
 terminal_output console
 set timeout_style=menu
-set timeout=0
+set timeout={{ timeout }}
 
 set menu_color_normal=cyan/blue
 set menu_color_highlight=white/blue
 
-menuentry "XMHF-i386" {
+menuentry "{{ menuentry }}" {
 	echo "root = $root"
+	{%- if subarch == 'windows' %}
+	insmod part_msdos
+	insmod ntfs
+	{%- endif %}
 	if [ "${root}" = "hd0,msdos1" ] ; then
 		set new_root='hd1,msdos1'
 		set boot_drive='0x81'
@@ -36,9 +40,15 @@ menuentry "XMHF-i386" {
 		set new_grub='(hd5)+1'
 	fi
 	set root="$new_root"
-	set kernel='/boot/init-x86-i386.bin'
+	{%- if subarch == 'windows' %}
+	parttool ${root} hidden-
+	drivemap -s (hd0) ${root}
+	chainloader +1
+	{%- else %}
+	set kernel='/boot/init-x86-{{ subarch }}.bin'
 	echo "Loading ${kernel}..."
 	multiboot ${kernel} serial=115200,8n1,0x3f8 boot_drive=${boot_drive}
-	module /boot/hypervisor-x86-i386.bin.gz
+	module /boot/hypervisor-x86-{{ subarch }}.bin.gz
 	module --nounzip ${new_grub}
+	{%- endif %}
 }

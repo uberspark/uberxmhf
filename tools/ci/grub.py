@@ -18,6 +18,8 @@ def parse_args():
 						help='Contain /boot and MBR image to generate GRUB')
 	parser.add_argument('--full-grub-mods', action='store_true',
 						help='Copy all GRUB module files')
+	parser.add_argument('--grub-timeout', type=int, default=0)
+	parser.add_argument('--grub-menuentry', default='')
 	args = parser.parse_args()
 	return args
 
@@ -45,17 +47,25 @@ def download_grub(args):
 	return mods_dir
 
 def generate_grub_cfg(args, grub_dir):
+	template_str = open(os.path.join(args.boot_dir, 'grub.cfg.jinja')).read()
+	template = jinja2.Template(template_str)
 	if args.subarch in ['i386', 'amd64']:
-		content = open(os.path.join(args.boot_dir, 'grub.cfg.i386')).read()
-		if args.subarch == 'amd64':
-			content = content.replace('i386', 'amd64')
+		menuentry = 'XMHF-%s' % args.subarch
 	elif args.subarch == 'windows':
-		content = open(os.path.join(args.boot_dir, 'grub.cfg.i386')).read()
+		menuentry = 'Windows'
 	else:
 		raise Exception('Unknown subarch: %s' % repr(args.subarch))
-	cfg_file = os.path.join(grub_dir, 'grub.cfg')
-	open(cfg_file, 'w').write(content)
-	return cfg_file
+	if args.grub_menuentry:
+		menuentry = args.grub_menuentry
+	dict_render = {
+		'subarch': args.subarch,
+		'menuentry': menuentry,
+		'timeout': args.grub_timeout,
+	}
+	content = template.render(**dict_render)
+	cfg_file_path = os.path.join(grub_dir, 'grub.cfg')
+	open(cfg_file_path, 'w').write(content)
+	return cfg_file_path
 
 def generate_xmhf_image(args):
 	grub_dir = os.path.join(args.work_dir, 'grub')
@@ -103,6 +113,13 @@ def generate_xmhf_image(args):
 			'relocator.mod', 'terminal.mod', 'vbe.mod', 'verifiers.mod',
 			'video_fb.mod', 'video.mod', 'test.mod',
 		]
+		if args.subarch == 'windows':
+			mods_list += [
+				'ntfs.mod', 'parttool.mod', 'drivemap.mod', 'chain.mod',
+				'parttool.lst',
+			]
+			# TODO: some more mods are needed to make GRUB work
+			raise NotImplementedError
 	for i in mods_list:
 		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))
 	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
