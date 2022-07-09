@@ -76,15 +76,21 @@ def generate_xmhf_image(args):
 	os.mkdir(grub_dir)
 
 	# As of writing test3.py, GRUB uses less than 4M, XMHF uses less than 1M.
+	# The GRUB disk usage can be reduced by copying only necessary modules.
 	if args.full_grub_mods:
-		ext4_size_kb = 1024 * 7
+		ext2_size_kb = 1024 * 7
 	else:
-		ext4_size_kb = 1440
+		if args.subarch in ['i386', 'amd64']:
+			ext2_size_kb = 1440
+		elif args.subarch == 'windows':
+			ext2_size_kb = 512
+		else:
+			raise Exception('Unknown subarch: %s' % repr(args.subarch))
 
 	# Construct ext4, prepare command file
 	b_img = os.path.join(grub_dir, 'b.img')
 	check_call(['dd', 'if=/dev/zero', 'of=%s' % b_img, 'bs=1K',
-				'seek=%d' % ext4_size_kb, 'count=0'])
+				'seek=%d' % ext2_size_kb, 'count=0'])
 	check_call(['/sbin/mkfs.ext2', b_img])
 	debugfs_cmds = []
 	debugfs_cmds.append('mkdir boot')
@@ -117,11 +123,11 @@ def generate_xmhf_image(args):
 		]
 		if args.subarch == 'windows':
 			mods_list += [
-				'ntfs.mod', 'parttool.mod', 'drivemap.mod', 'chain.mod',
-				'parttool.lst',
+				'affs.mod', 'chain.mod', 'disk.mod', 'drivemap.mod',
+				'gcry_tiger.mod', 'gfxterm_background.mod', 'msdospart.mod',
+				'nilfs2.mod', 'ntfs.mod', 'parttool.lst', 'parttool.mod',
+				'tga.mod',
 			]
-			# TODO: some more mods are needed to make GRUB work
-			raise NotImplementedError
 	for i in mods_list:
 		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))
 	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
@@ -147,7 +153,7 @@ def generate_xmhf_image(args):
 	a_img = os.path.join(args.boot_dir, 'a.img')
 	c_img = os.path.join(grub_dir, 'c.img')
 	check_call(['dd', 'if=/dev/zero', 'of=%s' % c_img, 'bs=1K',
-				'seek=%d' % (ext4_size_kb + 1), 'count=0'])
+				'seek=%d' % (ext2_size_kb + 1), 'count=0'])
 	check_call(['dd', 'if=%s' % a_img, 'of=%s' % c_img, 'conv=sparse,notrunc',
 				'bs=512', 'count=1M', 'iflag=count_bytes'])
 	check_call(['dd', 'if=%s' % b_img, 'of=%s' % c_img, 'conv=sparse,notrunc',
