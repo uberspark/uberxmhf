@@ -11,6 +11,7 @@
 #   --no-x2apic: hide x2APIC to workaround a bug (--enable-hide-x2apic)
 #   --no-rt-bss: skip runtime bss in image (--enable-skip-runtime-bss)
 #   --no-bl-hash: skip bootloader hashing (--enable-skip-bootloader-hash)
+#   --sl-base BASE: set SL+RT base to BASE instead of 256M (--with-sl-base)
 #   fast: equivalent to --no-rt-bss --no-bl-hash (For running XMHF quickly)
 #   nv: enable nested virtualization (--enable-nested-virtualization)
 #   no_nv: disable nested virtualization (--disable-nested-virtualization)
@@ -40,6 +41,7 @@ CIRCLE_CI="n"
 NO_X2APIC="n"
 NO_RT_BSS="n"
 NO_BL_HASH="n"
+SL_BASE="0x10000000"
 NV="y"
 OPT=""
 
@@ -110,6 +112,10 @@ while [ "$#" -gt 0 ]; do
 			;;
 		--no-bl-hash)
 			NO_BL_HASH="y"
+			;;
+		--sl-base)
+			SL_BASE="$2"
+			shift
 			;;
 		fast)
 			NO_RT_BSS="y"
@@ -208,6 +214,8 @@ fi
 if [ "$NO_BL_HASH" == "y" ]; then
 	CONF+=("--enable-skip-bootloader-hash")
 fi
+
+CONF+=("--with-sl-base=$SL_BASE")
 
 if [ "$CIRCLE_CI" == "y" ]; then
 	CONF+=("--enable-optimize-nested-virt")
