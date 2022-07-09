@@ -187,6 +187,14 @@ AS_IF([test "x${enable_dmap}" != "xno"],
       [DMAP=y],
       [DMAP=n])
 
+# select address of SL and runtime
+AC_SUBST([SL_BASE])
+AC_ARG_WITH([sl_base],
+        AS_HELP_STRING([--with-sl-base=@<:@SL_BASE@:>@],
+                [select base address of SL and runtime (e.g. 0x10000000)]),
+                , [with_sl_base=0x10000000])
+SL_BASE=$[]with_sl_base
+
 # select optimization level
 AC_SUBST([OPT_FLAGS])
 AC_ARG_WITH([opt],
