@@ -3,7 +3,7 @@
 '''
 
 from subprocess import Popen, check_call
-import argparse, os, re
+import argparse, os, re, jinja2
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -18,6 +18,9 @@ def parse_args():
 						help='Contain /boot and MBR image to generate GRUB')
 	parser.add_argument('--full-grub-mods', action='store_true',
 						help='Copy all GRUB module files')
+	parser.add_argument('--grub-timeout', type=int, default=0)
+	parser.add_argument('--grub-menuentry', default='')
+	parser.add_argument('--grub-menu-bg', default='blue')
 	args = parser.parse_args()
 	return args
 
@@ -44,6 +47,28 @@ def download_grub(args):
 		assert count >= 284
 	return mods_dir
 
+def generate_grub_cfg(args, grub_dir):
+	template_str = open(os.path.join(args.boot_dir, 'grub.cfg.jinja')).read()
+	template = jinja2.Template(template_str)
+	if args.subarch in ['i386', 'amd64']:
+		menuentry = 'XMHF-%s' % args.subarch
+	elif args.subarch == 'windows':
+		menuentry = 'Windows'
+	else:
+		raise Exception('Unknown subarch: %s' % repr(args.subarch))
+	if args.grub_menuentry:
+		menuentry = args.grub_menuentry
+	dict_render = {
+		'subarch': args.subarch,
+		'menuentry': menuentry,
+		'timeout': args.grub_timeout,
+		'menu_bg': args.grub_menu_bg,
+	}
+	content = template.render(**dict_render)
+	cfg_file_path = os.path.join(grub_dir, 'grub.cfg')
+	open(cfg_file_path, 'w').write(content)
+	return cfg_file_path
+
 def generate_xmhf_image(args):
 	grub_dir = os.path.join(args.work_dir, 'grub')
 	check_call(['rm', '-rf', grub_dir])
@@ -51,15 +76,21 @@ def generate_xmhf_image(args):
 	os.mkdir(grub_dir)
 
 	# As of writing test3.py, GRUB uses less than 4M, XMHF uses less than 1M.
+	# The GRUB disk usage can be reduced by copying only necessary modules.
 	if args.full_grub_mods:
-		ext4_size_kb = 1024 * 7
+		ext2_size_kb = 1024 * 7
 	else:
-		ext4_size_kb = 1440
+		if args.subarch in ['i386', 'amd64']:
+			ext2_size_kb = 1440
+		elif args.subarch == 'windows':
+			ext2_size_kb = 512
+		else:
+			raise Exception('Unknown subarch: %s' % repr(args.subarch))
 
 	# Construct ext4, prepare command file
 	b_img = os.path.join(grub_dir, 'b.img')
 	check_call(['dd', 'if=/dev/zero', 'of=%s' % b_img, 'bs=1K',
-				'seek=%d' % ext4_size_kb, 'count=0'])
+				'seek=%d' % ext2_size_kb, 'count=0'])
 	check_call(['/sbin/mkfs.ext2', b_img])
 	debugfs_cmds = []
 	debugfs_cmds.append('mkdir boot')
@@ -75,9 +106,7 @@ def generate_xmhf_image(args):
 		raise Exception('Unknown subarch: %s' % repr(args.subarch))
 	debugfs_cmds.append('mkdir grub')
 	debugfs_cmds.append('cd grub')
-	debugfs_cmds.append('write %s grub.cfg' %
-						os.path.join(args.boot_dir,
-									'grub.cfg.%s' % args.subarch))
+	debugfs_cmds.append('write %s grub.cfg' % generate_grub_cfg(args, grub_dir))
 	debugfs_cmds.append('mkdir i386-pc')
 	debugfs_cmds.append('cd i386-pc')
 	mods_dir = download_grub(args)
@@ -90,8 +119,15 @@ def generate_xmhf_image(args):
 			'gettext.mod', 'gzio.mod', 'linux.mod', 'lsapm.mod', 'mmap.mod',
 			'multiboot.mod', 'net.mod', 'normal.mod', 'priority_queue.mod',
 			'relocator.mod', 'terminal.mod', 'vbe.mod', 'verifiers.mod',
-			'video_fb.mod', 'video.mod',
+			'video_fb.mod', 'video.mod', 'test.mod',
 		]
+		if args.subarch == 'windows':
+			mods_list += [
+				'affs.mod', 'chain.mod', 'disk.mod', 'drivemap.mod',
+				'gcry_tiger.mod', 'gfxterm_background.mod', 'msdospart.mod',
+				'nilfs2.mod', 'ntfs.mod', 'parttool.lst', 'parttool.mod',
+				'tga.mod',
+			]
 	for i in mods_list:
 		debugfs_cmds.append('write %s %s' % (os.path.join(mods_dir, i), i))
 	cmd_file = os.path.join(grub_dir, 'debugfs.cmd')
@@ -117,7 +153,7 @@ def generate_xmhf_image(args):
 	a_img = os.path.join(args.boot_dir, 'a.img')
 	c_img = os.path.join(grub_dir, 'c.img')
 	check_call(['dd', 'if=/dev/zero', 'of=%s' % c_img, 'bs=1K',
-				'seek=%d' % (ext4_size_kb + 1), 'count=0'])
+				'seek=%d' % (ext2_size_kb + 1), 'count=0'])
 	check_call(['dd', 'if=%s' % a_img, 'of=%s' % c_img, 'conv=sparse,notrunc',
 				'bs=512', 'count=1M', 'iflag=count_bytes'])
 	check_call(['dd', 'if=%s' % b_img, 'of=%s' % c_img, 'conv=sparse,notrunc',

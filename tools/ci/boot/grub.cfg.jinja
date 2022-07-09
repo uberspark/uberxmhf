@@ -1,0 +1,54 @@
+set default="0"
+menuentry_id_option=""
+terminal_input console
+terminal_output console
+set timeout_style=menu
+set timeout={{ timeout }}
+
+set menu_color_normal=cyan/{{ menu_bg }}
+set menu_color_highlight=white/{{ menu_bg }}
+
+menuentry "{{ menuentry }}" {
+	echo "root = $root"
+	{%- if subarch == 'windows' %}
+	insmod part_msdos
+	insmod ntfs
+	{%- endif %}
+	if [ "${root}" = "hd0,msdos1" ] ; then
+		set new_root='hd1,msdos1'
+		set boot_drive='0x81'
+		set new_grub='(hd1)+1'
+	fi
+	if [ "${root}" = "hd1,msdos1" ] ; then
+		set new_root='hd2,msdos1'
+		set boot_drive='0x82'
+		set new_grub='(hd2)+1'
+	fi
+	if [ "${root}" = "hd2,msdos1" ] ; then
+		set new_root='hd3,msdos1'
+		set boot_drive='0x83'
+		set new_grub='(hd3)+1'
+	fi
+	if [ "${root}" = "hd3,msdos1" ] ; then
+		set new_root='hd4,msdos1'
+		set boot_drive='0x84'
+		set new_grub='(hd4)+1'
+	fi
+	if [ "${root}" = "hd4,msdos1" ] ; then
+		set new_root='hd5,msdos1'
+		set boot_drive='0x85'
+		set new_grub='(hd5)+1'
+	fi
+	{%- if subarch == 'windows' %}
+	set root="$new_root"
+	parttool ${root} hidden-
+	drivemap -s (hd0) ${root}
+	chainloader +1
+	{%- else %}
+	set kernel='/boot/init-x86-{{ subarch }}.bin'
+	echo "Loading ${kernel}..."
+	multiboot ${kernel} serial=115200,8n1,0x3f8 boot_drive=${boot_drive}
+	module /boot/hypervisor-x86-{{ subarch }}.bin.gz
+	module --nounzip ${new_grub}
+	{%- endif %}
+}
