@@ -358,6 +358,7 @@ static u32 _vmcs12_get_ctls(VCPU * vcpu, struct nested_vmcs12 *vmcs12,
 	return VM_INST_SUCCESS;
 }
 
+#ifdef __DEBUG_QEMU__
 static void _hardcode_ept(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 						  ept02_cache_line_t *cache_line, u64 guest2_paddr)
 {
@@ -384,6 +385,7 @@ static void _hardcode_ept(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 		break;
 	}
 }
+#endif							/* !__DEBUG_QEMU__ */
 
 /*
  * Translate VMCS12 (vmcs12) to VMCS02 (already loaded as current VMCS).
