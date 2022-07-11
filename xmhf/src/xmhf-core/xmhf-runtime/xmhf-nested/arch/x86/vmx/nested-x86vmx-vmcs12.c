@@ -358,6 +358,33 @@ static u32 _vmcs12_get_ctls(VCPU * vcpu, struct nested_vmcs12 *vmcs12,
 	return VM_INST_SUCCESS;
 }
 
+static void _hardcode_ept(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
+						  ept02_cache_line_t *cache_line, u64 guest2_paddr)
+{
+	switch (xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, vmcs12_info,
+													  cache_line, guest2_paddr,
+													  HPT_PROTS_RW)) {
+	case 1:
+		/* Everything is well */
+		break;
+	case 2:
+		/*
+		 * Guest hypervisor has not set up EPT for guest2_paddr. This should
+		 * result in an EPT violation in the future. However, if KVM
+		 * is buggy, we may not be able to workaround easily.
+		 */
+		printf("CPU(0x%02x): Warning: 0x%016llx not in guest EPT\n", vcpu->id,
+			   guest2_paddr);
+		break;
+	case 3:
+		HALT_ON_ERRORCOND(0 && "Guest EPT will access illegal memory");
+		break;
+	default:
+		HALT_ON_ERRORCOND(0 && "Unknown status");
+		break;
+	}
+}
+
 /*
  * Translate VMCS12 (vmcs12) to VMCS02 (already loaded as current VMCS).
  * Return an error code following VM instruction error number, or 0 when
@@ -501,30 +528,16 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 			 * xmhf_nested_arch_x86vmx_handle_ept02_exit() with guest2_paddr =
 			 * CR3.
 			 */
-			switch (xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu,
-															  vmcs12_info,
-															  cache_line,
-															  vmcs12->guest_CR3,
-															  HPT_PROTS_RW)) {
-			case 1:
-				/* Everything is well */
-				break;
-			case 2:
-				/*
-				 * Guest hypervisor has not set up EPT for CR3. This should
-				 * result in an EPT violation in the future. However, if KVM
-				 * is buggy, we may not be able to workaround easily.
-				 */
-				printf("CPU(0x%02x): Warning: CR3 not in guest EPT\n",
-					   vcpu->id);
-				break;
-			case 3:
-				HALT_ON_ERRORCOND(0 && "Guest CR3 will access illegal memory");
-				break;
-			default:
-				HALT_ON_ERRORCOND(0 && "Unknown status");
-				break;
-			}
+			_hardcode_ept(vcpu, vmcs12_info, cache_line, vmcs12->guest_CR3);
+			/*
+			 * Workaround a KVM bug:
+			 * https://bugzilla.kernel.org/show_bug.cgi?id=216234
+			 *
+			 * Prevent EPT violations on REP INS instructions. Here we hardcode
+			 * some known physical addresses to prevent EPT violations.
+			 */
+			_hardcode_ept(vcpu, vmcs12_info, cache_line, 0x70000ULL);
+			_hardcode_ept(vcpu, vmcs12_info, cache_line, 0x71000ULL);
 #endif							/* !__DEBUG_QEMU__ */
 		} else {
 			/* Guest does not use EPT, just use XMHF's EPT */
