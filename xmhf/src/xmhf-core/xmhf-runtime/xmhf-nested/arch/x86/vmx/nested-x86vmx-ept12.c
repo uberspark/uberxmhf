@@ -390,26 +390,12 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 		 * Prevent EPT violations on REP INS instructions. Here we hardcode
 		 * some known physical addresses to prevent EPT violations.
 		 */
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x70000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x71000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x72000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x73000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x74000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x75000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x76000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x77000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x78000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x79000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x7a000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x7b000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x7c000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x69000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6a000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6b000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6c000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6d000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6e000ULL);
-		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6f000ULL);
+		{
+			u64 i;
+			for (i = 68000ULL; i < 0x80000ULL; i += PA_PAGE_SIZE_4K) {
+				xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, i);
+			}
+		}
 #endif							/* !__DEBUG_QEMU__ */
 	}
 	*cache_hit = hit;
