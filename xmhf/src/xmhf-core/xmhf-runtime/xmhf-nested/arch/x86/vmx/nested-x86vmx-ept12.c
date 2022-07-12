@@ -382,6 +382,35 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 	if (!hit) {
 		ept02_ctx_reset(&line->value.ept02_ctx);
 		ept12_ctx_update(vcpu, &line->value.ept12_ctx, ept12);
+#ifdef __DEBUG_QEMU__
+		/*
+		 * Workaround a KVM bug:
+		 * https://bugzilla.kernel.org/show_bug.cgi?id=216234
+		 *
+		 * Prevent EPT violations on REP INS instructions. Here we hardcode
+		 * some known physical addresses to prevent EPT violations.
+		 */
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x70000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x71000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x72000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x73000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x74000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x75000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x76000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x77000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x78000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x79000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x7a000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x7b000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x7c000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x69000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6a000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6b000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6c000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6d000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6e000ULL);
+		xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, line, 0x6f000ULL);
+#endif							/* !__DEBUG_QEMU__ */
 	}
 	*cache_hit = hit;
 	*cache_line = line;
@@ -417,7 +446,6 @@ u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12, bool *cache_hit)
  *    for security.
  */
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
-											  vmcs12_info_t * vmcs12_info,
 											  ept02_cache_line_t * cache_line,
 											  u64 guest2_paddr,
 											  ulong_t qualification)
@@ -431,7 +459,6 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	hpt_prot_t access_type;
 
 	HALT_ON_ERRORCOND(cache_line->valid);
-	HALT_ON_ERRORCOND(cache_line->key == vmcs12_info->guest_ept_root);
 	ept12_ctx = &cache_line->value.ept12_ctx;
 	access_type = 0;
 	if (qualification & (1UL << 0)) {
@@ -492,3 +519,34 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 		   guest2_paddr, guest1_paddr, xmhf_paddr);
 	return 1;
 }
+
+#ifdef __DEBUG_QEMU__
+void xmhf_nested_arch_x86vmx_hardcode_ept(VCPU * vcpu,
+										  ept02_cache_line_t *cache_line,
+										  u64 guest2_paddr)
+{
+	switch (xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, cache_line,
+													  guest2_paddr,
+													  HPT_PROTS_RW)) {
+	case 1:
+		/* Everything is well */
+		break;
+	case 2:
+		/*
+		 * Guest hypervisor has not set up EPT for guest2_paddr. This should
+		 * result in an EPT violation in the future. However, if KVM
+		 * is buggy, we may not be able to workaround easily.
+		 */
+		printf("CPU(0x%02x): Warning: 0x%016llx not in guest EPT\n", vcpu->id,
+			   guest2_paddr);
+		break;
+	case 3:
+		HALT_ON_ERRORCOND(0 && "Guest EPT will access illegal memory");
+		break;
+	default:
+		HALT_ON_ERRORCOND(0 && "Unknown status");
+		break;
+	}
+}
+#endif							/* !__DEBUG_QEMU__ */
+

@@ -117,9 +117,11 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12,
 									   bool *cache_hit);
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
-											  vmcs12_info_t * vmcs12_info,
 											  ept02_cache_line_t * cache_line,
 											  u64 guest2_paddr,
 											  ulong_t qualification);
+void xmhf_nested_arch_x86vmx_hardcode_ept(VCPU * vcpu,
+										  ept02_cache_line_t *cache_line,
+										  u64 guest2_paddr);
 
 #endif							/* _NESTED_X86VMX_EPT12_H_ */

@@ -639,6 +639,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
 			ulong_t qualification =
 				__vmx_vmreadNW(VMCSENC_info_exit_qualification);
+			HALT_ON_ERRORCOND(cache_line->key == vmcs12_info->guest_ept_root);
 #ifdef __DEBUG_QEMU__
 			/*
 			 * Workaround a KVM bug:
@@ -681,7 +682,6 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			}
 #endif							/* !__DEBUG_QEMU__ */
 			status = xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu,
-															   vmcs12_info,
 															   cache_line,
 															   guest2_paddr,
 															   qualification);
