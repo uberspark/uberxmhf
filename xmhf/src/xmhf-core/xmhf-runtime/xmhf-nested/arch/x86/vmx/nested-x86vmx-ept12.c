@@ -508,7 +508,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 
 #ifdef __DEBUG_QEMU__
 void xmhf_nested_arch_x86vmx_hardcode_ept(VCPU * vcpu,
-										  ept02_cache_line_t *cache_line,
+										  ept02_cache_line_t * cache_line,
 										  u64 guest2_paddr)
 {
 	switch (xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, cache_line,
@@ -535,4 +535,3 @@ void xmhf_nested_arch_x86vmx_hardcode_ept(VCPU * vcpu,
 	}
 }
 #endif							/* !__DEBUG_QEMU__ */
-

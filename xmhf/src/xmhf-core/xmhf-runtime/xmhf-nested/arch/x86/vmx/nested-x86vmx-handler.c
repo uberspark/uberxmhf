@@ -653,15 +653,16 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				ulong_t cs_base = __vmx_vmreadNW(VMCSENC_guest_CS_base);
 				ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
 				ulong_t cs_rip = cs_base + rip;
-				u32 inst_len = __vmx_vmread32(
-					VMCSENC_info_vmexit_instruction_length);
+				u32 inst_len =
+					__vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
 				u8 insts[16];
 				int result;
 				HALT_ON_ERRORCOND(inst_len <= 16);
 				if (cs_rip != guest2_paddr) {
-					result = hptw_checked_copy_from_va(
-						&cache_line->value.ept02_ctx.ctx, 0, insts, cs_rip,
-						inst_len);
+					result =
+						hptw_checked_copy_from_va(&cache_line->value.ept02_ctx.
+												  ctx, 0, insts, cs_rip,
+												  inst_len);
 					if (result == 0) {
 						u32 i;
 						if ((inst_len >= 2 && insts[0] == 0xf3 &&
