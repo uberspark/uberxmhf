@@ -1034,6 +1034,44 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			return 1;
 		}
 		return 0;
+	case VMX_VMEXIT_VMREAD:	/* fallthrough */
+	case VMX_VMEXIT_VMWRITE:
+		vcpu->vmcs.guest_CS_selector = __vmx_vmread16(0x0802);
+		vcpu->vmcs.control_EPT_pointer = __vmx_vmread64(0x201A);
+		vcpu->vmcs.control_VM_entry_controls = __vmx_vmread32(0x4012);
+		vcpu->vmcs.info_vmexit_instruction_length = __vmx_vmread32(0x440C);
+		vcpu->vmcs.info_vmx_instruction_information = __vmx_vmread32(0x440E);
+		vcpu->vmcs.guest_CS_access_rights = __vmx_vmread32(0x4816);
+		vcpu->vmcs.control_CR0_mask = __vmx_vmreadNW(0x6000);
+		vcpu->vmcs.control_CR0_shadow = __vmx_vmreadNW(0x6004);
+		vcpu->vmcs.info_exit_qualification = __vmx_vmreadNW(0x6400);
+		vcpu->vmcs.guest_CR0 = __vmx_vmreadNW(0x6800);
+		vcpu->vmcs.guest_CR3 = __vmx_vmreadNW(0x6802);
+		vcpu->vmcs.guest_ES_base = __vmx_vmreadNW(0x6806);
+		vcpu->vmcs.guest_CS_base = __vmx_vmreadNW(0x6808);
+		vcpu->vmcs.guest_SS_base = __vmx_vmreadNW(0x680A);
+		vcpu->vmcs.guest_DS_base = __vmx_vmreadNW(0x680C);
+		vcpu->vmcs.guest_FS_base = __vmx_vmreadNW(0x680E);
+		vcpu->vmcs.guest_GS_base = __vmx_vmreadNW(0x6810);
+		vcpu->vmcs.guest_RSP = __vmx_vmreadNW(0x681C);
+		vcpu->vmcs.guest_RIP = __vmx_vmreadNW(0x681E);
+		vcpu->vmcs.guest_RFLAGS = __vmx_vmreadNW(0x6820);
+		switch ((u32)vcpu->vmcs.info_vmexit_reason) {
+		case VMX_VMEXIT_VMREAD:
+			xmhf_nested_arch_x86vmx_handle_vmread(vcpu, r);
+			break;
+		case VMX_VMEXIT_VMWRITE:
+			xmhf_nested_arch_x86vmx_handle_vmwrite(vcpu, r);
+			break;
+		default:
+			HALT_ON_ERRORCOND(0);
+		}
+		__vmx_vmwrite32(0x4016, vcpu->vmcs.control_VM_entry_interruption_information);
+		__vmx_vmwrite32(0x4018, vcpu->vmcs.control_VM_entry_exception_errorcode);
+		__vmx_vmwriteNW(0x681C, vcpu->vmcs.guest_RSP);
+		__vmx_vmwriteNW(0x681E, vcpu->vmcs.guest_RIP);
+		__vmx_vmwriteNW(0x6820, vcpu->vmcs.guest_RFLAGS);
+		return 1;
 	default:
 		return 0;
 	}

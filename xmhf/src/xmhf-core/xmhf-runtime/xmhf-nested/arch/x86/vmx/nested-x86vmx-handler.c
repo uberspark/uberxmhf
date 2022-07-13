@@ -645,11 +645,13 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			 * Workaround a KVM bug:
 			 * https://bugzilla.kernel.org/show_bug.cgi?id=216234
 			 *
-			 * Prevent EPT violations on REP INS instructions. Here we halt
-			 * when such a situation is detected. To workaround, should
-			 * hard-code EPT02 entries for these addresses beforehand.
+			 * When enabled, the following code detects EPT violations on
+			 * REP INS instructions. However, the following code may be
+			 * disabled to increase efficiency. When such a situation is
+			 * detected EPT02 entries should be hard-coded for these addresses
+			 * beforehand.
 			 */
-			{
+			if (0) {
 				ulong_t cs_base = __vmx_vmreadNW(VMCSENC_guest_CS_base);
 				ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
 				ulong_t cs_rip = cs_base + rip;
