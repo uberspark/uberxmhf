@@ -127,6 +127,15 @@ AS_IF([test "x${enable_skip_runtime_bss}" != "xno"],
       [SKIP_RUNTIME_BSS=y],
       [SKIP_RUNTIME_BSS=n])
 
+AC_SUBST([SKIP_INIT_SMP])
+AC_ARG_ENABLE([skip_init_smp],
+        AS_HELP_STRING([--enable-skip-init-smp@<:@=yes|no@:>@],
+                [do not start APs in bootloader, only when no DRT]),
+                , [enable_skip_init_smp=no])
+AS_IF([test "x${enable_skip_init_smp}" != "xno"],
+      [SKIP_INIT_SMP=y],
+      [SKIP_INIT_SMP=n])
+
 AC_SUBST([SKIP_BOOTLOADER_HASH])
 AC_ARG_ENABLE([skip_bootloader_hash],
         AS_HELP_STRING([--enable-skip-bootloader-hash@<:@=yes|no@:>@],
