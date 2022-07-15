@@ -48,7 +48,7 @@
 #define TV_LOG_H
 
 #ifndef EU_LOG_LVL
-#define EU_LOG_LVL EU_WARN
+#define EU_LOG_LVL EU_TRACE
 #endif
 
 #ifndef EU_LOG_PREFIX
