@@ -222,7 +222,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
 		printf("CPU(0x%02x): INT 15(e820): EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x\n",
-		vcpu->id, (u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
+		vcpu->id, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
 
 		//HALT_ON_ERRORCOND(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
 		//HALT_ON_ERRORCOND(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
