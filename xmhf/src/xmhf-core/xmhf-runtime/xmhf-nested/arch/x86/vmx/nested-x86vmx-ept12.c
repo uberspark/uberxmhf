@@ -501,8 +501,10 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	/* Put page map entry into EPT02 */
 	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(&cache_line->value.ept02_ctx.ctx,
 											 &pmeo02, guest2_paddr) == 0);
-	printf("CPU(0x%02x): EPT: L2=0x%08llx L1=0x%08llx L0=0x%08llx\n", vcpu->id,
-		   guest2_paddr, guest1_paddr, xmhf_paddr);
+	if (0) {
+		printf("CPU(0x%02x): EPT: L2=0x%08llx L1=0x%08llx L0=0x%08llx\n",
+			   vcpu->id, guest2_paddr, guest1_paddr, xmhf_paddr);
+	}
 	return 1;
 }
 
