@@ -388,9 +388,9 @@ void* hptw_checked_access_va(hptw_ctx_t *ctx,
     eu_trace("pmo t:%d pm:%p lvl:%d",
              pmo.t, pmo.pm, pmo.lvl);
     hpt_pm_get_pmeo_by_va( &pmeo, &pmo, va);
-    EU_CHK(((access_type & hpt_pmeo_getprot(&pmeo)) == access_type)
+    EU_CHK_W(((access_type & hpt_pmeo_getprot(&pmeo)) == access_type)
            && (cpl == HPTW_CPL0 || hpt_pmeo_getuser(&pmeo)),
-           eu_err_e("req-priv:%lld req-cpl:%d priv:%lld user-accessible:%d",
+           eu_warn_e("req-priv:%lld req-cpl:%d priv:%lld user-accessible:%d",
                     access_type, cpl, hpt_pmeo_getprot(&pmeo), hpt_pmeo_getuser(&pmeo)));
   } while (hptw_next_lvl(ctx, &pmo, va));
 

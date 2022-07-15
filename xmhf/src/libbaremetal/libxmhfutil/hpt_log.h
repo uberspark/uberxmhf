@@ -47,7 +47,7 @@
 #ifndef HPT_LOG_H
 #define HPT_LOG_H
 
-#define EU_LOG_LVL EU_WARN
+#define EU_LOG_LVL EU_ERR
 #define EU_LOG_PREFIX "HPT"
 #include <eulog.h>
 #include <euchk.h>
