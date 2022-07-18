@@ -1086,10 +1086,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
   }
 
   /* disable NMIs, assume regular code has NMIs enabled */
-  {
-    EU_CHK(VCPU_gnmiblock(vcpu) == 0);
-    VCPU_gnmiblock_set(vcpu, 1);
-  }
+  xmhf_smpguest_nmi_block(vcpu);
 
   /* XXX FIXME- what's the right thing here? Keeping 'legacy' behavior
      of setting this flag for AMD only and doing nothing for INTEL for
@@ -1301,10 +1298,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   }
 
   /* enable NMIs, check that scode has NMIs disabled */
-  {
-    EU_CHK(VCPU_gnmiblock(vcpu) == 1);
-    VCPU_gnmiblock_set(vcpu, 0);
-  }
+  xmhf_smpguest_nmi_unblock(vcpu);
 
   eu_trace("stack pointer before exiting scode is %#lx",(uintptr_t)VCPU_grsp(vcpu));
 

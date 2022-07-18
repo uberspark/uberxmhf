@@ -559,38 +559,6 @@ static inline void VCPU_gcr4_set(VCPU *vcpu, ulong_t cr4)
   }
 }
 
-/* Return whether guest blocks NMI (return 1 or 0) */
-static inline int VCPU_gnmiblock(VCPU *vcpu)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (vcpu->vmcs.guest_interruptibility >> 3) & 1U;
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    /* Not implemented */
-    HALT_ON_ERRORCOND(false);
-    return 0;
-  } else {
-    HALT_ON_ERRORCOND(false);
-    return 0;
-  }
-}
-
-/* Set whether guest blocks NMI, block is treated as boolean value */
-static inline void VCPU_gnmiblock_set(VCPU *vcpu, int block)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    if (block) {
-      vcpu->vmcs.guest_interruptibility |= (1U << 3);
-    } else {
-      vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
-    }
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    /* Not implemented */
-    HALT_ON_ERRORCOND(false);
-  } else {
-    HALT_ON_ERRORCOND(false);
-  }
-}
-
 /* Return whether guest OS is in long mode (return 1 or 0) */
 static inline u32 VCPU_glm(VCPU *vcpu) {
     if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
