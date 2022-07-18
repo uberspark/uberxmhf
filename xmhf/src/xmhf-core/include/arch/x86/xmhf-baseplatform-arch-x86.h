@@ -182,8 +182,13 @@ struct _guestmtrrmsrs {
 typedef struct {
   /* Whether guest wants to blocks NMI */
   bool guest_nmi_block;
-  /* Whether NMI is pending, regardless NMI block status */
-  bool guest_nmi_pending;
+  /*
+   * Number of pending NMI interrupts to inject to the guest.
+   * When the guest OS is blocking NMIs (using "Blocking by NMI" bit in VMCS),
+   * the maximum number of this field is 1. Otherwise, the maximum is 2.
+   * guest_nmi_block does not affect the maximum number of this field.
+   */
+  u32 guest_nmi_pending;
 } guest_nmi_t;
 
 //the vcpu structure which holds the current state of a core
@@ -247,28 +252,19 @@ typedef struct _vcpu {
   struct _guestmtrrmsrs vmx_guestmtrrmsrs;
 
   /*
-   * Whether the NMI handling logic wants to set VMCS NMI window bit.
-   * This field is used to solve race condition in accessing VMCS.
-   * This field has lower precedence than vmx_guest_vmcs_nmi_window_clear.
-   * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception() for details
-   * about these variables and the choice of precedence.
+   * Whether the hypervisor is busy so that it cannot inject NMI to the guest.
+   * If so, NMI exception should set vmx_guest_nmi_visited to true. The
+   * hypervisor will check later.
    */
-  bool vmx_guest_vmcs_nmi_window_set;
+  volatile bool vmx_guest_nmi_disable;
+  /* Whether an NMI exception arrived during vmx_guest_nmi_disable = true */
+  volatile bool vmx_guest_nmi_visited;
   /*
-   * Whether the NMI handling logic wants to clear VMCS NMI window bit.
-   * This field is used to solve race condition in accessing VMCS.
-   * This field has higher precedence than vmx_guest_vmcs_nmi_window_set.
-   * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception() for details
-   * about these variables and the choice of precedence.
+   * Argument to NMI exception handler, decides how the NMI exception is
+   * handled. Values are macros starting with "SMPG_VMX_NMI_".
    */
-  bool vmx_guest_vmcs_nmi_window_clear;
-  /*
-   * This function tracks whether xmhf_smpguest_arch_x86vmx_nmi_block
-   * or xmhf_smpguest_arch_x86vmx_nmi_unblock are called in the current
-   * intercept handler. This prevents multiple calls to these functions in one
-   * intercept handler.
-   */
-  bool vmx_guest_nmi_blocking_modified;
+  u32 vmx_guest_nmi_handler_arg;
+
   /* Configure NMI blocking for the guest */
   guest_nmi_t vmx_guest_nmi_cfg;
 

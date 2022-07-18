@@ -1057,12 +1057,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//read VMCS from physical CPU/core
 #ifndef __XMHF_VERIFICATION__
 	/*
-	 * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
-	 * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
+	 * The intercept handler access VMCS fields using vcpu->vmcs, but the NMI
+	 * exception handler relies on the hardware VMCS (i.e. use __vmx_vmread()).
+	 * So we disable NMI during the entire intercept handler.
 	 */
-	vcpu->vmx_guest_vmcs_nmi_window_set = false;
-	vcpu->vmx_guest_vmcs_nmi_window_clear = false;
-	vcpu->vmx_guest_nmi_blocking_modified = false;
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
 	xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
@@ -1171,30 +1170,20 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case VMX_VMEXIT_NMI_WINDOW: {
-			/* Clear NMI windowing */
-			vcpu->vmcs.control_VMX_cpu_based &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-			/* Check whether the CPU can handle NMI */
-			if (vcpu->vmcs.control_exception_bitmap & (1U << CPU_EXCEPTION_NMI)) {
-				/*
-				 * TODO: hypapp has chosen to intercept NMI so callback.
-				 * Currently not implemented. One way is to drop the NMI
-				 * interrupt.
-				 *
-				 * For example, TrustVisor should use VCPU_gnmiblock_set() to
-				 * block NMIs when running PALs. For now, halt to make sure
-				 * hypapp developer notices the problem.
-				 */
-				printf("CPU(0x%02x): HALT because dropping NMI\n", vcpu->id);
-				HALT_ON_ERRORCOND(0);
-			} else {
-				/* Inject NMI to guest */
-                vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-                vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-                    INTR_TYPE_NMI |
-                    INTR_INFO_VALID_MASK;
-                vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = false;
-                printf("CPU(0x%02x): inject NMI\n", vcpu->id);
+			u32 nmi_windowing_mask = (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+			/* Inject NMI to guest */
+			vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+			vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
+				INTR_TYPE_NMI |
+				INTR_INFO_VALID_MASK;
+			/* Clear NMI windowing if needed */
+			HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
+			HALT_ON_ERRORCOND(vcpu->vmcs.control_VMX_cpu_based & nmi_windowing_mask);
+			vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
+			if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending <= 0) {
+				vcpu->vmcs.control_VMX_cpu_based &= ~nmi_windowing_mask;
 			}
+			printf("CPU(0x%02x): inject NMI\n", vcpu->id);
 		}
 		break;
 
@@ -1310,19 +1299,10 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 #ifndef __XMHF_VERIFICATION__
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
 	/*
-	 * Logic to handle asynchronous access to vcpu->vmcs.control_VMX_cpu_based.
-	 * See xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception().
+	 * The intercept handler has written back vcpu->vmcs to hardware VMCS. Now
+	 * the NMI interrupts can update VMCS as needed.
 	 */
-	if (vcpu->vmx_guest_vmcs_nmi_window_set) {
-		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
-		__control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
-	}
-	if (vcpu->vmx_guest_vmcs_nmi_window_clear) {
-		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
-		__control_VMX_cpu_based &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
-	}
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 #endif // __XMHF_VERIFICATION__
 
 
