@@ -952,9 +952,9 @@ void xmhf_smpguest_arch_x86vmx_inject_nmi(VCPU *vcpu)
 }
 
 // Block NMIs using software
-// This function should be called in intercept handlers (a.k.a. VMEXIT
-// handlers). Otherwise, the caller needs to make sure that this function is
-// called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_arch_x86vmx_nmi_block(VCPU *vcpu)
 {
 	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
@@ -963,17 +963,13 @@ void xmhf_smpguest_arch_x86vmx_nmi_block(VCPU *vcpu)
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = true;
 
 	/* Remove NMI windowing bit in VMCS */
-	{
-		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
-		__control_VMX_cpu_based &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
-	}
+	vcpu->vmcs.control_VMX_cpu_based &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 }
 
 // Unblock NMIs using software
-// This function should be called in intercept handlers (a.k.a. VMEXIT
-// handlers). Otherwise, the caller needs to make sure that this function is
-// called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_arch_x86vmx_nmi_unblock(VCPU *vcpu)
 {
 	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
@@ -983,8 +979,6 @@ void xmhf_smpguest_arch_x86vmx_nmi_unblock(VCPU *vcpu)
 
 	/* Set NMI windowing bit in VMCS */
 	if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
-		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
-		__control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
+		vcpu->vmcs.control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 	}
 }

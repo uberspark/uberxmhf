@@ -89,15 +89,15 @@ u8 * xmhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
 void xmhf_smpguest_inject_nmi(VCPU *vcpu);
 
 // Block NMIs using software
-// This function should be called in intercept handlers (a.k.a. VMEXIT
-// handlers). Otherwise, the caller needs to make sure that this function is
-// called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_nmi_block(VCPU *vcpu);
 
 // Unblock NMIs using software
-// This function should be called in intercept handlers (a.k.a. VMEXIT
-// handlers). Otherwise, the caller needs to make sure that this function is
-// called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_nmi_unblock(VCPU *vcpu);
 
 
