@@ -771,6 +771,8 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 			/* Effectively vcpu->vmx_guest_nmi_visited++, lock to be safe */
 			asm volatile ("lock incl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
 						  "cc");
+			/* Make sure that there is no overflow on this counter */
+			HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_visited);
 		} else {
 			/*
 			 * xmhf_smpguest_arch_x86vmx_mhv_nmi_handle() has a sanity check
