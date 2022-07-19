@@ -258,7 +258,7 @@ typedef struct _vcpu {
    */
   volatile bool vmx_guest_nmi_disable;
   /* Whether an NMI exception arrived during vmx_guest_nmi_disable = true */
-  volatile bool vmx_guest_nmi_visited;
+  volatile u32 vmx_guest_nmi_visited;
   /*
    * Argument to NMI exception handler, decides how the NMI exception is
    * handled. Values are macros starting with "SMPG_VMX_NMI_".

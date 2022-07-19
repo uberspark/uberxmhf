@@ -710,7 +710,7 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  *  critical_section();
  *  vmx_guest_nmi_disable = 0;
  *  while (vmx_guest_nmi_visited) {
- *      vmx_guest_nmi_visited = 0;
+ *      vmx_guest_nmi_visited--;
  *      vmx_guest_nmi_disable = 1;
  *      handle_nmi();
  *      vmx_guest_nmi_disable = 0; 
@@ -718,11 +718,13 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  *
  * Pseudo code for NMI interrupt handler:
  *  if (vmx_guest_nmi_disable == 1) {
- *      vmx_guest_nmi_visited = 1;
+ *      vmx_guest_nmi_visited++;
  *  } else {
  *      handle_nmi();
  *  }
  *
+ * We do not consider problems with cache coherence and memory consistency
+ * problems, because the global variables are CPU-local and volatile.
  */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu)
 {
@@ -736,7 +738,9 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_disable);
 	vcpu->vmx_guest_nmi_disable = false;
 	while (vcpu->vmx_guest_nmi_visited) {
-		vcpu->vmx_guest_nmi_visited = false;
+		/* Effectively vcpu->vmx_guest_nmi_visited--, lock to be safe */
+		asm volatile ("lock decl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
+					  "cc");
 		vcpu->vmx_guest_nmi_disable = true;
 		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
 		vcpu->vmx_guest_nmi_disable = false;
@@ -764,7 +768,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 * logic. See xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
 		 */
 		if (vcpu->vmx_guest_nmi_disable) {
-			vcpu->vmx_guest_nmi_visited = true;
+			/* Effectively vcpu->vmx_guest_nmi_visited++, lock to be safe */
+			asm volatile ("lock incl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
+						  "cc");
 		} else {
 			/*
 			 * xmhf_smpguest_arch_x86vmx_mhv_nmi_handle() has a sanity check
