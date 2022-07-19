@@ -776,19 +776,13 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		} else {
 			/*
 			 * xmhf_smpguest_arch_x86vmx_mhv_nmi_handle() has a sanity check
-			 * that NMIs to XMHF are disabled. We block NMI to make the sanity
-			 * check happy. Note that since we are already in NMI handler, NMIs
-			 * are blocked by hardware.
+			 * that NMIs to XMHF are disabled. We disable NMI to make the
+			 * sanity check happy. Note that since we are already in NMI
+			 * handler, NMIs are blocked by hardware.
 			 */
-			if (from_guest) {
-				xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
-			}
-
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
 			xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
-
-			if (from_guest) {
-				xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-			}
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 		}
 	}
 
