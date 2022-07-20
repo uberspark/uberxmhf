@@ -398,6 +398,8 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	/* From now on, cannot fail */
 	vcpu->vmx_nested_is_vmx_root_operation = 0;
 
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+
 	if (vmcs12_info->launched) {
 		__vmx_vmentry_vmresume(r);
 	} else {
@@ -587,6 +589,8 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	vmcs12_info_t *vmcs12_info;
 	u32 vmexit_reason = __vmx_vmread32(VMCSENC_info_vmexit_reason);
 
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
+
 	/*
 	 * Check whether this VMEXIT is for quiescing. If so, printing before the
 	 * quiesce is completed will result in deadlock.
@@ -612,6 +616,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			 * This is the rare case where we have L2 -> L0 -> L2. Usually it
 			 * is L2 -> L0 -> L1.
 			 */
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 			__vmx_vmentry_vmresume(r);
 			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 		} else {
@@ -711,6 +716,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				__vmx_vmwrite32(encoding, idt_errcode);
 			}
 			/* Call VMRESUME */
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 			__vmx_vmentry_vmresume(r);
 			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 			break;
@@ -766,6 +772,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
 	// TODO: handle vcpu->vmx_guest_inject_nmi?
 	vcpu->vmx_nested_is_vmx_root_operation = 1;
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 	__vmx_vmentry_vmresume(r);
 }
 
