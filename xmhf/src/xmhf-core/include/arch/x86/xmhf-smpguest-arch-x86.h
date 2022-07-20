@@ -52,6 +52,9 @@
 #define __EMHF_SMPGUEST_ARCH_X86_H__
 
 
+/* Macros that control how NMIs for the guest are handled */
+#define SMPG_VMX_NMI_INJECT     0   /* Inject NMI to guest */
+
 
 #ifndef __ASSEMBLY__
 
@@ -76,20 +79,22 @@ u8 * xmhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr);
 // Inject NMI to the guest when the guest is ready to receive it (i.e. when the
 // guest is not running NMI handler)
 // The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
+//
+// This function should be called in intercept handlers (a.k.a. VMEXIT
+// handlers). Otherwise, the caller needs to make sure that this function is
+// called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
 void xmhf_smpguest_arch_inject_nmi(VCPU *vcpu);
 
 // Block NMIs using software
-// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
-// Especially, this function cannot be called in mHV's NMI interrupt handler.
-// Each intercept handler can only have one call of this function or the unblock
-// function.
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_arch_nmi_block(VCPU *vcpu);
 
 // Unblock NMIs using software
-// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
-// Especially, this function cannot be called in mHV's NMI interrupt handler.
-// Each intercept handler can only have one call of this function or the block
-// function.
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_arch_nmi_unblock(VCPU *vcpu);
 
 
@@ -125,23 +130,32 @@ void xmhf_smpguest_arch_x86vmx_unblock_nmi(void);
 void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu);
 void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);
 
+// Handle NMI for the guest received in XMHF's NMI exception handler
+void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu);
+// Temporarily block NMI during XMHF's intercept handler
+void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu);
+// Unblock NMI in XMHF's intercept handler
+void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu);
+
 // Inject NMI to the guest when the guest is ready to receive it (i.e. when the
 // guest is not running NMI handler)
 // The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
+//
+// This function should be called in intercept handlers (a.k.a. VMEXIT
+// handlers). Otherwise, the caller needs to make sure that this function is
+// called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
 void xmhf_smpguest_arch_x86vmx_inject_nmi(VCPU *vcpu);
 
 // Block NMIs using software
-// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
-// Especially, this function cannot be called in mHV's NMI interrupt handler.
-// Each intercept handler can only have one call of this function or the unblock
-// function.
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_arch_x86vmx_nmi_block(VCPU *vcpu);
 
 // Unblock NMIs using software
-// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
-// Especially, this function cannot be called in mHV's NMI interrupt handler.
-// Each intercept handler can only have one call of this function or the block
-// function.
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_arch_x86vmx_nmi_unblock(VCPU *vcpu);
 
 //perform required setup after a guest awakens a new CPU

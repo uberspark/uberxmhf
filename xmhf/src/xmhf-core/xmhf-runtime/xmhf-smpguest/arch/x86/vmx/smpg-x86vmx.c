@@ -673,6 +673,81 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 	}
 }
 
+/* Return whether NMI for XMHF's intercept handler is temporarily blocked */
+static bool xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(VCPU *vcpu)
+{
+	return vcpu->vmx_guest_nmi_disable;
+}
+
+/* Handle NMI for the guest received in XMHF's NMI interrupt handler */
+void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
+{
+	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
+
+	switch (vcpu->vmx_guest_nmi_handler_arg) {
+	case SMPG_VMX_NMI_INJECT:
+		xmhf_smpguest_arch_x86vmx_inject_nmi(vcpu);
+		break;
+	default:
+		HALT_ON_ERRORCOND(0 && "Unexpected vcpu->vmx_guest_nmi_handler_arg");
+		break;
+	}
+}
+
+/*
+ * Temporarily block NMI during XMHF's intercept handler.
+ *
+ * This function and xmhf_smpguest_arch_x86vmx_mhv_nmi_enable() mark critical
+ * section of code that cannot be interrupted by NMI interrupts. The CPU-local
+ * variable vmx_guest_nmi_disable is used to indicate that interrupted code is
+ * running the critical section. When the NMI interrupt handler sees so, it
+ * marks vmx_guest_nmi_visited. The NMI is effectively delayed until
+ * xmhf_smpguest_arch_x86vmx_mhv_nmi_enable() exits the critical section and
+ * checks whether NMIs have visited.
+ *
+ * Pseudo code for critical section:
+ *  vmx_guest_nmi_disable = 1;
+ *  critical_section();
+ *  vmx_guest_nmi_disable = 0;
+ *  while (vmx_guest_nmi_visited) {
+ *      vmx_guest_nmi_visited--;
+ *      vmx_guest_nmi_disable = 1;
+ *      handle_nmi();
+ *      vmx_guest_nmi_disable = 0; 
+ *  }
+ *
+ * Pseudo code for NMI interrupt handler:
+ *  if (vmx_guest_nmi_disable == 1) {
+ *      vmx_guest_nmi_visited++;
+ *  } else {
+ *      handle_nmi();
+ *  }
+ *
+ * We do not consider problems with cache coherence and memory consistency
+ * problems, because the global variables are CPU-local and volatile.
+ */
+void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu)
+{
+	HALT_ON_ERRORCOND(!vcpu->vmx_guest_nmi_disable);
+	vcpu->vmx_guest_nmi_disable = true;
+}
+
+/* Unblock NMI in XMHF's intercept handler */
+void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
+{
+	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_disable);
+	vcpu->vmx_guest_nmi_disable = false;
+	while (vcpu->vmx_guest_nmi_visited) {
+		/* Effectively vcpu->vmx_guest_nmi_visited--, lock to be safe */
+		asm volatile ("lock decl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
+					  "cc");
+		vcpu->vmx_guest_nmi_disable = true;
+		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
+		vcpu->vmx_guest_nmi_disable = false;
+	}
+	HALT_ON_ERRORCOND(!vcpu->vmx_guest_nmi_disable);
+}
+
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //note: we are in atomic processsing mode for this "vcpu"
 // from_guest: 1 if NMI originated from the HVM (i.e. caller is intercept handler),
@@ -684,175 +759,31 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		/* The NMI is not for quiesce, inject it to guest */
 
 		/*
-		 * Note: injecting NMI into the guest OS need to be done with extra
-		 * carefulness. There are 2 challenges present.
+		 * Modifying VCPU and VMCS are subject to race conditions.
+		 * During normal operations, the hypervisor does not block NMIs. It is
+		 * also difficult, if not impossible, to let the hypervisor block NMI
+		 * actively.
 		 *
-		 * First, if the guest is running NMI handler and has not executed the
-		 * IRET instruction, injecting NMI to the guest will corrupt the guest.
-		 * So the VMX root must not use
-		 * vcpu->vmcs.control_VM_entry_interruption_information to directly
-		 * inject NMI into the current guest. Instead, the hypervisor should
-		 * use the "NMI-window exiting" VM-execution control to be notified
-		 * when the guest is able to handle NMI interrupts. When the guest can
-		 * handle NMI interrupts, an VMEXIT will occur with reason "NMI
-		 * window". This requires "NMI exiting" and "virtual NMIs" bits to be
-		 * set in Pin-Based VM-Execution Controls.
-		 *
-		 * Second, modifying VMCS is subject to race conditions. During normal
-		 * operations, the hypervisor does not block NMIs. It is also
-		 * difficult, if not impossible, to let the hypervisor block NMI
-		 * actively. So when writing NMI-related code, all interleavings
-		 * between the code and the NMI interrupt handler need to be
-		 * considered. It may be helpful to think the NMI interrupt handler as
-		 * a signal handler of a process in UNIX-like systems.
-		 *
-		 * To solve the second problem, we introduce a variable in vcpu to
-		 * denote that the NMI interrupt handler has visited and wants to set
-		 * the "NMI-window exiting" bit (22nd bit in control_VMX_cpu_based).
-		 * This variable is called vmx_guest_vmcs_nmi_window_set. Before the
-		 * intercept handler (a.k.a. VMEXIT handler) returns, it checks
-		 * vmx_guest_vmcs_nmi_window_set. If the variable is true, the
-		 * "NMI-window exiting" bit in VMCS is set.
-		 *
-		 * Also note that vcpu->vmcs.control_VMX_cpu_based does not access
-		 * the real VMCS in hardware. The real VMCS can only be accessed
-		 * through VMREAD and VMWRITE instructions. vcpu->vmcs is loaded /
-		 * stored at begin / end of intercepts using
-		 * xmhf_baseplatform_arch_x86vmx_getVMCS() and
-		 * xmhf_baseplatform_arch_x86vmx_putVMCS().
-		 *
-		 * [Detailed explanation for the second problem follows]
-		 *
-		 * We want to set vcpu->vmcs.control_VMX_cpu_based, but we may be in an
-		 * NMI interrupt handler that is interrupting an intercept handler
-		 * (a.k.a. VMEXIT handler), and the intercept handler accesses
-		 * vcpu->vmcs.control_VMX_cpu_based. This can easily cause race
-		 * conditions.
-		 *
-		 * We observe that the NMI interrupt handler is only interested in
-		 * setting the 22nd bit of VCPU's control_VMX_cpu_based.
-		 *
-		 * We observe that the intercept handlers are always having the
-		 * following logic:
-		 * A1. var temp = VMREAD("control_VMX_cpu_based")
-		 * A2. vcpu->vmcs.control_VMX_cpu_based = temp
-		 * A3. update vcpu->vmcs.control_VMX_cpu_based
-		 * A4. temp = vcpu->vmcs.control_VMX_cpu_based
-		 * A5. VMWRITE("control_VMX_cpu_based", temp)
-		 *
-		 * Step A1 and A2 are in xmhf_baseplatform_arch_x86vmx_getVMCS(). Step
-		 * A3 is body of the intercept handler. Step A4 and A5 are in
-		 * xmhf_baseplatform_arch_x86vmx_putVMCS().
-		 *
-		 * To solve the problem, the NMI interrupt handler updates the VMCS and
-		 * also sets vcpu->vmx_guest_vmcs_nmi_window_set. After step A5, the
-		 * intercept handler checks whether vcpu->vmx_guest_vmcs_nmi_window_set
-		 * is set. If so, it will perform another VMWRITE to set the
-		 * corresponding bit in VMCS.
-		 *
-		 * So the updated logic of intercept handlers (a.k.a. VMEXIT handlers)
-		 * become
-		 *
-		 * B1. vcpu->vmx_guest_vmcs_nmi_window_set = 0
-		 * B2. var temp = VMREAD("control_VMX_cpu_based")   // was A1
-		 * B3. vcpu->vmcs.control_VMX_cpu_based = temp      // was A2
-		 * B4. Update vcpu->vmcs.control_VMX_cpu_based      // was A3
-		 * B5. temp = vcpu->vmcs.control_VMX_cpu_based      // was A4
-		 * B6. VMWRITE("control_VMX_cpu_based", temp)       // was A5
-		 * B7. if (vcpu->vmx_guest_vmcs_nmi_window_set) {
-		 * B8.     var temp2 = VMREAD("control_VMX_cpu_based")
-		 * B9.     set bit 22 of temp2
-		 * B10.    VMWRITE("control_VMX_cpu_based", temp2)
-		 * B11.}
-		 *
-		 * The logic of the NMI interrupt handler (this function) is
-		 * C1. var temp = VMREAD("control_VMX_cpu_based")
-		 * C2. set bit 22 of temp
-		 * C3. VMWRITE("control_VMX_cpu_based", temp)
-		 * C4. vcpu->vmx_guest_vmcs_nmi_window_set = 1
-		 *
-		 * Consider different places C1 - C4 interleaves with the
-		 * intercept handler (a.k.a. VMEXIT handler):
-		 *
-		 * a. before step B2: VMREAD at B2 gets updated value, good
-		 * b. between B2 - B6: VMREAD at step B2 gets old value, C1 - C4
-		 *    writes new value, then overwritten by VMWRITE at step B6. But the
-		 *    vmx_guest_vmcs_nmi_window_set flag bit will cause the intercept
-		 *    handler to set the bit in VMCS correctly at B8 - B10.
-		 * c. between B6 - B7: this function will read the new value, good.
-		 *    Then step B7 will set bit 22 again, but it does not affect
-		 *    correctness.
-		 * d. after step B7: the bit 22 will always be set finally.
-		 *
-		 * [End of detailed explanation for the second problem]
-		 *
-		 * Now, to support xmhf_smpguest_arch_x86vmx_nmi_block(), we also want
-		 * to be able to cancel NMI injection. To make things easier, we
-		 * require that xmhf_smpguest_arch_x86vmx_nmi_block() and
-		 * xmhf_smpguest_arch_x86vmx_nmi_unblock() to be only called in the
-		 * body of intercept handlers, and at most once during each intercept.
-		 * We also update vcpu with a few more variables.
-		 *
-		 * The pseudo code for intercept handler (a.k.a. VMEXIT handler) is
-		 *
-		 * D1. xmhf_parteventhub_arch_x86vmx_intercept_handler() {
-		 * D2.     vcpu->vmx_guest_vmcs_nmi_window_set = 0
-		 * D3.     vcpu->vmx_guest_vmcs_nmi_window_clear = 0;
-		 * D4.     vcpu->vmx_guest_nmi_blocking_modified = 0;
-		 * D5.     var temp = VMREAD("control_VMX_cpu_based")
-		 * D6.     vcpu->vmcs.control_VMX_cpu_based = temp
-		 * D7.     if (exit_reason == nmi-windowing-exit) {
-		 * D8.         vcpu->vmcs.control_VMX_cpu_based.bit-22 = 0;
-		 * D9.         inject NMI to guest;
-		 * D10.        vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = 0
-		 * D11.    } else if (nmi_block is called) { // e.g. due to hypercall
-		 * D12.        assert(!vcpu->vmx_guest_nmi_blocking_modified);
-		 * D13.        vcpu->vmx_guest_nmi_blocking_modified = 1;
-		 * D14.        vcpu->vmx_guest_nmi_cfg.guest_nmi_block = 1;
-		 * D15.        vcpu->vmx_guest_vmcs_nmi_window_clear = 1;
-		 * D16.    } else if (nmi_unblock is called) { // e.g. due to hypercall
-		 * D17.        assert(!vcpu->vmx_guest_nmi_blocking_modified);
-		 * D18.        vcpu->vmx_guest_nmi_blocking_modified = 1;
-		 * D19.        vcpu->vmx_guest_nmi_cfg.guest_nmi_block = 0;
-		 * D20.        if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
-		 * D21.            vcpu->vmcs.control_VMX_cpu_based.bit-22 = 1;
-		 * D22.            vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = 1;
-		 * D23.            vcpu->vmx_guest_vmcs_nmi_window_set = 1;
-		 * D24.        }
-		 * D25.    } else {
-		 * D26.        // Does not touch vcpu->vmcs.control_VMX_cpu_based.bit-22
-		 * D27.    }
-		 * D28.    temp = vcpu->vmcs.control_VMX_cpu_based
-		 * D29.    VMWRITE("control_VMX_cpu_based", temp)
-		 * D30.    if (vcpu->vmx_guest_vmcs_nmi_window_set) {
-		 * D31.        var temp2 = VMREAD("control_VMX_cpu_based")
-		 * D32.        set bit 22 of temp2
-		 * D33.        VMWRITE("control_VMX_cpu_based", temp2)
-		 * D34.    }
-		 * D35.    if (vcpu->vmx_guest_vmcs_nmi_window_clear) {
-		 * D36.        var temp3 = VMREAD("control_VMX_cpu_based")
-		 * D37.        clear bit 22 of temp3
-		 * D38.        VMWRITE("control_VMX_cpu_based", temp3)
-		 * D39.    }
-		 * D40.}
-		 *
-		 * The pseudo code for NMI interrupt handler is
-		 *
-		 * E1. nmi_handler() {
-		 * E2.     if (NMI interrupt is for quiesce) {
-		 * E3.         ...
-		 * E4.     } else {
-		 * E5.         vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = 1;
-		 * E6.         if (!vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
-		 * E7.             var temp = VMREAD("control_VMX_cpu_based")
-		 * E8.             set bit 22 of temp
-		 * E9.             VMWRITE("control_VMX_cpu_based", temp)
-		 * E10.            vcpu->vmx_guest_vmcs_nmi_window_set = 1;
-		 * E11.        } // no else
-		 * E12.    }
-		 * E13.}
+		 * To solve this problem, we simulate blocking of NMI with software
+		 * logic. See xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
 		 */
-		xmhf_smpguest_arch_x86vmx_inject_nmi(vcpu);
+		if (vcpu->vmx_guest_nmi_disable) {
+			/* Effectively vcpu->vmx_guest_nmi_visited++, lock to be safe */
+			asm volatile ("lock incl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
+						  "cc");
+			/* Make sure that there is no overflow on this counter */
+			HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_visited);
+		} else {
+			/*
+			 * xmhf_smpguest_arch_x86vmx_mhv_nmi_handle() has a sanity check
+			 * that NMIs to XMHF are disabled. We disable NMI to make the
+			 * sanity check happy. Note that since we are already in NMI
+			 * handler, NMIs are blocked by hardware.
+			 */
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+		}
 	}
 
 	/* Unblock NMI in hypervisor */
@@ -961,60 +892,93 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
 // Inject NMI to the guest when the guest is ready to receive it (i.e. when the
 // guest is not running NMI handler)
 // The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
+//
+// This function should be called in intercept handlers (a.k.a. VMEXIT
+// handlers). Otherwise, the caller needs to make sure that this function is
+// called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+// 
+// We cannot directly inject the NMI to the guest using
+// vcpu->vmcs.control_VM_entry_interruption_information. If the guest is
+// running NMI handler and has not executed the IRET instruction, injecting NMI
+// to the guest will corrupt the guest. Instead, the hypervisor should use the
+// "NMI-window exiting" VM-execution control to be notified when the guest is
+// able to handle NMI interrupts. When the guest can handle NMI interrupts, an
+// VMEXIT will occur with reason "NMI window". This requires "NMI exiting" and
+// "virtual NMIs" bits to be set in Pin-Based VM-Execution Controls.
+//
 void xmhf_smpguest_arch_x86vmx_inject_nmi(VCPU *vcpu)
 {
-	vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = true;
+	u32 nmi_pending_limit;
+
+	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
+
+	/* Calculate the maximum value of guest_nmi_pending */
+	nmi_pending_limit = 2;
+
+	/* When the guest OS is blocking NMI, max of guest_nmi_pending is 1 */
+	{
+		u32 __guest_interruptibility = __vmx_vmread32(0x4824);
+		if (__guest_interruptibility & (1U << 3)) {
+			nmi_pending_limit = 1;
+		}
+	}
+
+	/*
+	 * When XMHF is injecting NMI to guest OS, the guest OS will soon be
+	 * blocking NMI. So this case is the same as previous one. Max of
+	 * guest_nmi_pending is 1.
+	 */
+	{
+		u32 __ctl_VM_entry_intr_info = __vmx_vmread32(0x4016);
+		if ((__ctl_VM_entry_intr_info & INTR_INFO_VALID_MASK) &&
+			(__ctl_VM_entry_intr_info & INTR_INFO_VECTOR_MASK) == NMI_VECTOR) {
+			nmi_pending_limit = 1;
+		}
+	}
+
+	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending <= nmi_pending_limit);
+
+	/* Increment guest_nmi_pending, but not exceeding limit */
+	if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending < nmi_pending_limit) {
+		vcpu->vmx_guest_nmi_cfg.guest_nmi_pending++;
+	}
+
+	/* Set NMI windowing bit as required */
 	if (!vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
 		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
 		__control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
-		vcpu->vmx_guest_vmcs_nmi_window_set = true;
 	}
 }
 
 // Block NMIs using software
-// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
-// Especially, this function cannot be called in mHV's NMI interrupt handler.
-// Each intercept handler can only have one call of this function or the unblock
-// function.
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_arch_x86vmx_nmi_block(VCPU *vcpu)
 {
-	if (vcpu->vmx_guest_nmi_blocking_modified) {
-		/*
-		 * Looks like xmhf_smpguest_arch_x86vmx_nmi_block() and/or
-		 * xmhf_smpguest_arch_x86vmx_nmi_unblock() are called multiple times
-		 * in the same intercept handler. This is not supported.
-		 */
-		HALT_ON_ERRORCOND(0 && "Illegal use of nmi block / unblock function");
-	}
-	vcpu->vmx_guest_nmi_blocking_modified = true;
+	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
 
+	/* Set NMI block bit in VCPU */
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = true;
-	vcpu->vmx_guest_vmcs_nmi_window_clear = true;
+
+	/* Remove NMI windowing bit in VMCS */
+	vcpu->vmcs.control_VMX_cpu_based &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 }
 
 // Unblock NMIs using software
-// This function must be called in intercept handlers (a.k.a. VMEXIT handlers).
-// Especially, this function cannot be called in mHV's NMI interrupt handler.
-// Each intercept handler can only have one call of this function or the block
-// function.
+// This function must be called in intercept handlers (a.k.a. VMEXIT handlers),
+// because it edits VMCS through vcpu->vmcs and expects the intercept handler
+// to write the update to the hardware VMCS later.
 void xmhf_smpguest_arch_x86vmx_nmi_unblock(VCPU *vcpu)
 {
-	if (vcpu->vmx_guest_nmi_blocking_modified) {
-		/*
-		 * Looks like xmhf_smpguest_arch_x86vmx_nmi_block() and/or
-		 * xmhf_smpguest_arch_x86vmx_nmi_unblock() are called multiple times
-		 * in the same intercept handler. This is not supported.
-		 */
-		HALT_ON_ERRORCOND(0 && "Illegal use of nmi block / unblock function");
-	}
-	vcpu->vmx_guest_nmi_blocking_modified = true;
+	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
 
+	/* Clear NMI block bit in VCPU */
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = false;
+
+	/* Set NMI windowing bit in VMCS */
 	if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
-		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
-		__control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
-		vcpu->vmx_guest_vmcs_nmi_window_set = true;
+		vcpu->vmcs.control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 	}
 }

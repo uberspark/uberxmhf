@@ -563,11 +563,11 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//setup NMI intercept for core-quiescing
 	vcpu->vmcs.control_VMX_pin_based |= (1U << VMX_PINBASED_NMI_EXITING);
 	vcpu->vmcs.control_VMX_pin_based |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
-	vcpu->vmx_guest_vmcs_nmi_window_set = false;
-	vcpu->vmx_guest_vmcs_nmi_window_clear = false;
-	vcpu->vmx_guest_nmi_blocking_modified = false;
+	vcpu->vmx_guest_nmi_disable = false;
+	vcpu->vmx_guest_nmi_visited = false;
+	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = false;
-	vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = false;
+	vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = 0;
 
 	//trap access to CR0 fixed 1-bits
 	// Make sure to change vmx_handle_intercept_cr0access_ug() if changing
