@@ -168,7 +168,7 @@
         pushq   %r13; \
         pushq   %r14; \
         pushq   %r15; \
-        addl	$(4*8), 11*8(%rsp);
+        addq	$(4*8), 11*8(%rsp);
 
 /*
  * Intel hardware supports POPAL in 32-bits, but not a similar instruction
