@@ -1170,7 +1170,6 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case VMX_VMEXIT_NMI_WINDOW: {
-			u32 nmi_windowing_mask = (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 			/* Inject NMI to guest */
 			vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
 			vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
@@ -1178,11 +1177,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				INTR_INFO_VALID_MASK;
 			/* Clear NMI windowing if needed */
 			HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
-			HALT_ON_ERRORCOND(vcpu->vmcs.control_VMX_cpu_based & nmi_windowing_mask);
+			HALT_ON_ERRORCOND(vcpu->vmcs.control_VMX_cpu_based &
+							  (1U << VMX_PROCBASED_NMI_WINDOW_EXITING));
 			vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
-			if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending <= 0) {
-				vcpu->vmcs.control_VMX_cpu_based &= ~nmi_windowing_mask;
-			}
+			xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(
+				vcpu, &vcpu->vmcs.control_VMX_cpu_based);
 			printf("CPU(0x%02x): inject NMI\n", vcpu->id);
 		}
 		break;
