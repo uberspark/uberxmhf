@@ -732,8 +732,31 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	vmcs12_info = find_current_vmcs12(vcpu);
 
 	if (vmexit_reason == VMX_VMEXIT_NMI_WINDOW) {
-		// TODO
-		HALT_ON_ERRORCOND(0 && "NMI window not implemented");
+		/*
+		 * When "NMI exiting" = 0 in VMCS12, NMI windowing is used by L0 XMHF
+		 * to inject NMI to L2 nested guest. This is similar to injecting to
+		 * L1 guest when there is no nested virtualization.
+		 */
+		if (!vmcs12_info->guest_nmi_exiting) {
+			/* Inject NMI to L2 */
+			u16 encoding;
+			u32 idt_info;
+			encoding = VMCSENC_info_IDT_vectoring_information;
+			idt_info = __vmx_vmread32(encoding);
+			HALT_ON_ERRORCOND(!(idt_info & INTR_INFO_VALID_MASK));
+			idt_info = NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK;
+			encoding = VMCSENC_control_VM_entry_interruption_information;
+			__vmx_vmwrite32(encoding, idt_info);
+			encoding = VMCSENC_control_VM_entry_exception_errorcode;
+			__vmx_vmwrite32(encoding, 0U);
+			/* Update NMI windowing */
+			HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
+			vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
+			_update_nested_nmi(vcpu, vmcs12_info, r);
+			/* VMRESUME */
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
+			__vmx_vmentry_vmresume(r);
+		}
 	}
 
 	/*
