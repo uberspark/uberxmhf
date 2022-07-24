@@ -674,13 +674,13 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 }
 
 /* Return whether NMI for XMHF's intercept handler is temporarily blocked */
-static bool xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(VCPU *vcpu)
+bool xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(VCPU *vcpu)
 {
 	return vcpu->vmx_guest_nmi_disable;
 }
 
 /* Handle NMI for the guest received in XMHF's NMI interrupt handler */
-void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
+void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu, struct regs *r)
 {
 	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
 
@@ -697,6 +697,7 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
 		HALT_ON_ERRORCOND(0 && "Unexpected vcpu->vmx_guest_nmi_handler_arg");
 		break;
 	}
+	(void)r;
 }
 
 /*
@@ -738,7 +739,7 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu)
 }
 
 /* Unblock NMI in XMHF's intercept handler */
-void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
+void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu, struct regs *r)
 {
 	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_disable);
 	vcpu->vmx_guest_nmi_disable = false;
@@ -747,7 +748,7 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 		asm volatile ("lock decl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
 					  "cc");
 		vcpu->vmx_guest_nmi_disable = true;
-		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
+		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu, r);
 		vcpu->vmx_guest_nmi_disable = false;
 	}
 	HALT_ON_ERRORCOND(!vcpu->vmx_guest_nmi_disable);
@@ -786,8 +787,8 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 			 * handler, NMIs are blocked by hardware.
 			 */
 			xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu, r);
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
 		}
 	}
 
