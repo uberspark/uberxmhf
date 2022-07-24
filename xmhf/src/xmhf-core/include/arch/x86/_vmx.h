@@ -54,18 +54,19 @@
 #define INTR_INFO_VECTOR_MASK           (0x000000ff)        // 7:0
 #define INTR_INFO_INTR_TYPE_MASK        (0x00000700)        // 10:8
 #define INTR_INFO_DELIVER_CODE_MASK     (0x00000800)        // 11
-#define INTR_INFO_VALID_MASK            (0x80000000)      	// 31
+#define INTR_INFO_VALID_MASK            (0x80000000)        // 31
 
-#define VECTORING_INFO_VECTOR_MASK           	INTR_INFO_VECTOR_MASK
-#define VECTORING_INFO_TYPE_MASK        			INTR_INFO_INTR_TYPE_MASK
-#define VECTORING_INFO_DELIVER_CODE_MASK    	INTR_INFO_DELIVER_CODE_MASK
-#define VECTORING_INFO_VALID_MASK       			INTR_INFO_VALID_MASK
+#define VECTORING_INFO_VECTOR_MASK            INTR_INFO_VECTOR_MASK
+#define VECTORING_INFO_TYPE_MASK              INTR_INFO_INTR_TYPE_MASK
+#define VECTORING_INFO_DELIVER_CODE_MASK      INTR_INFO_DELIVER_CODE_MASK
+#define VECTORING_INFO_VALID_MASK             INTR_INFO_VALID_MASK
 
-#define INTR_TYPE_HW_INTERRUPT         	 (0UL << 8) // hardware/external interrupt
-#define INTR_TYPE_NMI										 (2UL << 8)	// NMI
-#define INTR_TYPE_HW_EXCEPTION           (3UL << 8) // processor exception
-#define INTR_TYPE_SW_INTERRUPT         	 (4UL << 8) // software interrupt
-#define INTR_TYPE_SW_EXCEPTION           (6UL << 8) // software exception (INTO, INT3)
+#define INTR_TYPE_HW_INTERRUPT        (0U << 8)  // hardware/external interrupt
+#define INTR_TYPE_NMI                 (2U << 8)  // NMI
+#define INTR_TYPE_HW_EXCEPTION        (3U << 8)  // processor exception
+#define INTR_TYPE_SW_INTERRUPT        (4U << 8)  // software interrupt
+#define INTR_TYPE_PRIV_SW_EXCEPTION   (5U << 8)  // privleged software exception (INT1)
+#define INTR_TYPE_SW_EXCEPTION        (6U << 8)  // software exception (INTO, INT3)
 
 //
 #define VMX_EVENT_CANCEL  (0)
