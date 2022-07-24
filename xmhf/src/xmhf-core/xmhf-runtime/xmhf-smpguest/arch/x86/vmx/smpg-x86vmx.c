@@ -894,6 +894,26 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
   }
 }
 
+// Update NMI window exiting bit in VMCS control_VMX_cpu_based
+void xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(VCPU *vcpu,
+														 u32 *procctl)
+{
+	/* Compute the bit's value */
+	bool nmi_window_exiting = false;
+	if (vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
+		nmi_window_exiting = false;
+	} else if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
+		nmi_window_exiting = true;
+	}
+	/* Update the bit */
+	if (nmi_window_exiting) {
+		*procctl |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+	} else {
+		*procctl &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+	}
+}
+
+
 // Inject NMI to the guest when the guest is ready to receive it (i.e. when the
 // guest is not running NMI handler)
 // The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
@@ -949,10 +969,10 @@ void xmhf_smpguest_arch_x86vmx_inject_nmi(VCPU *vcpu)
 	}
 
 	/* Set NMI windowing bit as required */
-	if (!vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
-		u32 __control_VMX_cpu_based = __vmx_vmread32(0x4002);
-		__control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-		__vmx_vmwrite32(0x4002, __control_VMX_cpu_based);
+	{
+		u32 procctl = __vmx_vmread32(0x4002);
+		xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(vcpu, &procctl);
+		__vmx_vmwrite32(0x4002, procctl);
 	}
 }
 
@@ -967,8 +987,9 @@ void xmhf_smpguest_arch_x86vmx_nmi_block(VCPU *vcpu)
 	/* Set NMI block bit in VCPU */
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = true;
 
-	/* Remove NMI windowing bit in VMCS */
-	vcpu->vmcs.control_VMX_cpu_based &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+	/* Remove NMI windowing bit in VMCS as needed */
+	xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(
+		vcpu, &vcpu->vmcs.control_VMX_cpu_based);
 }
 
 // Unblock NMIs using software
@@ -982,8 +1003,7 @@ void xmhf_smpguest_arch_x86vmx_nmi_unblock(VCPU *vcpu)
 	/* Clear NMI block bit in VCPU */
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = false;
 
-	/* Set NMI windowing bit in VMCS */
-	if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
-		vcpu->vmcs.control_VMX_cpu_based |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-	}
+	/* Set NMI windowing bit in VMCS as needed */
+	xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(
+		vcpu, &vcpu->vmcs.control_VMX_cpu_based);
 }

@@ -140,6 +140,10 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu);
 // Unblock NMI in XMHF's intercept handler
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu);
 
+// Update NMI window exiting bit in VMCS control_VMX_cpu_based
+void xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(VCPU *vcpu,
+														 u32 *procctl);
+
 // Inject NMI to the guest when the guest is ready to receive it (i.e. when the
 // guest is not running NMI handler)
 // The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
