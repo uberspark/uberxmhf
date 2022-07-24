@@ -573,7 +573,7 @@ DECLARE_FIELD_32_RW(0x4822, guest_TR_access_rights,
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4824, guest_interruptibility,
-					(FIELD_PROP_GUEST | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_GUEST),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4826, guest_activity_state,

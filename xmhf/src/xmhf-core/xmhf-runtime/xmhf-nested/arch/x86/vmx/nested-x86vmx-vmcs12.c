@@ -743,6 +743,10 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	/* 32-Bit Read-Only Data Fields: skipped */
 
 	/* 32-Bit Guest-State Fields */
+	{
+		u32 val = vmcs12->guest_interruptibility;
+		__vmx_vmwrite32(VMCSENC_guest_interruptibility, val);
+	}
 
 	/* 32-Bit Host-State Field */
 
@@ -1156,6 +1160,10 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	/* 32-Bit Read-Only Data Fields */
 
 	/* 32-Bit Guest-State Fields */
+	{
+		u32 val = __vmx_vmread32(VMCSENC_guest_interruptibility);
+		vmcs12->guest_interruptibility = val;
+	}
 
 	/* 32-Bit Host-State Field */
 
