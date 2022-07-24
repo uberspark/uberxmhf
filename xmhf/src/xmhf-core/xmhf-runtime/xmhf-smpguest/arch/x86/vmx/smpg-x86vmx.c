@@ -956,7 +956,9 @@ void xmhf_smpguest_arch_x86vmx_inject_nmi(VCPU *vcpu)
 	{
 		u32 __ctl_VM_entry_intr_info = __vmx_vmread32(0x4016);
 		if ((__ctl_VM_entry_intr_info & INTR_INFO_VALID_MASK) &&
-			(__ctl_VM_entry_intr_info & INTR_INFO_VECTOR_MASK) == NMI_VECTOR) {
+			(__ctl_VM_entry_intr_info & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI) {
+			HALT_ON_ERRORCOND((__ctl_VM_entry_intr_info & INTR_INFO_VECTOR_MASK) ==
+							  NMI_VECTOR);
 			nmi_pending_limit = 1;
 		}
 	}

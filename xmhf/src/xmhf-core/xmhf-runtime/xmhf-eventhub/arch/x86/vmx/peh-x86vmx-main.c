@@ -1020,13 +1020,15 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		/* Optimize debug exception (#DB) for LAPIC operation */
 		vcpu->vmcs.info_vmexit_interrupt_information = __vmx_vmread32(0x4404);
 		if (((u32)vcpu->vmcs.info_vmexit_interrupt_information &
-			 INTR_INFO_VECTOR_MASK) == 1) {
+			 INTR_INFO_VECTOR_MASK) == INT1_VECTOR) {
 			vcpu->vmcs.guest_CS_selector = __vmx_vmread16(0x0802);
 			vcpu->vmcs.guest_RIP = __vmx_vmreadNW(0x681E);
 			vcpu->vmcs.control_exception_bitmap = __vmx_vmread32(0x4004);
 			vcpu->vmcs.guest_interruptibility = __vmx_vmread32(0x4824);
 			vcpu->vmcs.guest_RFLAGS = __vmx_vmreadNW(0x6820);
 			vcpu->vmcs.control_EPT_pointer = __vmx_vmread64(0x201A);
+			HALT_ON_ERRORCOND((vcpu->vmcs.info_vmexit_interrupt_information &
+							   INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_HW_EXCEPTION);
 			xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 			__vmx_vmwrite32(0x4004, vcpu->vmcs.control_exception_bitmap);
 			__vmx_vmwrite32(0x4824, vcpu->vmcs.guest_interruptibility);
@@ -1281,12 +1283,17 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
  		case VMX_VMEXIT_EXCEPTION:{
-			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
-				case 0x01:
+			switch(vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK){
+				case INT1_VECTOR:
+					HALT_ON_ERRORCOND(
+						(vcpu->vmcs.info_vmexit_interrupt_information &
+						 INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_HW_EXCEPTION);
 					xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 					break;
 
-				case 0x02:	//NMI
+				case NMI_VECTOR:
+					HALT_ON_ERRORCOND((vcpu->vmcs.info_vmexit_interrupt_information &
+									   INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI);
 					#ifndef __XMHF_VERIFICATION__
 					//we currently discharge quiescing via manual inspection
 					xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r, 1);
