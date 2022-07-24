@@ -690,40 +690,45 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	 * Check whether this VMEXIT is for quiescing. If so, printing before the
 	 * quiesce is completed will result in deadlock.
 	 */
-	if (vmexit_reason == VMX_VMEXIT_EXCEPTION &&
-		(__vmx_vmread32(VMCSENC_info_vmexit_interrupt_information) &
-		 INTR_INFO_VECTOR_MASK) == 0x2) {
-		/* NMI received by L2 guest */
-		if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
-			xmhf_smpguest_arch_x86vmx_unblock_nmi();
-			/*
-			 * Make sure that there is no interruption. (Not implemented if
-			 * there is one. In this case re-injecting the event is likely the
-			 * correct thing to do.)
-			 */
-			{
-				u32 idt_info;
-				u16 encoding = VMCSENC_info_IDT_vectoring_information;
-				idt_info = __vmx_vmread32(encoding);
-				HALT_ON_ERRORCOND((idt_info & 0x80000000U) == 0);
+	if (vmexit_reason == VMX_VMEXIT_EXCEPTION) {
+		u32 intr_info =
+			__vmx_vmread32(VMCSENC_info_vmexit_interrupt_information);
+		HALT_ON_ERRORCOND(intr_info & INTR_INFO_VALID_MASK);
+		if ((intr_info & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI) {
+			HALT_ON_ERRORCOND((intr_info & INTR_INFO_VECTOR_MASK) ==
+							  NMI_VECTOR);
+			/* NMI received by L2 guest */
+			if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
+				xmhf_smpguest_arch_x86vmx_unblock_nmi();
+				/*
+				 * Make sure that there is no interruption. (Not implemented if
+				 * there is one. In this case re-injecting the event is likely the
+				 * correct thing to do.)
+				 */
+				{
+					u32 idt_info;
+					u16 encoding = VMCSENC_info_IDT_vectoring_information;
+					idt_info = __vmx_vmread32(encoding);
+					HALT_ON_ERRORCOND((idt_info & 0x80000000U) == 0);
+				}
+				/*
+				 * This is the rare case where we have L2 -> L0 -> L2. Usually it
+				 * is L2 -> L0 -> L1.
+				 */
+				xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+				__vmx_vmentry_vmresume(r);
+				HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+			} else {
+				/*
+				 * TODO: Need to check guest's setting about virtual NMI etc
+				 *
+				 * Likely should move this logic to after
+				 * xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12().
+				 */
+				HALT_ON_ERRORCOND(0 && "Nested guest NMI handling not implemented");
+				/* You probably want the following */
+				xmhf_smpguest_arch_x86vmx_unblock_nmi();
 			}
-			/*
-			 * This is the rare case where we have L2 -> L0 -> L2. Usually it
-			 * is L2 -> L0 -> L1.
-			 */
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-			__vmx_vmentry_vmresume(r);
-			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
-		} else {
-			/*
-			 * TODO: Need to check guest's setting about virtual NMI etc
-			 *
-			 * Likely should move this logic to after
-			 * xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12().
-			 */
-			HALT_ON_ERRORCOND(0 && "Nested guest NMI handling not implemented");
-			/* You probably want the following */
-			xmhf_smpguest_arch_x86vmx_unblock_nmi();
 		}
 	}
 
