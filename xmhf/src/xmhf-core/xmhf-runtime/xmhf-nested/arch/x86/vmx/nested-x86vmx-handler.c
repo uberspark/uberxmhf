@@ -657,10 +657,10 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 	 * guest_nmi_pending is 1.
 	 */
 	if (!vmcs12_info->guest_nmi_exiting) {
-		u32 __ctl_VM_entry_intr_info = __vmx_vmread32(
-			VMCSENC_control_VM_entry_interruption_information);
-		if ((__ctl_VM_entry_intr_info & INTR_INFO_VALID_MASK) &&
-			(__ctl_VM_entry_intr_info & INTR_INFO_VECTOR_MASK) == NMI_VECTOR) {
+		u32 __ctl_VM_entry_intr_info =
+			__vmx_vmread32(VMCSENC_control_VM_entry_interruption_information);
+		if ((__ctl_VM_entry_intr_info & INTR_INFO_VALID_MASK)
+			&& (__ctl_VM_entry_intr_info & INTR_INFO_VECTOR_MASK) == NMI_VECTOR) {
 			nmi_pending_limit = 1;
 		}
 	}
@@ -725,7 +725,9 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				 * Likely should move this logic to after
 				 * xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12().
 				 */
-				HALT_ON_ERRORCOND(0 && "Nested guest NMI handling not implemented");
+				HALT_ON_ERRORCOND(0
+								  &&
+								  "Nested guest NMI handling not implemented");
 				/* You probably want the following */
 				xmhf_smpguest_arch_x86vmx_unblock_nmi();
 			}
@@ -878,8 +880,9 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	vcpu->vmx_nested_is_vmx_root_operation = 1;
 
 	/* NMI status be changed during L2, so update L1's NMI window exiting */
-	xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(
-		vcpu, &vcpu->vmcs.control_VMX_cpu_based);
+	xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(vcpu,
+														&vcpu->
+														vmcs.control_VMX_cpu_based);
 
 	/* Change NMI handler from L2 to L1 */
 	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_handler_arg == SMPG_VMX_NMI_NESTED);
