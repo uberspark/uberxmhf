@@ -591,6 +591,12 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	/* 32-Bit Control Fields */
 	{
 		u32 val = vmcs12->control_VMX_pin_based;
+		/* Check for relationship between "NMI exiting" and "virtual NMIs" */
+		vmcs12_info->guest_nmi_exiting = _vmx_hasctl_nmi_exiting(&ctls);
+		vmcs12_info->guest_virtual_nmis = _vmx_hasctl_virtual_nmis(&ctls);
+		if (!vmcs12_info->guest_nmi_exiting && vmcs12_info->guest_virtual_nmis) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
 		/* Enable NMI exiting because needed by quiesce */
 		val |= (1U << VMX_PINBASED_NMI_EXITING);
 		val |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
@@ -598,6 +604,15 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	}
 	{
 		u32 val = vmcs12->control_VMX_cpu_based;
+		/*
+		 * Check for relationship between "virtual NMIs" and NMI-window exiting
+		 */
+		vmcs12_info->guest_nmi_window_exiting =
+			_vmx_hasctl_nmi_window_exiting(&ctls);
+		if (!vmcs12_info->guest_virtual_nmis &&
+			vmcs12_info->guest_nmi_window_exiting) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
 		/* XMHF needs to activate secondary controls because of EPT */
 		val |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
 		__vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, val);

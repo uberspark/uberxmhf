@@ -290,6 +290,9 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 		   sizeof(vmcs12_info->vmcs02_vmentry_msr_load_area));
 	vmcs12_info->guest_ept_enable = 0;
 	vmcs12_info->guest_ept_root = 0;
+	vmcs12_info->guest_nmi_exiting = false;
+	vmcs12_info->guest_virtual_nmis = false;
+	vmcs12_info->guest_nmi_window_exiting = false;
 	/* vmcs12_info->ept02_ctx is initialized when guest uses EPT */
 	return vmcs12_info;
 }
@@ -595,7 +598,7 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 /* Handle NMI interrupt when XMHF is interacting with nested guest */
 void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 {
-	(void) vcpu;
+	(void)vcpu;
 	// TODO: may need struct regs *r in arguments
 	HALT_ON_ERRORCOND(0 && "TODO: nested virutalization NMI not implemented");
 }
