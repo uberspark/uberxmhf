@@ -701,39 +701,40 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				xmhf_smpguest_arch_x86vmx_unblock_nmi();
 				/*
 				 * Make sure that there is no interruption. (Not implemented if
-				 * there is one. In this case re-injecting the event is likely the
-				 * correct thing to do.)
+				 * there is one. In this case re-injecting the event is likely
+				 * the correct thing to do.)
 				 */
 				{
 					u32 idt_info;
 					u16 encoding = VMCSENC_info_IDT_vectoring_information;
 					idt_info = __vmx_vmread32(encoding);
-					HALT_ON_ERRORCOND((idt_info & 0x80000000U) == 0);
+					HALT_ON_ERRORCOND((idt_info & INTR_INFO_VALID_MASK) == 0);
 				}
-				/*
-				 * This is the rare case where we have L2 -> L0 -> L2. Usually it
-				 * is L2 -> L0 -> L1.
-				 */
-				xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
-				__vmx_vmentry_vmresume(r);
-				HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 			} else {
-				/*
-				 * TODO: Need to check guest's setting about virtual NMI etc
-				 *
-				 * Likely should move this logic to after
-				 * xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12().
-				 */
-				HALT_ON_ERRORCOND(0
-								  &&
-								  "Nested guest NMI handling not implemented");
-				/* You probably want the following */
 				xmhf_smpguest_arch_x86vmx_unblock_nmi();
+				/*
+				 * Note that xmhf_nested_arch_x86vmx_handle_nmi() may decide to
+				 * perform L2 -> L0 -> L1. In this case the function never
+				 * returns.
+				 */
+				xmhf_nested_arch_x86vmx_handle_nmi(vcpu, r);
 			}
+			/*
+			 * This is the rare case where we have L2 -> L0 -> L2. Usually it
+			 * is L2 -> L0 -> L1.
+			 */
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
+			__vmx_vmentry_vmresume(r);
+			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 		}
 	}
 
 	vmcs12_info = find_current_vmcs12(vcpu);
+
+	if (vmexit_reason == VMX_VMEXIT_NMI_WINDOW) {
+		// TODO
+		HALT_ON_ERRORCOND(0 && "NMI window not implemented");
+	}
 
 	/*
 	 * Check whether this VMEXIT is caused by EPT violation.
@@ -848,11 +849,6 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	// TODO: handle EPT misconfiguration
 	if (vmexit_reason == VMX_VMEXIT_EPT_MISCONFIGURATION) {
 		HALT_ON_ERRORCOND(0 && "EPT misconfiguration not implemented");
-	}
-
-	if (vmexit_reason == VMX_VMEXIT_NMI_WINDOW) {
-		// TODO
-		HALT_ON_ERRORCOND(0 && "NMI window not implemented");
 	}
 
 	/* Wake the guest hypervisor up for the VMEXIT */
