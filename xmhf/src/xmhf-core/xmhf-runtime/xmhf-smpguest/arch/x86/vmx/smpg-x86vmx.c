@@ -674,7 +674,7 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 }
 
 /* Return whether NMI for XMHF's intercept handler is temporarily blocked */
-static bool xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(VCPU *vcpu)
+bool xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(VCPU *vcpu)
 {
 	return vcpu->vmx_guest_nmi_disable;
 }
