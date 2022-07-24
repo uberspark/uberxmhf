@@ -688,6 +688,11 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
 	case SMPG_VMX_NMI_INJECT:
 		xmhf_smpguest_arch_x86vmx_inject_nmi(vcpu);
 		break;
+#ifdef __NESTED_VIRTUALIZATION__
+	case SMPG_VMX_NMI_NESTED:
+		xmhf_nested_arch_x86vmx_handle_nmi(vcpu);
+		break;
+#endif /* !__NESTED_VIRTUALIZATION__ */
 	default:
 		HALT_ON_ERRORCOND(0 && "Unexpected vcpu->vmx_guest_nmi_handler_arg");
 		break;

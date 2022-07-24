@@ -403,6 +403,9 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	/* From now on, cannot fail */
 	vcpu->vmx_nested_is_vmx_root_operation = 0;
 
+	/* Change NMI handler from L1 to L2 */
+	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_handler_arg == SMPG_VMX_NMI_INJECT);
+	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_NESTED;
 	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 
 	if (vmcs12_info->launched) {
@@ -587,6 +590,14 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 	/* Initialize EPT and VPID cache */
 	xmhf_nested_arch_x86vmx_ept_init(vcpu);
 	xmhf_nested_arch_x86vmx_vpid_init(vcpu);
+}
+
+/* Handle NMI interrupt when XMHF is interacting with nested guest */
+void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
+{
+	(void) vcpu;
+	// TODO: may need struct regs *r in arguments
+	HALT_ON_ERRORCOND(0 && "TODO: nested virutalization NMI not implemented");
 }
 
 /* Handle VMEXIT from nested guest */
@@ -776,9 +787,13 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	/* Prepare VMRESUME to guest hypervisor */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
-	// TODO: handle vcpu->vmx_guest_inject_nmi?
 	vcpu->vmx_nested_is_vmx_root_operation = 1;
+
+	/* Change NMI handler from L2 to L1 */
+	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_handler_arg == SMPG_VMX_NMI_NESTED);
+	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
 	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+
 	__vmx_vmentry_vmresume(r);
 }
 

@@ -54,6 +54,9 @@
 
 /* Macros that control how NMIs for the guest are handled */
 #define SMPG_VMX_NMI_INJECT     0   /* Inject NMI to guest */
+#ifdef __NESTED_VIRTUALIZATION__
+#define SMPG_VMX_NMI_NESTED     1   /* Let nested virtualization decide */
+#endif /* !__NESTED_VIRTUALIZATION__ */
 
 
 #ifndef __ASSEMBLY__
