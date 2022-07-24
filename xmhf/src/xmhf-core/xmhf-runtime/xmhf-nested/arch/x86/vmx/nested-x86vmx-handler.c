@@ -442,7 +442,7 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	/* Change NMI handler from L1 to L2 */
 	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_handler_arg == SMPG_VMX_NMI_INJECT);
 	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_NESTED;
-	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
 
 	if (vmcs12_info->launched) {
 		__vmx_vmentry_vmresume(r);
@@ -629,12 +629,12 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 }
 
 /* Handle NMI interrupt when XMHF is interacting with nested guest */
-void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
+void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu, struct regs *r)
 {
 	vmcs12_info_t *vmcs12_info = find_current_vmcs12(vcpu);
 	u32 nmi_pending_limit;
 
-	// TODO: HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
+	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
 
 	/* Calculate the maximum value of guest_nmi_pending */
 	nmi_pending_limit = 2;
@@ -674,8 +674,7 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 	}
 
 	/* Set NMI windowing bit as required */
-	// TODO: r is not available yet
-	_update_nested_nmi(vcpu, vmcs12_info, NULL);
+	_update_nested_nmi(vcpu, vmcs12_info, r);
 }
 
 /* Handle VMEXIT from nested guest */
@@ -715,7 +714,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				 * This is the rare case where we have L2 -> L0 -> L2. Usually it
 				 * is L2 -> L0 -> L1.
 				 */
-				xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+				xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
 				__vmx_vmentry_vmresume(r);
 				HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 			} else {
@@ -818,7 +817,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				__vmx_vmwrite32(encoding, idt_errcode);
 			}
 			/* Call VMRESUME */
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
 			__vmx_vmentry_vmresume(r);
 			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 			break;
@@ -887,7 +886,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	/* Change NMI handler from L2 to L1 */
 	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_handler_arg == SMPG_VMX_NMI_NESTED);
 	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
-	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
 
 	__vmx_vmentry_vmresume(r);
 }
