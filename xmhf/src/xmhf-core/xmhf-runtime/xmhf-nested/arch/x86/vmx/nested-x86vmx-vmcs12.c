@@ -1015,9 +1015,16 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		HALT_ON_ERRORCOND(val == __vmx_vmread32(VMCSENC_control_VMX_pin_based));
 	}
 	{
-		u32 val = vmcs12->control_VMX_cpu_based;
-		val |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
-		HALT_ON_ERRORCOND(val == __vmx_vmread32(VMCSENC_control_VMX_cpu_based));
+		u32 val12 = vmcs12->control_VMX_cpu_based;
+		u32 val02 = __vmx_vmread32(VMCSENC_control_VMX_cpu_based);
+		/* Secondary controls are always required in VMCS02 for EPT */
+		val12 |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
+		/* If VMCS12 does not set NMI exiting, NMI window exiting may change */
+		if (!vmcs12_info->guest_nmi_exiting) {
+			val12 &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+			val02 &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+		}
+		HALT_ON_ERRORCOND(val12 == val02);
 	}
 	{
 		// TODO: in the future, need to merge with host's exception bitmap
