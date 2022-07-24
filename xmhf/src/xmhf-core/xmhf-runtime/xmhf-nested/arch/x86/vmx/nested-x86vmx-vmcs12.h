@@ -138,6 +138,12 @@ typedef struct vmcs12_info {
 	bool guest_virtual_nmis;
 	/* "NMI-window exiting" in VMCS */
 	bool guest_nmi_window_exiting;
+	/*
+	 * When "NMI exiting" = 1, whether the guest is blocking NMIs.
+	 * Note: when "NMI exiting" = 0, this field is undefined. Use guest
+	 * interruptibility field in VMCS02.
+	 */
+	bool guest_block_nmi;
 } vmcs12_info_t;
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);

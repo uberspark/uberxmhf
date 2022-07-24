@@ -293,7 +293,7 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 	vmcs12_info->guest_nmi_exiting = false;
 	vmcs12_info->guest_virtual_nmis = false;
 	vmcs12_info->guest_nmi_window_exiting = false;
-	/* vmcs12_info->ept02_ctx is initialized when guest uses EPT */
+	vmcs12_info->guest_block_nmi = false;
 	return vmcs12_info;
 }
 

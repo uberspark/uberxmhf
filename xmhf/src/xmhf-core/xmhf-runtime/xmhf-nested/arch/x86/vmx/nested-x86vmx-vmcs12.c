@@ -605,7 +605,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	{
 		u32 val = vmcs12->control_VMX_cpu_based;
 		/*
-		 * Check for relationship between "virtual NMIs" and NMI-window exiting
+		 * Check for relationship between "virtual NMIs" and "NMI-window
+		 * exiting"
 		 */
 		vmcs12_info->guest_nmi_window_exiting =
 			_vmx_hasctl_nmi_window_exiting(&ctls);
@@ -745,6 +746,17 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	/* 32-Bit Guest-State Fields */
 	{
 		u32 val = vmcs12->guest_interruptibility;
+		if (vmcs12_info->guest_nmi_exiting) {
+			if (vmcs12_info->guest_virtual_nmis) {
+				/* NMI Exiting = 1, virtual NMIs = 1 */
+				vmcs12_info->guest_block_nmi = false;
+			} else {
+				/* NMI Exiting = 1, virtual NMIs = 0 */
+				vmcs12_info->guest_block_nmi = val & (1U << 3);
+			}
+		} else {
+			/* NMI Exiting = 0, virtual NMIs = 0, guest_block_nmi is ignored */
+		}
 		__vmx_vmwrite32(VMCSENC_guest_interruptibility, val);
 	}
 
@@ -1162,6 +1174,29 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	/* 32-Bit Guest-State Fields */
 	{
 		u32 val = __vmx_vmread32(VMCSENC_guest_interruptibility);
+		if (vmcs12_info->guest_nmi_exiting) {
+			/* Copy guest NMI blocking to host (VMCS01) */
+			if (vmcs12_info->guest_block_nmi) {
+				vcpu->vmcs.guest_interruptibility |= (1U << 3);
+			} else {
+				vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
+			}
+			/* Set guest interruptibility state in VMCS12 */
+			if (!vmcs12_info->guest_virtual_nmis) {
+				if (vmcs12_info->guest_block_nmi) {
+					val |= (1U << 3);
+				} else {
+					val &= ~(1U << 3);
+				}
+			}
+		} else {
+			/* Copy guest NMI blocking to host (VMCS01) */
+			if (val & (1U << 3)) {
+				vcpu->vmcs.guest_interruptibility |= (1U << 3);
+			} else {
+				vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
+			}
+		}
 		vmcs12->guest_interruptibility = val;
 	}
 
