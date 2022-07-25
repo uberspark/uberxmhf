@@ -857,10 +857,9 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				int result;
 				HALT_ON_ERRORCOND(inst_len <= 16);
 				if (cs_rip != guest2_paddr) {
-					result =
-						hptw_checked_copy_from_va(&cache_line->value.ept02_ctx.
-												  ctx, 0, insts, cs_rip,
-												  inst_len);
+					hptw_ctx_t *ctx = &cache_line->value.ept02_ctx.ctx;
+					result = hptw_checked_copy_from_va(ctx, 0, insts, cs_rip,
+													   inst_len);
 					if (result == 0) {
 						u32 i;
 						if ((inst_len >= 2 && insts[0] == 0xf3 &&
@@ -954,10 +953,11 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		vmcs12_info->vmcs12_value.info_vmexit_reason = VMX_VMEXIT_EXCEPTION;
 
 		/* NMI windowing should not be caused by an exception / interrupt */
-		HALT_ON_ERRORCOND(!
-						  (vmcs12_info->
-						   vmcs12_value.info_vmexit_interrupt_information &
-						   INTR_INFO_VALID_MASK));
+		{
+			u32 intr_info =
+				vmcs12_info->vmcs12_value.info_vmexit_interrupt_information;
+			HALT_ON_ERRORCOND(!(intr_info & INTR_INFO_VALID_MASK));
+		}
 		vmcs12_info->vmcs12_value.info_vmexit_interrupt_information =
 			NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK;
 
@@ -965,10 +965,11 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		 * Currently, we assume NMI windowing should not be caused by event
 		 * delivery.
 		 */
-		HALT_ON_ERRORCOND(!
-						  (vmcs12_info->
-						   vmcs12_value.info_IDT_vectoring_information &
-						   INTR_INFO_VALID_MASK));
+		{
+			u32 idt_vec_info =
+				vmcs12_info->vmcs12_value.info_IDT_vectoring_information;
+			HALT_ON_ERRORCOND(!(idt_vec_info & INTR_INFO_VALID_MASK));
+		}
 
 		/* Update host state: NMI is blocked */
 		vcpu->vmcs.guest_interruptibility |= (1U << 3);
