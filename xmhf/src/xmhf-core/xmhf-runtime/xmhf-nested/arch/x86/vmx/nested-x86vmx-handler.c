@@ -294,6 +294,8 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 	vmcs12_info->guest_virtual_nmis = false;
 	vmcs12_info->guest_nmi_window_exiting = false;
 	vmcs12_info->guest_block_nmi = false;
+	vmcs12_info->guest_vmcs_block_nmi_overridden = false;
+	vmcs12_info->guest_vmcs_block_nmi = false;
 	return vmcs12_info;
 }
 
@@ -371,28 +373,63 @@ static u32 _vmx_check_physical_addr_width(VCPU * vcpu, u64 addr)
 
 static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 {
-	/* Compute the bit's value */
 	bool nmi_pending = false;
+	bool nmi_windowing = false;
+	bool override_nmi_blocking = false;
+
+	/* Compute whether NMI is pending */
 	if (vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
 		nmi_pending = false;
 	} else if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
 		nmi_pending = true;
 	}
 
-	/* Update VMCS / VMEXIT as required */
+	/* Compute whether we need to set NMI windowing in VMCS02 */
 	if (vmcs12_info->guest_nmi_exiting) {
 		if (nmi_pending && !vmcs12_info->guest_block_nmi) {
-			// TODO
-			HALT_ON_ERRORCOND(0 && "TODO: NMI VMEXIT to L1");
+			nmi_windowing = true;
+			override_nmi_blocking = true;
+		}
+		if (vmcs12_info->guest_nmi_window_exiting) {
+			nmi_windowing = true;
 		}
 	} else {
-		u32 procctl = __vmx_vmread32(0x4002);
 		if (nmi_pending) {
+			nmi_windowing = true;
+		}
+	}
+
+	/* Update NMI window exiting in VMCS02 */
+	{
+		u32 procctl = __vmx_vmread32(0x4002);
+		if (nmi_windowing) {
 			procctl |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 		} else {
 			procctl &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 		}
 		__vmx_vmwrite32(0x4002, procctl);
+	}
+
+	/* Update NMI blocking in VMCS02 */
+	if (override_nmi_blocking) {
+		u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
+		if (!vmcs12_info->guest_vmcs_block_nmi_overridden) {
+			vmcs12_info->guest_vmcs_block_nmi_overridden = true;
+			vmcs12_info->guest_vmcs_block_nmi = guest_int & (1U << 3);
+		}
+		guest_int &= ~(1U << 3);
+		__vmx_vmwrite32(VMCSENC_guest_interruptibility, guest_int);
+	} else {
+		if (vmcs12_info->guest_vmcs_block_nmi_overridden) {
+			u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
+			if (vmcs12_info->guest_vmcs_block_nmi) {
+				guest_int |= (1U << 3);
+			} else {
+				guest_int &= ~(1U << 3);
+			}
+			__vmx_vmwrite32(VMCSENC_guest_interruptibility, guest_int);
+			vmcs12_info->guest_vmcs_block_nmi_overridden = false;
+		}
 	}
 }
 
@@ -642,9 +679,15 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 			nmi_pending_limit = 1;
 		}
 	} else {
-		u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
-		if (guest_int & (1U << 3)) {
-			nmi_pending_limit = 1;
+		if (vmcs12_info->guest_vmcs_block_nmi_overridden) {
+			if (vmcs12_info->guest_vmcs_block_nmi) {
+				nmi_pending_limit = 1;
+			}
+		} else {
+			u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
+			if (guest_int & (1U << 3)) {
+				nmi_pending_limit = 1;
+			}
 		}
 	}
 
@@ -677,6 +720,7 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 /* Handle VMEXIT from nested guest */
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 {
+	bool nmi_vmexit = false;
 	vmcs12_info_t *vmcs12_info;
 	u32 vmexit_reason = __vmx_vmread32(VMCSENC_info_vmexit_reason);
 
@@ -729,12 +773,34 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	vmcs12_info = find_current_vmcs12(vcpu);
 
 	if (vmexit_reason == VMX_VMEXIT_NMI_WINDOW) {
-		/*
-		 * When "NMI exiting" = 0 in VMCS12, NMI windowing is used by L0 XMHF
-		 * to inject NMI to L2 nested guest. This is similar to injecting to
-		 * L1 guest when there is no nested virtualization.
-		 */
-		if (!vmcs12_info->guest_nmi_exiting) {
+		if (vmcs12_info->guest_nmi_exiting) {
+			/*
+			 * When "NMI exiting" = 1 in VMCS12, NMI windowing is shared by
+			 * L1 injecting NMI to L2 and L0 VMEXITING to L1. First check
+			 * whether L0 -> L1 is needed. If not, L1 -> L2.
+			 */
+			bool nmi_pending = false;
+
+			/* Compute whether NMI is pending */
+			if (vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
+				nmi_pending = false;
+			} else if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
+				nmi_pending = true;
+			}
+
+			if (nmi_pending && !vmcs12_info->guest_block_nmi) {
+				/* NMI VMEXIT to L1 */
+				nmi_vmexit = true;
+			} else {
+				/* NMI windowing VMEXIT to L1 */
+				HALT_ON_ERRORCOND(vmcs12_info->guest_nmi_window_exiting);
+			}
+		} else {
+			/*
+			 * When "NMI exiting" = 0 in VMCS12, NMI windowing is used by L0
+			 * XMHF to inject NMI to L2 nested guest. This is similar to
+			 * injecting to L1 guest when there is no nested virtualization.
+			 */
 			/* Inject NMI to L2 */
 			u16 encoding;
 			u32 idt_info;
@@ -881,6 +947,34 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		 * guest hypervisor.
 		 */
 		HALT_ON_ERRORCOND(0 && "Debug: guest hypervisor VM-entry failure");
+	}
+	if (nmi_vmexit) {
+		HALT_ON_ERRORCOND(
+			vmcs12_info->vmcs12_value.info_vmexit_reason ==
+			VMX_VMEXIT_NMI_WINDOW);
+		vmcs12_info->vmcs12_value.info_vmexit_reason = VMX_VMEXIT_EXCEPTION;
+
+		/* NMI windowing should not be caused by an exception / interrupt */
+		HALT_ON_ERRORCOND(
+			!(vmcs12_info->vmcs12_value.info_vmexit_interrupt_information &
+			  INTR_INFO_VALID_MASK));
+		vmcs12_info->vmcs12_value.info_vmexit_interrupt_information =
+			NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK;
+
+		/*
+		 * Currently, we assume NMI windowing should not be caused by event
+		 * delivery.
+		 */
+		HALT_ON_ERRORCOND(
+			!(vmcs12_info->vmcs12_value.info_IDT_vectoring_information &
+			  INTR_INFO_VALID_MASK));
+
+		/* Update host state: NMI is blocked */
+		vcpu->vmcs.guest_interruptibility |= (1U << 3);
+
+		/* Consume one pending NMI */
+		HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
+		vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
 	}
 	if (1) {
 		printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,

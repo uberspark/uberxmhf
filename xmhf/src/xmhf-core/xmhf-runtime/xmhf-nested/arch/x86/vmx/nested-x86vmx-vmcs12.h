@@ -144,6 +144,13 @@ typedef struct vmcs12_info {
 	 * interruptibility field in VMCS02.
 	 */
 	bool guest_block_nmi;
+	/*
+	 * If true, guest_vmcs_block_nmi contains the original L2 NMI blocking bit.
+	 * If false, L2 NMI blocking bit is in VMCS02 guest interruptibility field.
+	 */
+	bool guest_vmcs_block_nmi_overridden;
+	/* L2 NMI blocking bit if guest_vmcs_block_nmi_overridden is true */
+	bool guest_vmcs_block_nmi;
 } vmcs12_info_t;
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);
