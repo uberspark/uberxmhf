@@ -1447,7 +1447,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	 * The intercept handler has written back vcpu->vmcs to hardware VMCS. Now
 	 * the NMI interrupts can update VMCS as needed.
 	 */
-	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu, r);
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 #endif // __XMHF_VERIFICATION__
 
 
