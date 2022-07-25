@@ -949,15 +949,15 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		HALT_ON_ERRORCOND(0 && "Debug: guest hypervisor VM-entry failure");
 	}
 	if (nmi_vmexit) {
-		HALT_ON_ERRORCOND(
-			vmcs12_info->vmcs12_value.info_vmexit_reason ==
-			VMX_VMEXIT_NMI_WINDOW);
+		HALT_ON_ERRORCOND(vmcs12_info->vmcs12_value.info_vmexit_reason ==
+						  VMX_VMEXIT_NMI_WINDOW);
 		vmcs12_info->vmcs12_value.info_vmexit_reason = VMX_VMEXIT_EXCEPTION;
 
 		/* NMI windowing should not be caused by an exception / interrupt */
-		HALT_ON_ERRORCOND(
-			!(vmcs12_info->vmcs12_value.info_vmexit_interrupt_information &
-			  INTR_INFO_VALID_MASK));
+		HALT_ON_ERRORCOND(!
+						  (vmcs12_info->
+						   vmcs12_value.info_vmexit_interrupt_information &
+						   INTR_INFO_VALID_MASK));
 		vmcs12_info->vmcs12_value.info_vmexit_interrupt_information =
 			NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK;
 
@@ -965,9 +965,10 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		 * Currently, we assume NMI windowing should not be caused by event
 		 * delivery.
 		 */
-		HALT_ON_ERRORCOND(
-			!(vmcs12_info->vmcs12_value.info_IDT_vectoring_information &
-			  INTR_INFO_VALID_MASK));
+		HALT_ON_ERRORCOND(!
+						  (vmcs12_info->
+						   vmcs12_value.info_IDT_vectoring_information &
+						   INTR_INFO_VALID_MASK));
 
 		/* Update host state: NMI is blocked */
 		vcpu->vmcs.guest_interruptibility |= (1U << 3);
