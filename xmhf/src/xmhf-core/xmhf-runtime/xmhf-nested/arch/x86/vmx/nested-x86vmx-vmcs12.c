@@ -597,6 +597,21 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		if (!vmcs12_info->guest_nmi_exiting && vmcs12_info->guest_virtual_nmis) {
 			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
 		}
+		/*
+		 * Disallow NMI injection if NMI exiting = 0.
+		 * This is a limitation of XMHF. The correct behavior is to make NMI
+		 * not blocked after injecting NMI. However, this requires non-trivial
+		 * XMHF implementation effort. So not implemented, at least for now.
+		 */
+		if (!vmcs12_info->guest_nmi_exiting) {
+			u32 injection = vmcs12->control_VM_entry_interruption_information;
+			if ((injection & INTR_INFO_VALID_MASK) &&
+				(injection & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI) {
+				HALT_ON_ERRORCOND((injection & INTR_INFO_VECTOR_MASK) ==
+								  NMI_VECTOR);
+				HALT_ON_ERRORCOND(0 && "Not supported (XMHF limitation)");
+			}
+		}
 		/* Enable NMI exiting because needed by quiesce */
 		val |= (1U << VMX_PINBASED_NMI_EXITING);
 		val |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
