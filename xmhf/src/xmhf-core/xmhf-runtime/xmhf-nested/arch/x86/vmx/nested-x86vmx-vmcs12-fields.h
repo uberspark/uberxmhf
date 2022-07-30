@@ -437,11 +437,11 @@ DECLARE_FIELD_32_RW(0x4014, control_VM_entry_MSR_load_count,
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4016, control_VM_entry_interruption_information,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_CTRL),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x4018, control_VM_entry_exception_errorcode,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
+					(FIELD_PROP_CTRL),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x401A, control_VM_entry_instruction_length,

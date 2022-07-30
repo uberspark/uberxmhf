@@ -749,6 +749,14 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		}
 	}
 	{
+		u32 val = vmcs12->control_VM_entry_interruption_information;
+		__vmx_vmwrite32(VMCSENC_control_VM_entry_interruption_information, val);
+	}
+	{
+		u32 val = vmcs12->control_VM_entry_exception_errorcode;
+		__vmx_vmwrite32(VMCSENC_control_VM_entry_exception_errorcode, val);
+	}
+	{
 		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is enabled above */
 		u32 val = vmcs12->control_VMX_seccpu_based;
 		/* XMHF needs the guest to run in EPT to protect memory */
@@ -1181,6 +1189,20 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area)
 						  == __vmx_vmread64(encoding));
 	}
+	{
+		/*
+		 * control_VM_entry_interruption_information may be changed in VMCS02
+		 * for nested virtualization operations, so do not copy to VMCS12.
+		 * Just clear bit 31 of VMCS12 as required by SDM.
+		 */
+		vmcs12->control_VM_entry_interruption_information &=
+			~INTR_INFO_VALID_MASK;
+	}
+	/*
+	 * control_VM_entry_exception_errorcode may be changed in VMCS02 for nested
+	 * virtualization operations, so do not copy to VMCS12. Just leave the
+	 * value in VMCS12 unchanged.
+	 */
 	{
 		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is always enabled */
 		u32 val = vmcs12->control_VMX_seccpu_based;
