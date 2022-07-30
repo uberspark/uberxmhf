@@ -1001,6 +1001,16 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	/* Change NMI handler from L2 to L1 */
 	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_handler_arg == SMPG_VMX_NMI_NESTED);
 	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
+
+	/*
+	 * Update NMI windowing in VMCS01 since nested virtualization may change
+	 * vcpu->vmx_guest_nmi_cfg.guest_nmi_pending.
+	 */
+	{
+		u32 procctl = __vmx_vmread32(0x4002);
+		xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(vcpu, &procctl);
+		__vmx_vmwrite32(0x4002, procctl);
+	}
 	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 
 	__vmx_vmentry_vmresume(r);
