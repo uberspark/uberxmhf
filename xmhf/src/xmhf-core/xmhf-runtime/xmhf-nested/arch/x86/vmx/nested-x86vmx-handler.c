@@ -371,6 +371,11 @@ static u32 _vmx_check_physical_addr_width(VCPU * vcpu, u64 addr)
 	return (addr & ~paddrmask) == 0;
 }
 
+/*
+ * Update VMCS02 to virtualize NMI correctly. This function should be called
+ * after VMCS12 is translated to VMCS02, but before enabling NMIs with call to
+ * xmhf_smpguest_arch_x86vmx_mhv_nmi_enable().
+ */
 static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 {
 	bool nmi_pending = false;
@@ -410,8 +415,28 @@ static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 		__vmx_vmwrite32(0x4002, procctl);
 	}
 
+	/*
+	 * Warn if L1 is injecting NMI to L2 and L0 (XMHF) wants to clear L2's NMI
+	 * blocking bit. The problem is that after injecting NMI, the NMI blocking
+	 * bit will be set. As a result, the NMI VMEXIT to L1 will be delayed until
+	 * L2 IRETs from its virtual NMI handler. This is a limitation of XMHF. The
+	 * perfect solution may be using monitor traps or emulating the injection.
+	 */
+	if (override_nmi_blocking) {
+		struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
+		u32 injection = vmcs12->control_VM_entry_interruption_information;
+		if ((injection & INTR_INFO_VALID_MASK) &&
+			(injection & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI) {
+			HALT_ON_ERRORCOND((injection & INTR_INFO_VECTOR_MASK) ==
+							  NMI_VECTOR);
+			printf("CPU(0x%02x): Warning: NMI VMEXIT will be delayed\n",
+				   vcpu->id);
+		}
+	}
+
 	/* Update NMI blocking in VMCS02 */
 	if (override_nmi_blocking) {
+		/* Clear NMI blocking bit, possibly saving old NMI blocking bit */
 		u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
 		if (!vmcs12_info->guest_vmcs_block_nmi_overridden) {
 			vmcs12_info->guest_vmcs_block_nmi_overridden = true;
@@ -420,6 +445,7 @@ static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 		guest_int &= ~(1U << 3);
 		__vmx_vmwrite32(VMCSENC_guest_interruptibility, guest_int);
 	} else {
+		/* Restore old NMI blocking bit */
 		if (vmcs12_info->guest_vmcs_block_nmi_overridden) {
 			u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
 			if (vmcs12_info->guest_vmcs_block_nmi) {
@@ -444,10 +470,8 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 
 	/*
 	   Features notes
-	   * "enable VPID" not supported (currently ignore control_vpid in VMCS12)
 	   * "VMCS shadowing" not supported (logic not written)
 	   * writing to VM-exit information field not supported
-	   * "Enable EPT" not supported yet
 	   * "EPTP switching" not supported (the only VMFUNC in Intel SDM)
 	   * "Sub-page write permissions for EPT" not supported
 	   * "Activate tertiary controls" not supported
