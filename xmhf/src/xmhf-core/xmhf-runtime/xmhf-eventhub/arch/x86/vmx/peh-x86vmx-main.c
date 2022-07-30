@@ -1144,19 +1144,20 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		return 1;
 	}
 #endif /* !__NESTED_VIRTUALIZATION__ */
-#ifdef __OPTIMIZE_NESTED_VIRT__
-	if (_optimize_x86vmx_intercept_handler(vcpu, r)) {
-		return 1;
-	}
-#endif /* __OPTIMIZE_NESTED_VIRT__ */
-	//read VMCS from physical CPU/core
-#ifndef __XMHF_VERIFICATION__
 	/*
 	 * The intercept handler access VMCS fields using vcpu->vmcs, but the NMI
 	 * exception handler relies on the hardware VMCS (i.e. use __vmx_vmread()).
 	 * So we disable NMI during the entire intercept handler.
 	 */
 	xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
+#ifdef __OPTIMIZE_NESTED_VIRT__
+	if (_optimize_x86vmx_intercept_handler(vcpu, r)) {
+		xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+		return 1;
+	}
+#endif /* __OPTIMIZE_NESTED_VIRT__ */
+	//read VMCS from physical CPU/core
+#ifndef __XMHF_VERIFICATION__
 	xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
