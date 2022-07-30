@@ -1058,6 +1058,7 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		vcpu->vmcs.guest_RSP = __vmx_vmreadNW(0x681C);
 		vcpu->vmcs.guest_RIP = __vmx_vmreadNW(0x681E);
 		vcpu->vmcs.guest_RFLAGS = __vmx_vmreadNW(0x6820);
+		vcpu->vmcs.control_VM_entry_interruption_information = __vmx_vmread32(0x4016);
 		switch ((u32)vcpu->vmcs.info_vmexit_reason) {
 		case VMX_VMEXIT_VMREAD:
 			xmhf_nested_arch_x86vmx_handle_vmread(vcpu, r);
