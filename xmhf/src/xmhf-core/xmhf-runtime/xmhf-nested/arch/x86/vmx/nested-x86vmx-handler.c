@@ -86,7 +86,11 @@ union _vmx_decode_vm_inst_info {
 	u32 raw;
 };
 
-/* A blank page in memory for VMCLEAR */
+/*
+ * A blank page in memory that is only read from.
+ * 1. During VMCLEAR, this page is used to clear a page of memory using memcpy.
+ * 2. This page is used as VMREAD and VMWRITE bitmaps when using shadow VMCS.
+ */
 static u8 blank_page[PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
 
 /* Track all active VMCS12's in each CPU */
@@ -1437,6 +1441,10 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU * vcpu, struct regs *r)
 			size_t size = _vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding,
 													 &pvalue, &value_mem_reg);
 			size_t offset = xmhf_nested_arch_x86vmx_vmcs_field_find(encoding);
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+			/* If using shadow VMCS, there should be no VMREAD exits */
+			HALT_ON_ERRORCOND(!_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps));
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 			if (offset == (size_t)(-1)) {
 				_vmx_nested_vm_fail_valid
 					(vcpu, VM_INST_ERRNO_VMRDWR_UNSUPP_VMCS_COMP);
@@ -1485,6 +1493,10 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU * vcpu, struct regs *r)
 			size_t size = _vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding,
 													 &pvalue, &value_mem_reg);
 			size_t offset = xmhf_nested_arch_x86vmx_vmcs_field_find(encoding);
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+			/* If using shadow VMCS, there should be no VMWRITE exits */
+			HALT_ON_ERRORCOND(!_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps));
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 			if (offset == (size_t)(-1)) {
 				_vmx_nested_vm_fail_valid
 					(vcpu, VM_INST_ERRNO_VMRDWR_UNSUPP_VMCS_COMP);
@@ -1573,6 +1585,12 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU * vcpu, struct regs *r)
 						/* Enable VMCS shadowing in VMC01 */
 						vcpu->vmcs.control_VMX_seccpu_based |=
 							(1U << VMX_SECPROCBASED_VMCS_SHADOWING);
+
+						/* Write VMREAD / VMWRITE bitmap */
+						__vmx_vmwrite(VMCSENC_control_VMREAD_bitmap_address,
+									  hva2spa(blank_page));
+						__vmx_vmwrite(VMCSENC_control_VMWRITE_bitmap_address,
+									  hva2spa(blank_page));
 					}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 					active_vmcs12_array_init(vcpu);
