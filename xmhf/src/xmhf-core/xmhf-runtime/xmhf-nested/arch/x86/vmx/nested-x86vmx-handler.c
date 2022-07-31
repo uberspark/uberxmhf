@@ -1412,8 +1412,27 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU * vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU * vcpu, struct regs *r)
 {
-	printf("CPU(0x%02x): %s(): r=%p\n", vcpu->id, __func__, r);
-	HALT_ON_ERRORCOND(0 && "Not implemented");
+	if (_vmx_nested_check_ud(vcpu, 0)) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+	} else {
+		gva_t addr = _vmx_decode_m64(vcpu, r);
+		gpa_t vmcs_ptr = vcpu->vmx_nested_current_vmcs_pointer;
+		guestmem_hptw_ctx_pair_t ctx_pair;
+		guestmem_init(vcpu, &ctx_pair);
+		guestmem_copy_h2gv(&ctx_pair, 0, addr, &vmcs_ptr, sizeof(vmcs_ptr));
+		_vmx_nested_vm_succeed(vcpu);
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	}
 }
 
 void xmhf_nested_arch_x86vmx_handle_vmread(VCPU * vcpu, struct regs *r)
