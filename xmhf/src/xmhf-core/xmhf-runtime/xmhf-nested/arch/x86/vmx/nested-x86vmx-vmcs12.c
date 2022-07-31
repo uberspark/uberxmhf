@@ -186,6 +186,54 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 	}
 }
 
+/* VMREAD all fields in current VMCS and put the result to vmcs12 */
+void xmhf_nested_arch_x86vmx_vmcs_read_all(VCPU * vcpu,
+										   struct nested_vmcs12 *vmcs12)
+{
+#define FIELD_CTLS_ARG (&vcpu->vmx_caps)
+#define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		vmcs12->name = __vmx_vmread16(encoding); \
+	}
+#define DECLARE_FIELD_64(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		vmcs12->name = __vmx_vmread64(encoding); \
+	}
+#define DECLARE_FIELD_32(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		vmcs12->name = __vmx_vmread32(encoding); \
+	}
+#define DECLARE_FIELD_NW(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		vmcs12->name = __vmx_vmreadNW(encoding); \
+	}
+#include "nested-x86vmx-vmcs12-fields.h"
+}
+
+/* VMWRITE all fields of current VMCS using the values from vmcs12 */
+void xmhf_nested_arch_x86vmx_vmcs_write_all(VCPU * vcpu,
+											struct nested_vmcs12 *vmcs12)
+{
+#define FIELD_CTLS_ARG (&vcpu->vmx_caps)
+#define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		__vmx_vmwrite16(encoding, vmcs12->name); \
+	}
+#define DECLARE_FIELD_64(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		__vmx_vmwrite64(encoding, vmcs12->name); \
+	}
+#define DECLARE_FIELD_32(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		__vmx_vmwrite32(encoding, vmcs12->name); \
+	}
+#define DECLARE_FIELD_NW(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		__vmx_vmwriteNW(encoding, vmcs12->name); \
+	}
+#include "nested-x86vmx-vmcs12-fields.h"
+}
+
 /* Dump all fields in vmcs12 */
 void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU * vcpu,
 									   struct nested_vmcs12 *vmcs12,

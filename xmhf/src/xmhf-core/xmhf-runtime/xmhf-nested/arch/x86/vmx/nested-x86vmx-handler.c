@@ -97,6 +97,13 @@ static vmcs12_info_t
 static u8 cpu_vmcs02[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][PAGE_SIZE_4K]
 	__attribute__((section(".bss.palign_data")));
 
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+/* The shadow VMCS12's in each CPU */
+static u8 cpu_shadow_vmcs12[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
+	[PAGE_SIZE_4K]
+	__attribute__((section(".bss.palign_data")));
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
+
 /*
  * Given a segment index, return the segment offset
  * TODO: do we need to check access rights?
@@ -245,9 +252,15 @@ static void active_vmcs12_array_init(VCPU * vcpu)
 	int i;
 	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
 		spa_t vmcs02_ptr = hva2spa(cpu_vmcs02[vcpu->idx][i]);
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+		spa_t vmcs12_shadow_ptr = hva2spa(cpu_shadow_vmcs12[vcpu->idx][i]);
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 		cpu_active_vmcs12[vcpu->idx][i].index = i;
 		cpu_active_vmcs12[vcpu->idx][i].vmcs12_ptr = CUR_VMCS_PTR_INVALID;
 		cpu_active_vmcs12[vcpu->idx][i].vmcs02_ptr = vmcs02_ptr;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+		cpu_active_vmcs12[vcpu->idx][i].vmcs12_shadow_ptr = vmcs12_shadow_ptr;
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 	}
 }
 
@@ -280,6 +293,13 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 	vmcs12_info->vmcs12_ptr = vmcs_ptr;
 	HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
 	*(u32 *) spa2hva(vmcs12_info->vmcs02_ptr) = rev;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+	if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+		memset(spa2hva(vmcs12_info->vmcs12_shadow_ptr), 0, PAGE_SIZE_4K);
+		HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs12_shadow_ptr));
+		*(u32 *) spa2hva(vmcs12_info->vmcs12_shadow_ptr) = 0x80000000U | rev;
+	}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 	vmcs12_info->launched = 0;
 	memset(&vmcs12_info->vmcs12_value, 0, sizeof(vmcs12_info->vmcs12_value));
 	memset(&vmcs12_info->vmcs02_vmexit_msr_store_area, 0,
@@ -330,6 +350,16 @@ static void _vmx_nested_vm_fail_valid(VCPU * vcpu, u32 error_number)
 	vcpu->vmcs.guest_RFLAGS &= ~VMX_INST_RFLAGS_MASK;
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_ZF;
 	vmcs12_info->vmcs12_value.info_vminstr_error = error_number;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+	if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+		u64 cur_vmcs;
+		HALT_ON_ERRORCOND(__vmx_vmptrst(&cur_vmcs));
+		HALT_ON_ERRORCOND(cur_vmcs == hva2spa((void *)vcpu->vmx_vmcs_vaddr));
+		HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs12_shadow_ptr));
+		__vmx_vmwrite32(VMCSENC_info_vminstr_error, error_number);
+		HALT_ON_ERRORCOND(__vmx_vmptrld(cur_vmcs));
+	}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 }
 
 static void _vmx_nested_vm_fail_invalid(VCPU * vcpu)
@@ -425,6 +455,19 @@ static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 	if (override_nmi_blocking) {
 		struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
 		u32 injection = vmcs12->control_VM_entry_interruption_information;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+		/* If using shadow VMCS, injection is actually in VMCS12 shadow */
+		if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+			u64 cur_vmcs;
+			HALT_ON_ERRORCOND(__vmx_vmptrst(&cur_vmcs));
+			HALT_ON_ERRORCOND(cur_vmcs == vmcs12_info->vmcs02_ptr);
+			HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs12_shadow_ptr));
+			injection =
+				__vmx_vmread32
+				(VMCSENC_control_VM_entry_interruption_information);
+			HALT_ON_ERRORCOND(__vmx_vmptrld(cur_vmcs));
+		}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 		if ((injection & INTR_INFO_VALID_MASK) &&
 			(injection & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI) {
 			HALT_ON_ERRORCOND((injection & INTR_INFO_VECTOR_MASK) ==
@@ -476,6 +519,15 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	   * "Sub-page write permissions for EPT" not supported
 	   * "Activate tertiary controls" not supported
 	 */
+
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+	/* Read VMCS12 values from the shadow VMCS */
+	if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+		HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs12_shadow_ptr));
+		xmhf_nested_arch_x86vmx_vmcs_read_all(vcpu, &vmcs12_info->vmcs12_value);
+		/* No need to VMPTRLD because the next line does so */
+	}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 
 	/* Translate VMCS12 to VMCS02 */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs02_ptr));
@@ -1020,6 +1072,17 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	vcpu->vmcs.guest_DR7 = 0x400UL;
 	vcpu->vmcs.guest_IA32_DEBUGCTL = 0ULL;
 	vcpu->vmcs.guest_RFLAGS = (1UL << 1);
+
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+	/* Write VMCS12 values to the shadow VMCS */
+	if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+		HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs12_shadow_ptr));
+		xmhf_nested_arch_x86vmx_vmcs_write_all(vcpu,
+											   &vmcs12_info->vmcs12_value);
+		/* No need to VMPTRLD because the next line does so */
+	}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
+
 	/* Prepare VMRESUME to guest hypervisor */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
@@ -1220,6 +1283,13 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 			 */
 			vmcs12_info_t *vmcs12_info = find_active_vmcs12(vcpu, vmcs_ptr);
 			if (vmcs12_info != NULL) {
+				HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+				if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+					HALT_ON_ERRORCOND(__vmx_vmclear
+									  (vmcs12_info->vmcs12_shadow_ptr));
+				}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 				vmcs12_info->vmcs12_ptr = CUR_VMCS_PTR_INVALID;
 			}
 			guestmem_copy_h2gp(&ctx_pair, 0, vmcs_ptr, blank_page,
@@ -1227,6 +1297,15 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 			if (vmcs_ptr == vcpu->vmx_nested_current_vmcs_pointer) {
 				vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
 				vcpu->vmx_nested_current_vmcs12_info = NULL;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+				/*
+				 * Make VMCS link pointer invalid so that VMCS shadowing will
+				 * VMfailInvalid when guest executes VMREAD / VMWRITE.
+				 */
+				if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+					vcpu->vmcs.guest_VMCS_link_pointer = CUR_VMCS_PTR_INVALID;
+				}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 			}
 			_vmx_nested_vm_succeed(vcpu);
 		}
@@ -1313,6 +1392,13 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU * vcpu, struct regs *r)
 				}
 				vcpu->vmx_nested_current_vmcs_pointer = vmcs_ptr;
 				vcpu->vmx_nested_current_vmcs12_info = vmcs12_info;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+				/* Use VMCS shadowing when available */
+				if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+					vcpu->vmcs.guest_VMCS_link_pointer =
+						vmcs12_info->vmcs12_shadow_ptr;
+				}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 				_vmx_nested_vm_succeed(vcpu);
 			}
 		}
@@ -1479,6 +1565,16 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU * vcpu, struct regs *r)
 					vcpu->vmx_nested_current_vmcs_pointer =
 						CUR_VMCS_PTR_INVALID;
 					vcpu->vmx_nested_current_vmcs12_info = NULL;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+					if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+						vcpu->vmcs.guest_VMCS_link_pointer =
+							CUR_VMCS_PTR_INVALID;
+
+						/* Enable VMCS shadowing in VMC01 */
+						vcpu->vmcs.control_VMX_seccpu_based |=
+							(1U << VMX_SECPROCBASED_VMCS_SHADOWING);
+					}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 					active_vmcs12_array_init(vcpu);
 					_vmx_nested_vm_succeed(vcpu);
 				}

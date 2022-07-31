@@ -58,4 +58,6 @@
  */
 #define VMX_NESTED_MAX_MSR_COUNT 8
 
+#define VMX_NESTED_USE_SHADOW_VMCS
+
 #endif							/* _NESTED_X86VMX_HANDLER_H_ */

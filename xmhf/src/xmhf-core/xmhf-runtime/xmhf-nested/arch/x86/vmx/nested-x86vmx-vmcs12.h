@@ -109,6 +109,10 @@ typedef struct vmcs12_info {
 	gpa_t vmcs12_ptr;
 	/* Pointer to VMCS02 in host */
 	spa_t vmcs02_ptr;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+	/* Pointer to shadow VMCS12 in host */
+	spa_t vmcs12_shadow_ptr;
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 	/* Whether this VMCS has launched */
 	int launched;
 	/* Content of VMCS12, stored in XMHF's format */
@@ -160,6 +164,10 @@ ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
 void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 										size_t offset, ulong_t value,
 										size_t size);
+void xmhf_nested_arch_x86vmx_vmcs_read_all(VCPU * vcpu,
+										   struct nested_vmcs12 *vmcs12);
+void xmhf_nested_arch_x86vmx_vmcs_write_all(VCPU * vcpu,
+											struct nested_vmcs12 *vmcs12);
 void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU * vcpu,
 									   struct nested_vmcs12 *vmcs12,
 									   char *prefix);

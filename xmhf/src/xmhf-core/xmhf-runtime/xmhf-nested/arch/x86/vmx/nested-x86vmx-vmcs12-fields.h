@@ -230,7 +230,7 @@ DECLARE_FIELD_64_RW(0x200A, control_VM_entry_MSR_load_address,
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x200C, control_Executive_VMCS_pointer,
 					(FIELD_PROP_CTRL),
-					(1),
+					(!VMCS12_FIELDS_QEMU),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x200E, control_PML_address,
 					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
