@@ -1548,8 +1548,42 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU * vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmxoff(VCPU * vcpu, struct regs *r)
 {
-	printf("CPU(0x%02x): %s(): r=%p\n", vcpu->id, __func__, r);
-	HALT_ON_ERRORCOND(0 && "Not implemented");
+	(void) r;
+	if (_vmx_nested_check_ud(vcpu, 0)) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+	} else {
+		/* Note: ignoring all logic related to SMI, SMM, SMX */
+		vcpu->vmx_nested_is_vmx_operation = 0;
+		vcpu->vmx_nested_vmxon_pointer = 0;
+		vcpu->vmx_nested_is_vmx_root_operation = 0;
+		vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
+		vcpu->vmx_nested_current_vmcs12_info = NULL;
+#ifdef VMX_NESTED_USE_SHADOW_VMCS
+		if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+			vcpu->vmcs.guest_VMCS_link_pointer = CUR_VMCS_PTR_INVALID;
+
+			/*
+			 * Disable VMCS shadowing in VMC01. This is required, otherwise
+			 * when the guest executes VMREAD / VMWRITE, VMfailInvalid is seen
+			 * instead of #UD.
+			 */
+			vcpu->vmcs.control_VMX_seccpu_based &=
+				~(1U << VMX_SECPROCBASED_VMCS_SHADOWING);
+		}
+#endif							/* VMX_NESTED_USE_SHADOW_VMCS */
+		_vmx_nested_vm_succeed(vcpu);
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	}
 }
 
 void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU * vcpu, struct regs *r)
