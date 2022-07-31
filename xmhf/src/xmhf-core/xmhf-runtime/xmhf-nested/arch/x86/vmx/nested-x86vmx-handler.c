@@ -800,24 +800,34 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		if (vmcs12_info->guest_nmi_exiting) {
 			/*
 			 * When "NMI exiting" = 1 in VMCS12, NMI windowing is shared by
-			 * L1 injecting NMI to L2 and L0 VMEXITING to L1. First check
-			 * whether L0 -> L1 is needed. If not, L1 -> L2.
+			 * 1. L2 VMEXITing to L1 (due to L1 setting NMI window exiting) and
+			 * 2. L0 injecting NMI to L2 (due to an NMI received by L0).
+			 * Through experiment the former has higher priority. So first
+			 * check whether L1 requests NMI window exiting. If so, forward the
+			 * L2 -> L0 VMEXIT to L1. Otherwise, change the VMEXIT reason
+			 * from NMI windowing (VMCS02) to NMI (VMCS12) by setting
+			 * nmi_vmexit to true.
 			 */
-			bool nmi_pending = false;
-
-			/* Compute whether NMI is pending */
-			if (vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
-				nmi_pending = false;
-			} else if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
-				nmi_pending = true;
-			}
-
-			if (nmi_pending && !vmcs12_info->guest_block_nmi) {
-				/* NMI VMEXIT to L1 */
-				nmi_vmexit = true;
+			if (vmcs12_info->guest_nmi_window_exiting) {
+				/*
+				 * Nothing to be done here. The following code will forward
+				 * this VMEXIT to L1.
+				 */
 			} else {
-				/* NMI windowing VMEXIT to L1 */
-				HALT_ON_ERRORCOND(vmcs12_info->guest_nmi_window_exiting);
+				/* Compute whether NMI is pending */
+				bool nmi_pending = false;
+				if (vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
+					nmi_pending = false;
+				} else if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
+					nmi_pending = true;
+				}
+				/*
+				 * We must need to deliver NMI VMEXIT to L1, otherwise NMI
+				 * windowing bit in VMCS02 is wrong.
+				 */
+				HALT_ON_ERRORCOND(nmi_pending && !vmcs12_info->guest_block_nmi);
+				/* Let the following code change the VMEXIT reason to NMI */
+				nmi_vmexit = true;
 			}
 		} else {
 			/*
