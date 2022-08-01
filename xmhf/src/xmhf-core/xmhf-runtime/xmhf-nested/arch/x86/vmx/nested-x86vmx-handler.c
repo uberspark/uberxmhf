@@ -1117,6 +1117,16 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	__vmx_vmentry_vmresume(r);
 }
 
+void xmhf_nested_arch_x86vmx_handle_vmentry_fail(VCPU * vcpu, bool is_resume)
+{
+	const char *inst_name = is_resume ? "VMRESUME" : "VMLAUNCH";
+	printf("CPU(0x%02x): %s error in nested virtualization\n", vcpu->id,
+		   inst_name);
+	xmhf_nested_arch_x86vmx_vmread_all(vcpu, "VMCS02.");
+	printf("CPU(0x%02x): HALT!\n", vcpu->id);
+	HALT();
+}
+
 void xmhf_nested_arch_x86vmx_handle_invept(VCPU * vcpu, struct regs *r)
 {
 	if (_vmx_nested_check_ud(vcpu, 0)) {
