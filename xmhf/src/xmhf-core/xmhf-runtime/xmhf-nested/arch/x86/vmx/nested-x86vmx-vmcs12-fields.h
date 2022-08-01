@@ -445,7 +445,7 @@ DECLARE_FIELD_32_RW(0x4018, control_VM_entry_exception_errorcode,
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x401A, control_VM_entry_instruction_length,
-					(FIELD_PROP_CTRL | FIELD_PROP_ID_GUEST | FIELD_PROP_SWWRONLY),
+					(FIELD_PROP_CTRL),
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_32_RW(0x401C, control_Task_PRivilege_Threshold,

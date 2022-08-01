@@ -805,6 +805,10 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		__vmx_vmwrite32(VMCSENC_control_VM_entry_exception_errorcode, val);
 	}
 	{
+		u32 val = vmcs12->control_VM_entry_instruction_length;
+		__vmx_vmwrite32(VMCSENC_control_VM_entry_instruction_length, val);
+	}
+	{
 		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is enabled above */
 		u32 val = vmcs12->control_VMX_seccpu_based;
 		/* XMHF needs the guest to run in EPT to protect memory */
@@ -1247,9 +1251,10 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 			~INTR_INFO_VALID_MASK;
 	}
 	/*
-	 * control_VM_entry_exception_errorcode may be changed in VMCS02 for nested
+	 * control_VM_entry_exception_errorcode and
+	 * control_VM_entry_instruction_length may be changed in VMCS02 for nested
 	 * virtualization operations, so do not copy to VMCS12. Just leave the
-	 * value in VMCS12 unchanged.
+	 * values in VMCS12 unchanged.
 	 */
 	{
 		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is always enabled */

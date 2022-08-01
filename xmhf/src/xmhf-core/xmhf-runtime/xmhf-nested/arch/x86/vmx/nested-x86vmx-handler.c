@@ -819,31 +819,25 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 							  NMI_VECTOR);
 			/* NMI received by L2 guest */
 			if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
+				/* NMI is consumed by L0 (XMHF), nothing to do with L1 / L2 */
 				xmhf_smpguest_arch_x86vmx_unblock_nmi();
-				/*
-				 * Make sure that there is no interruption. (Not implemented if
-				 * there is one. In this case re-injecting the event is likely
-				 * the correct thing to do.)
-				 */
-				{
-					u32 idt_info;
-					u16 encoding = VMCSENC_info_IDT_vectoring_information;
-					idt_info = __vmx_vmread32(encoding);
-					HALT_ON_ERRORCOND((idt_info & INTR_INFO_VALID_MASK) == 0);
-				}
 			} else {
+				/* Send NMI to L1 / L2 in the future */
 				xmhf_smpguest_arch_x86vmx_unblock_nmi();
-				/*
-				 * Note that xmhf_nested_arch_x86vmx_handle_nmi() may decide to
-				 * perform L2 -> L0 -> L1. In this case the function never
-				 * returns.
-				 */
 				xmhf_nested_arch_x86vmx_handle_nmi(vcpu);
 			}
 			/*
-			 * This is the rare case where we have L2 -> L0 -> L2. Usually it
-			 * is L2 -> L0 -> L1.
+			 * Make sure that there is no interruption. (Currently not
+			 * implemented if there is one. If there is one, re-injecting the
+			 * event is likely the correct thing to do.)
 			 */
+			{
+				u32 idt_info;
+				u16 encoding = VMCSENC_info_IDT_vectoring_information;
+				idt_info = __vmx_vmread32(encoding);
+				HALT_ON_ERRORCOND((idt_info & INTR_INFO_VALID_MASK) == 0);
+			}
+			/* Resume to L2 (L2 -> L0 -> L2) */
 			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 			__vmx_vmentry_vmresume(r);
 			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
@@ -983,15 +977,22 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			 */
 			{
 				u16 encoding;
-				u32 idt_info, idt_errcode;
+				u32 idt_info, idt_errcode, inst_len;
+				/* Copy IDT-vectoring information */
 				encoding = VMCSENC_info_IDT_vectoring_information;
 				idt_info = __vmx_vmread32(encoding);
 				encoding = VMCSENC_control_VM_entry_interruption_information;
 				__vmx_vmwrite32(encoding, idt_info);
+				/* Copy IDT-vectoring error code */
 				encoding = VMCSENC_info_IDT_vectoring_error_code;
 				idt_errcode = __vmx_vmread32(encoding);
 				encoding = VMCSENC_control_VM_entry_exception_errorcode;
 				__vmx_vmwrite32(encoding, idt_errcode);
+				/* Copy VM-exit instruction length */
+				encoding = VMCSENC_info_vmexit_instruction_length;
+				inst_len = __vmx_vmread32(encoding);
+				encoding = VMCSENC_control_VM_entry_instruction_length;
+				__vmx_vmwrite32(encoding, inst_len);
 			}
 			/* Call VMRESUME */
 			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
