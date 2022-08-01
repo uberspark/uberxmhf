@@ -97,10 +97,10 @@
  */
 #define LRU_SET_INIT(LRU_SET) \
 	do { \
-		typeof((LRU_SET)->elems[0].valid) i; \
-		typeof(&((LRU_SET)->elems[0])) line; \
-		LRU_FOREACH(i, line, LRU_SET) { \
-			line->valid = 0; \
+		typeof((LRU_SET)->elems[0].valid) _i; \
+		typeof(&((LRU_SET)->elems[0])) _line; \
+		LRU_FOREACH(_i, _line, LRU_SET) { \
+			_line->valid = 0; \
 		} \
 	} while (0)
 
