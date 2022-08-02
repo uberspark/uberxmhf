@@ -66,6 +66,18 @@ bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo)
 }
 
 /*
+ * Set whether entry points to a page (otherwise, point to a page table).
+ * For example, in 32-bit paging, when lvl = 2 (PDE), if is_page = true, then
+ * PDE.PS is set to 1, and the entry points to a 4MB page. If is_page = false,
+ * then PDE.PS is set to 0, and the entry points to a page table. When lvl = 1,
+ * only is_page = true is allowed.
+ */
+void hpt_pmeo_set_page(hpt_pmeo_t *pmeo, bool is_page)
+{
+  pmeo->pme = hpt_pme_set_page(pmeo->t, pmeo->lvl, pmeo->pme, is_page);
+}
+
+/*
  * Check whether entry points to a page (otherwise, point to a page table).
  * For example, in 32-bit paging, when PDE.PS = 1, it points to a 4MB page
  * (this function returns true). When PDE.PS = 0, it points to a page table
