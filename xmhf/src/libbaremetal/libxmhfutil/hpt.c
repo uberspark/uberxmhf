@@ -366,6 +366,52 @@ bool hpt_pme_is_present(hpt_type_t t, int lvl, hpt_pme_t entry)
 }
 
 /*
+ * Set whether entry points to a page (otherwise, point to a page table).
+ * For example, in 32-bit paging, when lvl = 2 (PDE), if is_page = true, then
+ * PDE.PS is set to 1, and the entry points to a 4MB page. If is_page = false,
+ * then PDE.PS is set to 0, and the entry points to a page table. When lvl = 1,
+ * only is_page = true is allowed.
+ */
+hpt_pme_t hpt_pme_set_page(hpt_type_t t, int lvl, hpt_pme_t entry, bool is_page)
+{
+  if (lvl == 1) {
+    assert(is_page);
+    return entry;
+  }
+  if (t== HPT_TYPE_NORM) {
+    assert(lvl <= 2);
+    return BR64_SET_BIT(entry, HPT_NORM_PS_L2_MP_BIT, is_page);
+  } else if (t == HPT_TYPE_PAE) {
+    assert(lvl<=3);
+    if (lvl <= 2) {
+      return BR64_SET_BIT(entry, HPT_PAE_PS_L2_MP_BIT, is_page);
+    } else {
+      assert(!is_page);
+      return entry;
+    }
+  } else if (t == HPT_TYPE_LONG) {
+    assert(lvl<=4);
+    if (lvl <= 3) {
+      return BR64_SET_BIT(entry, HPT_LONG_PS_L32_MP_BIT, is_page);
+    } else {
+      assert(!is_page);
+      return entry;
+    }
+  } else if (t == HPT_TYPE_EPT) {
+    assert(lvl<=4);
+    if (lvl <= 3) {
+      return BR64_SET_BIT(entry, HPT_EPT_PS_L32_MP_BIT, is_page);
+    } else {
+      assert(!is_page);
+      return entry;
+    }
+  } else {
+    assert(0);
+    return false;
+  }
+}
+
+/*
  * Check whether entry points to a page (otherwise, point to a page table).
  * For example, in 32-bit paging, when PDE.PS = 1, it points to a 4MB page
  * (this function returns true). When PDE.PS = 0, it points to a page table

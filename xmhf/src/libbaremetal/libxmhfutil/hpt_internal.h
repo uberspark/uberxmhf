@@ -58,6 +58,8 @@ hpt_pme_t hpt_pme_getunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int 
 
 bool hpt_pme_is_present(hpt_type_t t, int lvl, hpt_pme_t entry);
 
+hpt_pme_t hpt_pme_set_page(hpt_type_t t, int lvl, hpt_pme_t entry, bool is_page);
+
 bool hpt_pme_is_page(hpt_type_t t, int lvl, hpt_pme_t entry);
 
 hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entry);

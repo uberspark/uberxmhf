@@ -174,6 +174,7 @@ int hpt_root_lvl(hpt_type_t t);
 hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo);
 void hpt_pmeo_set_address(hpt_pmeo_t *pmeo, hpt_pa_t addr);
 bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo);
+void hpt_pmeo_set_page(hpt_pmeo_t *pmeo, bool is_page);
 bool hpt_pmeo_is_page(const hpt_pmeo_t *pmeo);
 void hpt_pmeo_setprot(hpt_pmeo_t *pmeo, hpt_prot_t perms);
 hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo);
