@@ -463,23 +463,20 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 							  guest2_paddr) != 0) {
 		return 2;
 	}
-	/* TODO: Large pages not supported yet */
-	HALT_ON_ERRORCOND(pmeo12.lvl == 1);
-	guest1_paddr = hpt_pmeo_get_address(&pmeo12);
+	guest1_paddr = hpt_pmeo_va_to_pa(&pmeo12, guest2_paddr);
 
 	/* Get the entry in EPT01 for the L1 paddr */
 	if (hptw_checked_get_pmeo(&pmeo01, &ept12_ctx->ctx01.host_ctx, access_type,
 							  0, guest1_paddr) != 0) {
 		return 3;
 	}
-	/* TODO: Large pages not supported yet */
-	HALT_ON_ERRORCOND(pmeo12.lvl == 1);
-	xmhf_paddr = hpt_pmeo_get_address(&pmeo01);
+	xmhf_paddr = hpt_pmeo_va_to_pa(&pmeo01, guest1_paddr);
 
 	/* Construct page map entry for EPT02 */
 	pmeo02.pme = 0;
 	pmeo02.t = HPT_TYPE_EPT;
-	pmeo02.lvl = 1;
+	pmeo02.lvl = pmeo12.lvl < pmeo01.lvl ? pmeo12.lvl : pmeo01.lvl;
+	hpt_pmeo_set_page(&pmeo02, true);
 	hpt_pmeo_set_address(&pmeo02, xmhf_paddr);
 	{
 		hpt_prot_t prot01 = hpt_pmeo_getprot(&pmeo01);
