@@ -593,11 +593,11 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
                                                 VCPU_gcr3( vcpu), /* XXX should build trusted cr3 from scratch */
                                                 whitelist_new.hptw_pal_checked_guest_ctx.super.root_pa);
 
-  /* flush TLB for page table modifications to take effect */
-  xmhf_memprot_flushmappings(vcpu);
-
-  /* make sure other CPUs flush the TLB after quiesce */
-  g_vmx_flush_all_tlb_signal = 1;
+  /*
+   * flush TLB for page table modifications to take effect.
+   * make sure other CPUs also flush the TLB after quiesce.
+   */
+  xmhf_memprot_flushmappings_alltlb(vcpu);
 
 #ifdef __DMAP__
     /* Disable device accesses to these memory (via IOMMU) */
@@ -702,11 +702,11 @@ u64 scode_unregister(VCPU * vcpu, u64 gvaddr)
                           &whitelist[i].hptw_pal_checked_guest_ctx.super,
                           &whitelist[i].sections[j]);
   }
-  /* flush TLB for page table modifications to take effect */
-  xmhf_memprot_flushmappings(vcpu);
-
-  /* make sure other CPUs flush the TLB after quiesce */
-  g_vmx_flush_all_tlb_signal = 1;
+  /*
+   * flush TLB for page table modifications to take effect.
+   * make sure other CPUs also flush the TLB after quiesce.
+   */
+  xmhf_memprot_flushmappings_alltlb(vcpu);
 
   /* delete entry from scode whitelist */
   /* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
@@ -1060,13 +1060,13 @@ u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r)
            VCPU_grip(vcpu), VCPU_grsp(vcpu));
   hpt_emhf_set_root_pm_pa( vcpu, whitelist[curr].hptw_pal_host_ctx.super.root_pa);
   VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
-  xmhf_memprot_flushmappings(vcpu); /* XXX */
 
   /*
-   * make sure other CPUs flush the TLB after quiesce
+   * flush TLB for page table modifications to take effect.
+   * make sure other CPUs also flush the TLB after quiesce.
    * TODO: this may be unnecessary. Review and see whether can remove.
    */
-  g_vmx_flush_all_tlb_signal = 1;
+  xmhf_memprot_flushmappings_alltlb(vcpu);
 
   if (whitelist[curr].hptw_pal_checked_guest_ctx.super.t == HPT_TYPE_PAE) {
     /* For PAE paging, need to update VMCS PDPTEs manually */
@@ -1267,13 +1267,13 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   eu_trace("change NPT permission to exit PAL!");
   hpt_emhf_set_root_pm(vcpu, g_reg_npmo_root.pm);
   VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
-  xmhf_memprot_flushmappings(vcpu); /* XXX */
 
   /*
-   * make sure other CPUs flush the TLB after quiesce
+   * flush TLB for page table modifications to take effect.
+   * make sure other CPUs also flush the TLB after quiesce.
    * TODO: this may be unnecessary. Review and see whether can remove.
    */
-  g_vmx_flush_all_tlb_signal = 1;
+  xmhf_memprot_flushmappings_alltlb(vcpu);
 
   if (whitelist[curr].hptw_pal_checked_guest_ctx.super.t == HPT_TYPE_PAE) {
     /* For PAE paging, need to update VMCS PDPTEs manually */
@@ -1479,11 +1479,11 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
     EU_CHKN( scode_share_range(vcpu, entry, gva_base[i], gva_len[i]));
   }
 
-  /* flush TLB for page table modifications to take effect */
-  xmhf_memprot_flushmappings(vcpu);
-
-  /* make sure other CPUs flush the TLB after quiesce */
-  g_vmx_flush_all_tlb_signal = 1;
+  /*
+   * flush TLB for page table modifications to take effect.
+   * make sure other CPUs also flush the TLB after quiesce.
+   */
+  xmhf_memprot_flushmappings_alltlb(vcpu);
 
   err=0;
 out:
