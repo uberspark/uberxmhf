@@ -541,27 +541,13 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 
 //flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
-#ifdef __NESTED_VIRTUALIZATION__
-  /*
-   * When nested virtualization, entries EPT01 may be copied to EPT02. So we
-   * also need to invalidate all EPT02's. For simplicity just invalidate all
-   * EPTs.
-   */
-  xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
-#else /* !__NESTED_VIRTUALIZATION__ */
   HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_SINGLECONTEXT,
                                  (u64)vcpu->vmcs.control_EPT_pointer));
-#endif /* __NESTED_VIRTUALIZATION__ */
 }
 
 //flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu){
-#ifdef __NESTED_VIRTUALIZATION__
-  /* When nested virtualization, invalidate all EPT02's */
-  xmhf_nested_arch_x86vmx_invept_global(vcpu);
-#else /* !__NESTED_VIRTUALIZATION__ */
   (void)vcpu;
-#endif /* __NESTED_VIRTUALIZATION__ */
   HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_GLOBAL,
                                  (u64)0));
 }

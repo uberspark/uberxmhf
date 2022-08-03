@@ -66,8 +66,6 @@
 
 void xmhf_nested_arch_x86vmx_vcpu_init(VCPU *vcpu);
 
-void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu);
-
 void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu);
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmentry_fail(VCPU *vcpu, bool is_resume);
