@@ -154,7 +154,7 @@ static void ept02_ctx_init(VCPU * vcpu, u32 index, ept02_ctx_t * ept02_ctx)
 	ept02_ctx->ctx.gzp = ept02_gzp;
 	ept02_ctx->ctx.pa2ptr = ept02_pa2ptr;
 	ept02_ctx->ctx.ptr2pa = ept02_ptr2pa;
-	/* root_pa will be assigned to by ept02_ctx_update() later */
+	/* root_pa will be assigned to by ept02_ctx_reset() later */
 	ept02_ctx->ctx.root_pa = 0;
 	ept02_ctx->ctx.t = HPT_TYPE_EPT;
 }
@@ -164,7 +164,7 @@ static void ept12_ctx_init(VCPU * vcpu, ept12_ctx_t * ept12_ctx)
 	ept12_ctx->ctx.ptr2pa = ept12_ptr2pa;
 	ept12_ctx->ctx.pa2ptr = ept12_pa2ptr;
 	ept12_ctx->ctx.gzp = ept12_gzp;
-	/* root_pa will be assigned to by ept12_ctx_update_ept12() later */
+	/* root_pa will be assigned to by ept12_ctx_update() later */
 	ept12_ctx->ctx.root_pa = 0;
 	ept12_ctx->ctx.t = HPT_TYPE_EPT;
 	guestmem_init(vcpu, &ept12_ctx->ctx01);
@@ -274,7 +274,7 @@ void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12)
 	ept02_cache_line_t *line;
 	if (LRU_SET_INVALIDATE(&ept02_cache[vcpu->id], ept12, line)) {
 		/*
-		 * INVEPT will be executed in ept02_ctx_init() when this EPT02 is used
+		 * INVEPT will be executed in ept02_ctx_reset() when this EPT02 is used
 		 * the next time.
 		 */
 	}
@@ -285,7 +285,7 @@ void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu)
 {
 	LRU_SET_INVALIDATE_ALL(&ept02_cache[vcpu->id]);
 	/*
-	 * INVEPT will be executed in ept02_ctx_init() when the EPT02 is used the
+	 * INVEPT will be executed in ept02_ctx_reset() when the EPT02 is used the
 	 * next time.
 	 */
 }
