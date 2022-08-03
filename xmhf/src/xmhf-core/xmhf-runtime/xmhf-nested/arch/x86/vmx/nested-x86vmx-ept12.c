@@ -68,23 +68,6 @@ static u8 ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT]
 /* For each CPU, information about all VPID12 -> VPID02 it caches */
 static vpid02_cache_set_t vpid02_cache[MAX_VCPU_ENTRIES];
 
-/* Merge EPT memory types in two EPTs */
-static hpt_pmt_t ept_merge_hpt_pmt(hpt_pmt_t pmt1, hpt_pmt_t pmt2)
-{
-	if (pmt1 == pmt2) {
-		return pmt1;
-	}
-	if (pmt1 == HPT_PMT_UC || pmt2 == HPT_PMT_UC) {
-		return HPT_PMT_UC;
-	}
-	if ((pmt1 == HPT_PMT_WT && pmt2 == HPT_PMT_WB) ||
-		(pmt1 == HPT_PMT_WB && pmt2 == HPT_PMT_WT)) {
-		return HPT_PMT_WT;
-	}
-	HALT_ON_ERRORCOND(0 && "Unexpected EPT memory type combination");
-	return HPT_PMT_UC;
-}
-
 static void *ept02_gzp(void *vctx, size_t alignment, size_t sz)
 {
 	ept02_ctx_t *ept02_ctx = (ept02_ctx_t *) vctx;
@@ -484,10 +467,12 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 		hpt_pmeo_setprot(&pmeo02, prot01 & prot12);
 	}
 	{
-		hpt_pmt_t cache01 = hpt_pmeo_getcache(&pmeo01);
-		hpt_pmt_t cache12 = hpt_pmeo_getcache(&pmeo12);
-		hpt_pmt_t cache02 = ept_merge_hpt_pmt(cache01, cache12);
-		hpt_pmeo_setcache(&pmeo02, cache02);
+		/*
+		 * MTRRs do not affect guest memory type, so EPT02's memory type is
+		 * determined only by EPT12. EPT01 has nothing to do with EPT02's
+		 * memory type.
+		 */
+		hpt_pmeo_setcache(&pmeo02, hpt_pmeo_getcache(&pmeo12));
 	}
 	{
 		bool user01 = hpt_pmeo_getuser(&pmeo01);
