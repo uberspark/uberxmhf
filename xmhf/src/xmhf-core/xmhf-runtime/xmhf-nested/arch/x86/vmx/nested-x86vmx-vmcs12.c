@@ -517,10 +517,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 #endif							/* !__DEBUG_QEMU__ */
 	}
 	{
-		/*
-		 * Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
-		 * Since hypervisor needs EPT, this block is unconditional
-		 */
+		/* XMHF always needs EPT, so this block is unconditional */
 		spa_t ept02;
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
 		if (_vmx_hasctl_enable_ept(&ctls)) {
@@ -988,10 +985,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		// vmcs12->control_Executive_VMCS_pointer = ...;
 	}
 	{
-		/*
-		 * Note: "Enable EPT" not supported for the guest, but XMHF needs EPT.
-		 * Since hypervisor needs EPT, this block is unconditional
-		 */
+		/* XMHF always needs EPT, so this block is unconditional */
 		spa_t ept02;
 		u16 encoding = VMCSENC_control_EPT_pointer;
 		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
