@@ -60,4 +60,6 @@
 
 #define VMX_NESTED_USE_SHADOW_VMCS
 
+void clear_all_vmcs12_ept02(VCPU * vcpu);
+
 #endif							/* _NESTED_X86VMX_HANDLER_H_ */

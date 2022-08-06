@@ -49,11 +49,18 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
+#include "nested-x86vmx-handler.h"
 
 /* Number of pages in page_pool in ept02_ctx_t */
 #define EPT02_PAGE_POOL_SIZE 128
 
-/* For each CPU, information about all EPT12 -> EPT02 it caches */
+/*
+ * For each CPU, information about all EPT12 -> EPT02 it caches.
+ *
+ * This variable can be asynchronously invalidated when another CPU's EPT01
+ * changes. So use xmhf_nested_arch_x86vmx_block_ept02_flush() to protect it
+ * when accessing.
+ */
 static ept02_cache_set_t ept02_cache[MAX_VCPU_ENTRIES];
 
 /* Page pool for ept02_cache */
@@ -251,7 +258,12 @@ bool xmhf_nested_arch_x86vmx_check_ept_lower_bits(u64 eptp12, gpa_t * ept_pml4t)
 	return true;
 }
 
-/* Invalidate ept12 */
+/*
+ * Invalidate ept12.
+ *
+ * Since this function accesses ept02_cache, callers of this function need to
+ * call xmhf_nested_arch_x86vmx_block_ept02_flush() to prevent race conditions.
+ */
 void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12)
 {
 	ept02_cache_line_t *line;
@@ -263,7 +275,12 @@ void xmhf_nested_arch_x86vmx_invept_single_context(VCPU * vcpu, gpa_t ept12)
 	}
 }
 
-/* Invalidate all EPTs */
+/*
+ * Invalidate all EPTs
+ *
+ * Since this function accesses ept02_cache, callers of this function need to
+ * call xmhf_nested_arch_x86vmx_block_ept02_flush() to prevent race conditions.
+ */
 void xmhf_nested_arch_x86vmx_invept_global(VCPU * vcpu)
 {
 	LRU_SET_INVALIDATE_ALL(&ept02_cache[vcpu->id]);
@@ -351,6 +368,9 @@ void xmhf_nested_arch_x86vmx_invvpid_single_ctx_global(VCPU * vcpu, u16 vpid12)
 /*
  * Get pointer to EPT02 for current VMCS12. Will fill EPT02 as EPT violation
  * happens.
+ *
+ * Since this function accesses ept02_cache, callers of this function need to
+ * call xmhf_nested_arch_x86vmx_block_ept02_flush() to prevent race conditions.
  */
 spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 										bool *cache_hit,
@@ -404,7 +424,7 @@ u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12, bool *cache_hit)
 }
 
 /*
- * Handles an EPT exit received by L0 when running L2. There are 3 cases.
+ * Handle an EPT exit received by L0 when running L2. There are 3 cases.
  * 1. L2 accesses legitimate memory, but L0 has not processed the EPT entry in
  *    L1 yet. In this case this function returns 1. XMHF should add EPT entry
  *    to EPT02 and continue running L2.
@@ -488,6 +508,73 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 			   vcpu->id, guest2_paddr, guest1_paddr, xmhf_paddr);
 	}
 	return 1;
+}
+
+/*
+ * This function is what xmhf_nested_arch_x86vmx_flush_ept02() does when no
+ * blocking occurs.
+ */
+static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU *vcpu)
+{
+	LRU_SET_INVALIDATE_ALL(&ept02_cache[vcpu->id]);
+	clear_all_vmcs12_ept02(vcpu);
+
+	/*
+	 * If the guest is using EPT02, the flushing above would make
+	 * vmcs12_info->guest_ept_cache_line invalid. We need to create new EPT02
+	 * to make it valid. This also applies to the EPT pointer in VMCS02.
+	 */
+	if (vcpu->vmx_nested_is_vmx_operation &&
+		!vcpu->vmx_nested_is_vmx_root_operation) {
+		/* Find vmcs12_info similar to calling find_current_vmcs12() */
+		vmcs12_info_t *vmcs12_info = vcpu->vmx_nested_current_vmcs12_info;
+		if (vmcs12_info->guest_ept_enable) {
+			ept02_cache_line_t *cache_line;
+			bool cache_hit;
+			gpa_t ept12 = vmcs12_info->guest_ept_root;
+			spa_t ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12,
+															&cache_hit,
+															&cache_line);
+			vmcs12_info->guest_ept_cache_line = cache_line;
+			HALT_ON_ERRORCOND(!cache_hit);
+			__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
+		}
+	}
+}
+
+/*
+ * Invalidate all EPT02 on the current CPU (e.g. due to change in EPT01).
+ * This function is designed to be called in NMI handlers. Its effect will be
+ * delayed until call to xmhf_nested_arch_x86vmx_unblock_ept02_flush() if
+ * xmhf_nested_arch_x86vmx_block_ept02_flush() has been called.
+ */
+void xmhf_nested_arch_x86vmx_flush_ept02(VCPU *vcpu)
+{
+	if (vcpu->vmx_nested_ept02_flush_disable) {
+		vcpu->vmx_nested_ept02_flush_visited = true;
+	} else {
+		xmhf_nested_arch_x86vmx_flush_ept02_effect(vcpu);
+	}
+}
+
+/* Block the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
+void xmhf_nested_arch_x86vmx_block_ept02_flush(VCPU *vcpu)
+{
+	HALT_ON_ERRORCOND(!vcpu->vmx_nested_ept02_flush_disable);
+	vcpu->vmx_nested_ept02_flush_disable = true;
+}
+
+/* Unblock the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
+void xmhf_nested_arch_x86vmx_unblock_ept02_flush(VCPU *vcpu)
+{
+	HALT_ON_ERRORCOND(vcpu->vmx_nested_ept02_flush_disable);
+	vcpu->vmx_nested_ept02_flush_disable = false;
+	while (vcpu->vmx_nested_ept02_flush_visited) {
+		vcpu->vmx_nested_ept02_flush_visited = false;
+		vcpu->vmx_nested_ept02_flush_disable = true;
+		xmhf_nested_arch_x86vmx_flush_ept02_effect(vcpu);
+		vcpu->vmx_nested_ept02_flush_disable = false;
+	}
 }
 
 #ifdef __DEBUG_QEMU__

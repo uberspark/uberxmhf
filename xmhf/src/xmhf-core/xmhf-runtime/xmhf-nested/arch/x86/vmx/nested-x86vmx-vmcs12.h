@@ -130,11 +130,22 @@ typedef struct vmcs12_info {
 	int guest_ept_enable;
 	/*
 	 * When guest_ept_enable, EPT02 cache line.
+	 *
 	 * The type of this member should be ept02_cache_line_t *. However,
 	 * currently casting to void * to avoid circular includes in header files.
+	 *
+	 * This variable can be asynchronously invalidated when another CPU's EPT01
+	 * changes. So use xmhf_nested_arch_x86vmx_block_ept02_flush() to protect
+	 * it when accessing.
 	 */
 	void *guest_ept_cache_line;
-	/* When guest_ept_enable, pointer to EPT12 root */
+	/*
+	 * When guest_ept_enable, pointer to EPT12 root.
+	 *
+	 * This variable can be asynchronously invalidated when another CPU's EPT01
+	 * changes. So use xmhf_nested_arch_x86vmx_block_ept02_flush() to protect
+	 * it when accessing.
+	 */
 	gpa_t guest_ept_root;
 	/* "NMI exiting" in VMCS */
 	bool guest_nmi_exiting;

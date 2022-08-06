@@ -285,6 +285,20 @@ static vmcs12_info_t *find_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr)
 	return NULL;
 }
 
+/*
+ * Invalidate guest_ept_cache_line and guest_ept_root for all vmcs12_info in
+ * vcpu. This function is intended to be used when asynchronously invalidating
+ * EPT02.
+ */
+void clear_all_vmcs12_ept02(VCPU * vcpu)
+{
+	int i;
+	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
+		cpu_active_vmcs12[vcpu->idx][i].guest_ept_cache_line = NULL;
+		cpu_active_vmcs12[vcpu->idx][i].guest_ept_root = 0;
+	}
+}
+
 /* Add a new VMCS12 to the array of actives. Initializes underlying VMCS02 */
 static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 {
@@ -533,6 +547,12 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 
+	/*
+	 * Begin blocking EPT02 flush (blocking is needed because VMCS translation
+	 * calls xmhf_nested_arch_x86vmx_get_ept02()).
+	 */
+	xmhf_nested_arch_x86vmx_block_ept02_flush(vcpu);
+
 	/* Translate VMCS12 to VMCS02 */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(vmcs12_info->vmcs02_ptr));
 	result = xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(vcpu, vmcs12_info);
@@ -549,6 +569,12 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 
 	/* From now on, cannot fail */
 	vcpu->vmx_nested_is_vmx_root_operation = 0;
+
+	/*
+	 * End blocking EPT02 flush (blocking is needed because VMCS translation
+	 * calls xmhf_nested_arch_x86vmx_get_ept02()).
+	 */
+	xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 
 	/* Process NMI */
 	_update_nested_nmi(vcpu, vmcs12_info);
@@ -736,6 +762,8 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 		vcpu->vmx_nested_entry_ctls =
 			vcpu->vmx_nested_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
 	}
+	vcpu->vmx_nested_ept02_flush_disable = false;
+	vcpu->vmx_nested_ept02_flush_visited = false;
 
 	/* Initialize EPT and VPID cache */
 	xmhf_nested_arch_x86vmx_ept_init(vcpu);
@@ -914,6 +942,13 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	 */
 	if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) {
 		int status = 3;
+
+		/*
+		 * Begin blocking EPT02 flush (blocking is needed because
+		 * vmcs12_info->guest_ept_cache_line is accessed).
+		 */
+		xmhf_nested_arch_x86vmx_block_ept02_flush(vcpu);
+
 		if (vmcs12_info->guest_ept_enable) {
 			ept02_cache_line_t *cache_line = vmcs12_info->guest_ept_cache_line;
 			u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
@@ -994,6 +1029,8 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				encoding = VMCSENC_control_VM_entry_instruction_length;
 				__vmx_vmwrite32(encoding, inst_len);
 			}
+			/* End blocking EPT02 flush */
+			xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 			/* Call VMRESUME */
 			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 			__vmx_vmentry_vmresume(r);
@@ -1021,12 +1058,24 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			HALT_ON_ERRORCOND(0 && "Unknown status");
 			break;
 		}
+
+		/*
+		 * End blocking EPT02 flush (blocking is needed because
+		 * vmcs12_info->guest_ept_cache_line is accessed).
+		 */
+		xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 	}
 
 	// TODO: handle EPT misconfiguration
 	if (vmexit_reason == VMX_VMEXIT_EPT_MISCONFIGURATION) {
 		HALT_ON_ERRORCOND(0 && "EPT misconfiguration not implemented");
 	}
+
+	/*
+	 * Begin blocking EPT02 flush (blocking is needed because VMCS translation
+	 * calls xmhf_nested_arch_x86vmx_get_ept02()).
+	 */
+	xmhf_nested_arch_x86vmx_block_ept02_flush(vcpu);
 
 	/* Wake the guest hypervisor up for the VMEXIT */
 	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, vmcs12_info);
@@ -1092,6 +1141,12 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
 	vcpu->vmx_nested_is_vmx_root_operation = 1;
+
+	/*
+	 * End blocking EPT02 flush (blocking is needed because VMCS translation
+	 * calls xmhf_nested_arch_x86vmx_get_ept02()).
+	 */
+	xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 
 	/* NMI status be changed during L2, so update L1's NMI window exiting */
 	{
@@ -1159,6 +1214,7 @@ void xmhf_nested_arch_x86vmx_handle_invept(VCPU * vcpu, struct regs *r)
 			printf("CPU(0x%02x): warning: INVEPT reserved 0x%016llx != 0\n",
 				   vcpu->id, descriptor.reserved);
 		}
+		xmhf_nested_arch_x86vmx_block_ept02_flush(vcpu);
 		switch (type) {
 		case VMX_INVEPT_SINGLECONTEXT:
 			{
@@ -1185,6 +1241,7 @@ void xmhf_nested_arch_x86vmx_handle_invept(VCPU * vcpu, struct regs *r)
 								VM_INST_ERRNO_INVALID_OPERAND_INVEPT_INVVPID);
 			break;
 		}
+		xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	}
 }

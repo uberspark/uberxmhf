@@ -293,6 +293,16 @@ typedef struct _vcpu {
   u64 vmx_nested_procbased_ctls;
   u64 vmx_nested_exit_ctls;
   u64 vmx_nested_entry_ctls;
+  /*
+   * Whether the hypervisor is busy so that it cannot handle
+   * xmhf_nested_arch_x86vmx_flush_ept02().
+   */
+  volatile bool vmx_nested_ept02_flush_disable;
+  /*
+   * Whether a call to xmhf_nested_arch_x86vmx_flush_ept02() arrived during
+   * vmx_nested_ept02_flush_disable = true.
+   */
+  volatile bool vmx_nested_ept02_flush_visited;
 #endif /* !__NESTED_VIRTUALIZATION__ */
 } VCPU;
 

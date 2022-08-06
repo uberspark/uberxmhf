@@ -567,7 +567,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 						guestmem_gpa2spa_page(&ctx_pair, addr));
 	}
 	if (_vmx_hasctl_sub_page_write_permissions_for_ept(&ctls)) {
-		// Note: Sub-page write permissions for EPT
+		// Note: Sub-page write permissions for EPT not supported
 		gpa_t addr = vmcs12->control_subpage_permission_table_pointer;
 		// Note: likely need to sanitize input
 		HALT_ON_ERRORCOND(addr == 0);
@@ -1010,7 +1010,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		// vmcs12->control_EPTP_list_address = ...
 	}
 	if (_vmx_hasctl_sub_page_write_permissions_for_ept(&ctls)) {
-		// Note: Sub-page write permissions for EPT
+		// Note: Sub-page write permissions for EPT not supported
 		// Note: likely need to sanitize input
 		u16 encoding = VMCSENC_control_subpage_permission_table_pointer;
 		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
