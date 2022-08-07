@@ -80,7 +80,7 @@ def serial_thread(args, serial_file, serial_result):
 	test_count = defaultdict(int)
 	for i in gen:
 		assert len(test_count) <= args.smp
-		if len(test_count) == args.smp and min(test_count.values()) > 100:
+		if len(test_count) == args.smp and min(test_count.values()) > 20:
 			with serial_result[0]:
 				serial_result[1] = SERIAL_PASS
 				break
