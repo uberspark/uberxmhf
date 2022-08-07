@@ -563,7 +563,7 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 		return result;
 	}
 
-	if (1) {
+	if (0) {
 		printf("CPU(0x%02x): nested vmentry\n", vcpu->id);
 	}
 
@@ -1118,7 +1118,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
 		vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
 	}
-	if (1) {
+	if (0) {
 		printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 			   vmcs12_info->vmcs12_value.info_vmexit_reason);
 	}
