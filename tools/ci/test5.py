@@ -1,5 +1,5 @@
 '''
-	Test XMHF using QEMU, but do not use SSH
+	Test running LHV in XMHF in QEMU
 '''
 
 from subprocess import Popen, check_call
@@ -77,24 +77,17 @@ def serial_thread(args, serial_file, serial_result):
 		if 'e820' in i:
 			println('E820 found!')
 			break
-	vmentry_count = defaultdict(int)
-	vmexit_count = defaultdict(int)
+	test_count = defaultdict(int)
 	for i in gen:
-		assert len(vmexit_count) <= args.smp
-		assert len(vmentry_count) <= args.smp
-		if len(vmexit_count) == args.smp and len(vmentry_count) == args.smp:
-			if (min(vmexit_count.values()) > 100 and
-				min(vmentry_count.values()) > 100):
-				with serial_result[0]:
-					serial_result[1] = SERIAL_PASS
-					break
-		matched = re.fullmatch('CPU\((0x[0-9a-f]+)\): nested vmexit \d+', i)
+		assert len(test_count) <= args.smp
+		if len(test_count) == args.smp and min(test_count.values()) > 100:
+			with serial_result[0]:
+				serial_result[1] = SERIAL_PASS
+				break
+		fmt = 'CPU\((0x[0-9a-f]+)\): LHV in XMHF test iter \d+'
+		matched = re.fullmatch(fmt, i)
 		if matched:
-			vmexit_count[matched.groups()[0]] += 1
-			continue
-		matched = re.fullmatch('CPU\((0x[0-9a-f]+)\): nested vmentry', i)
-		if matched:
-			vmentry_count[matched.groups()[0]] += 1
+			test_count[matched.groups()[0]] += 1
 			continue
 	for i in gen:
 		pass
