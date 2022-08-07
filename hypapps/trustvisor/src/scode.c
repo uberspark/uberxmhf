@@ -554,7 +554,7 @@ u64 scode_register(VCPU *vcpu, u64 scode_info, u64 scode_pm, u64 gventry)
   }
 
   /* clone gdt */
-  eu_warn("skipping scode_clone_gdt");
+  /* eu_warn("skipping scode_clone_gdt"); */
   /* EU_CHKN( scode_clone_gdt(vcpu, */
   /*                          VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu), */
   /*                          &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx, */
