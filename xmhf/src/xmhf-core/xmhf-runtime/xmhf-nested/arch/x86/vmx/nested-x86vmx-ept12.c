@@ -538,6 +538,26 @@ static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU *vcpu)
 			vmcs12_info->guest_ept_cache_line = cache_line;
 			HALT_ON_ERRORCOND(!cache_hit);
 			__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
+#ifdef __DEBUG_QEMU__
+			/*
+			 * Workaround a KVM bug:
+			 * https://bugzilla.kernel.org/show_bug.cgi?id=216212
+			 *
+			 * Looks like KVM has a problem setting CR0.PG when nested guest's
+			 * PDPTEs are not in guest hypervisor's EPT. So we always make sure
+			 * the EPT entry for PDPTEs is available. To achieve this effect,
+			 * simulating a EPT violation by calling
+			 * xmhf_nested_arch_x86vmx_handle_ept02_exit() with guest2_paddr =
+			 * CR3.
+			 */
+			{
+				struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
+				if (vmcs12->guest_CR3 != 0) {
+					xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, cache_line,
+														 vmcs12->guest_CR3);
+				}
+			}
+#endif							/* !__DEBUG_QEMU__ */
 		}
 	}
 }
