@@ -139,13 +139,7 @@ typedef struct vmcs12_info {
 	 * it when accessing.
 	 */
 	void *guest_ept_cache_line;
-	/*
-	 * When guest_ept_enable, pointer to EPT12 root.
-	 *
-	 * This variable can be asynchronously invalidated when another CPU's EPT01
-	 * changes. So use xmhf_nested_arch_x86vmx_block_ept02_flush() to protect
-	 * it when accessing.
-	 */
+	/* When guest_ept_enable, pointer to EPT12 root */
 	gpa_t guest_ept_root;
 	/* "NMI exiting" in VMCS */
 	bool guest_nmi_exiting;

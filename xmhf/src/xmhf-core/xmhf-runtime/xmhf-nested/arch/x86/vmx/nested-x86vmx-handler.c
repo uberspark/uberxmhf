@@ -286,16 +286,14 @@ static vmcs12_info_t *find_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr)
 }
 
 /*
- * Invalidate guest_ept_cache_line and guest_ept_root for all vmcs12_info in
- * vcpu. This function is intended to be used when asynchronously invalidating
- * EPT02.
+ * Invalidate guest_ept_cache_line for all vmcs12_info in vcpu. This function
+ * is intended to be used when asynchronously invalidating EPT02.
  */
 void clear_all_vmcs12_ept02(VCPU * vcpu)
 {
 	int i;
 	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
 		cpu_active_vmcs12[vcpu->idx][i].guest_ept_cache_line = NULL;
-		cpu_active_vmcs12[vcpu->idx][i].guest_ept_root = 0;
 	}
 }
 
