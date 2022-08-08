@@ -67,6 +67,8 @@ void qemu_test(String subarch, String guest_subarch, String qemu_image,
     }
 }
 
+def helper
+
 pipeline {
     agent any
 
@@ -82,12 +84,16 @@ pipeline {
                         script: 'git rev-parse HEAD | head -c 9').trim()
                     currentBuild.displayName += " ${params.XMHF_BRANCH}"
                     currentBuild.displayName += " ${cmt}"
+                    helper = load "tools/ci/jenkins.groovy"
                 }
             }
         }
         stage('Build i386 XMHF') {
             steps {
-                build_xmhf "i386", "tmp", "${params.BUILD_OPTS}"
+                script {
+                    helper.build_xmhf("i386", "tmp", "${params.BUILD_OPTS}")
+                }
+                sh "cp ${PWD}/tmp/grub/c.img ${PWD}/tmp/xmhf.img"
                 pal_demo()
             }
         }
@@ -109,7 +115,10 @@ pipeline {
         }
         stage('Build amd64 XMHF') {
             steps {
-                build_xmhf "amd64", "tmp", "${params.BUILD_OPTS}"
+                script {
+                    helper.build_xmhf("amd64", "tmp", "${params.BUILD_OPTS}")
+                }
+                sh "cp ${PWD}/tmp/grub/c.img ${PWD}/tmp/xmhf.img"
             }
         }
         stage('Test i386 Windows 7 on amd64 XMHF') {
