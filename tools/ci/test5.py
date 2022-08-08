@@ -14,7 +14,8 @@ SERIAL_FAIL = 2
 
 def parse_args():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--lhv-image', required=True)
+	parser.add_argument('--xmhf-img', required=True)
+	parser.add_argument('--lhv-img', required=True)
 	parser.add_argument('--smp', type=int, default=4)
 	parser.add_argument('--work-dir', required=True)
 	parser.add_argument('--windows-dir', default='tools/ci/windows/')
@@ -34,12 +35,11 @@ def println(*args):
 	with println_lock:
 		print('{', *args, '}')
 
-def spawn_qemu(args, xmhf_img, serial_file):
-	pal_demo_img = os.path.join(args.work_dir, 'pal_demo.img')
+def spawn_qemu(args, serial_file):
 	qemu_args = [
 		'qemu-system-x86_64', '-m', args.memory,
-		'--drive', 'media=disk,file=%s,format=raw,index=0' % xmhf_img,
-		'--drive', 'media=disk,file=%s,format=raw,index=1' % args.lhv_image,
+		'--drive', 'media=disk,file=%s,format=raw,index=0' % args.xmhf_img,
+		'--drive', 'media=disk,file=%s,format=raw,index=1' % args.lhv_img,
 		'-smp', str(args.smp), '-cpu', 'Haswell,vmx=yes', '--enable-kvm',
 		'-serial', 'file:%s' % serial_file,
 	]
@@ -95,9 +95,8 @@ def serial_thread(args, serial_file, serial_result):
 def main():
 	args = parse_args()
 	serial_file = os.path.join(args.work_dir, 'serial')
-	xmhf_img = os.path.join(args.work_dir, 'grub/c.img')
 	check_call(['rm', '-f', serial_file])
-	p = spawn_qemu(args, xmhf_img, serial_file)
+	p = spawn_qemu(args, serial_file)
 
 	try:
 		serial_result = [threading.Lock(), SERIAL_WAITING]

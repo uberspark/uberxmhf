@@ -35,15 +35,7 @@ def println(*args):
 	with println_lock:
 		print('{', *args, '}')
 
-def link_qemu(args):
-	assert os.path.exists(args.qemu_image)
-	tmp_image = os.path.join(args.work_dir, 'windows.qcow2')
-	check_call(['rm', '-f', tmp_image])
-	check_call(['qemu-img', 'create', '-f', 'qcow2', '-b', args.qemu_image,
-				'-F', 'qcow2', tmp_image])
-	return tmp_image
-
-def spawn_qemu(args, xmhf_img, windows_image, serial_file):
+def spawn_qemu(args, xmhf_img, serial_file):
 	bios_bin = os.path.join(args.windows_dir, 'bios.bin')
 	windows_grub_img = os.path.join(args.windows_dir, 'grub_windows.img')
 	pal_demo_img = os.path.join(args.work_dir, 'pal_demo.img')
@@ -51,7 +43,7 @@ def spawn_qemu(args, xmhf_img, windows_image, serial_file):
 		'qemu-system-x86_64', '-m', args.memory,
 		'--drive', 'media=disk,file=%s,format=raw,index=0' % xmhf_img,
 		'--drive', 'media=disk,file=%s,format=raw,index=1' % windows_grub_img,
-		'--drive', 'media=disk,file=%s,format=qcow2,index=2' % windows_image,
+		'--drive', 'media=disk,file=%s,format=qcow2,index=2' % args.qemu_image,
 		'--drive', 'media=disk,file=%s,format=raw,index=3' % pal_demo_img,
 		'--bios', bios_bin,
 		'-smp', str(args.smp), '-cpu', 'Haswell,vmx=yes', '--enable-kvm',
@@ -172,11 +164,10 @@ def serial_thread(args, serial_file, serial_result):
 
 def main():
 	args = parse_args()
-	windows_image = link_qemu(args)
 	serial_file = os.path.join(args.work_dir, 'serial')
 	xmhf_img = os.path.join(args.work_dir, 'grub/c.img')
 	check_call(['rm', '-f', serial_file])
-	p = spawn_qemu(args, xmhf_img, windows_image, serial_file)
+	p = spawn_qemu(args, xmhf_img, serial_file)
 
 	try:
 		serial_result = [threading.Lock(), SERIAL_WAITING]
