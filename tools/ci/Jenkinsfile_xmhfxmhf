@@ -4,7 +4,7 @@
 
 properties([
     parameters([
-        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64-nest-dev'),
+        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64-nest'),
         string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic fast circleci'),
         string(name: 'NESTED_BUILD_OPTS', defaultValue:
                '--no-x2apic fast circleci --sl-base 0x20000000 --no-init-smp')
