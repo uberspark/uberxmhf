@@ -1,0 +1,138 @@
+/*
+ * CI for KVM XMHF XMHF Debian
+ */
+
+properties([
+    parameters([
+        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64-nest-dev'),
+        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic fast circleci')
+    ])
+])
+
+void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
+    PWD = sh(returnStdout: true, script: 'pwd').trim()
+    sh "./tools/ci/download.sh cache ${qemu_image_back}"
+    sh "rm -rf tmp qemu"
+    sh "mkdir tmp qemu"
+    sh "ln -s ${PWD}/cache/${qemu_image_back} qemu"
+    sh """
+        qemu-img create -f qcow2 -b ${PWD}/qemu/${qemu_image_back} \
+                        -F qcow2 ${PWD}/qemu/${qemu_image}
+    """
+    sh """
+        python3 -u ./tools/ci/grub.py \
+            --subarch ${subarch} \
+            --xmhf-bin ${PWD}/ \
+            --work-dir ${PWD}/tmp/ \
+            --verbose \
+            --boot-dir ${PWD}/tools/ci/boot
+    """
+    sh """
+        python3 -u ./tools/ci/test3.py \
+            --subarch ${subarch} \
+            --qemu-image ${PWD}/qemu/${qemu_image} \
+            --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
+            --nested-xmhf ${PWD}/nested/grub/c.img \
+            --work-dir ${PWD}/tmp/ \
+            --no-display \
+            --sshpass jkl \
+            --verbose \
+            --watch-serial \
+            --memory 1G
+    """
+}
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Logistics') {
+            steps {
+                sh "git fetch origin ${params.XMHF_BRANCH}"
+                sh "git checkout ${params.XMHF_BRANCH}"
+                sh "git pull origin ${params.XMHF_BRANCH}"
+                script {
+                    cmt = sh(
+                        returnStdout: true,
+                        script: 'git rev-parse HEAD | head -c 9').trim()
+                    currentBuild.displayName += " ${params.XMHF_BRANCH}"
+                    currentBuild.displayName += " ${cmt}"
+                }
+            }
+        }
+        stage('Build i386 nested') {
+            steps {
+                sh "git clean -Xdf"
+                // Workaround git 2.30 bug
+                sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
+                sh """
+                    ./tools/ci/build.sh i386 \
+                        --sl-base 0x20000000 \
+                        --no-init-smp \
+                        ${params.BUILD_OPTS}
+                """
+                sh "rm -rf nested"
+                sh "mkdir nested"
+                sh """
+                    python3 -u ./tools/ci/grub.py \
+                        --subarch i386 \
+                        --xmhf-bin ./ \
+                        --work-dir ./nested/ \
+                        --verbose \
+                        --boot-dir ./tools/ci/boot/
+                """
+            }
+        }
+        stage('Build i386') {
+            steps {
+                sh "git clean -Xdf"
+                sh "ls nested || echo folder not found" // TODO
+                // Workaround git 2.30 bug
+                sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
+                sh "./tools/ci/build.sh i386 ${params.BUILD_OPTS}"
+            }
+        }
+        stage('Test i386') {
+            steps {
+                qemu_test "i386", "debian11x86-j.qcow2", "debian11x86.qcow2"
+            }
+        }
+        stage('Build amd64 nested') {
+            steps {
+                sh "git clean -Xdf"
+                // Workaround git 2.30 bug
+                sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
+                sh """
+                    ./tools/ci/build.sh amd64 \
+                        --sl-base 0x20000000 \
+                        --no-init-smp \
+                        ${params.BUILD_OPTS}
+                """
+                sh "rm -rf nested"
+                sh "mkdir nested"
+                sh """
+                    python3 -u ./tools/ci/grub.py \
+                        --subarch amd64 \
+                        --xmhf-bin ./ \
+                        --work-dir ./nested/ \
+                        --verbose \
+                        --boot-dir ./tools/ci/boot/
+                """
+            }
+        }
+        stage('Build amd64') {
+            steps {
+                sh "git clean -Xdf"
+                // Workaround git 2.30 bug
+                sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
+                sh "./tools/ci/build.sh amd64 ${params.BUILD_OPTS}"
+            }
+        }
+        stage('Test amd64') {
+            steps {
+                qemu_test "amd64", "debian11x64-j.qcow2", "debian11x64.qcow2"
+            }
+        }
+    }
+}
+

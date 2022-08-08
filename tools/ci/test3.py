@@ -22,9 +22,11 @@ def parse_args():
 	parser.add_argument('--smp', type=int, default=2)
 	parser.add_argument('--work-dir', required=True)
 	parser.add_argument('--no-display', action='store_true')
+	parser.add_argument('--nested-xmhf', help='Image of XMHF running in XMHF')
 	parser.add_argument('--sshpass', help='Password for ssh')
 	parser.add_argument('--verbose', action='store_true')
 	parser.add_argument('--watch-serial', action='store_true')
+	parser.add_argument('--memory', default='1024M')
 	args = parser.parse_args()
 	return args
 
@@ -47,9 +49,26 @@ def get_port():
 
 def spawn_qemu(args, serial_file, ssh_port):
 	qemu_args = [
-		'qemu-system-x86_64', '-m', '512M',
-		'--drive', 'media=disk,file=%s,format=raw,index=0' % args.xmhf_img,
-		'--drive', 'media=disk,file=%s,format=qcow2,index=1' % args.debian_img,
+		'qemu-system-x86_64', '-m', args.memory,
+	]
+	drive_index = 0
+	qemu_args += [
+		'--drive', 'media=disk,file=%s,format=raw,index=%d' %
+		(args.xmhf_img, drive_index),
+	]
+	drive_index += 1
+	if args.nested_xmhf is not None:
+		qemu_args += [
+			'--drive', 'media=disk,file=%s,format=raw,index=%d' %
+			(args.nested_xmhf, drive_index),
+		]
+		drive_index += 1
+	qemu_args += [
+		'--drive', 'media=disk,file=%s,format=qcow2,index=%d' %
+		(args.debian_img, drive_index),
+	]
+	drive_index += 1
+	qemu_args += [
 		'-device', 'e1000,netdev=net0',
 		'-netdev', 'user,id=net0,hostfwd=tcp::%d-:22' % ssh_port,
 		'-smp', str(args.smp), '-cpu', 'Haswell,vmx=yes', '--enable-kvm',
