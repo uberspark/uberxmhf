@@ -11,24 +11,6 @@ properties([
     ])
 ])
 
-void build_xmhf(String subarch, String workdir, String build_opts) {
-    PWD = sh(returnStdout: true, script: 'pwd').trim()
-    sh "git clean -Xdf"
-    // Workaround git 2.30 bug
-    sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
-    sh "./tools/ci/build.sh ${subarch} ${build_opts}"
-    sh "rm -rf ${workdir}"
-    sh "mkdir ${workdir}"
-    sh """
-        python3 -u ./tools/ci/grub.py \
-            --subarch ${subarch} \
-            --xmhf-bin ${PWD}/ \
-            --work-dir ${workdir} \
-            --verbose \
-            --boot-dir ${PWD}/tools/ci/boot
-    """
-}
-
 void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
     PWD = sh(returnStdout: true, script: 'pwd').trim()
     sh "./tools/ci/download.sh cache ${qemu_image_back}"
@@ -56,6 +38,8 @@ void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
     """
 }
 
+def helper
+
 pipeline {
     agent any
 
@@ -71,17 +55,23 @@ pipeline {
                         script: 'git rev-parse HEAD | head -c 9').trim()
                     currentBuild.displayName += " ${params.XMHF_BRANCH}"
                     currentBuild.displayName += " ${cmt}"
+                    helper = load "tools/ci/jenkins.groovy"
+                }
+            }
+        }
+        stage('Build i386 XMHF') {
+            steps {
+                script {
+                    helper.build_xmhf("i386", "tmp", "${params.BUILD_OPTS}")
                 }
             }
         }
         stage('Build i386 nested XMHF') {
             steps {
-                build_xmhf "i386", "nested", "${params.NESTED_BUILD_OPTS}"
-            }
-        }
-        stage('Build i386 XMHF') {
-            steps {
-                build_xmhf "i386", "tmp", "${params.BUILD_OPTS}"
+                script {
+                    helper.build_xmhf("i386", "nested",
+                                      "${params.NESTED_BUILD_OPTS}")
+                }
             }
         }
         stage('Test i386 Debian in i386 XMHF in i386 XMHF') {
@@ -91,7 +81,9 @@ pipeline {
         }
         stage('Build amd64 XMHF') {
             steps {
-                build_xmhf "amd64", "tmp", "${params.BUILD_OPTS}"
+                script {
+                    helper.build_xmhf("amd64", "tmp", "${params.BUILD_OPTS}")
+                }
             }
         }
         stage('Test i386 Debian in i386 XMHF in amd64 XMHF') {
@@ -101,7 +93,10 @@ pipeline {
         }
         stage('Build amd64 nested XMHF') {
             steps {
-                build_xmhf "amd64", "nested", "${params.NESTED_BUILD_OPTS}"
+                script {
+                    helper.build_xmhf("amd64", "nested",
+                                      "${params.NESTED_BUILD_OPTS}")
+                }
             }
         }
         stage('Test i386 Debian in amd64 XMHF in amd64 XMHF') {

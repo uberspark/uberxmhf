@@ -11,25 +11,6 @@ properties([
     ])
 ])
 
-void build_xmhf(String subarch, String workdir, String build_opts) {
-    PWD = sh(returnStdout: true, script: 'pwd').trim()
-    sh "git clean -Xdf"
-    // Workaround git 2.30 bug
-    sh "rm -rf _build_lib* hypapps/trustvisor/src/objects/"
-    sh "rm -rf hypapps/helloworld/app/objects/"
-    sh "./tools/ci/build.sh ${subarch} ${build_opts}"
-    sh "rm -rf ${workdir}"
-    sh "mkdir ${workdir}"
-    sh """
-        python3 -u ./tools/ci/grub.py \
-            --subarch ${subarch} \
-            --xmhf-bin ${PWD}/ \
-            --work-dir ${workdir} \
-            --verbose \
-            --boot-dir ${PWD}/tools/ci/boot
-    """
-}
-
 void qemu_test(String subarch, String lhv_subarch) {
     PWD = sh(returnStdout: true, script: 'pwd').trim()
     sh "cp ${PWD}/tmp/grub/c.img ${PWD}/tmp/xmhf.img"
@@ -44,6 +25,8 @@ void qemu_test(String subarch, String lhv_subarch) {
             --watch-serial
     """
 }
+
+def helper
 
 pipeline {
     agent any
@@ -64,18 +47,24 @@ pipeline {
                         script: 'git rev-parse HEAD | head -c 9').trim()
                     currentBuild.displayName += " ${params.XMHF_BRANCH}"
                     currentBuild.displayName += " ${cmt}"
+                    helper = load "tools/ci/jenkins.groovy"
                 }
             }
         }
         stage('Build i386') {
             steps {
-                build_xmhf "i386", "tmp", "${params.BUILD_OPTS}"
+                script {
+                    helper.build_xmhf("i386", "tmp", "${params.BUILD_OPTS}")
+                }
             }
         }
         stage('Build i386 lhv') {
             steps {
                 dir ("lhv") {
-                    build_xmhf "i386", "tmp", "${params.LHV_BUILD_OPTS}"
+		            script {
+		                helper.build_xmhf("i386", "tmp",
+		                                  "${params.LHV_BUILD_OPTS}")
+		            }
                 }
             }
         }
@@ -86,7 +75,9 @@ pipeline {
         }
         stage('Build amd64') {
             steps {
-                build_xmhf "amd64", "tmp", "${params.BUILD_OPTS}"
+                script {
+                    helper.build_xmhf("amd64", "tmp", "${params.BUILD_OPTS}")
+                }
             }
         }
         stage('Test i386 LHV on amd64 XMHF') {
@@ -97,7 +88,10 @@ pipeline {
         stage('Build amd64 LHV') {
             steps {
                 dir ("lhv") {
-                    build_xmhf "amd64", "tmp", "${params.LHV_BUILD_OPTS}"
+		            script {
+		                helper.build_xmhf("amd64", "tmp",
+		                                  "${params.LHV_BUILD_OPTS}")
+		            }
                 }
             }
         }
