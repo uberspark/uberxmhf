@@ -72,8 +72,8 @@ jobs:
                 --boot-dir ${PWD}/tools/ci/boot
             python3 -u ./tools/ci/test3.py \
                 --subarch ${SUBARCH} \
-                --qemu-image ${PWD}/qemu/${qemu_image} \
-                --qemu-image-back ${PWD}/qemu/${qemu_image_back} \
+                --xmhf-img ${PWD}/tmp/grub/c.img \
+                --debian-img ${PWD}/qemu/${qemu_image} \
                 --work-dir ${PWD}/tmp/ \
                 --no-display \
                 --sshpass jkl \
