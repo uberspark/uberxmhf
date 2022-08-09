@@ -310,6 +310,7 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 	*(u32 *) spa2hva(vmcs12_info->vmcs02_ptr) = rev;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 	if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+		/* Note: this memset is probably unnecessary, but is here to be safe */
 		memset(spa2hva(vmcs12_info->vmcs12_shadow_ptr), 0, PAGE_SIZE_4K);
 		HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs12_shadow_ptr));
 		*(u32 *) spa2hva(vmcs12_info->vmcs12_shadow_ptr) = 0x80000000U | rev;
