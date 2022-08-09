@@ -86,13 +86,6 @@ union _vmx_decode_vm_inst_info {
 	u32 raw;
 };
 
-/*
- * A blank page in memory that is only read from.
- * 1. During VMCLEAR, this page is used to clear a page of memory using memcpy.
- * 2. This page is used as VMREAD and VMWRITE bitmaps when using shadow VMCS.
- */
-static u8 blank_page[PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
-
 /* Track all active VMCS12's in each CPU */
 static vmcs12_info_t
 	cpu_active_vmcs12[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS];
@@ -102,6 +95,12 @@ static u8 cpu_vmcs02[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][PAGE_SIZE_4K]
 	__attribute__((section(".bss.palign_data")));
 
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
+/*
+ * A blank page in memory that is only read from. This page is used as VMREAD
+ * and VMWRITE bitmaps when using shadow VMCS.
+ */
+static u8 blank_page[PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
+
 /* The shadow VMCS12's in each CPU */
 static u8 cpu_shadow_vmcs12[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
 	[PAGE_SIZE_4K]
@@ -317,7 +316,7 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 	}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 	vmcs12_info->launched = 0;
-	memset(&vmcs12_info->vmcs12_value, 0, sizeof(vmcs12_info->vmcs12_value));
+	/* vmcs12_info->vmcs12_value will be initialized by caller */
 	memset(&vmcs12_info->vmcs02_vmexit_msr_store_area, 0,
 		   sizeof(vmcs12_info->vmcs02_vmexit_msr_store_area));
 	memset(&vmcs12_info->vmcs02_vmexit_msr_load_area, 0,
@@ -1353,6 +1352,13 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 			 */
 			vmcs12_info_t *vmcs12_info = find_active_vmcs12(vcpu, vmcs_ptr);
 			if (vmcs12_info != NULL) {
+				/* Write VMCS12 back to guest */
+				HALT_ON_ERRORCOND(sizeof(vmcs12_info->vmcs12_value) <
+								  PAGE_SIZE_4K - 8);
+				guestmem_copy_h2gp(&ctx_pair, 0, vmcs_ptr + 8,
+								   &vmcs12_info->vmcs12_value,
+								   sizeof(vmcs12_info->vmcs12_value));
+				/* Call VMCLEAR on VMCS02 */
 				HALT_ON_ERRORCOND(__vmx_vmclear(vmcs12_info->vmcs02_ptr));
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 				if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
@@ -1360,10 +1366,9 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 									  (vmcs12_info->vmcs12_shadow_ptr));
 				}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
+				/* Invalidate vmcs12_info */
 				vmcs12_info->vmcs12_ptr = CUR_VMCS_PTR_INVALID;
 			}
-			guestmem_copy_h2gp(&ctx_pair, 0, vmcs_ptr, blank_page,
-							   PAGE_SIZE_4K);
 			if (vmcs_ptr == vcpu->vmx_nested_current_vmcs_pointer) {
 				vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
 				vcpu->vmx_nested_current_vmcs12_info = NULL;
@@ -1459,6 +1464,12 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU * vcpu, struct regs *r)
 				vmcs12_info_t *vmcs12_info = find_active_vmcs12(vcpu, vmcs_ptr);
 				if (vmcs12_info == NULL) {
 					vmcs12_info = new_active_vmcs12(vcpu, vmcs_ptr, rev);
+					/* Initialize VMCS12 from guest memory */
+					HALT_ON_ERRORCOND(sizeof(vmcs12_info->vmcs12_value) <
+									  PAGE_SIZE_4K - 8);
+					guestmem_copy_gp2h(&ctx_pair, 0, &vmcs12_info->vmcs12_value,
+									   vmcs_ptr + 8,
+									   sizeof(vmcs12_info->vmcs12_value));
 				}
 				vcpu->vmx_nested_current_vmcs_pointer = vmcs_ptr;
 				vcpu->vmx_nested_current_vmcs12_info = vmcs12_info;
