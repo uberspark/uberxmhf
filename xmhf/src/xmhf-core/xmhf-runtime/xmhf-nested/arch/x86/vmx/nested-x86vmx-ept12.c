@@ -514,7 +514,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
  * This function is what xmhf_nested_arch_x86vmx_flush_ept02() does when no
  * blocking occurs.
  */
-static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU *vcpu)
+static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU * vcpu)
 {
 	LRU_SET_INVALIDATE_ALL(&ept02_cache[vcpu->id]);
 	clear_all_vmcs12_ept02(vcpu);
@@ -568,7 +568,7 @@ static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU *vcpu)
  * delayed until call to xmhf_nested_arch_x86vmx_unblock_ept02_flush() if
  * xmhf_nested_arch_x86vmx_block_ept02_flush() has been called.
  */
-void xmhf_nested_arch_x86vmx_flush_ept02(VCPU *vcpu)
+void xmhf_nested_arch_x86vmx_flush_ept02(VCPU * vcpu)
 {
 	if (vcpu->vmx_nested_ept02_flush_disable) {
 		vcpu->vmx_nested_ept02_flush_visited = true;
@@ -578,14 +578,14 @@ void xmhf_nested_arch_x86vmx_flush_ept02(VCPU *vcpu)
 }
 
 /* Block the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
-void xmhf_nested_arch_x86vmx_block_ept02_flush(VCPU *vcpu)
+void xmhf_nested_arch_x86vmx_block_ept02_flush(VCPU * vcpu)
 {
 	HALT_ON_ERRORCOND(!vcpu->vmx_nested_ept02_flush_disable);
 	vcpu->vmx_nested_ept02_flush_disable = true;
 }
 
 /* Unblock the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
-void xmhf_nested_arch_x86vmx_unblock_ept02_flush(VCPU *vcpu)
+void xmhf_nested_arch_x86vmx_unblock_ept02_flush(VCPU * vcpu)
 {
 	HALT_ON_ERRORCOND(vcpu->vmx_nested_ept02_flush_disable);
 	vcpu->vmx_nested_ept02_flush_disable = false;
