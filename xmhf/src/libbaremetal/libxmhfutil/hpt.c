@@ -361,8 +361,13 @@ hpt_pme_t hpt_pme_getunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int 
 /* Get the present bit in entry. */
 bool hpt_pme_is_present(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
-  /* a valid entry is present iff read access is enabled. */
-  return hpt_pme_getprot(t, lvl, entry) & HPT_PROT_READ_MASK;
+  if (t == HPT_TYPE_EPT) {
+    /* For EPT, a valid entry is present iff any of RWX is enabled */
+    return hpt_pme_getprot(t, lvl, entry) & HPT_PROTS_RWX;
+  } else {
+    /* For normal paging, a valid entry is present iff read access is enabled */
+    return hpt_pme_getprot(t, lvl, entry) & HPT_PROT_READ_MASK;
+  }
 }
 
 /*
