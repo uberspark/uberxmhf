@@ -433,6 +433,8 @@ u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12, bool *cache_hit)
  * 3. L2 accesses memory not valid in EPT01 (L1 sets up EPT that accesses
  *    illegal memory). In this case this function returns 3. XMHF should halt
  *    for security.
+ * 4. The EPT12 for L2's memory access is misconfigured. In this case this
+ *    function returns 4. XMHF should return EPT misconfiguration exit to L1.
  */
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  ept02_cache_line_t * cache_line,
@@ -467,6 +469,19 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 		return 2;
 	}
 	guest1_paddr = hpt_pmeo_va_to_pa(&pmeo12, guest2_paddr);
+
+	/*
+	 * Check for EPT misconfiguration. TODO: only R=0 && W=1 is checked here,
+	 * but there are other cases to be checked. See SDM.
+	 */
+	if (!(pmeo12.pme & HPT_PROT_READ_MASK)) {
+		if (pmeo12.pme & HPT_PROT_WRITE_MASK) {
+			return 4;
+		} else {
+			/* It must be R=0 && X=1, which is misconfig if not supported */
+			HALT_ON_ERRORCOND(0 && "Likely unimplemented EPT misconfig");
+		}
+	}
 
 	/* Get the entry in EPT01 for the L1 paddr */
 	if (hptw_checked_get_pmeo(&pmeo01, &ept12_ctx->ctx01.host_ctx, access_type,
@@ -619,6 +634,14 @@ void xmhf_nested_arch_x86vmx_hardcode_ept(VCPU * vcpu,
 		break;
 	case 3:
 		HALT_ON_ERRORCOND(0 && "Guest EPT will access illegal memory");
+		break;
+	case 4:
+		/*
+		 * Guest hypervisor will encounter EPT misconfiguration. For now ignore
+		 * the error.
+		 */
+		printf("CPU(0x%02x): Warning: 0x%016llx misconfigured guest EPT\n",
+			   vcpu->id, guest2_paddr);
 		break;
 	default:
 		HALT_ON_ERRORCOND(0 && "Unknown status");

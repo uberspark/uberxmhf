@@ -827,6 +827,7 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 {
 	bool nmi_vmexit = false;
+	bool ept_misconfig = false;
 	vmcs12_info_t *vmcs12_info;
 	u32 vmexit_reason = __vmx_vmread32(VMCSENC_info_vmexit_reason);
 
@@ -1052,6 +1053,13 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				   __vmx_vmreadNW(VMCSENC_info_guest_linear_address));
 			HALT_ON_ERRORCOND(0 && "Guest accesses illegal memory");
 			break;
+		case 4:
+			/*
+			 * Guest EPT is misconfigured, change VMEXIT reason from EPT
+			 * violation to EPT misconfiguration.
+			 */
+			ept_misconfig = true;
+			break;
 		default:
 			HALT_ON_ERRORCOND(0 && "Unknown status");
 			break;
@@ -1115,6 +1123,16 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		/* Consume one pending NMI */
 		HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
 		vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
+	}
+	if (ept_misconfig) {
+		/* Translate EPT violation to EPT misconfiguration */
+		vmcs12_info->vmcs12_value.info_vmexit_reason =
+			VMX_VMEXIT_EPT_MISCONFIGURATION;
+		/*
+		 * EPT violation will set VMEXIT qualification, but in EPT
+		 * misconfiguration this field should be cleared to 0.
+		 */
+		vmcs12_info->vmcs12_value.info_exit_qualification = 0;
 	}
 	if (0) {
 		printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
