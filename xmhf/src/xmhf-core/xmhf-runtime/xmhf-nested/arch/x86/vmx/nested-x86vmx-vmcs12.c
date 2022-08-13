@@ -516,6 +516,14 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 						guestmem_gpa2spa_page(&ctx_pair, addr));
 #endif							/* !__DEBUG_QEMU__ */
 	}
+	if (_vmx_hasctl_process_posted_interrupts(&ctls)) {
+		gpa_t addr = vmcs12->control_posted_interrupt_desc_address;
+		if (addr & (64 - 1)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		__vmx_vmwrite64(VMCSENC_control_posted_interrupt_desc_address,
+						guestmem_gpa2spa_size(&ctx_pair, addr, 64));
+	}
 	{
 		/* XMHF always needs EPT, so this block is unconditional */
 		spa_t ept02;
@@ -883,6 +891,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	if (exist) { \
 		if ((prop & FIELD_PROP_ID_GUEST) || (prop & FIELD_PROP_GPADDR)) { \
 			if (prop & FIELD_PROP_SWWRONLY) { \
+				/* Note: currently for FIELD_PROP_GPADDR, assuming spa=gpa */ \
 				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmread64(encoding)); \
 			} else { \
 				vmcs12->name = __vmx_vmread64(encoding); \
@@ -983,6 +992,12 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
 #endif							/* !__DEBUG_QEMU__ */
 		// vmcs12->control_Executive_VMCS_pointer = ...;
+	}
+	if (_vmx_hasctl_process_posted_interrupts(&ctls)) {
+		u16 encoding = VMCSENC_control_posted_interrupt_desc_address;
+		/* Note: currently assuming spa=gpa */
+		HALT_ON_ERRORCOND(vmcs12->control_posted_interrupt_desc_address ==
+						  __vmx_vmread64(encoding));
 	}
 	{
 		/* XMHF always needs EPT, so this block is unconditional */

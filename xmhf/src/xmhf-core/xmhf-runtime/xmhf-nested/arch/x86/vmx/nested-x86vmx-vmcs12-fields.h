@@ -249,7 +249,7 @@ DECLARE_FIELD_64_RW(0x2014, control_APIC_access_address,
 					(_vmx_hasctl_process_posted_interrupts(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2016, control_posted_interrupt_desc_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
+					(FIELD_PROP_CTRL),
 					(_vmx_hasctl_process_posted_interrupts(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2018, control_VM_function_controls,
