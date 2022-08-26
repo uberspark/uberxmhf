@@ -1373,13 +1373,15 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 			if (vmcs12_info != NULL) {
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 				/* Read VMCS12 values from the shadow VMCS */
-				HALT_ON_ERRORCOND(__vmx_vmptrld
-								  (vmcs12_info->vmcs12_shadow_ptr));
-				xmhf_nested_arch_x86vmx_vmcs_read_all(vcpu,
-													  &vmcs12_info->
-													  vmcs12_value);
-				HALT_ON_ERRORCOND(__vmx_vmptrld
-								  (hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
+				if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+					HALT_ON_ERRORCOND(__vmx_vmptrld
+									  (vmcs12_info->vmcs12_shadow_ptr));
+					xmhf_nested_arch_x86vmx_vmcs_read_all(vcpu,
+														  &vmcs12_info->
+														  vmcs12_value);
+					HALT_ON_ERRORCOND(__vmx_vmptrld
+									  (hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
+				}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 				/* Write VMCS12 back to guest */
 				HALT_ON_ERRORCOND(sizeof(vmcs12_info->vmcs12_value) <
@@ -1501,13 +1503,16 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU * vcpu, struct regs *r)
 									   sizeof(vmcs12_info->vmcs12_value));
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 					/* Write VMCS12 values to the shadow VMCS */
-					HALT_ON_ERRORCOND(__vmx_vmptrld
-									  (vmcs12_info->vmcs12_shadow_ptr));
-					xmhf_nested_arch_x86vmx_vmcs_write_all(vcpu,
-														   &vmcs12_info->
-														   vmcs12_value);
-					HALT_ON_ERRORCOND(__vmx_vmptrld
-									  (hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
+					if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+						HALT_ON_ERRORCOND(__vmx_vmptrld
+										  (vmcs12_info->vmcs12_shadow_ptr));
+						xmhf_nested_arch_x86vmx_vmcs_write_all(vcpu,
+															   &vmcs12_info->
+															   vmcs12_value);
+						HALT_ON_ERRORCOND(__vmx_vmptrld
+										  (hva2spa
+										   ((void *)vcpu->vmx_vmcs_vaddr)));
+					}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 				}
 				vcpu->vmx_nested_current_vmcs_pointer = vmcs_ptr;
