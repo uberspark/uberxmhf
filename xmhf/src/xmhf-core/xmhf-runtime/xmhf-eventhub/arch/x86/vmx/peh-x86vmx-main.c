@@ -484,7 +484,9 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value)
 			}
 			break;
 		default:{
-			wrmsr64(index, value);
+			if (wrmsr_safe(index, value) != 0) {
+				return 1;
+			}
 			break;
 		}
 	}
