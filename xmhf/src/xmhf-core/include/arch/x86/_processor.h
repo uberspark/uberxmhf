@@ -313,102 +313,102 @@ static inline uint64_t rdtsc64(void)
 /* Calls to read and write control registers */
 static inline unsigned long read_cr0(void){
   unsigned long __cr0;
-  __asm__("mov %%cr0,%0\n\t" :"=r" (__cr0));
+  __asm__ __volatile__("mov %%cr0,%0\n\t" :"=r" (__cr0));
   return __cr0;
 }
 
 static inline void write_cr0(unsigned long val){
-  __asm__("mov %0,%%cr0": :"r" ((unsigned long)val));
+  __asm__ __volatile__("mov %0,%%cr0": :"r" ((unsigned long)val));
 }
 
 static inline unsigned long read_cr3(void){
   unsigned long __cr3;
-  __asm__("mov %%cr3,%0\n\t" :"=r" (__cr3));
+  __asm__ __volatile__("mov %%cr3,%0\n\t" :"=r" (__cr3));
   return __cr3;
 }
 
 static inline unsigned long read_esp(void){
   unsigned long __esp;
-  __asm__("mov %%esp,%0\n\t" :"=r" (__esp));
+  __asm__ __volatile__("mov %%esp,%0\n\t" :"=r" (__esp));
   return __esp;
 }
 
 static inline unsigned long read_ebp(void){
   unsigned long __ebp;
-  __asm__("mov %%ebp,%0\n\t" :"=r" (__ebp));
+  __asm__ __volatile__("mov %%ebp,%0\n\t" :"=r" (__ebp));
   return __ebp;
 }
 
 static inline void write_cr3(unsigned long val){
-  __asm__("mov %0,%%cr3\n\t"
-          "jmp 1f\n\t"
-          "1:"
-          :
-          :"r" ((unsigned long)val));
+  __asm__ __volatile__("mov %0,%%cr3\n\t"
+                       "jmp 1f\n\t"
+                       "1:"
+                       :
+                       :"r" ((unsigned long)val));
 }
 
 static inline unsigned long read_cr2(void){
   unsigned long __cr2;
-  __asm__("mov %%cr2,%0\n\t" :"=r" (__cr2));
+  __asm__ __volatile__("mov %%cr2,%0\n\t" :"=r" (__cr2));
   return __cr2;
 }
 
 static inline unsigned long read_cr4(void){
   unsigned long __cr4;
-  __asm__("mov %%cr4,%0\n\t" :"=r" (__cr4));
+  __asm__ __volatile__("mov %%cr4,%0\n\t" :"=r" (__cr4));
   return __cr4;
 }
 
 static inline void write_cr4(unsigned long val){
-  __asm__("mov %0,%%cr4": :"r" ((unsigned long)val));
+  __asm__ __volatile__("mov %0,%%cr4": :"r" ((unsigned long)val));
 }
 
 static inline void skinit(unsigned long eax) {
-    __asm__("mov %0, %%eax": :"r" (eax));
-    __asm__("skinit":);
+    __asm__ __volatile__("mov %0, %%eax": :"r" (eax));
+    __asm__ __volatile__("skinit":);
 }
 
 
 //segment register access
 static inline u32 read_segreg_cs(void){
   u32 __cs;
-  __asm__("mov %%cs, %0 \r\n" :"=r" (__cs));
+  __asm__ __volatile__("mov %%cs, %0 \r\n" :"=r" (__cs));
   return __cs;
 }
 
 static inline u32 read_segreg_ds(void){
   u32 __ds;
-  __asm__("mov %%ds, %0 \r\n" :"=r" (__ds));
+  __asm__ __volatile__("mov %%ds, %0 \r\n" :"=r" (__ds));
   return __ds;
 }
 
 static inline u32 read_segreg_es(void){
   u32 __es;
-  __asm__("mov %%es, %0 \r\n" :"=r" (__es));
+  __asm__ __volatile__("mov %%es, %0 \r\n" :"=r" (__es));
   return __es;
 }
 
 static inline u32 read_segreg_fs(void){
   u32 __fs;
-  __asm__("mov %%fs, %0 \r\n" :"=r" (__fs));
+  __asm__ __volatile__("mov %%fs, %0 \r\n" :"=r" (__fs));
   return __fs;
 }
 
 static inline u32 read_segreg_gs(void){
   u32 __gs;
-  __asm__("mov %%gs, %0 \r\n" :"=r" (__gs));
+  __asm__ __volatile__("mov %%gs, %0 \r\n" :"=r" (__gs));
   return __gs;
 }
 
 static inline u32 read_segreg_ss(void){
   u32 __ss;
-  __asm__("mov %%ss, %0 \r\n" :"=r" (__ss));
+  __asm__ __volatile__("mov %%ss, %0 \r\n" :"=r" (__ss));
   return __ss;
 }
 
 static inline u16 read_tr_sel(void){
   u16 __trsel;
-  __asm__("str %0 \r\n" :"=r" (__trsel));
+  __asm__ __volatile__("str %0 \r\n" :"=r" (__trsel));
   return __trsel;
 }
 
