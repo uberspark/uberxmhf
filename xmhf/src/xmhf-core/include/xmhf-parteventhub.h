@@ -70,6 +70,7 @@ extern void _vmx_getVMCS(VCPU *vcpu);
 extern void _vmx_dumpVMCS(VCPU *vcpu);
 
 extern u32 rdmsr_safe(u32 index, u64 *value);
+extern u32 wrmsr_safe(u32 index, u64 value);
 
 //----------------------------------------------------------------------
 //exported DATA

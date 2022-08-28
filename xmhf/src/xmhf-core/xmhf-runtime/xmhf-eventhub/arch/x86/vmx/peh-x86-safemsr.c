@@ -45,12 +45,12 @@
  */
 
 // peh-x86-safemsr.c
-// Safely Reading MSRs
+// Safely read / write MSRs by catching #GP exceptions
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 
 /*
- * Perform RDMSR instruction, r->ecx is input, r->eax and r->edx are outputs.
+ * Perform RDMSR instruction.
  * If successful, return 0. If RDMSR causes #GP, return 1.
  * Implementation similar to Linux's native_read_msr_safe().
  */
@@ -83,5 +83,39 @@ u32 rdmsr_safe(u32 index, u64 *value) {
 	if (result == 0) {
 		*value = ((u64) edx << 32) | eax;
 	}
+    return result;
+}
+
+/*
+ * Perform WRMSR instruction.
+ * If successful, return 0. If WRMSR causes #GP, return 1.
+ * Implementation similar to Linux's native_write_msr_safe().
+ */
+u32 wrmsr_safe(u32 index, u64 value) {
+    u32 result;
+    u32 eax = (u32) value, edx = (value >> 32);
+    asm volatile ("1:\r\n"
+                  "wrmsr\r\n"
+                  "xor %%ebx, %%ebx\r\n"
+                  "jmp 3f\r\n"
+                  "2:\r\n"
+                  "movl $1, %%ebx\r\n"
+                  "jmp 3f\r\n"
+                  ".section .xcph_table\r\n"
+#ifdef __AMD64__
+                  ".quad 0xd\r\n"
+                  ".quad 1b\r\n"
+                  ".quad 2b\r\n"
+#elif defined(__I386__)
+                  ".long 0xd\r\n"
+                  ".long 1b\r\n"
+                  ".long 2b\r\n"
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+                  ".previous\r\n"
+                  "3:\r\n"
+                  : "=b"(result)
+                  : "c" (index), "a"(eax), "d"(edx));
     return result;
 }
