@@ -609,38 +609,35 @@ static inline u32 __vmx_vmclear(u64 vmcs){
                        "2: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax", "cc"
-  );
+    : "%eax", "cc");
   return status;
 }
 
 static inline u32 __vmx_vmptrld(u64 vmcs){
   u32 status;
-  __asm__("vmptrld %1    \r\n"
-      "jbe  1f           \r\n"
-      "movl $1, %%eax    \r\n"
-      "jmp  2f           \r\n"
-      "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n"
+  __asm__ __volatile__("vmptrld %1        \r\n"
+                       "jbe  1f           \r\n"
+                       "movl $1, %%eax    \r\n"
+                       "jmp  2f           \r\n"
+                       "1: movl $0, %%eax \r\n"
+                       "2: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax", "cc"
-  );
+    : "%eax", "cc");
   return status;
 }
 
 static inline u32 __vmx_vmptrst(u64 *vmcs){
   u32 status;
-  __asm__("vmptrst %1    \r\n"
-      "jbe  1f           \r\n"
-      "movl $1, %%eax    \r\n"
-      "jmp  2f           \r\n"
-      "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n"
+  __asm__ __volatile__("vmptrst %1        \r\n"
+                       "jbe  1f           \r\n"
+                       "movl $1, %%eax    \r\n"
+                       "jmp  2f           \r\n"
+                       "1: movl $0, %%eax \r\n"
+                       "2: movl %%eax, %0 \r\n"
     : "=m" (status), "=m"(*vmcs)
     :
-    : "%eax", "cc"
-  );
+    : "%eax", "cc");
   return status;
 }
 
