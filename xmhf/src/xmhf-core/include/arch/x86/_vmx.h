@@ -592,13 +592,13 @@ static inline u32 __vmx_vmclear(u64 vmcs){
   u32 status;
   __asm__ __volatile__("vmclear %1 \r\n"
                        "jbe 1f \r\n"
-                       "movl $1, %%eax \r\n"
+                       "movl $1, %0 \r\n"
                        "jmp 2f \r\n"
-                       "1: movl $0, %%eax \r\n"
-                       "2: movl %%eax, %0 \r\n"
+                       "1: movl $0, %0 \r\n"
+                       "2: \r\n"
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax", "cc"
+    : "cc"
   );
   return status;
 }
@@ -607,13 +607,13 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
   u32 status;
   __asm__ __volatile__("vmptrld %1 \r\n"
                        "jbe 1f \r\n"
-                       "movl $1, %%eax \r\n"
+                       "movl $1, %0 \r\n"
                        "jmp 2f \r\n"
-                       "1: movl $0, %%eax \r\n"
-                       "2: movl %%eax, %0 \r\n"
+                       "1: movl $0, %0 \r\n"
+                       "2: \r\n"
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax", "cc"
+    : "cc"
   );
   return status;
 }
@@ -643,10 +643,10 @@ static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, uintptr_t linea
 	//note: GCC does not seem to support this instruction directly
 	//so we encode it as hex
 	__asm__ __volatile__(".byte 0x66, 0x0f, 0x38, 0x81, 0x08 \r\n"
-	                     "movl $1, %%eax \r\n"
+	                     "movl $1, %0 \r\n"
 	                     "ja 1f \r\n"
-	                     "movl $0, %%eax \r\n"
-	                     "1: movl %%eax, %0 \r\n"
+	                     "movl $0, %0 \r\n"
+	                     "1: \r\n"
 	  : "=m" (status)
 	  : "a"(&invvpiddescriptor), "c"(invalidation_type)
 	  : "cc", "memory");
@@ -677,10 +677,10 @@ static inline u32 __vmx_invept(int invalidation_type, u64 eptp){
 	//note: GCC does not seem to support this instruction directly
 	//so we encode it as hex
 	__asm__ __volatile__(".byte 0x66, 0x0f, 0x38, 0x80, 0x08 \r\n"
-	                     "movl $1, %%eax \r\n"
+	                     "movl $1, %0 \r\n"
 	                     "ja 1f \r\n"
-	                     "movl $0, %%eax \r\n"
-	                     "1: movl %%eax, %0 \r\n"
+	                     "movl $0, %0 \r\n"
+	                     "1: \r\n"
 	  : "=m" (status)
 	  : "a"(&inveptdescriptor), "c"(invalidation_type)
 	  : "cc", "memory");
