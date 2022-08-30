@@ -756,7 +756,7 @@ hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme)
 
 /* Set the memory type (e.g. uncached, write back) of entry. */
 /* Always clears PAT bit when applicable. */
-hpt_pmt_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_pmt_t pmt)
+hpt_pme_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_pmt_t pmt)
 {
   hpt_pme_t rv;
   if (t == HPT_TYPE_EPT) {
