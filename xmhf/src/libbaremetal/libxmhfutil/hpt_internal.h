@@ -70,7 +70,7 @@ hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_pa_t a
 hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme);
 
 /* Always clears PAT bit when applicable. */
-hpt_pmt_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_pmt_t pmt);
+hpt_pme_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_pmt_t pmt);
 
 unsigned int hpt_get_pm_idx(hpt_type_t t, int lvl, hpt_va_t va);
 
