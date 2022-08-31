@@ -1027,6 +1027,23 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				inst_len = __vmx_vmread32(encoding);
 				encoding = VMCSENC_control_VM_entry_instruction_length;
 				__vmx_vmwrite32(encoding, inst_len);
+				/*
+				 * When this EPT VMEXIT is caused by NMI injection indirectly,
+				 * the hardware will set virtual-NMI blocking. We need to
+				 * remove this virtual-NMI blocking in order to retry NMI
+				 * injection (otherwise VMENTRY failure will occur).
+				 */
+				if ((idt_info & INTR_INFO_VALID_MASK) &&
+					(idt_info & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI &&
+					vmcs12_info->guest_virtual_nmis) {
+					u16 encoding = VMCSENC_guest_interruptibility;
+					u32 guest_int = __vmx_vmread32(encoding);
+					HALT_ON_ERRORCOND((idt_info & INTR_INFO_VECTOR_MASK) ==
+									  NMI_VECTOR);
+					HALT_ON_ERRORCOND(guest_int & (1U << 3));
+					guest_int &= ~(1U << 3);
+					__vmx_vmwrite32(encoding, guest_int);
+				}
 			}
 			/* End blocking EPT02 flush */
 			xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
