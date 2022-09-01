@@ -52,7 +52,7 @@
 #include "nested-x86vmx-handler.h"
 
 /* Number of pages in page_pool in ept02_ctx_t */
-#define EPT02_PAGE_POOL_SIZE 192
+#define EPT02_PAGE_POOL_SIZE 128
 
 /*
  * For each CPU, information about all EPT12 -> EPT02 it caches.
@@ -400,6 +400,9 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 			}
 		}
 #endif							/* !__DEBUG_QEMU__ */
+		{
+			printf("CPU(0x%02x): EPT cache miss 0x%08llx\n", vcpu->id, ept12);
+		}
 	}
 	*cache_hit = hit;
 	*cache_line = line;
@@ -442,6 +445,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  ulong_t qualification)
 {
 	ept12_ctx_t *ept12_ctx;
+	ept02_ctx_t *ept02_ctx;
 	gpa_t guest1_paddr;
 	spa_t xmhf_paddr;
 	hpt_pmeo_t pmeo12;
@@ -451,6 +455,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 
 	HALT_ON_ERRORCOND(cache_line->valid);
 	ept12_ctx = &cache_line->value.ept12_ctx;
+	ept02_ctx = &cache_line->value.ept02_ctx;
 	access_type = 0;
 	if (qualification & (1UL << 0)) {
 		access_type |= HPT_PROT_READ_MASK;
@@ -516,8 +521,15 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	}
 
 	/* Put page map entry into EPT02 */
-	HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(&cache_line->value.ept02_ctx.ctx,
-											 &pmeo02, guest2_paddr) == 0);
+	if (hptw_insert_pmeo_alloc(&ept02_ctx->ctx, &pmeo02, guest2_paddr)) {
+		{
+			gpa_t ept12 = ept12_ctx->ctx.root_pa;
+			printf("CPU(0x%02x): EPT02 full 0x%08llx\n", vcpu->id, ept12);
+		}
+		ept02_ctx_reset(ept02_ctx);
+		HALT_ON_ERRORCOND(hptw_insert_pmeo_alloc(&ept02_ctx->ctx, &pmeo02,
+												 guest2_paddr) == 0);
+	}
 	if (0) {
 		printf("CPU(0x%02x): EPT: L2=0x%08llx L1=0x%08llx L0=0x%08llx\n",
 			   vcpu->id, guest2_paddr, guest1_paddr, xmhf_paddr);
