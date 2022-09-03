@@ -92,7 +92,7 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
   #ifndef __XMHF_VERIFICATION__
 	//TODO: plug in LAPIC h/w model
 	while ((*icr) & 0x1000U) {
-	  asm volatile ("pause");     /* Save energy when waiting */
+	  xmhf_cpu_relex();
 	}
   #endif
 
@@ -109,7 +109,7 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
         #ifndef __XMHF_VERIFICATION__
 		//TODO: plug in LAPIC h/w model
 		while ((*icr) & 0x1000U) {
-		  asm volatile ("pause");     /* Save energy when waiting */
+		  xmhf_cpu_relex();
 		}
         #endif
       }
@@ -194,7 +194,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     //wait for g_cpus_active to become g_midtable_numentries -1 to indicate
     //that all APs have been successfully started
     while (g_cpus_active < g_midtable_numentries) {
-        asm volatile ("pause");     /* Save energy when waiting */
+        xmhf_cpu_relex();
     }
 
     printf("APs all awake...Setting them free...\n");
@@ -215,7 +215,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 
     //Just wait for the BSP to tell us all is well.
     while (!g_ap_go_signal) {
-        asm volatile ("pause");     /* Save energy when waiting */
+        xmhf_cpu_relex();
     }
 
 #ifdef __AMD64__

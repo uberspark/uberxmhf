@@ -72,6 +72,18 @@ extern void *emhfc_putchar_linelock_arg;
 extern void emhfc_putchar_linelock(void *arg);
 extern void emhfc_putchar_lineunlock(void *arg);
 
+/* Atomically increase a 32-bit integer by 1 */
+static inline void atomic_inc(volatile u32 *v)
+{
+	asm volatile ("lock incl %0" : "+m"(*v) : : "cc");
+}
+
+/* Atomically decrease a 32-bit integer by 1 */
+static inline void atomic_dec(volatile u32 *v)
+{
+	asm volatile ("lock decl %0" : "+m"(*v) : : "cc");
+}
+
 //----------------------------------------------------------------------
 //vmx_lapic_changemapping
 //change LAPIC mappings to handle SMP guest bootup
@@ -482,7 +494,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
     //printf("%s: CPU(0x%02x): firing NMIs...\n", __FUNCTION__, vcpu->id);
 #ifndef __XMHF_VERIFICATION__
     while ((*icr_low) & 0x00001000U) {
-      asm volatile ("pause");   /* Save energy when waiting */
+      xmhf_cpu_relex();
     }
 #else
     //TODO: plug in h/w model of LAPIC, for now assume hardware just
@@ -557,7 +569,7 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         //wait for all the remaining CPUs to quiesce
         //printf("CPU(0x%02x): waiting for other CPUs to respond...\n", vcpu->id);
         while (g_vmx_quiesce_counter < (g_midtable_numentries-1)) {
-            asm volatile ("pause");     /* Save energy when waiting */
+            xmhf_cpu_relex();
         }
         //printf("CPU(0x%02x): all CPUs quiesced successfully.\n", vcpu->id);
 
@@ -598,7 +610,7 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         g_vmx_quiesce_resume_signal=1;
 
         while (g_vmx_quiesce_resume_counter < (g_midtable_numentries-1)) {
-            asm volatile ("pause");     /* Save energy when waiting */
+            xmhf_cpu_relex();
         }
 
         vcpu->quiesced=0;
@@ -653,7 +665,7 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 		//wait until quiesceing is finished
 		//printf("CPU(0x%02x): Quiesced\n", vcpu->id);
 		while (!g_vmx_quiesce_resume_signal) {
-			asm volatile ("pause");		/* Save energy when waiting */
+			xmhf_cpu_relex();
 		}
 		//printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
 
@@ -676,7 +688,7 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 /* Return whether NMI for XMHF's intercept handler is temporarily blocked */
 bool xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(VCPU *vcpu)
 {
-	return vcpu->vmx_guest_nmi_disable;
+	return !vcpu->vmx_mhv_nmi_enable;
 }
 
 /* Handle NMI for the guest received in XMHF's NMI interrupt handler */
@@ -684,7 +696,7 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
 {
 	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
 
-	switch (vcpu->vmx_guest_nmi_handler_arg) {
+	switch (vcpu->vmx_mhv_nmi_handler_arg) {
 	case SMPG_VMX_NMI_INJECT:
 		xmhf_smpguest_arch_x86vmx_inject_nmi(vcpu);
 		break;
@@ -694,7 +706,7 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
 		break;
 #endif /* __NESTED_VIRTUALIZATION__ */
 	default:
-		HALT_ON_ERRORCOND(0 && "Unexpected vcpu->vmx_guest_nmi_handler_arg");
+		HALT_ON_ERRORCOND(0 && "Unexpected vcpu->vmx_mhv_nmi_handler_arg");
 		break;
 	}
 }
@@ -704,26 +716,26 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  *
  * This function and xmhf_smpguest_arch_x86vmx_mhv_nmi_enable() mark critical
  * section of code that cannot be interrupted by NMI interrupts. The CPU-local
- * variable vmx_guest_nmi_disable is used to indicate that interrupted code is
+ * variable vmx_mhv_nmi_enable is used to indicate that interrupted code is
  * running the critical section. When the NMI interrupt handler sees so, it
- * marks vmx_guest_nmi_visited. The NMI is effectively delayed until
+ * marks vmx_mhv_nmi_visited. The NMI is effectively delayed until
  * xmhf_smpguest_arch_x86vmx_mhv_nmi_enable() exits the critical section and
  * checks whether NMIs have visited.
  *
  * Pseudo code for critical section:
- *  vmx_guest_nmi_disable = 1;
+ *  vmx_mhv_nmi_enable = 0;
  *  critical_section();
- *  vmx_guest_nmi_disable = 0;
- *  while (vmx_guest_nmi_visited) {
- *      vmx_guest_nmi_visited--;
- *      vmx_guest_nmi_disable = 1;
+ *  vmx_mhv_nmi_enable = 1;
+ *  while (vmx_mhv_nmi_visited) {
+ *      vmx_mhv_nmi_visited--;
+ *      vmx_mhv_nmi_enable = 0;
  *      handle_nmi();
- *      vmx_guest_nmi_disable = 0; 
+ *      vmx_mhv_nmi_enable = 1;
  *  }
  *
  * Pseudo code for NMI interrupt handler:
- *  if (vmx_guest_nmi_disable == 1) {
- *      vmx_guest_nmi_visited++;
+ *  if (vmx_mhv_nmi_enable == 0) {
+ *      vmx_mhv_nmi_visited++;
  *  } else {
  *      handle_nmi();
  *  }
@@ -733,24 +745,23 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu)
 {
-	HALT_ON_ERRORCOND(!vcpu->vmx_guest_nmi_disable);
-	vcpu->vmx_guest_nmi_disable = true;
+	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_enable);
+	vcpu->vmx_mhv_nmi_enable = false;
 }
 
 /* Unblock NMI in XMHF's intercept handler */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 {
-	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_disable);
-	vcpu->vmx_guest_nmi_disable = false;
-	while (vcpu->vmx_guest_nmi_visited) {
-		/* Effectively vcpu->vmx_guest_nmi_visited--, lock to be safe */
-		asm volatile ("lock decl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
-					  "cc");
-		vcpu->vmx_guest_nmi_disable = true;
+	HALT_ON_ERRORCOND(!vcpu->vmx_mhv_nmi_enable);
+	vcpu->vmx_mhv_nmi_enable = true;
+	while (vcpu->vmx_mhv_nmi_visited) {
+		/* Effectively vcpu->vmx_mhv_nmi_visited--, lock to be safe */
+		atomic_dec(&vcpu->vmx_mhv_nmi_visited);
+		vcpu->vmx_mhv_nmi_enable = false;
 		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
-		vcpu->vmx_guest_nmi_disable = false;
+		vcpu->vmx_mhv_nmi_enable = true;
 	}
-	HALT_ON_ERRORCOND(!vcpu->vmx_guest_nmi_disable);
+	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_enable);
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
@@ -772,12 +783,11 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 * To solve this problem, we simulate blocking of NMI with software
 		 * logic. See xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
 		 */
-		if (vcpu->vmx_guest_nmi_disable) {
-			/* Effectively vcpu->vmx_guest_nmi_visited++, lock to be safe */
-			asm volatile ("lock incl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
-						  "cc");
+		if (!vcpu->vmx_mhv_nmi_enable) {
+			/* Effectively vcpu->vmx_mhv_nmi_visited++, lock to be safe */
+			atomic_inc(&vcpu->vmx_mhv_nmi_visited);
 			/* Make sure that there is no overflow on this counter */
-			HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_visited);
+			HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_visited);
 		} else {
 			/*
 			 * xmhf_smpguest_arch_x86vmx_mhv_nmi_handle() has a sanity check
@@ -921,7 +931,7 @@ void xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(VCPU *vcpu,
 // This function should be called in intercept handlers (a.k.a. VMEXIT
 // handlers). Otherwise, the caller needs to make sure that this function is
 // called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
-// 
+//
 // We cannot directly inject the NMI to the guest using
 // vcpu->vmcs.control_VM_entry_interruption_information. If the guest is
 // running NMI handler and has not executed the IRET instruction, injecting NMI

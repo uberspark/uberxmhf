@@ -150,7 +150,7 @@ void udelay(u32 usecs){
 
     //wait for countdown
     while (!(inb(0x61) & 0x20)) {
-        asm volatile ("pause");     /* Save energy when waiting */
+        xmhf_cpu_relex();
     }
 
     //disable ch-2 counter
@@ -179,7 +179,7 @@ void send_init_ipi_to_all_APs(void) {
     udelay(10000);
     //wait for command completion
     while (--timeout > 0 && ((*icr) & 0x00001000U)) {
-        asm volatile ("pause");     /* Save energy when waiting */
+        xmhf_cpu_relex();
     }
     if(timeout == 0) {
         printf("\nERROR: send_init_ipi_to_all_APs() TIMEOUT!\n");
@@ -765,7 +765,7 @@ void wakeupAPs(void){
     udelay(10000);
     //wait for command completion
     while ((*icr) & 0x1000U) {
-        asm volatile ("pause");     /* Save energy when waiting */
+        xmhf_cpu_relex();
     }
     printf("Done.\n");
 
@@ -778,7 +778,7 @@ void wakeupAPs(void){
             udelay(200);
             //wait for command completion
             while ((*icr) & 0x1000U) {
-                asm volatile ("pause");     /* Save energy when waiting */
+                xmhf_cpu_relex();
             }
             printf("Done.\n");
         }
@@ -1082,7 +1082,7 @@ void mp_cstartup (VCPU *vcpu){
         //wait for cpus_active to become midtable_numentries -1 to indicate
         //that all APs have been successfully started
         while (cpus_active < midtable_numentries) {
-            asm volatile ("pause");     /* Save energy when waiting */
+            xmhf_cpu_relex();
         }
 #endif /* __SKIP_INIT_SMP__ */
 

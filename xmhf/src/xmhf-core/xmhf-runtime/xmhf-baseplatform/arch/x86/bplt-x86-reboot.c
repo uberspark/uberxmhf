@@ -58,7 +58,7 @@ void xmhf_baseplatform_arch_x86_reboot(void){
 #ifndef __XMHF_VERIFICATION__
 
 	while ((inb(0x64) & 0x02) != 0) {
-		asm volatile ("pause");		/* Save energy when waiting */
+		xmhf_cpu_relex();
 	}
 	outb(0xFE, 0x64);
 

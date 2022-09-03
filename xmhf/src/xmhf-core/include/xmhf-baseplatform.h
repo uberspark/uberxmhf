@@ -214,6 +214,11 @@ extern bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, spa_
 
 #endif //__XMHF_VERIFICATION__
 
+/* Save energy when waiting in a busy loop */
+static inline void xmhf_cpu_relex(void) {
+	asm volatile ("pause");
+}
+
 #endif	//__ASSEMBLY__
 
 
