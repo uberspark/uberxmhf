@@ -72,6 +72,18 @@ extern void *emhfc_putchar_linelock_arg;
 extern void emhfc_putchar_linelock(void *arg);
 extern void emhfc_putchar_lineunlock(void *arg);
 
+/* Atomically increase a 32-bit integer by 1 */
+static inline void atomic_inc(volatile u32 *v)
+{
+	asm volatile ("lock incl %0" : "+m"(*v) : : "cc");
+}
+
+/* Atomically decrease a 32-bit integer by 1 */
+static inline void atomic_dec(volatile u32 *v)
+{
+	asm volatile ("lock decl %0" : "+m"(*v) : : "cc");
+}
+
 //----------------------------------------------------------------------
 //vmx_lapic_changemapping
 //change LAPIC mappings to handle SMP guest bootup
@@ -739,8 +751,7 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 	vcpu->vmx_mhv_nmi_enable = true;
 	while (vcpu->vmx_mhv_nmi_visited) {
 		/* Effectively vcpu->vmx_mhv_nmi_visited--, lock to be safe */
-		asm volatile ("lock decl %0" : "+m"(vcpu->vmx_mhv_nmi_visited) : :
-					  "cc");
+		atomic_dec(&vcpu->vmx_mhv_nmi_visited);
 		vcpu->vmx_mhv_nmi_enable = false;
 		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
 		vcpu->vmx_mhv_nmi_enable = true;
@@ -769,8 +780,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 */
 		if (!vcpu->vmx_mhv_nmi_enable) {
 			/* Effectively vcpu->vmx_mhv_nmi_visited++, lock to be safe */
-			asm volatile ("lock incl %0" : "+m"(vcpu->vmx_mhv_nmi_visited) : :
-						  "cc");
+			atomic_inc(&vcpu->vmx_mhv_nmi_visited);
 			/* Make sure that there is no overflow on this counter */
 			HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_visited);
 		} else {
