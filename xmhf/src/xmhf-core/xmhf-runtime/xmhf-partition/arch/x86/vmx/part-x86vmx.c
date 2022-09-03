@@ -563,9 +563,9 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//setup NMI intercept for core-quiescing
 	vcpu->vmcs.control_VMX_pin_based |= (1U << VMX_PINBASED_NMI_EXITING);
 	vcpu->vmcs.control_VMX_pin_based |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
-	vcpu->vmx_guest_nmi_enable = true;
-	vcpu->vmx_guest_nmi_visited = 0;
-	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
+	vcpu->vmx_mhv_nmi_enable = true;
+	vcpu->vmx_mhv_nmi_visited = 0;
+	vcpu->vmx_mhv_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = false;
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = 0;
 

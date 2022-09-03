@@ -676,7 +676,7 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 /* Return whether NMI for XMHF's intercept handler is temporarily blocked */
 bool xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(VCPU *vcpu)
 {
-	return !vcpu->vmx_guest_nmi_enable;
+	return !vcpu->vmx_mhv_nmi_enable;
 }
 
 /* Handle NMI for the guest received in XMHF's NMI interrupt handler */
@@ -684,12 +684,12 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
 {
 	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
 
-	switch (vcpu->vmx_guest_nmi_handler_arg) {
+	switch (vcpu->vmx_mhv_nmi_handler_arg) {
 	case SMPG_VMX_NMI_INJECT:
 		xmhf_smpguest_arch_x86vmx_inject_nmi(vcpu);
 		break;
 	default:
-		HALT_ON_ERRORCOND(0 && "Unexpected vcpu->vmx_guest_nmi_handler_arg");
+		HALT_ON_ERRORCOND(0 && "Unexpected vcpu->vmx_mhv_nmi_handler_arg");
 		break;
 	}
 }
@@ -699,26 +699,26 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  *
  * This function and xmhf_smpguest_arch_x86vmx_mhv_nmi_enable() mark critical
  * section of code that cannot be interrupted by NMI interrupts. The CPU-local
- * variable vmx_guest_nmi_enable is used to indicate that interrupted code is
+ * variable vmx_mhv_nmi_enable is used to indicate that interrupted code is
  * running the critical section. When the NMI interrupt handler sees so, it
- * marks vmx_guest_nmi_visited. The NMI is effectively delayed until
+ * marks vmx_mhv_nmi_visited. The NMI is effectively delayed until
  * xmhf_smpguest_arch_x86vmx_mhv_nmi_enable() exits the critical section and
  * checks whether NMIs have visited.
  *
  * Pseudo code for critical section:
- *  vmx_guest_nmi_enable = 0;
+ *  vmx_mhv_nmi_enable = 0;
  *  critical_section();
- *  vmx_guest_nmi_enable = 1;
- *  while (vmx_guest_nmi_visited) {
- *      vmx_guest_nmi_visited--;
- *      vmx_guest_nmi_enable = 0;
+ *  vmx_mhv_nmi_enable = 1;
+ *  while (vmx_mhv_nmi_visited) {
+ *      vmx_mhv_nmi_visited--;
+ *      vmx_mhv_nmi_enable = 0;
  *      handle_nmi();
- *      vmx_guest_nmi_enable = 1;
+ *      vmx_mhv_nmi_enable = 1;
  *  }
  *
  * Pseudo code for NMI interrupt handler:
- *  if (vmx_guest_nmi_enable == 0) {
- *      vmx_guest_nmi_visited++;
+ *  if (vmx_mhv_nmi_enable == 0) {
+ *      vmx_mhv_nmi_visited++;
  *  } else {
  *      handle_nmi();
  *  }
@@ -728,24 +728,24 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu)
 {
-	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_enable);
-	vcpu->vmx_guest_nmi_enable = false;
+	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_enable);
+	vcpu->vmx_mhv_nmi_enable = false;
 }
 
 /* Unblock NMI in XMHF's intercept handler */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 {
-	HALT_ON_ERRORCOND(!vcpu->vmx_guest_nmi_enable);
-	vcpu->vmx_guest_nmi_enable = true;
-	while (vcpu->vmx_guest_nmi_visited) {
-		/* Effectively vcpu->vmx_guest_nmi_visited--, lock to be safe */
-		asm volatile ("lock decl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
+	HALT_ON_ERRORCOND(!vcpu->vmx_mhv_nmi_enable);
+	vcpu->vmx_mhv_nmi_enable = true;
+	while (vcpu->vmx_mhv_nmi_visited) {
+		/* Effectively vcpu->vmx_mhv_nmi_visited--, lock to be safe */
+		asm volatile ("lock decl %0" : "+m"(vcpu->vmx_mhv_nmi_visited) : :
 					  "cc");
-		vcpu->vmx_guest_nmi_enable = false;
+		vcpu->vmx_mhv_nmi_enable = false;
 		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
-		vcpu->vmx_guest_nmi_enable = true;
+		vcpu->vmx_mhv_nmi_enable = true;
 	}
-	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_enable);
+	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_enable);
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
@@ -767,12 +767,12 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 * To solve this problem, we simulate blocking of NMI with software
 		 * logic. See xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
 		 */
-		if (!vcpu->vmx_guest_nmi_enable) {
-			/* Effectively vcpu->vmx_guest_nmi_visited++, lock to be safe */
-			asm volatile ("lock incl %0" : "+m"(vcpu->vmx_guest_nmi_visited) : :
+		if (!vcpu->vmx_mhv_nmi_enable) {
+			/* Effectively vcpu->vmx_mhv_nmi_visited++, lock to be safe */
+			asm volatile ("lock incl %0" : "+m"(vcpu->vmx_mhv_nmi_visited) : :
 						  "cc");
 			/* Make sure that there is no overflow on this counter */
-			HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_visited);
+			HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_visited);
 		} else {
 			/*
 			 * xmhf_smpguest_arch_x86vmx_mhv_nmi_handle() has a sanity check

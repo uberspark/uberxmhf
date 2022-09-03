@@ -253,12 +253,12 @@ typedef struct _vcpu {
 
   /*
    * Whether the hypervisor is not busy so that it can inject NMI to the guest.
-   * If not, NMI exception should set vmx_guest_nmi_visited to true. The
+   * If not, NMI exception should set vmx_mhv_nmi_visited to true. The
    * hypervisor will check that variable later when it is not busy.
    */
-  volatile bool vmx_guest_nmi_enable;
-  /* Whether an NMI exception arrived during vmx_guest_nmi_enable = false */
-  volatile u32 vmx_guest_nmi_visited;
+  volatile bool vmx_mhv_nmi_enable;
+  /* Whether an NMI exception arrived during vmx_mhv_nmi_enable = false */
+  volatile u32 vmx_mhv_nmi_visited;
   /*
    * Argument to NMI exception handler, decides how the NMI exception is
    * handled. Values are macros starting with "SMPG_VMX_NMI_".
@@ -266,7 +266,7 @@ typedef struct _vcpu {
    * Note for verification: this variable is similar to a function pointer.
    * Need to prove that it only has a few fixed values.
    */
-  u32 vmx_guest_nmi_handler_arg;
+  u32 vmx_mhv_nmi_handler_arg;
 
   /* Configure NMI blocking for the guest */
   guest_nmi_t vmx_guest_nmi_cfg;
