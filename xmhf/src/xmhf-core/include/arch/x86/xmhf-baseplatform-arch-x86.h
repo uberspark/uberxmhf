@@ -262,6 +262,9 @@ typedef struct _vcpu {
   /*
    * Argument to NMI exception handler, decides how the NMI exception is
    * handled. Values are macros starting with "SMPG_VMX_NMI_".
+   *
+   * Note for verification: this variable is similar to a function pointer.
+   * Need to prove that it only has a few fixed values.
    */
   u32 vmx_guest_nmi_handler_arg;
 
