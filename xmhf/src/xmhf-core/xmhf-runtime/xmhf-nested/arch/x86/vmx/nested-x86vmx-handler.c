@@ -578,8 +578,8 @@ static u32 _vmx_vmentry(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	_update_nested_nmi(vcpu, vmcs12_info);
 
 	/* Change NMI handler from L1 to L2 */
-	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_handler_arg == SMPG_VMX_NMI_INJECT);
-	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_NESTED;
+	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_handler_arg == SMPG_VMX_NMI_INJECT);
+	vcpu->vmx_mhv_nmi_handler_arg = SMPG_VMX_NMI_NESTED;
 	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 
 	if (vmcs12_info->launched) {
@@ -1198,8 +1198,8 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	}
 
 	/* Change NMI handler from L2 to L1 */
-	HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_handler_arg == SMPG_VMX_NMI_NESTED);
-	vcpu->vmx_guest_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
+	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_handler_arg == SMPG_VMX_NMI_NESTED);
+	vcpu->vmx_mhv_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
 
 	/*
 	 * Update NMI windowing in VMCS01 since nested virtualization may change
