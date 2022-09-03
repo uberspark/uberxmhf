@@ -83,7 +83,7 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   //TODO: plug in a 8254 programmable interval timer h/w model
   //wait for countdown
   while(!(inb(0x61) & 0x20)) {
-    asm volatile ("pause");     /* Save energy when waiting */
+    xmhf_cpu_relex();
   }
   #endif //__XMHF_VERIFICATION__
 
