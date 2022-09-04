@@ -400,7 +400,7 @@ spa_t xmhf_nested_arch_x86vmx_get_ept02(VCPU * vcpu, gpa_t ept12,
 			}
 		}
 #endif							/* !__DEBUG_QEMU__ */
-		{
+		if (0) {
 			printf("CPU(0x%02x): EPT cache miss 0x%08llx\n", vcpu->id, ept12);
 		}
 	}
