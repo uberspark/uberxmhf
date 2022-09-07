@@ -128,9 +128,9 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
       hpt_pm_t pm;
       hpt_pmo_t new_pmo;
 
-      EU_CHK( pm = ctx->gzp(ctx,
-                            HPT_PM_SIZE, /*FIXME*/
-                            hpt_pm_size(pmo->t, pmo->lvl-1)));
+      EU_CHK_W( pm = ctx->gzp(ctx,
+                              HPT_PM_SIZE, /*FIXME*/
+                              hpt_pm_size(pmo->t, pmo->lvl-1)));
       new_pmo = (hpt_pmo_t) {
         .pm = pm,
         .lvl = pmo->lvl-1,
@@ -165,7 +165,7 @@ int hptw_insert_pmeo_alloc(hptw_ctx_t *ctx,
   hpt_pmo_t pmo;
   int err=1;
 
-  EU_CHKN( hptw_get_pmo_alloc( &pmo, ctx, pmeo->lvl, va));
+  EU_CHKN_W( hptw_get_pmo_alloc( &pmo, ctx, pmeo->lvl, va));
   EU_CHK( pmo.pm);
   EU_CHK( pmo.lvl == pmeo->lvl);
 
