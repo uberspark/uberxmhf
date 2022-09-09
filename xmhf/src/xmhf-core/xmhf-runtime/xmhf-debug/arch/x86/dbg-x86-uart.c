@@ -67,7 +67,7 @@ uart_config_t g_uart_config = {115200,
 static void dbg_x86_uart_putc_bare(char ch){
   //wait for xmit hold register to be empty
   while ( ! (inb(g_uart_config.port+0x5) & 0x20) ) {
-    xmhf_cpu_relex();
+    xmhf_cpu_relax();
   }
 
   //write the character
