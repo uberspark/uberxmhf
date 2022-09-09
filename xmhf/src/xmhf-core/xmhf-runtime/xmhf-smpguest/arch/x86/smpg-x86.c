@@ -92,7 +92,7 @@ void xmhf_smpguest_arch_initialize(VCPU *vcpu){
 			printf("CPU(0x%02x): AP, waiting for SIPI signal...\n", vcpu->id);
 			#ifndef __XMHF_VERIFICATION__
 			while (!vcpu->sipireceived) {
-				xmhf_cpu_relex();
+				xmhf_cpu_relax();
 			}
 			#endif
 			printf("CPU(0x%02x): SIPI signal received, vector=0x%02x\n", vcpu->id, vcpu->sipivector);

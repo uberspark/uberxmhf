@@ -494,7 +494,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
     //printf("%s: CPU(0x%02x): firing NMIs...\n", __FUNCTION__, vcpu->id);
 #ifndef __XMHF_VERIFICATION__
     while ((*icr_low) & 0x00001000U) {
-      xmhf_cpu_relex();
+      xmhf_cpu_relax();
     }
 #else
     //TODO: plug in h/w model of LAPIC, for now assume hardware just
@@ -569,7 +569,7 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         //wait for all the remaining CPUs to quiesce
         //printf("CPU(0x%02x): waiting for other CPUs to respond...\n", vcpu->id);
         while (g_vmx_quiesce_counter < (g_midtable_numentries-1)) {
-            xmhf_cpu_relex();
+            xmhf_cpu_relax();
         }
         //printf("CPU(0x%02x): all CPUs quiesced successfully.\n", vcpu->id);
 
@@ -610,7 +610,7 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         g_vmx_quiesce_resume_signal=1;
 
         while (g_vmx_quiesce_resume_counter < (g_midtable_numentries-1)) {
-            xmhf_cpu_relex();
+            xmhf_cpu_relax();
         }
 
         vcpu->quiesced=0;
@@ -665,7 +665,7 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 		//wait until quiesceing is finished
 		//printf("CPU(0x%02x): Quiesced\n", vcpu->id);
 		while (!g_vmx_quiesce_resume_signal) {
-			xmhf_cpu_relex();
+			xmhf_cpu_relax();
 		}
 		//printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
 
