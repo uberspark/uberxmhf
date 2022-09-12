@@ -315,12 +315,6 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   xmhf_smpguest_initialize(vcpu);
 #endif
 
-#if defined (__DMAP__)
-  // [TODO][Superymk] Ugly hack: HP2540p's GPU does not work properly if not invoking <xmhf_dmaprot_invalidate_cache> 
-  // in <xmhf_runtime_main>.
-  xmhf_dmaprot_invalidate_cache();
-#endif
-
   //start partition (guest)
   printf("%s[%02x]: starting partition...\n", __FUNCTION__, vcpu->id);
   xmhf_partition_start(vcpu);
