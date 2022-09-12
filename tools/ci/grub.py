@@ -34,8 +34,9 @@ def download_grub(args):
 		check_call(['mkdir', '-p', deb_dir])
 		url_dir = 'http://http.us.debian.org/debian/pool/main/g/grub2/'
 		deb_name = 'grub-pc-bin_2.04-20_amd64.deb'
-		check_call(['wget', url_dir + deb_name], cwd=deb_dir)
-		check_call(['ar', 'x', deb_name], cwd=deb_dir)
+		# check_call(['wget', url_dir + deb_name], cwd=deb_dir)
+		deb_path = os.path.join(os.path.realpath(args.boot_dir), deb_name)
+		check_call(['ar', 'x', deb_path], cwd=deb_dir)
 		check_call(['tar', 'Jxf', 'data.tar.xz'], cwd=deb_dir)
 		src_dir = os.path.join(deb_dir, 'usr/lib/grub/i386-pc/')
 		count = 0
