@@ -275,6 +275,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
     VTD_RTADDR_REG rtaddr;
     VTD_CCMD_REG ccmd;
     VTD_IOTLB_REG iotlb;
+    bool wbf_required = true;
 
     // sanity check
     HALT_ON_ERRORCOND(drhd != NULL);
@@ -290,10 +291,12 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         else
             printf("	VT-d hardware Snoop Control (SC) unavailable\n");
 
-        if (ecap.bits.c)
+        if (ecap.bits.c) {
             printf("	VT-d hardware access to remapping structures COHERENT\n");
-        else
+            wbf_required = false;
+        } else {
             printf("	VT-d hardware access to remapping structures NON-COHERENT\n");
+        }
     }
 
     // 3. setup fault logging
@@ -421,7 +424,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         gcmd.value = 0;
         gcmd.bits.eafl = 0;
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-        _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
         if (gsts.bits.afls)
         {
             printf("	Could not disable AFL. Halting!\n");
@@ -432,7 +435,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         gcmd.value = 0;
         gcmd.bits.qie = 0;
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-        _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
         if (gsts.bits.qies)
         {
             printf("	Could not disable QI. Halting!\n");
@@ -443,7 +446,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         gcmd.value = 0;
         gcmd.bits.ire = 0;
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-        _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
         if (gsts.bits.ires)
         {
             printf("	Could not disable IR. Halting!\n");
@@ -497,4 +500,14 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         }
     }
     printf("Done.\n");
+
+    // 10. perform write buffer flush (WBF)
+    if (wbf_required) {
+        gcmd.value = 0;
+        gcmd.bits.wbf = 1;
+        _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+        do {
+            _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+        } while (gsts.bits.wbfs);
+    }
 }
