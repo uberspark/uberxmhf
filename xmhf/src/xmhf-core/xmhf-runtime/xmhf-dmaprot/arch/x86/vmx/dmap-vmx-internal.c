@@ -275,7 +275,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
     VTD_RTADDR_REG rtaddr;
     VTD_CCMD_REG ccmd;
     VTD_IOTLB_REG iotlb;
-    bool wbf_required = true;
+    bool wbf_required = false;
 
     // sanity check
     HALT_ON_ERRORCOND(drhd != NULL);
@@ -293,9 +293,9 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
 
         if (ecap.bits.c) {
             printf("	VT-d hardware access to remapping structures COHERENT\n");
-            wbf_required = false;
         } else {
             printf("	VT-d hardware access to remapping structures NON-COHERENT\n");
+            wbf_required = true;
         }
     }
 
