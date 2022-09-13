@@ -157,6 +157,15 @@ AS_IF([test "x${enable_debug_vga}" != "xno"],
       [DEBUG_VGA=y],
       [DEBUG_VGA=n])
 
+AC_SUBST([DEBUG_EVENT_LOGGER])
+AC_ARG_ENABLE([debug_event_logger],
+        AS_HELP_STRING([--enable-debug-event-logger@<:@=yes|no@:>@],
+                [enable event logger debugging]),
+                , [enable_debug_event_logger=no])
+AS_IF([test "x${enable_debug_event_logger}" != "xno"],
+      [DEBUG_EVENT_LOGGER=y],
+      [DEBUG_EVENT_LOGGER=n])
+
 AC_SUBST([MP_VERSION])
 AC_ARG_ENABLE([mp],
         AS_HELP_STRING([--enable-mp@<:@=yes|no@:>@],

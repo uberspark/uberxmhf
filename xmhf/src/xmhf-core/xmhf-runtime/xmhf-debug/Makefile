@@ -16,6 +16,10 @@ ifeq ($(DEBUG_VGA), y)
 C_SOURCES += ./arch/x86/dbg-x86-vgamem.c
 endif
 
+ifeq ($(DEBUG_EVENT_LOGGER), y)
+C_SOURCES += dbg-event-logger.c
+endif
+
 C_SOURCES_BL = $(C_SOURCES)
 
 EXTRA_CLEAN = lib.a lib.i386.a

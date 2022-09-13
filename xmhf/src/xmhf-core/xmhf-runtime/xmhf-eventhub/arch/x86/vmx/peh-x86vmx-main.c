@@ -1087,6 +1087,18 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 //		printf("{%d,%d}", vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
 //	}
 
+#ifdef __DEBUG_EVENT_LOGGER__
+	if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_CPUID) {
+		xmhf_dbg_log_event(vcpu, XMHF_DBG_EVENTLOG_vmexit_cpuid, &r->eax);
+	} else if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_RDMSR) {
+		xmhf_dbg_log_event(vcpu, XMHF_DBG_EVENTLOG_vmexit_rdmsr, &r->ecx);
+	} else if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_WRMSR) {
+		xmhf_dbg_log_event(vcpu, XMHF_DBG_EVENTLOG_vmexit_wrmsr, &r->ecx);
+	} else if (vcpu->vmcs.info_vmexit_reason != VMX_VMEXIT_EXCEPTION) {
+		// TODO: xmhf_dbg_log_event
+	}
+#endif /* __DEBUG_EVENT_LOGGER__ */
+
 	//handle intercepts
 	switch((u32)vcpu->vmcs.info_vmexit_reason){
 		//--------------------------------------------------------------
