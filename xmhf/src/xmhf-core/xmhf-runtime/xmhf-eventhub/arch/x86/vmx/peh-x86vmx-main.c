@@ -1075,8 +1075,13 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			return 1;
 		}
 		return 0;
+#ifdef __NESTED_VIRTUALIZATION__
 	case VMX_VMEXIT_VMREAD:	/* fallthrough */
 	case VMX_VMEXIT_VMWRITE:
+#ifdef __DEBUG_EVENT_LOGGER__
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_other,
+						   &vcpu->vmcs.info_vmexit_reason);
+#endif /* __DEBUG_EVENT_LOGGER__ */
 		vcpu->vmcs.guest_CS_selector = __vmx_vmread16(0x0802);
 		vcpu->vmcs.control_EPT_pointer = __vmx_vmread64(0x201A);
 		vcpu->vmcs.control_VM_entry_controls = __vmx_vmread32(0x4012);
@@ -1114,6 +1119,7 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		__vmx_vmwriteNW(0x681E, vcpu->vmcs.guest_RIP);
 		__vmx_vmwriteNW(0x6820, vcpu->vmcs.guest_RFLAGS);
 		return 1;
+#endif /* !__NESTED_VIRTUALIZATION__ */
 	default:
 		return 0;
 	}
