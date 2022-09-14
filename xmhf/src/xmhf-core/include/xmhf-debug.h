@@ -160,7 +160,8 @@ void xmhf_debug_init(char *params);
 
 #ifdef __DEBUG_EVENT_LOGGER__
 
-void xmhf_dbg_log_event(void *_vcpu, xmhf_dbg_eventlog_t event, void *key);
+void xmhf_dbg_log_event(void *_vcpu, bool can_print, xmhf_dbg_eventlog_t event,
+						void *key);
 
 #endif /* __DEBUG_EVENT_LOGGER__ */
 

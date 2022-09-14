@@ -66,6 +66,8 @@
 DEFINE_EVENT_FIELD(vmexit_cpuid, u32, "%d", 4, u16, u32, "0x%08x")
 DEFINE_EVENT_FIELD(vmexit_rdmsr, u32, "%d", 4, u16, u32, "0x%08x")
 DEFINE_EVENT_FIELD(vmexit_wrmsr, u32, "%d", 4, u16, u32, "0x%08x")
+DEFINE_EVENT_FIELD(vmexit_xcph, u32, "%d", 4, u16, u8, "0x%02x")
+DEFINE_EVENT_FIELD(vmexit_other, u32, "%d", 4, u16, u32, "%d")
 
 #undef DEFINE_EVENT_FIELD
 

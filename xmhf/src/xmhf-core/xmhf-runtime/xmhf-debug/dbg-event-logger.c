@@ -68,7 +68,16 @@ typedef struct event_log_t {
 volatile u32 turn = 0;
 event_log_t global_event_log[MAX_VCPU_ENTRIES];
 
-void xmhf_dbg_log_event(void *_vcpu, xmhf_dbg_eventlog_t event, void *key) {
+/*
+ * Log an event and print aggregated log report when it is time.
+ * _vcpu is vcpu of type VCPU *.
+ * can_print should be set to disallow this function from printing.
+ * event is the event to be logged.
+ * key is pointer to the key to be logged. The content of the pointer will be
+ * copied.
+ */
+void xmhf_dbg_log_event(void *_vcpu, bool can_print, xmhf_dbg_eventlog_t event,
+						void *key) {
 	bool print_flag = false;
 	VCPU *vcpu = _vcpu;
 	u64 tsc = 0;
@@ -81,7 +90,7 @@ void xmhf_dbg_log_event(void *_vcpu, xmhf_dbg_eventlog_t event, void *key) {
 						   key_type, key_fmt, ...) \
 	case XMHF_DBG_EVENTLOG_##name: \
 		event_log->count_##name++; \
-		{ \
+		if (lru_size) { \
 			index_type index; \
 			bool cache_hit; \
 			event_log_##name##_line_t *line; \
@@ -99,7 +108,7 @@ void xmhf_dbg_log_event(void *_vcpu, xmhf_dbg_eventlog_t event, void *key) {
 		HALT_ON_ERRORCOND(0 && "Unknown event");
 	}
 	/* Decide whether to print */
-	{
+	if (can_print) {
 		if (turn == vcpu->idx) {
 			tsc = rdtsc64();
 			if (event_log->last_print_tsc == 0) {
@@ -142,6 +151,5 @@ void xmhf_dbg_log_event(void *_vcpu, xmhf_dbg_eventlog_t event, void *key) {
 		}
 #include <xmhf-debug-event-logger-fields.h>
 	}
-	(void) key;
 }
 

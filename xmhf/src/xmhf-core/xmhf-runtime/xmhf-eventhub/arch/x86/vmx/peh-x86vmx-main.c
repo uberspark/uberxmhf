@@ -936,6 +936,10 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		case 0x6e0:	/* IA32_TSC_DEADLINE */
 			/* fallthrough */
 		case 0x80b:	/* IA32_X2APIC_EOI */
+#ifdef __DEBUG_EVENT_LOGGER__
+			xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_wrmsr,
+							   &r->ecx);
+#endif /* __DEBUG_EVENT_LOGGER__ */
 			vcpu->vmcs.guest_RIP = __vmx_vmreadNW(0x681E);
 			vcpu->vmcs.info_vmexit_instruction_length = __vmx_vmread32(0x440C);
 			_vmx_handle_intercept_wrmsr(vcpu, r);
@@ -946,6 +950,9 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 	case VMX_VMEXIT_CPUID:
 		/* Always optimize CPUID */
+#ifdef __DEBUG_EVENT_LOGGER__
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_cpuid, &r->eax);
+#endif /* __DEBUG_EVENT_LOGGER__ */
 		vcpu->vmcs.guest_RIP = __vmx_vmreadNW(0x681E);
 		vcpu->vmcs.info_vmexit_instruction_length = __vmx_vmread32(0x440C);
 		_vmx_handle_intercept_cpuid(vcpu, r);
@@ -957,6 +964,10 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		vcpu->vmcs.guest_paddr = __vmx_vmread64(0x2400);
 		gpa = vcpu->vmcs.guest_paddr;
 		if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
+#ifdef __DEBUG_EVENT_LOGGER__
+			xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_other,
+							   &vcpu->vmcs.info_vmexit_reason);
+#endif /* __DEBUG_EVENT_LOGGER__ */
 			vcpu->vmcs.info_exit_qualification = __vmx_vmreadNW(0x6400);
 			vcpu->vmcs.control_exception_bitmap = __vmx_vmread32(0x4004);
 			vcpu->vmcs.guest_interruptibility = __vmx_vmread32(0x4824);
@@ -975,6 +986,11 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		vcpu->vmcs.info_vmexit_interrupt_information = __vmx_vmread32(0x4404);
 		if (((u32)vcpu->vmcs.info_vmexit_interrupt_information &
 			 INTR_INFO_VECTOR_MASK) == INT1_VECTOR) {
+#ifdef __DEBUG_EVENT_LOGGER__
+			u8 key = vcpu->vmcs.info_vmexit_interrupt_information &
+				 INTR_INFO_VECTOR_MASK;
+			xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_xcph, &key);
+#endif /* __DEBUG_EVENT_LOGGER__ */
 			vcpu->vmcs.guest_CS_selector = __vmx_vmread16(0x0802);
 			vcpu->vmcs.guest_RIP = __vmx_vmreadNW(0x681E);
 			vcpu->vmcs.control_exception_bitmap = __vmx_vmread32(0x4004);
@@ -1089,13 +1105,18 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 #ifdef __DEBUG_EVENT_LOGGER__
 	if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_CPUID) {
-		xmhf_dbg_log_event(vcpu, XMHF_DBG_EVENTLOG_vmexit_cpuid, &r->eax);
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_cpuid, &r->eax);
 	} else if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_RDMSR) {
-		xmhf_dbg_log_event(vcpu, XMHF_DBG_EVENTLOG_vmexit_rdmsr, &r->ecx);
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_rdmsr, &r->ecx);
 	} else if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_WRMSR) {
-		xmhf_dbg_log_event(vcpu, XMHF_DBG_EVENTLOG_vmexit_wrmsr, &r->ecx);
-	} else if (vcpu->vmcs.info_vmexit_reason != VMX_VMEXIT_EXCEPTION) {
-		// TODO: xmhf_dbg_log_event
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_wrmsr, &r->ecx);
+	} else if (vcpu->vmcs.info_vmexit_reason == VMX_VMEXIT_EXCEPTION) {
+		u8 key = vcpu->vmcs.info_vmexit_interrupt_information &
+				 INTR_INFO_VECTOR_MASK;
+		xmhf_dbg_log_event(vcpu, 0, XMHF_DBG_EVENTLOG_vmexit_xcph, &key);
+	} else {
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_other,
+						   &vcpu->vmcs.info_vmexit_reason);
 	}
 #endif /* __DEBUG_EVENT_LOGGER__ */
 
