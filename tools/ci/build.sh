@@ -5,6 +5,7 @@
 #   --drt: enable DRT (--disable-drt)
 #   --dmap: enable DMAP (--disable-dmap)
 #   --vga: use VGA instead of serial (--disable-debug-serial --enable-debug-vga)
+#   --event-logger: enable event logger (--enable-debug-event-logger)
 #   --no-dbg: do not use QEMU debug workarounds (--enable-debug-qemu)
 #   --no-ucode: disable Intel microcode update (--enable-update-intel-ucode)
 #   --app APP: set hypapp, default is "hypapps/trustvisor" (--with-approot)
@@ -36,6 +37,7 @@ SUBARCH=""
 DRT="n"
 DMAP="n"
 VGA="n"
+EVENT_LOGGER="n"
 QEMU="y"
 UCODE="y"
 AMD64MEM="0x140000000"
@@ -96,6 +98,9 @@ while [ "$#" -gt 0 ]; do
 			;;
 		--vga)
 			VGA="y"
+			;;
+		--event-logger)
+			EVENT_LOGGER="y"
 			;;
 		--no-dbg)
 			QEMU="n"
@@ -201,6 +206,10 @@ fi
 
 if [ "$VGA" == "y" ]; then
 	CONF+=("--disable-debug-serial" "--enable-debug-vga")
+fi
+
+if [ "$EVENT_LOGGER" == "y" ]; then
+	CONF+=("--enable-debug-event-logger")
 fi
 
 if [ "$QEMU" == "y" ]; then

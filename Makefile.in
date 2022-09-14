@@ -40,6 +40,7 @@ export DEBUG_QEMU := @DEBUG_QEMU@
 export DEBUG_SERIAL := @DEBUG_SERIAL@
 export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
+export DEBUG_EVENT_LOGGER := @DEBUG_EVENT_LOGGER@
 export DRT := @DRT@
 export DMAP := @DMAP@
 export TARGET_HWPLATFORM := x86
@@ -284,6 +285,10 @@ endif
 ifeq ($(DEBUG_VGA), y)
 	CFLAGS += -D__DEBUG_VGA__
 	VFLAGS += -D__DEBUG_VGA__
+endif
+ifeq ($(DEBUG_EVENT_LOGGER), y)
+	CFLAGS += -D__DEBUG_EVENT_LOGGER__
+	VFLAGS += -D__DEBUG_EVENT_LOGGER__
 endif
 ifeq ($(MP_VERSION), y)
 	CFLAGS += -D__MP_VERSION__

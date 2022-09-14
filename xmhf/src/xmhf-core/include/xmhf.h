@@ -100,6 +100,7 @@ extern RPB *rpb;
 // STL for XMHF
 #include <stl/xmhfc-bitmap.h>
 #include <stl/xmhfc-dlist.h>
+#include <stl/xmhf-lru.h>
 
 //----------------------------------------------------------------------
 // component headers

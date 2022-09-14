@@ -126,6 +126,16 @@ static inline unsigned char __toupper(unsigned char c)
 #define toupper(c) __toupper(c)
 */
 
+#ifdef __DEBUG_EVENT_LOGGER__
+
+typedef enum xmhf_dbg_eventlog_t {
+#define DEFINE_EVENT_FIELD(name, ...) \
+	XMHF_DBG_EVENTLOG_##name,
+#include <xmhf-debug-event-logger-fields.h>
+	XMHF_DBG_EVENTLOG_SIZE,
+} xmhf_dbg_eventlog_t;
+
+#endif /* __DEBUG_EVENT_LOGGER__ */
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS
@@ -148,7 +158,12 @@ void xmhf_debug_init(char *params);
 #endif
 
 
+#ifdef __DEBUG_EVENT_LOGGER__
 
+void xmhf_dbg_log_event(void *_vcpu, bool can_print, xmhf_dbg_eventlog_t event,
+						void *key);
+
+#endif /* __DEBUG_EVENT_LOGGER__ */
 
 
 #endif	//__ASSEMBLY__
