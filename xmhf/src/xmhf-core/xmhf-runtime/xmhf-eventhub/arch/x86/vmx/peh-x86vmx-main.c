@@ -682,10 +682,18 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
 		xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, (u32)gpa, errorcode);
 	}else{ //no, pass it to hypapp
+#ifdef __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
 		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
 		xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
 				(errorcode & 7));
 		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+#else
+		// [Superymk] Some hypapps cannot use CPU quiescing when handling trapped PIO and memory accesses. For example, some
+		// hypapps must call another core to emulate the trapped CPU instructions. These hypapps cannot do so if CPU 
+		// quiescing is used.
+		xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
+				(errorcode & 7));
+#endif // __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
 	}
 }
 
@@ -704,10 +712,19 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
+
+#ifdef __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
 	xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
 	app_ret_status=xmhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type,
           access_size);
     xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+#else
+	// [Superymk] Some hypapps cannot use CPU quiescing when handling trapped PIO and memory accesses. For example, some
+	// hypapps must call another core to emulate the trapped CPU instructions. These hypapps cannot do so if CPU 
+	// quiescing is used.
+	app_ret_status=xmhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type,
+          access_size);
+#endif // __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
 
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
    	if(access_type == IO_TYPE_OUT){

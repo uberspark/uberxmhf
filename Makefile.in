@@ -35,6 +35,7 @@ export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
 # For an explanation of these options, see configure.ac or run:
 # ./configure --help
 export MP_VERSION := @MP_VERSION@
+export ENABLE_QUIESCING_IN_GUEST_MEM_PIO_TRAPS := @ENABLE_QUIESCING_IN_GUEST_MEM_PIO_TRAPS@
 export DEBUG_SYMBOLS := @DEBUG_SYMBOLS@
 export DEBUG_QEMU := @DEBUG_QEMU@
 export DEBUG_SERIAL := @DEBUG_SERIAL@
@@ -211,6 +212,11 @@ CFLAGS += $(OPT_FLAGS)
 
 CFLAGS += $(ADDL_INCLUDES)
 VFLAGS = $(ADDL_INCLUDES)
+
+ifeq ($(ENABLE_QUIESCING_IN_GUEST_MEM_PIO_TRAPS), y)
+	CFLAGS += -D__XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
+	VFLAGS += -D__XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
+endif
 
 ifeq ($(DEBUG_SYMBOLS), y)
 	CFLAGS += -g

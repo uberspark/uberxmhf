@@ -72,6 +72,10 @@
 																				//computed at runtime for a specified DMAR device
 
 
+#define VTD_RTADDR_LEGACY_MODE (0UL << 10)  // Enables legacy mode in the Root Table Address Register
+#define VTD_RTADDR_SCALABLE_MODE (1UL << 10)  // Enables scalable mode in the Root Table Address Register
+#define VTD_RTADDR_ABORT_DMA_MODE (3UL << 10)  // Enables Abort-DMA mode in the Root Table Address Register
+
 //VT-d register access types (custom definitions)
 #define VTD_REG_READ  			0xaa				//read VTD register
 #define VTD_REG_WRITE 			0xbb				//write VTD register
@@ -83,6 +87,7 @@
 //Vt-d page-table bits
 #define VTD_READ						0x1
 #define VTD_WRITE						0x2
+#define VTD_EXECUTE					0x4
 #define VTD_SUPERPAGE				(0x1UL << 7)
 
 
