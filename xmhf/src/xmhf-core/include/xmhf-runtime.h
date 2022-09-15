@@ -55,8 +55,9 @@
 
 // 4-level PML4 page tables + 4KB root entry table + 4K context entry table per PCI bus
 #define SIZE_G_RNTM_DMAPROT_BUFFER	(PAGE_SIZE_4K + PAGE_SIZE_4K + (PAGE_SIZE_4K * DMAPROT_VMX_P4L_NPDT) \
-					+ (PAGE_SIZE_4K * DMAPROT_VMX_P4L_NPDT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K + \
-					(PAGE_SIZE_4K * PCI_BUS_MAX))
+					+ (PAGE_SIZE_4K * DMAPROT_VMX_P4L_NPDT * PAE_PTRS_PER_PDT) \
+					+ (PAGE_SIZE_4K)  						/* size of the root table = 4KB */						\
+					+ (PAGE_SIZE_4K * PCI_BUS_MAX))			/* sizes of all context tables = 4KB * PCI_BUS_MAX */
 
 #ifndef __ASSEMBLY__
 

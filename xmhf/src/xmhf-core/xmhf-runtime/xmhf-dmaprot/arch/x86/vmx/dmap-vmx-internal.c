@@ -262,6 +262,47 @@ bool _vtd_verify_cap(VTD_DRHD* vtd_drhd, u32 vtd_num_drhd, struct dmap_vmx_cap *
 }
 
 //------------------------------------------------------------------------------
+// Relax the CPU and let the compiler know that time passes.
+static inline void cpu_relax(void)
+{
+    asm volatile ( "rep ; nop" : : : "memory" );
+}
+
+// This macro is used by microsec CPU delay. The delayed time is imprecise.
+// [TODO] We assume the CPU frequency is 3.5GHz.
+#define CPU_CYCLES_PER_MICRO_SEC        3500UL
+
+#define SEC_TO_CYCLES(x)                (1000UL * 1000UL) * CPU_CYCLES_PER_MICRO_SEC * x
+#define DMAR_OPERATION_TIMEOUT          SEC_TO_CYCLES(1)
+
+// [TODO] Move util functions to a better place
+__attribute__((unused))
+static void delay_us(uint64_t us)
+{
+    uint64_t cycles = 3500 * us;
+    uint64_t start = rdtsc64();
+    
+    while ( rdtsc64()-start < cycles ) ;
+}
+
+#define IOMMU_WAIT_OP(reg, cond, sts, msg_for_false_cond)     \
+do {                                                \
+    uint64_t start_time = rdtsc64();                \
+    while(1) {                                      \
+        _vtd_reg(drhd, VTD_REG_READ, reg, sts);     \
+        if ( cond )                                 \
+            break;                                  \
+        if ( rdtsc64() > start_time + DMAR_OPERATION_TIMEOUT ) {    \
+            printf("DMAR hardware malfunction:%s\n", (msg_for_false_cond));  \
+            HALT();                                 \
+        }                                           \
+        cpu_relax();                                \
+    }                                               \
+} while (0)                                         
+
+
+
+
 // initialize a DRHD unit
 // note that the VT-d documentation does not describe the precise sequence of
 // steps that need to be followed to initialize a DRHD unit!. we use our
@@ -272,7 +313,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
     VTD_GSTS_REG gsts;
     VTD_FECTL_REG fectl;
     VTD_CAP_REG cap;
-    VTD_RTADDR_REG rtaddr;
+    VTD_RTADDR_REG rtaddr, rtaddr_readout;
     VTD_CCMD_REG ccmd;
     VTD_IOTLB_REG iotlb;
     bool wbf_required = false;
@@ -325,17 +366,12 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
     printf("	Setting up RET...");
     {
         // setup RTADDR with base of RET
-        rtaddr.value = (u64)vtd_ret_paddr;
+        rtaddr.value = (u64)vtd_ret_paddr | VTD_RTADDR_LEGACY_MODE;
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_RTADDR_REG_OFF, (void *)&rtaddr.value);
 
         // read RTADDR and verify the base address
-        rtaddr.value = 0;
-        _vtd_reg(drhd, VTD_REG_READ, VTD_RTADDR_REG_OFF, (void *)&rtaddr.value);
-        if (rtaddr.value != (u64)vtd_ret_paddr)
-        {
-            printf("	Failed to set RTADDR. Halting!\n");
-            HALT();
-        }
+        rtaddr_readout.value = 0;
+        IOMMU_WAIT_OP(VTD_RTADDR_REG_OFF, (rtaddr_readout.value == rtaddr.value), (void *)&rtaddr_readout.value, "	Failed to set RTADDR. Halting!");
 
         // latch RET address by using GCMD.SRTP
         gcmd.value = 0;
@@ -343,13 +379,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
 
         // ensure the RET address was latched by the h/w
-        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-
-        if (!gsts.bits.rtps)
-        {
-            printf("	Failed to latch RTADDR. Halting!\n");
-            HALT();
-        }
+        IOMMU_WAIT_OP(VTD_GSTS_REG_OFF, gsts.bits.rtps, (void *)&gsts.value, "	Failed to latch RTADDR. Halting!");
     }
     printf("Done.\n");
 
@@ -424,34 +454,19 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         gcmd.value = 0;
         gcmd.bits.eafl = 0;
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-        if (gsts.bits.afls)
-        {
-            printf("	Could not disable AFL. Halting!\n");
-            HALT();
-        }
+        IOMMU_WAIT_OP(VTD_GSTS_REG_OFF, !gsts.bits.afls, (void *)&gsts.value, "	Could not disable AFL. Halting!");
 
         // disabled queued invalidation (QI)
         gcmd.value = 0;
         gcmd.bits.qie = 0;
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-        if (gsts.bits.qies)
-        {
-            printf("	Could not disable QI. Halting!\n");
-            HALT();
-        }
+        IOMMU_WAIT_OP(VTD_GSTS_REG_OFF, !gsts.bits.qies, (void *)&gsts.value, "	Could not disable QI. Halting!");
 
         // disable interrupt remapping (IR)
         gcmd.value = 0;
         gcmd.bits.ire = 0;
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-        if (gsts.bits.ires)
-        {
-            printf("	Could not disable IR. Halting!\n");
-            HALT();
-        }
+        IOMMU_WAIT_OP(VTD_GSTS_REG_OFF, !gsts.bits.ires, (void *)&gsts.value, "	Could not disable IR. Halting!");
     }
     printf("Done.\n");
 
@@ -468,13 +483,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
         _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
 
         // wait for translation enabled status to go green...
-        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-#ifndef __XMHF_VERIFICATION__
-        while (!gsts.bits.tes)
-        {
-            _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-        }
-#endif
+        IOMMU_WAIT_OP(VTD_GSTS_REG_OFF, gsts.bits.tes, (void *)&gsts.value, "	DMA translation cannot be enabled. Halting!");
     }
     printf("Done.\n");
 
@@ -492,10 +501,7 @@ void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr)
             _vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
 #ifndef __XMHF_VERIFICATION__
             // wait for PMR disabled...
-            do
-            {
-                _vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
-            } while (pmen.bits.prs);
+            IOMMU_WAIT_OP(VTD_PMEN_REG_OFF, !pmen.bits.prs, (void *)&gsts.value, "	PMR cannot be disabled. Halting!");
 #endif
         }
     }

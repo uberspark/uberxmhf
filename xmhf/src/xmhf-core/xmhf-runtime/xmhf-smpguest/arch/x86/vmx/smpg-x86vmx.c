@@ -240,7 +240,7 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
 			g_vmx_lapic_op = LAPIC_OP_WRITE;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
+      vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
 		}else{
 			g_vmx_lapic_op = LAPIC_OP_RSVD;
 			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
@@ -249,7 +249,7 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 	}else{											//LAPIC read
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
 			g_vmx_lapic_op = LAPIC_OP_READ;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
+      vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
 		}else{
 			g_vmx_lapic_op = LAPIC_OP_RSVD;
 			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
@@ -327,7 +327,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
     HALT_ON_ERRORCOND( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
 
-    src_registeraddress = (hva_t)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
+    src_registeraddress = (hva_t)g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
     dst_registeraddress = (hva_t)g_vmx_lapic_base + g_vmx_lapic_reg;
 
 	#ifdef __XMHF_VERIFICATION__
@@ -355,7 +355,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
-        u32 icr_value_high = *((u32 *)((hva_t)&g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
+        u32 icr_value_high = *((u32 *)((hva_t)g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x\n",
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);
 
@@ -385,7 +385,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
     u32 value_read __attribute__((unused));
     HALT_ON_ERRORCOND( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
 
-    src_registeraddress = (hva_t)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
+    src_registeraddress = (hva_t)g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
 
     //TODO: hardware modeling
     #ifndef __XMHF_VERIFICATION__

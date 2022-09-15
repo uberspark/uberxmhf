@@ -287,7 +287,7 @@ bool xmhf_iommu_unbind_device(DEVICEDESC* device)
     return status;
 }
 
-// [TODO-Important] Do we need this function?
+// [TODO-Important] Should we move this function outside XMHF core?
 /// @brief Map <spa> with <gpa> in all IOMMU_PT_TYPE_S_NS_SHARED IOMMU PTs.
 /// [NOTE] This function is needed when moving memory between S and NS domains. Otherwise, a shared IOMMU PT created
 /// by a SecProcess ealier may map isolated memory given to other SecProcesses later. This violates memory separation

@@ -118,7 +118,7 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
     // of 512 entries. This is sufficient because the lower 3-level PT covers 0 - 512GB physical memory space
     pml4t = (pml4t_t)vtd_pml4t_vaddr;
     pml4t[0] = (u64)(pdptphysaddr + (0 * PAGE_SIZE_4K));
-    pml4t[0] |= ((u64)VTD_READ | (u64)VTD_WRITE);
+    pml4t[0] |= ((u64)VTD_READ | (u64)VTD_WRITE | (u64)VTD_EXECUTE);
 
     // setup pdpt, pdt and pt
     // initially set the entire spaddr space [m_low_spa, m_high_spa) as DMA read/write capable
@@ -127,19 +127,19 @@ static bool _vtd_setuppagetables(struct dmap_vmx_cap *vtd_cap,
     for (i = 0; i < num_1G_entries; i++) // DMAPROT_VMX_P4L_NPDT
     {
         pdpt[i] = (u64)(pdtphysaddr + (i * PAGE_SIZE_4K));
-        pdpt[i] |= ((u64)VTD_READ | (u64)VTD_WRITE);
+        pdpt[i] |= ((u64)VTD_READ | (u64)VTD_WRITE | (u64)VTD_EXECUTE);
 
         pdt = (pdt_t)(vtd_pdts_vaddr + (i * PAGE_SIZE_4K));
         for (j = 0; j < PAE_PTRS_PER_PDT; j++)
         {
             pdt[j] = (u64)(ptphysaddr + (i * PAGE_SIZE_4K * PAE_PTRS_PER_PDT) + (j * PAGE_SIZE_4K));
-            pdt[j] |= ((u64)VTD_READ | (u64)VTD_WRITE);
+            pdt[j] |= ((u64)VTD_READ | (u64)VTD_WRITE | (u64)VTD_EXECUTE);
 
             pt = (pt_t)(vtd_pts_vaddr + (i * PAGE_SIZE_4K * PAE_PTRS_PER_PDT) + (j * PAGE_SIZE_4K));
             for (k = 0; k < PAE_PTRS_PER_PT; k++)
             {
                 pt[k] = (u64)physaddr;
-                pt[k] |= ((u64)VTD_READ | (u64)VTD_WRITE);
+                pt[k] |= ((u64)VTD_READ | (u64)VTD_WRITE | (u64)VTD_EXECUTE);
                 physaddr += PAGE_SIZE_4K;
             }
         }
@@ -651,7 +651,7 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size)
 
         // protect the physical page
         // pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;
-        pt[ptindex] &= (~((u64)VTD_READ | (u64)VTD_WRITE));
+        pt[ptindex] &= (~((u64)VTD_READ | (u64)VTD_WRITE) | (u64)VTD_EXECUTE);
     }
 #endif
 }
@@ -685,7 +685,7 @@ void xmhf_dmaprot_arch_x86_vmx_unprotect(spa_t start_paddr, size_t size)
 
         // protect the physical page
         // pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;
-        pt[ptindex] |= ((u64)VTD_READ | (u64)VTD_WRITE);
+        pt[ptindex] |= ((u64)VTD_READ | (u64)VTD_WRITE | (u64)VTD_EXECUTE);
     }
 #endif
 }

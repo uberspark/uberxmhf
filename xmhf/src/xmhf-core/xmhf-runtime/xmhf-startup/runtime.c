@@ -79,7 +79,7 @@ static void vmx_eap_zap(void)
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
     printf("%s: RSDP at %08x\n", __FUNCTION__, status);
 
-    // [Superymk] Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
+    // Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
     if (rsdp.revision == 0) // ACPI v1
     {
         printf("%s: ACPI v1\n", __FUNCTION__);
@@ -200,8 +200,8 @@ void xmhf_runtime_entry(void){
 				hva_t protectedbuffer_vaddr;
 				u32 protectedbuffer_size;
 
-				protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
-				protectedbuffer_vaddr = (hva_t)&g_rntm_dmaprot_buffer;
+        protectedbuffer_paddr = hva2spa(g_rntm_dmaprot_buffer);
+				protectedbuffer_vaddr = (hva_t)g_rntm_dmaprot_buffer;
 				protectedbuffer_size = xmhf_dmaprot_getbuffersize(DMAPROT_PHY_ADDR_SPACE_SIZE); // ADDR_512GB
 				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
 
@@ -217,13 +217,13 @@ void xmhf_runtime_entry(void){
 				xmhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
 				printf("Runtime: Protected SL+Runtime (%08lx-%08x) from DMA.\n", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 
-                // Enable DMA protection
-                if(!xmhf_dmaprot_enable(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
+        // Enable DMA protection
+        if(!xmhf_dmaprot_enable(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
 					printf("Runtime: Unable to enable DMA protection. HALT!\n");
 					HALT();
 				}
 
-                xmhf_dmaprot_invalidate_cache();
+        xmhf_dmaprot_invalidate_cache();
 		}
 
 #else //!__DMAP__

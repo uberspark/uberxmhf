@@ -105,7 +105,7 @@ static void *__vtd_get_nextlvl_pt(IOMMU_PT_INFO *pt_info, void *pt_base, uint32_
 			return NULL;
 		}
 
-		*p_pte = (hva2spa(nextlvl_pt) & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE);
+		*p_pte = (hva2spa(nextlvl_pt) & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE | (uint64_t)VTD_EXECUTE);
 	}
 
 	return spa2hva(*p_pte & ADDR64_PAGE_MASK_4K);
@@ -160,7 +160,7 @@ bool iommu_vmx_map(IOMMU_PT_INFO *pt_info, gpa_t gpa, spa_t spa, uint32_t flags)
 	// Step 5. Map spa
 	if (flags == DMA_ALLOW_ACCESS)
 	{
-		((uint64_t *)pt)[pt_idx] = (spa & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE);
+		((uint64_t *)pt)[pt_idx] = (spa & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE | (uint64_t)VTD_EXECUTE);
 	}
 	else if (flags == DMA_DENY_ACCESS)
 	{
