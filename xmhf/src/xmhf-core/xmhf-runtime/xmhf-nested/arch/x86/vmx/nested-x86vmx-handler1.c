@@ -58,6 +58,10 @@
 	((u64) (EFLAGS_CF | EFLAGS_PF | EFLAGS_AF | EFLAGS_ZF | EFLAGS_SF | \
 			EFLAGS_OF))
 
+#define INVALID_VMCS12_INDEX UINT32_MAX
+
+_Static_assert(VMX_NESTED_MAX_ACTIVE_VMCS < INVALID_VMCS12_INDEX);
+
 /*
  * This structure follows Table 26-14. Format of the VM-Exit
  * Instruction-Information Field as Used for VMREAD and VMWRITE in Intel's
@@ -334,6 +338,12 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 	return vmcs12_info;
 }
 
+/* Return whether the CPU has a current VMCS12 loaded */
+bool cpu_has_current_vmcs12(VCPU *vcpu)
+{
+	return vcpu->vmx_nested_cur_vmcs12 != INVALID_VMCS12_INDEX;
+}
+
 /*
  * Find VMCS12 pointed by current VMCS pointer.
  * It is illegal to call this function with a invalid current VMCS pointer.
@@ -341,9 +351,9 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
  */
 vmcs12_info_t *xmhf_nested_arch_x86vmx_find_current_vmcs12(VCPU * vcpu)
 {
-	vmcs12_info_t *ans = vcpu->vmx_nested_current_vmcs12_info;
-	HALT_ON_ERRORCOND(ans != NULL);
-	return ans;
+	HALT_ON_ERRORCOND(cpu_has_current_vmcs12(vcpu));
+	HALT_ON_ERRORCOND(vcpu->vmx_nested_cur_vmcs12 < VMX_NESTED_MAX_ACTIVE_VMCS);
+	return &cpu_active_vmcs12[vcpu->idx][vcpu->vmx_nested_cur_vmcs12];
 }
 
 /* The VMsucceed pseudo-function in SDM "29.2 CONVENTIONS" */
@@ -379,7 +389,7 @@ static void _vmx_nested_vm_fail_invalid(VCPU * vcpu)
 
 static void _vmx_nested_vm_fail(VCPU * vcpu, u32 error_number)
 {
-	if (vcpu->vmx_nested_current_vmcs12_info != NULL) {
+	if (cpu_has_current_vmcs12(vcpu)) {
 		_vmx_nested_vm_fail_valid(vcpu, error_number);
 	} else {
 		_vmx_nested_vm_fail_invalid(vcpu);
@@ -484,7 +494,7 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 	vcpu->vmx_nested_is_vmx_operation = 0;
 	vcpu->vmx_nested_vmxon_pointer = 0;
 	vcpu->vmx_nested_is_vmx_root_operation = 0;
-	vcpu->vmx_nested_current_vmcs12_info = NULL;
+	vcpu->vmx_nested_cur_vmcs12 = INVALID_VMCS12_INDEX;
 
 	/* Compute MSRs for the guest */
 	for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
@@ -795,8 +805,8 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 				/* Invalidate vmcs12_info */
 				vmcs12_info->vmcs12_ptr = CUR_VMCS_PTR_INVALID;
 				/* Check whether vmcs12_info is the current VMCS12 */
-				if (vcpu->vmx_nested_current_vmcs12_info == vmcs12_info) {
-					vcpu->vmx_nested_current_vmcs12_info = NULL;
+				if (vcpu->vmx_nested_cur_vmcs12 == vmcs12_info->index) {
+					vcpu->vmx_nested_cur_vmcs12 = INVALID_VMCS12_INDEX;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 					/*
 					 * Make VMCS link pointer invalid so that VMCS shadowing
@@ -832,7 +842,7 @@ void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU * vcpu,
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		if (vcpu->vmx_nested_current_vmcs12_info == NULL) {
+		if (!cpu_has_current_vmcs12(vcpu)) {
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else if (vcpu->vmcs.guest_interruptibility & (1U << 1)) {
 			/* Blocking by MOV SS */
@@ -914,7 +924,7 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU * vcpu, struct regs *r)
 					}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 				}
-				vcpu->vmx_nested_current_vmcs12_info = vmcs12_info;
+				vcpu->vmx_nested_cur_vmcs12 = vmcs12_info->index;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 				/* Use VMCS shadowing when available */
 				if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
@@ -972,7 +982,7 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU * vcpu, struct regs *r)
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		if (vcpu->vmx_nested_current_vmcs12_info == NULL) {
+		if (!cpu_has_current_vmcs12(vcpu)) {
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else {
@@ -1026,7 +1036,7 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU * vcpu, struct regs *r)
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		if (vcpu->vmx_nested_current_vmcs12_info == NULL) {
+		if (!cpu_has_current_vmcs12(vcpu)) {
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else {
@@ -1091,7 +1101,7 @@ void xmhf_nested_arch_x86vmx_handle_vmxoff(VCPU * vcpu, struct regs *r)
 		vcpu->vmx_nested_is_vmx_operation = 0;
 		vcpu->vmx_nested_vmxon_pointer = 0;
 		vcpu->vmx_nested_is_vmx_root_operation = 0;
-		vcpu->vmx_nested_current_vmcs12_info = NULL;
+		vcpu->vmx_nested_cur_vmcs12 = INVALID_VMCS12_INDEX;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 		if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
 			vcpu->vmcs.guest_VMCS_link_pointer = CUR_VMCS_PTR_INVALID;
@@ -1151,7 +1161,7 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU * vcpu, struct regs *r)
 					vcpu->vmx_nested_is_vmx_operation = 1;
 					vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
 					vcpu->vmx_nested_is_vmx_root_operation = 1;
-					vcpu->vmx_nested_current_vmcs12_info = NULL;
+					vcpu->vmx_nested_cur_vmcs12 = INVALID_VMCS12_INDEX;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 					if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
 						vcpu->vmcs.guest_VMCS_link_pointer =
