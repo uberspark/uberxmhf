@@ -52,7 +52,6 @@
 #define _NESTED_X86VMX_EPT12_H_
 
 #include "nested-x86vmx-vmcs12.h"
-#include "nested-x86vmx-lru.h"
 
 /* Maximum number of active EPTs per CPU */
 #define VMX_NESTED_MAX_ACTIVE_EPT 4
