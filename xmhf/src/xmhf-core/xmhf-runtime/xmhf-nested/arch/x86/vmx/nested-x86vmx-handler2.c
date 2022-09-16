@@ -345,15 +345,6 @@ static u32 handle_vmexit20_nmi(VCPU * vcpu, vmcs12_info_t *vmcs12_info)
 		idt_info = __vmx_vmread32(encoding);
 		HALT_ON_ERRORCOND((idt_info & INTR_INFO_VALID_MASK) == 0);
 	}
-	/* Resume to L2 (L2 -> L0 -> L2) */
-	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-	/* Logging */
-#ifdef __DEBUG_EVENT_LOGGER__
-	xmhf_dbg_log_event(vcpu, 0, XMHF_DBG_EVENTLOG_vmexit_202, &vmexit_reason);
-#endif							/* __DEBUG_EVENT_LOGGER__ */
-	if (0) {
-		printf("CPU(0x%02x): 202 vmexit due to NMI\n", vcpu->id);
-	}
 	return NESTED_VMEXIT_HANDLE_202;
 }
 
@@ -419,16 +410,6 @@ static u32 handle_vmexit20_nmi_window(VCPU * vcpu, vmcs12_info_t *vmcs12_info)
 		HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
 		vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
 		_update_nested_nmi(vcpu, vmcs12_info);
-		/* VMRESUME */
-		xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-		/* Logging */
-#ifdef __DEBUG_EVENT_LOGGER__
-		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
-						   &vmexit_reason);
-#endif							/* __DEBUG_EVENT_LOGGER__ */
-		if (0) {
-			printf("CPU(0x%02x): 202 vmexit due to NMI window\n", vcpu->id);
-		}
 		return NESTED_VMEXIT_HANDLE_202;
 	}
 }
@@ -554,19 +535,7 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 				__vmx_vmwrite32(encoding, guest_int);
 			}
 		}
-		/* End blocking EPT02 flush */
-		xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
-		/* Call VMRESUME */
-		xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-		/* Logging */
-#ifdef __DEBUG_EVENT_LOGGER__
-		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
-						   &vmexit_reason);
-#endif							/* __DEBUG_EVENT_LOGGER__ */
-		if (0) {
-			printf("CPU(0x%02x): 202 vmexit due to EPT\n", vcpu->id);
-		}
-		return NESTED_VMEXIT_HANDLE_202;
+		ret = NESTED_VMEXIT_HANDLE_202;
 		break;
 	case 2:
 		/*
@@ -625,12 +594,14 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t *vmcs12_info,
 	xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(vcpu, vmcs12_info);
 	if (vmcs12_info->vmcs12_value.info_vmexit_reason & 0x80000000U) {
 		/*
-		 * TODO: Stopping here makes debugging with a correct guest hypervisor
+		 * Note: stopping here makes debugging with a correct guest hypervisor
 		 * easier. The correct behavior should be injecting the VMEXIT to
 		 * guest hypervisor.
 		 */
 		HALT_ON_ERRORCOND(0 && "Debug: guest hypervisor VM-entry failure");
 	}
+
+	/* Transform VMEXIT reason if needed */
 	switch (behavior) {
 	case NESTED_VMEXIT_HANDLE_201:
 		/* Nothing to do */
@@ -686,6 +657,7 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t *vmcs12_info,
 		HALT_ON_ERRORCOND(0 && "Unknown behavior code");
 		break;
 	}
+
 	/* Logging */
 #ifdef __DEBUG_EVENT_LOGGER__
 	xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_201,
@@ -695,10 +667,18 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t *vmcs12_info,
 		printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 			   vmcs12_info->vmcs12_value.info_vmexit_reason);
 	}
+
 	/* Follow SDM to load host state */
 	vcpu->vmcs.guest_DR7 = 0x400UL;
 	vcpu->vmcs.guest_IA32_DEBUGCTL = 0ULL;
 	vcpu->vmcs.guest_RFLAGS = (1UL << 1);
+
+	/*
+	 * Update NMI windowing in VMCS01 since nested virtualization may change
+	 * vcpu->vmx_guest_nmi_cfg.guest_nmi_pending.
+	 */
+	xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting
+		(vcpu, &vcpu->vmcs.control_VMX_cpu_based);
 
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 	/* Write VMCS12 values to the shadow VMCS */
@@ -724,17 +704,6 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t *vmcs12_info,
 	/* Change NMI handler from L2 to L1 */
 	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_handler_arg == SMPG_VMX_NMI_NESTED);
 	vcpu->vmx_mhv_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
-
-	/*
-	 * Update NMI windowing in VMCS01 since nested virtualization may change
-	 * vcpu->vmx_guest_nmi_cfg.guest_nmi_pending.
-	 */
-	{
-		u32 procctl = __vmx_vmread32(VMCSENC_control_VMX_cpu_based);
-		xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(vcpu, &procctl);
-		__vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, procctl);
-	}
-	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 }
 
 /* Handle VMEXIT from nested guest */
@@ -777,10 +746,19 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		break;
 	}
 
-	if (handle_behavior != NESTED_VMEXIT_HANDLE_202) {
+	if (handle_behavior == NESTED_VMEXIT_HANDLE_202) {
+#ifdef __DEBUG_EVENT_LOGGER__
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
+						   &vmexit_reason);
+#endif							/* __DEBUG_EVENT_LOGGER__ */
+		if (0) {
+			printf("CPU(0x%02x): 202 vmexit %d\n", vcpu->id, vmexit_reason);
+		}
+	} else {
 		handle_vmexit20_forward(vcpu, vmcs12_info, handle_behavior);
 	}
 
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 	__vmx_vmentry_vmresume(r);
 	HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 }
