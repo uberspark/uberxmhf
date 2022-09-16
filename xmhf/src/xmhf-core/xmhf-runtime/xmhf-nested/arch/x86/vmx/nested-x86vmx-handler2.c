@@ -48,6 +48,8 @@
 // Intercept handlers for nested VMEXIT from L2
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
+#include "nested-x86vmx-handler1.h"
+#include "nested-x86vmx-handler2.h"
 #include "nested-x86vmx-vmcs12.h"
 #include "nested-x86vmx-vminsterr.h"
 #include "nested-x86vmx-ept12.h"

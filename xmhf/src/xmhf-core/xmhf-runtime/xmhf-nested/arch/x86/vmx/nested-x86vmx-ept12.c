@@ -49,6 +49,7 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
+#include "nested-x86vmx-handler1.h"
 #include "nested-x86vmx-vmcs12.h"
 
 /* Number of pages in page_pool in ept02_ctx_t */
