@@ -150,6 +150,7 @@ void xmhf_dbg_log_event(void *_vcpu, bool can_print, xmhf_dbg_eventlog_t event,
 			} \
 		}
 #include <xmhf-debug-event-logger-fields.h>
+		printf("EL[%d]: ---\n", vcpu->idx);
 	}
 }
 
