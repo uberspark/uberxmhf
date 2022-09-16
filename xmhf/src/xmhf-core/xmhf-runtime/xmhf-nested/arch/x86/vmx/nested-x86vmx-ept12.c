@@ -526,7 +526,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 			gpa_t ept12 = ept12_ctx->ctx.root_pa;
 #ifdef __DEBUG_EVENT_LOGGER__
 			xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_ept02_full, &ept12);
-#endif /* __DEBUG_EVENT_LOGGER__ */
+#endif							/* __DEBUG_EVENT_LOGGER__ */
 			if (0) {
 				printf("CPU(0x%02x): EPT02 full 0x%08llx\n", vcpu->id, ept12);
 			}

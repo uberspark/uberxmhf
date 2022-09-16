@@ -333,7 +333,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 #ifdef __DEBUG_EVENT_LOGGER__
 			xmhf_dbg_log_event(vcpu, 0, XMHF_DBG_EVENTLOG_vmexit_202,
 							   &vmexit_reason);
-#endif /* __DEBUG_EVENT_LOGGER__ */
+#endif							/* __DEBUG_EVENT_LOGGER__ */
 			if (0) {
 				printf("CPU(0x%02x): 202 vmexit due to NMI\n", vcpu->id);
 			}
@@ -404,7 +404,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 #ifdef __DEBUG_EVENT_LOGGER__
 			xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
 							   &vmexit_reason);
-#endif /* __DEBUG_EVENT_LOGGER__ */
+#endif							/* __DEBUG_EVENT_LOGGER__ */
 			if (0) {
 				printf("CPU(0x%02x): 202 vmexit due to NMI window\n", vcpu->id);
 			}
@@ -532,7 +532,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 #ifdef __DEBUG_EVENT_LOGGER__
 			xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
 							   &vmexit_reason);
-#endif /* __DEBUG_EVENT_LOGGER__ */
+#endif							/* __DEBUG_EVENT_LOGGER__ */
 			if (0) {
 				printf("CPU(0x%02x): 202 vmexit due to EPT\n", vcpu->id);
 			}
@@ -642,7 +642,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 #ifdef __DEBUG_EVENT_LOGGER__
 	xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_201,
 					   &vmcs12_info->vmcs12_value.info_vmexit_reason);
-#endif /* __DEBUG_EVENT_LOGGER__ */
+#endif							/* __DEBUG_EVENT_LOGGER__ */
 	if (0) {
 		printf("CPU(0x%02x): nested vmexit %d\n", vcpu->id,
 			   vmcs12_info->vmcs12_value.info_vmexit_reason);
@@ -697,4 +697,3 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 
 	__vmx_vmentry_vmresume(r);
 }
-
