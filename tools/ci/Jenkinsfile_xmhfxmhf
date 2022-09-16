@@ -5,9 +5,11 @@
 properties([
     parameters([
         string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64-nest'),
-        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic fast circleci'),
+        string(name: 'BUILD_OPTS', defaultValue:
+               '--no-x2apic fast circleci O3'),
         string(name: 'NESTED_BUILD_OPTS', defaultValue:
-               '--no-x2apic fast circleci --sl-base 0x20000000 --no-init-smp')
+               '--no-x2apic fast circleci O3 --sl-base 0x20000000 ' + \
+               '--no-init-smp')
     ])
 ])
 
@@ -23,19 +25,22 @@ void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
     """
     sh "cp ${PWD}/nested/grub/c.img ${PWD}/nested/xmhf.img"
     sh "cp ${PWD}/tmp/grub/c.img ${PWD}/tmp/xmhf.img"
-    sh """
-        python3 -u ./tools/ci/test3.py \
-            --subarch ${subarch} \
-            --xmhf-img ${PWD}/tmp/xmhf.img \
-            --nested-xmhf ${PWD}/nested/xmhf.img \
-            --debian-img ${PWD}/qemu/${qemu_image} \
-            --work-dir ${PWD}/tmp/ \
-            --no-display \
-            --sshpass jkl \
-            --verbose \
-            --watch-serial \
-            --memory 1G
-    """
+    retry (3) {
+        sh """
+            python3 -u ./tools/ci/test3.py \
+                --subarch ${subarch} \
+                --xmhf-img ${PWD}/tmp/xmhf.img \
+                --nested-xmhf ${PWD}/nested/xmhf.img \
+                --debian-img ${PWD}/qemu/${qemu_image} \
+                --work-dir ${PWD}/tmp/ \
+                --no-display \
+                --sshpass jkl \
+                --verbose \
+                --watch-serial \
+                --memory 1G \
+                --boot-timeout 180
+        """
+    }
 }
 
 def helper

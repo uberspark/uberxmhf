@@ -27,6 +27,7 @@ def parse_args():
 	parser.add_argument('--verbose', action='store_true')
 	parser.add_argument('--watch-serial', action='store_true')
 	parser.add_argument('--memory', default='1024M')
+	parser.add_argument('--boot-timeout', type=int, default=150)
 	args = parser.parse_args()
 	return args
 
@@ -180,7 +181,7 @@ class SSHOperations:
 		# 6. test booted 2
 		ss = []
 		stat = self.run_ssh('date; echo 6. test boot 2; [ ! -f /tmp/asdf ]',
-							150, 10, ss)
+							self.args.boot_timeout, 10, ss)
 		if stat or ss[2] != 0:
 			return 'Failed to boot 2: (%s, %d, %s)' % (stat, ss[2], ss[3])
 		# 7. run test
