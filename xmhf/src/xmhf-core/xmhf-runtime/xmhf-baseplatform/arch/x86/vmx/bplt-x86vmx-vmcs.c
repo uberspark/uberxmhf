@@ -445,7 +445,6 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->vmx_nested_is_vmx_operation);
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_nested_vmxon_pointer);
     DUMP_VCPU_PRINT_INT32(vcpu->vmx_nested_is_vmx_root_operation);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmx_nested_current_vmcs_pointer);
     DUMP_VCPU_PRINT_INTNW(vcpu->vmx_nested_current_vmcs12_info);
     for (i = 0; i < IA32_VMX_MSRCOUNT; i++) {
         DUMP_VCPU_PRINT_INT64_INDEX(vcpu->vmx_nested_msrs, i);

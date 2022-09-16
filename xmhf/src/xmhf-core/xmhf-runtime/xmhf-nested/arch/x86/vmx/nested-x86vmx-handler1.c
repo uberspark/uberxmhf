@@ -342,14 +342,7 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 vmcs12_info_t *xmhf_nested_arch_x86vmx_find_current_vmcs12(VCPU * vcpu)
 {
 	vmcs12_info_t *ans = vcpu->vmx_nested_current_vmcs12_info;
-	gpa_t vmcs_ptr = vcpu->vmx_nested_current_vmcs_pointer;
-	HALT_ON_ERRORCOND(vmcs_ptr != CUR_VMCS_PTR_INVALID);
 	HALT_ON_ERRORCOND(ans != NULL);
-	HALT_ON_ERRORCOND(ans->vmcs12_ptr == vmcs_ptr);
-	/*
-	 * An expensive but optional check:
-	 * HALT_ON_ERRORCOND(ans == find_active_vmcs12(vcpu, vmcs_ptr));
-	 */
 	return ans;
 }
 
@@ -386,7 +379,7 @@ static void _vmx_nested_vm_fail_invalid(VCPU * vcpu)
 
 static void _vmx_nested_vm_fail(VCPU * vcpu, u32 error_number)
 {
-	if (vcpu->vmx_nested_current_vmcs_pointer != CUR_VMCS_PTR_INVALID) {
+	if (vcpu->vmx_nested_current_vmcs12_info != NULL) {
 		_vmx_nested_vm_fail_valid(vcpu, error_number);
 	} else {
 		_vmx_nested_vm_fail_invalid(vcpu);
@@ -491,7 +484,6 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 	vcpu->vmx_nested_is_vmx_operation = 0;
 	vcpu->vmx_nested_vmxon_pointer = 0;
 	vcpu->vmx_nested_is_vmx_root_operation = 0;
-	vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
 	vcpu->vmx_nested_current_vmcs12_info = NULL;
 
 	/* Compute MSRs for the guest */
@@ -803,8 +795,9 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 				/* Invalidate vmcs12_info */
 				vmcs12_info->vmcs12_ptr = CUR_VMCS_PTR_INVALID;
 			}
-			if (vmcs_ptr == vcpu->vmx_nested_current_vmcs_pointer) {
-				vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
+			if (vcpu->vmx_nested_current_vmcs12_info != NULL &&
+				xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu)->vmcs12_ptr ==
+				vmcs_ptr) {
 				vcpu->vmx_nested_current_vmcs12_info = NULL;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 				/*
@@ -839,7 +832,7 @@ void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU * vcpu,
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		if (vcpu->vmx_nested_current_vmcs_pointer == CUR_VMCS_PTR_INVALID) {
+		if (vcpu->vmx_nested_current_vmcs12_info == NULL) {
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else if (vcpu->vmcs.guest_interruptibility & (1U << 1)) {
 			/* Blocking by MOV SS */
@@ -921,7 +914,6 @@ void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU * vcpu, struct regs *r)
 					}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 				}
-				vcpu->vmx_nested_current_vmcs_pointer = vmcs_ptr;
 				vcpu->vmx_nested_current_vmcs12_info = vmcs12_info;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 				/* Use VMCS shadowing when available */
@@ -953,8 +945,11 @@ void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU * vcpu, struct regs *r)
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
 		gva_t addr = _vmx_decode_m64(vcpu, r);
-		gpa_t vmcs_ptr = vcpu->vmx_nested_current_vmcs_pointer;
+		vmcs12_info_t *vmcs12_info;
+		gpa_t vmcs_ptr;
 		guestmem_hptw_ctx_pair_t ctx_pair;
+		vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
+		vmcs_ptr = vmcs12_info->vmcs12_ptr;
 		guestmem_init(vcpu, &ctx_pair);
 		guestmem_copy_h2gv(&ctx_pair, 0, addr, &vmcs_ptr, sizeof(vmcs_ptr));
 		_vmx_nested_vm_succeed(vcpu);
@@ -977,7 +972,7 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU * vcpu, struct regs *r)
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		if (vcpu->vmx_nested_current_vmcs_pointer == CUR_VMCS_PTR_INVALID) {
+		if (vcpu->vmx_nested_current_vmcs12_info == NULL) {
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else {
@@ -1031,7 +1026,7 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU * vcpu, struct regs *r)
 	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		if (vcpu->vmx_nested_current_vmcs_pointer == CUR_VMCS_PTR_INVALID) {
+		if (vcpu->vmx_nested_current_vmcs12_info == NULL) {
 			/* Note: Currently does not support 1-setting of "VMCS shadowing" */
 			_vmx_nested_vm_fail_invalid(vcpu);
 		} else {
@@ -1096,7 +1091,6 @@ void xmhf_nested_arch_x86vmx_handle_vmxoff(VCPU * vcpu, struct regs *r)
 		vcpu->vmx_nested_is_vmx_operation = 0;
 		vcpu->vmx_nested_vmxon_pointer = 0;
 		vcpu->vmx_nested_is_vmx_root_operation = 0;
-		vcpu->vmx_nested_current_vmcs_pointer = CUR_VMCS_PTR_INVALID;
 		vcpu->vmx_nested_current_vmcs12_info = NULL;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 		if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
@@ -1157,8 +1151,6 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU * vcpu, struct regs *r)
 					vcpu->vmx_nested_is_vmx_operation = 1;
 					vcpu->vmx_nested_vmxon_pointer = vmxon_ptr;
 					vcpu->vmx_nested_is_vmx_root_operation = 1;
-					vcpu->vmx_nested_current_vmcs_pointer =
-						CUR_VMCS_PTR_INVALID;
 					vcpu->vmx_nested_current_vmcs12_info = NULL;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 					if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
