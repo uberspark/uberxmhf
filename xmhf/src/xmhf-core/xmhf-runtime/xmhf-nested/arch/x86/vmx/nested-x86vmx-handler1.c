@@ -341,7 +341,7 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 }
 
 /* Return whether the CPU has a current VMCS12 loaded */
-bool cpu_has_current_vmcs12(VCPU *vcpu)
+static bool cpu_has_current_vmcs12(VCPU * vcpu)
 {
 	return vcpu->vmx_nested_cur_vmcs12 != INVALID_VMCS12_INDEX;
 }
