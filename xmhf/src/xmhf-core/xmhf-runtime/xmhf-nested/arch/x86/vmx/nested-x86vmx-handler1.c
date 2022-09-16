@@ -794,20 +794,20 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 				/* Invalidate vmcs12_info */
 				vmcs12_info->vmcs12_ptr = CUR_VMCS_PTR_INVALID;
-			}
-			if (vcpu->vmx_nested_current_vmcs12_info != NULL &&
-				xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu)->vmcs12_ptr ==
-				vmcs_ptr) {
-				vcpu->vmx_nested_current_vmcs12_info = NULL;
+				/* Check whether vmcs12_info is the current VMCS12 */
+				if (vcpu->vmx_nested_current_vmcs12_info == vmcs12_info) {
+					vcpu->vmx_nested_current_vmcs12_info = NULL;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
-				/*
-				 * Make VMCS link pointer invalid so that VMCS shadowing will
-				 * VMfailInvalid when guest executes VMREAD / VMWRITE.
-				 */
-				if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
-					vcpu->vmcs.guest_VMCS_link_pointer = CUR_VMCS_PTR_INVALID;
-				}
+					/*
+					 * Make VMCS link pointer invalid so that VMCS shadowing
+					 * will VMfailInvalid when guest executes VMREAD / VMWRITE.
+					 */
+					if (_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps)) {
+						vcpu->vmcs.guest_VMCS_link_pointer =
+							CUR_VMCS_PTR_INVALID;
+					}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
+				}
 			}
 			_vmx_nested_vm_succeed(vcpu);
 		}
