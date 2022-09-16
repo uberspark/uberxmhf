@@ -54,6 +54,20 @@
 #include "nested-x86vmx-vminsterr.h"
 #include "nested-x86vmx-ept12.h"
 
+/* Codes to indicate how to handle VMEXIT from L2 */
+
+/* Forward VMEXIT to L1 */
+#define NESTED_VMEXIT_HANDLE_201				1
+
+/* VMRESUME to L2 */
+#define NESTED_VMEXIT_HANDLE_202				2
+
+/* Forward VMEXIT to L1, change reason to NMI interrupt */
+#define NESTED_VMEXIT_HANDLE_201_NMI_INTERRUPT	3
+
+/* Forward VMEXIT to L1, change reason to EPT misconfiguration */
+#define NESTED_VMEXIT_HANDLE_201_EPT_MISCONFIG	4
+
 /*
  * Return whether interruption information corresponds to NMI interrupt.
  * The input should be one of the following VMCS fields:
@@ -305,10 +319,12 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
  * If the NMI is not for quiescing, it will be sent to L1 or L2.
  * If it should be sent to L1, L0 will first set the NMI windowing bit on L2.
  * Then at the NMI windowing VMEXIT, the NMI will be sent to L1.
- * In all cases this function never returns.
+ * In all cases, a 202 VMEXIT is triggered, so this function always returns
+ * NESTED_VMEXIT_HANDLE_202.
  */
-static void handle_vmexit20_nmi(VCPU * vcpu, struct regs *r)
+static u32 handle_vmexit20_nmi(VCPU * vcpu, vmcs12_info_t *vmcs12_info)
 {
+	(void) vmcs12_info;
 	/* NMI received by L2 guest */
 	if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
 		/* NMI is consumed by L0 (XMHF), nothing to do with L1 / L2 */
@@ -338,20 +354,17 @@ static void handle_vmexit20_nmi(VCPU * vcpu, struct regs *r)
 	if (0) {
 		printf("CPU(0x%02x): 202 vmexit due to NMI\n", vcpu->id);
 	}
-	__vmx_vmentry_vmresume(r);
-	HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+	return NESTED_VMEXIT_HANDLE_202;
 }
 
 /*
  * Handle L2 guest VMEXIT to L0 due to NMI window happened.
- * This function has 3 possible results:
- * 1. L0 should forward the NMI window VMEXIT to L1. This function returns
- *    false.
- * 2. L0 should send NMI VMEXIT to L1. This function returns true.
- * 3. L0 should inject NMI to L2. This function never returns.
+ * This function has 3 possible return values:
+ * * NESTED_VMEXIT_HANDLE_201: L0 should forward the NMI window VMEXIT to L1.
+ * * NESTED_VMEXIT_HANDLE_201_NMI_INTERRUPT: L0 should send NMI VMEXIT to L1.
+ * * NESTED_VMEXIT_HANDLE_202: L0 should inject NMI to L2.
  */
-static bool handle_vmexit20_nmi_window(VCPU * vcpu, struct regs *r,
-									   vmcs12_info_t *vmcs12_info)
+static u32 handle_vmexit20_nmi_window(VCPU * vcpu, vmcs12_info_t *vmcs12_info)
 {
 	if (vmcs12_info->guest_nmi_exiting) {
 		/*
@@ -361,15 +374,14 @@ static bool handle_vmexit20_nmi_window(VCPU * vcpu, struct regs *r,
 		 * Through experiment the former has higher priority. So first
 		 * check whether L1 requests NMI window exiting. If so, forward the
 		 * L2 -> L0 VMEXIT to L1. Otherwise, change the VMEXIT reason
-		 * from NMI windowing (VMCS02) to NMI (VMCS12) by setting
-		 * nmi_vmexit to true.
+		 * from NMI windowing (VMCS02) to NMI (VMCS12).
 		 */
 		if (vmcs12_info->guest_nmi_window_exiting) {
 			/*
 			 * Nothing to be done here. The following code will forward
 			 * this VMEXIT to L1.
 			 */
-			return false;
+			return NESTED_VMEXIT_HANDLE_201;
 		} else {
 			/* Compute whether NMI is pending */
 			bool nmi_pending = false;
@@ -384,7 +396,7 @@ static bool handle_vmexit20_nmi_window(VCPU * vcpu, struct regs *r,
 			 */
 			HALT_ON_ERRORCOND(nmi_pending && !vmcs12_info->guest_block_nmi);
 			/* Let the following code change the VMEXIT reason to NMI */
-			return true;
+			return NESTED_VMEXIT_HANDLE_201_NMI_INTERRUPT;
 		}
 	} else {
 		/*
@@ -417,27 +429,28 @@ static bool handle_vmexit20_nmi_window(VCPU * vcpu, struct regs *r,
 		if (0) {
 			printf("CPU(0x%02x): 202 vmexit due to NMI window\n", vcpu->id);
 		}
-		__vmx_vmentry_vmresume(r);
-		HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+		return NESTED_VMEXIT_HANDLE_202;
 	}
 }
 
 /*
  * Handle L2 guest VMEXIT to L0 due to EPT violation.
- * This function has 4 possible results:
- * 1. EPT violation is due to missing entries in EPT02. This function will
- *    add the missing entries and VMENTRY to L2. This function never returns.
- * 2. EPT violation is due to missing entries in EPT12. This function will
- *    return false. The caller should forward the EPT violation to L1.
- * 3. EPT violation is due to EPT12 trying to access protected memory. This
- *    function will cause XMHF to halt for security
- * 4. EPT violation is due to EPT12 misconfiguration. This function will return
- *    true. The caller should send EPT misconfiguration VMEXIT to L1.
+ * This function has 4 possible return values:
+ * * NESTED_VMEXIT_HANDLE_202: EPT violation is due to missing entries in
+ *   EPT02. This function will add the missing entries and VMENTRY to L2. The
+ *   caller should resume to L2.
+ * * NESTED_VMEXIT_HANDLE_201: EPT violation is due to missing entries in
+ *   EPT12. The caller should forward the EPT violation to L1.
+ * * Never returns: EPT violation is due to EPT12 trying to access protected
+ *   memory. This function will cause XMHF to halt for security.
+ * * NESTED_VMEXIT_HANDLE_201_EPT_MISCONFIG: EPT violation is due to EPT12
+ *   misconfiguration. The caller should send EPT misconfiguration VMEXIT to
+ *   L1.
  */
-static bool handle_vmexit20_ept_violation(VCPU * vcpu, struct regs *r,
-										  vmcs12_info_t *vmcs12_info)
+static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
+										 vmcs12_info_t *vmcs12_info)
 {
-	bool ept_misconfig = false;
+	u32 ret;
 	/*
 	 * By default, if L1 has not enabled EPT, then it is letting L2 access
 	 * illegal memory. XMHF will halt.
@@ -553,8 +566,7 @@ static bool handle_vmexit20_ept_violation(VCPU * vcpu, struct regs *r,
 		if (0) {
 			printf("CPU(0x%02x): 202 vmexit due to EPT\n", vcpu->id);
 		}
-		__vmx_vmentry_vmresume(r);
-		HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+		return NESTED_VMEXIT_HANDLE_202;
 		break;
 	case 2:
 		/*
@@ -563,6 +575,7 @@ static bool handle_vmexit20_ept_violation(VCPU * vcpu, struct regs *r,
 		 * There is no address L0 physical -> L1 physical address translation
 		 * needed, so just continue.
 		 */
+		ret = NESTED_VMEXIT_HANDLE_201;
 		break;
 	case 3:
 		/* Guest accesses illegal address, halt for safety */
@@ -579,7 +592,7 @@ static bool handle_vmexit20_ept_violation(VCPU * vcpu, struct regs *r,
 		 * Guest EPT is misconfigured, change VMEXIT reason from EPT violation
 		 * to EPT misconfiguration.
 		 */
-		ept_misconfig = true;
+		ret = NESTED_VMEXIT_HANDLE_201_EPT_MISCONFIG;
 		break;
 	default:
 		HALT_ON_ERRORCOND(0 && "Unknown status");
@@ -592,20 +605,15 @@ static bool handle_vmexit20_ept_violation(VCPU * vcpu, struct regs *r,
 	 */
 	xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 
-	return ept_misconfig;
+	return ret;
 }
 
 /*
  * Forward L2 to L0 VMEXIT to L1.
- * Argument nmi_vmexit indicates whether to transform NMI window VMEXIT to NMI
- * VMEXIT.
- * Argument ept_misconfig indicates whether to transform EPT violation VMEXIT
- * to EPT misconfiguration VMEXIT.
- * This function never returns.
+ * The argument behavior indicates how the VMEXIT should be transformed.
  */
-static void handle_vmexit20_forward(VCPU * vcpu, struct regs *r,
-									vmcs12_info_t *vmcs12_info, bool nmi_vmexit,
-									bool ept_misconfig)
+static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t *vmcs12_info,
+									u32 behavior)
 {
 	/*
 	 * Begin blocking EPT02 flush (blocking is needed because VMCS translation
@@ -623,7 +631,15 @@ static void handle_vmexit20_forward(VCPU * vcpu, struct regs *r,
 		 */
 		HALT_ON_ERRORCOND(0 && "Debug: guest hypervisor VM-entry failure");
 	}
-	if (nmi_vmexit) {
+	switch (behavior) {
+	case NESTED_VMEXIT_HANDLE_201:
+		/* Nothing to do */
+		break;
+	case NESTED_VMEXIT_HANDLE_202:
+		HALT_ON_ERRORCOND(0 && "Should not call this function");
+		break;
+	case NESTED_VMEXIT_HANDLE_201_NMI_INTERRUPT:
+		/* Translate NMI window to NMI interrupt */
 		HALT_ON_ERRORCOND(vmcs12_info->vmcs12_value.info_vmexit_reason ==
 						  VMX_VMEXIT_NMI_WINDOW);
 		vmcs12_info->vmcs12_value.info_vmexit_reason = VMX_VMEXIT_EXCEPTION;
@@ -653,9 +669,11 @@ static void handle_vmexit20_forward(VCPU * vcpu, struct regs *r,
 		/* Consume one pending NMI */
 		HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
 		vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
-	}
-	if (ept_misconfig) {
+		break;
+	case NESTED_VMEXIT_HANDLE_201_EPT_MISCONFIG:
 		/* Translate EPT violation to EPT misconfiguration */
+		HALT_ON_ERRORCOND(vmcs12_info->vmcs12_value.info_vmexit_reason ==
+						  VMX_VMEXIT_EPT_VIOLATION);
 		vmcs12_info->vmcs12_value.info_vmexit_reason =
 			VMX_VMEXIT_EPT_MISCONFIGURATION;
 		/*
@@ -663,6 +681,10 @@ static void handle_vmexit20_forward(VCPU * vcpu, struct regs *r,
 		 * misconfiguration this field should be cleared to 0.
 		 */
 		vmcs12_info->vmcs12_value.info_exit_qualification = 0;
+		break;
+	default:
+		HALT_ON_ERRORCOND(0 && "Unknown behavior code");
+		break;
 	}
 	/* Logging */
 #ifdef __DEBUG_EVENT_LOGGER__
@@ -713,16 +735,12 @@ static void handle_vmexit20_forward(VCPU * vcpu, struct regs *r,
 		__vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, procctl);
 	}
 	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-
-	__vmx_vmentry_vmresume(r);
-	HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 }
 
 /* Handle VMEXIT from nested guest */
 void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 {
-	bool nmi_vmexit = false;
-	bool ept_misconfig = false;
+	u32 handle_behavior = NESTED_VMEXIT_HANDLE_201;
 	u32 vmexit_reason = __vmx_vmread32(VMCSENC_info_vmexit_reason);
 	vmcs12_info_t *vmcs12_info;
 	vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
@@ -742,16 +760,15 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 				__vmx_vmread32(VMCSENC_info_vmexit_interrupt_information);
 			HALT_ON_ERRORCOND(intr_info & INTR_INFO_VALID_MASK);
 			if (is_interruption_nmi(intr_info)) {
-				handle_vmexit20_nmi(vcpu, r);
-				HALT_ON_ERRORCOND(0 && "handle_vmexit20_nmi should not return");
+				handle_behavior = handle_vmexit20_nmi(vcpu, vmcs12_info);
 			}
 		}
 		break;
 	case VMX_VMEXIT_NMI_WINDOW:
-		nmi_vmexit = handle_vmexit20_nmi_window(vcpu, r, vmcs12_info);
+		handle_behavior = handle_vmexit20_nmi_window(vcpu, vmcs12_info);
 		break;
 	case VMX_VMEXIT_EPT_VIOLATION:
-		ept_misconfig = handle_vmexit20_ept_violation(vcpu, r, vmcs12_info);
+		handle_behavior = handle_vmexit20_ept_violation(vcpu, vmcs12_info);
 		break;
 	case VMX_VMEXIT_EPT_MISCONFIGURATION:
 		HALT_ON_ERRORCOND(0 && "XMHF misconfigured EPT");
@@ -760,6 +777,10 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		break;
 	}
 
-	handle_vmexit20_forward(vcpu, r, vmcs12_info, nmi_vmexit, ept_misconfig);
-	HALT_ON_ERRORCOND(0 && "handle_vmexit20_forward() should not return");
+	if (handle_behavior != NESTED_VMEXIT_HANDLE_202) {
+		handle_vmexit20_forward(vcpu, vmcs12_info, handle_behavior);
+	}
+
+	__vmx_vmentry_vmresume(r);
+	HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
 }
