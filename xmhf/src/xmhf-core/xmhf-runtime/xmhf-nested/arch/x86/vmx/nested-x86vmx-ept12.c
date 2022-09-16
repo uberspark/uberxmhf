@@ -49,7 +49,6 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 #include "nested-x86vmx-ept12.h"
-#include "nested-x86vmx-handler.h"
 
 /* Number of pages in page_pool in ept02_ctx_t */
 #define EPT02_PAGE_POOL_SIZE 128
@@ -549,7 +548,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU * vcpu)
 {
 	LRU_SET_INVALIDATE_ALL(&ept02_cache[vcpu->id]);
-	clear_all_vmcs12_ept02(vcpu);
+	xmhf_nested_arch_x86vmx_clear_all_vmcs12_ept02(vcpu);
 
 	/*
 	 * If the guest is using EPT02, the flushing above would make

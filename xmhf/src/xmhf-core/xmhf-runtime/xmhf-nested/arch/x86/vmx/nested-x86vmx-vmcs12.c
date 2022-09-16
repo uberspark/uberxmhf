@@ -48,7 +48,6 @@
 // Handle VMCS in the guest
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
-#include "nested-x86vmx-handler.h"
 #include "nested-x86vmx-vmcs12.h"
 #include "nested-x86vmx-vminsterr.h"
 #include "nested-x86vmx-ept12.h"

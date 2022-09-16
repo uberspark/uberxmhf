@@ -48,7 +48,6 @@
 // Intercept handlers for nested virtualization operations from L1
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
-#include "nested-x86vmx-handler.h"
 #include "nested-x86vmx-vmcs12.h"
 #include "nested-x86vmx-vminsterr.h"
 #include "nested-x86vmx-ept12.h"
@@ -288,7 +287,7 @@ static vmcs12_info_t *find_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr)
  * Invalidate guest_ept_cache_line for all vmcs12_info in vcpu. This function
  * is intended to be used when asynchronously invalidating EPT02.
  */
-void clear_all_vmcs12_ept02(VCPU * vcpu)
+void xmhf_nested_arch_x86vmx_clear_all_vmcs12_ept02(VCPU * vcpu)
 {
 	int i;
 	for (i = 0; i < VMX_NESTED_MAX_ACTIVE_VMCS; i++) {
