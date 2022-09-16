@@ -51,6 +51,8 @@
 #ifndef _NESTED_X86VMX_VMCS12_H_
 #define _NESTED_X86VMX_VMCS12_H_
 
+#include "nested-x86vmx-ept12.h"
+
 /*
  * Rules:
  * * Exactly one bit should be set in mask 0xf
@@ -142,14 +144,11 @@ typedef struct vmcs12_info {
 	/*
 	 * When guest_ept_enable, EPT02 cache line.
 	 *
-	 * The type of this member should be ept02_cache_line_t *. However,
-	 * currently casting to void * to avoid circular includes in header files.
-	 *
 	 * This variable can be asynchronously invalidated when another CPU's EPT01
 	 * changes. So use xmhf_nested_arch_x86vmx_block_ept02_flush() to protect
 	 * it when accessing.
 	 */
-	void *guest_ept_cache_line;
+	ept02_cache_line_t *guest_ept_cache_line;
 	/* When guest_ept_enable, pointer to EPT12 root */
 	gpa_t guest_ept_root;
 	/* "NMI exiting" in VMCS */
