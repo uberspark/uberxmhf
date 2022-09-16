@@ -182,4 +182,10 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info);
 
+/* TODO: may need to move these functions to other header files */
+vmcs12_info_t *xmhf_nested_arch_x86vmx_find_current_vmcs12(VCPU * vcpu);
+u32 xmhf_nested_arch_x86vmx_handle_vmentry(VCPU * vcpu,
+										   vmcs12_info_t * vmcs12_info,
+										   struct regs *r);
+
 #endif							/* _NESTED_X86VMX_VMCS12_H_ */

@@ -4,7 +4,8 @@
 # source files
 AS_SOURCES =
 
-C_SOURCES =  ./arch/x86/vmx/nested-x86vmx-handler.c
+C_SOURCES =  ./arch/x86/vmx/nested-x86vmx-handler1.c
+C_SOURCES += ./arch/x86/vmx/nested-x86vmx-handler2.c
 C_SOURCES += ./arch/x86/vmx/nested-x86vmx-vmcs12.c
 C_SOURCES += ./arch/x86/vmx/nested-x86vmx-ept12.c
 

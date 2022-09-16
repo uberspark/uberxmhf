@@ -559,7 +559,8 @@ static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU * vcpu)
 	if (vcpu->vmx_nested_is_vmx_operation &&
 		!vcpu->vmx_nested_is_vmx_root_operation) {
 		/* Find vmcs12_info similar to calling find_current_vmcs12() */
-		vmcs12_info_t *vmcs12_info = vcpu->vmx_nested_current_vmcs12_info;
+		vmcs12_info_t *vmcs12_info;
+		vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
 		if (vmcs12_info->guest_ept_enable) {
 			ept02_cache_line_t *cache_line;
 			bool cache_hit;

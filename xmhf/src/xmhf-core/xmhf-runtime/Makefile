@@ -34,7 +34,8 @@ OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-ucode-data.o
 endif
 
 ifeq ($(NESTED_VIRTUALIZATION), y)
-OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-handler.o
+OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-handler1.o
+OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-handler2.o
 OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-vmcs12.o
 OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-ept12.o
 endif
