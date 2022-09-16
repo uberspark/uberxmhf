@@ -106,13 +106,13 @@ static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 
 	/* Update NMI window exiting in VMCS02 */
 	{
-		u32 procctl = __vmx_vmread32(0x4002);
+		u32 procctl = __vmx_vmread32(VMCSENC_control_VMX_cpu_based);
 		if (nmi_windowing) {
 			procctl |= (1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 		} else {
 			procctl &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
 		}
-		__vmx_vmwrite32(0x4002, procctl);
+		__vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, procctl);
 	}
 
 	/*
@@ -699,14 +699,6 @@ static void handle_vmexit20_forward(VCPU * vcpu, struct regs *r,
 	 */
 	xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 
-	/* NMI status be changed during L2, so update L1's NMI window exiting */
-	{
-		/* TODO: remove this duplicated code, see below */
-		u32 procctl = __vmx_vmread32(0x4002);
-		xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(vcpu, &procctl);
-		__vmx_vmwrite32(0x4002, procctl);
-	}
-
 	/* Change NMI handler from L2 to L1 */
 	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_handler_arg == SMPG_VMX_NMI_NESTED);
 	vcpu->vmx_mhv_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
@@ -716,9 +708,9 @@ static void handle_vmexit20_forward(VCPU * vcpu, struct regs *r,
 	 * vcpu->vmx_guest_nmi_cfg.guest_nmi_pending.
 	 */
 	{
-		u32 procctl = __vmx_vmread32(0x4002);
+		u32 procctl = __vmx_vmread32(VMCSENC_control_VMX_cpu_based);
 		xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(vcpu, &procctl);
-		__vmx_vmwrite32(0x4002, procctl);
+		__vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, procctl);
 	}
 	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 
