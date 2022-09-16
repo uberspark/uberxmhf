@@ -53,6 +53,7 @@
 
 #include "nested-x86vmx-vmcs12.h"
 
+bool xmhf_nested_arch_x86vmx_is_interruption_nmi(u32 interruption);
 u32 xmhf_nested_arch_x86vmx_handle_vmentry(VCPU * vcpu,
 										   vmcs12_info_t * vmcs12_info,
 										   struct regs *r);

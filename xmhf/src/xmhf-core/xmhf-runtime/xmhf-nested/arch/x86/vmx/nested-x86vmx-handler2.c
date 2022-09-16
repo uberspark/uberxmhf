@@ -75,7 +75,7 @@
  * * VM-exit interruption information
  * * IDT-vectoring information field
  */
-static bool is_interruption_nmi(u32 interruption)
+bool xmhf_nested_arch_x86vmx_is_interruption_nmi(u32 interruption)
 {
 	if ((interruption & INTR_INFO_VALID_MASK) &&
 		(interruption & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI) {
@@ -152,7 +152,7 @@ static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 			HALT_ON_ERRORCOND(__vmx_vmptrld(cur_vmcs));
 		}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
-		if (is_interruption_nmi(injection)) {
+		if (xmhf_nested_arch_x86vmx_is_interruption_nmi(injection)) {
 			printf("CPU(0x%02x): Warning: NMI VMEXIT will be delayed\n",
 				   vcpu->id);
 		}
@@ -295,9 +295,9 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 	 * guest_nmi_pending is 1.
 	 */
 	if (!vmcs12_info->guest_nmi_exiting) {
-		u32 __ctl_VM_entry_intr_info =
+		u32 vmentry_intr_info =
 			__vmx_vmread32(VMCSENC_control_VM_entry_interruption_information);
-		if (is_interruption_nmi(__ctl_VM_entry_intr_info)) {
+		if (xmhf_nested_arch_x86vmx_is_interruption_nmi(vmentry_intr_info)) {
 			nmi_pending_limit = 1;
 		}
 	}
@@ -322,9 +322,9 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
  * In all cases, a 202 VMEXIT is triggered, so this function always returns
  * NESTED_VMEXIT_HANDLE_202.
  */
-static u32 handle_vmexit20_nmi(VCPU * vcpu, vmcs12_info_t *vmcs12_info)
+static u32 handle_vmexit20_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 {
-	(void) vmcs12_info;
+	(void)vmcs12_info;
 	/* NMI received by L2 guest */
 	if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
 		/* NMI is consumed by L0 (XMHF), nothing to do with L1 / L2 */
@@ -355,7 +355,7 @@ static u32 handle_vmexit20_nmi(VCPU * vcpu, vmcs12_info_t *vmcs12_info)
  * * NESTED_VMEXIT_HANDLE_201_NMI_INTERRUPT: L0 should send NMI VMEXIT to L1.
  * * NESTED_VMEXIT_HANDLE_202: L0 should inject NMI to L2.
  */
-static u32 handle_vmexit20_nmi_window(VCPU * vcpu, vmcs12_info_t *vmcs12_info)
+static u32 handle_vmexit20_nmi_window(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 {
 	if (vmcs12_info->guest_nmi_exiting) {
 		/*
@@ -429,7 +429,7 @@ static u32 handle_vmexit20_nmi_window(VCPU * vcpu, vmcs12_info_t *vmcs12_info)
  *   L1.
  */
 static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
-										 vmcs12_info_t *vmcs12_info)
+										 vmcs12_info_t * vmcs12_info)
 {
 	u32 ret;
 	/*
@@ -526,7 +526,7 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 			 * virtual-NMI blocking in order to retry NMI injection (otherwise
 			 * VMENTRY failure will occur).
 			 */
-			if (is_interruption_nmi(idt_info) &&
+			if (xmhf_nested_arch_x86vmx_is_interruption_nmi(idt_info) &&
 				vmcs12_info->guest_virtual_nmis) {
 				u16 encoding = VMCSENC_guest_interruptibility;
 				u32 guest_int = __vmx_vmread32(encoding);
@@ -581,7 +581,7 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
  * Forward L2 to L0 VMEXIT to L1.
  * The argument behavior indicates how the VMEXIT should be transformed.
  */
-static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t *vmcs12_info,
+static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 									u32 behavior)
 {
 	/*
@@ -728,7 +728,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			u32 intr_info =
 				__vmx_vmread32(VMCSENC_info_vmexit_interrupt_information);
 			HALT_ON_ERRORCOND(intr_info & INTR_INFO_VALID_MASK);
-			if (is_interruption_nmi(intr_info)) {
+			if (xmhf_nested_arch_x86vmx_is_interruption_nmi(intr_info)) {
 				handle_behavior = handle_vmexit20_nmi(vcpu, vmcs12_info);
 			}
 		}

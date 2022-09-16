@@ -49,6 +49,7 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 #include "nested-x86vmx-vmcs12.h"
+#include "nested-x86vmx-handler2.h"
 #include "nested-x86vmx-vminsterr.h"
 #include "nested-x86vmx-ept12.h"
 
@@ -657,10 +658,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		 */
 		if (!vmcs12_info->guest_nmi_exiting) {
 			u32 injection = vmcs12->control_VM_entry_interruption_information;
-			if ((injection & INTR_INFO_VALID_MASK) &&
-				(injection & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI) {
-				HALT_ON_ERRORCOND((injection & INTR_INFO_VECTOR_MASK) ==
-								  NMI_VECTOR);
+			if (xmhf_nested_arch_x86vmx_is_interruption_nmi(injection)) {
 				HALT_ON_ERRORCOND(0 && "Not supported (XMHF limitation)");
 			}
 		}
