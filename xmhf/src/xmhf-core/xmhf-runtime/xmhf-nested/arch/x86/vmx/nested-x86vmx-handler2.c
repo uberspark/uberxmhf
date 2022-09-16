@@ -300,296 +300,274 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 	_update_nested_nmi(vcpu, vmcs12_info);
 }
 
-/* Handle VMEXIT from nested guest */
-void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
+static void handle_vmexit20_nmi(VCPU * vcpu, struct regs *r)
 {
-	bool nmi_vmexit = false;
-	bool ept_misconfig = false;
-	vmcs12_info_t *vmcs12_info;
-	u32 vmexit_reason = __vmx_vmread32(VMCSENC_info_vmexit_reason);
-
-	xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
-
-	/*
-	 * Check whether this VMEXIT is for quiescing. If so, printing before the
-	 * quiesce is completed will result in deadlock.
-	 */
-	if (vmexit_reason == VMX_VMEXIT_EXCEPTION) {
-		u32 intr_info =
-			__vmx_vmread32(VMCSENC_info_vmexit_interrupt_information);
-		HALT_ON_ERRORCOND(intr_info & INTR_INFO_VALID_MASK);
-		if (is_interruption_nmi(intr_info)) {
-			/* NMI received by L2 guest */
-			if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
-				/* NMI is consumed by L0 (XMHF), nothing to do with L1 / L2 */
-				xmhf_smpguest_arch_x86vmx_unblock_nmi();
-			} else {
-				/* Send NMI to L1 / L2 in the future */
-				xmhf_smpguest_arch_x86vmx_unblock_nmi();
-				xmhf_nested_arch_x86vmx_handle_nmi(vcpu);
-			}
-			/*
-			 * Make sure that there is no interruption. (Currently not
-			 * implemented if there is one. If there is one, re-injecting the
-			 * event is likely the correct thing to do.)
-			 */
-			{
-				u32 idt_info;
-				u16 encoding = VMCSENC_info_IDT_vectoring_information;
-				idt_info = __vmx_vmread32(encoding);
-				HALT_ON_ERRORCOND((idt_info & INTR_INFO_VALID_MASK) == 0);
-			}
-			/* Resume to L2 (L2 -> L0 -> L2) */
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-			/* Logging */
-#ifdef __DEBUG_EVENT_LOGGER__
-			xmhf_dbg_log_event(vcpu, 0, XMHF_DBG_EVENTLOG_vmexit_202,
-							   &vmexit_reason);
-#endif							/* __DEBUG_EVENT_LOGGER__ */
-			if (0) {
-				printf("CPU(0x%02x): 202 vmexit due to NMI\n", vcpu->id);
-			}
-			__vmx_vmentry_vmresume(r);
-			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
-		}
+	/* NMI received by L2 guest */
+	if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
+		/* NMI is consumed by L0 (XMHF), nothing to do with L1 / L2 */
+		xmhf_smpguest_arch_x86vmx_unblock_nmi();
+	} else {
+		/* Send NMI to L1 / L2 in the future */
+		xmhf_smpguest_arch_x86vmx_unblock_nmi();
+		xmhf_nested_arch_x86vmx_handle_nmi(vcpu);
 	}
-
-	vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
-
-	if (vmexit_reason == VMX_VMEXIT_NMI_WINDOW) {
-		if (vmcs12_info->guest_nmi_exiting) {
-			/*
-			 * When "NMI exiting" = 1 in VMCS12, NMI windowing is shared by
-			 * 1. L2 VMEXITing to L1 (due to L1 setting NMI window exiting) and
-			 * 2. L0 injecting NMI to L2 (due to an NMI received by L0).
-			 * Through experiment the former has higher priority. So first
-			 * check whether L1 requests NMI window exiting. If so, forward the
-			 * L2 -> L0 VMEXIT to L1. Otherwise, change the VMEXIT reason
-			 * from NMI windowing (VMCS02) to NMI (VMCS12) by setting
-			 * nmi_vmexit to true.
-			 */
-			if (vmcs12_info->guest_nmi_window_exiting) {
-				/*
-				 * Nothing to be done here. The following code will forward
-				 * this VMEXIT to L1.
-				 */
-			} else {
-				/* Compute whether NMI is pending */
-				bool nmi_pending = false;
-				if (vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
-					nmi_pending = false;
-				} else if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
-					nmi_pending = true;
-				}
-				/*
-				 * We must need to deliver NMI VMEXIT to L1, otherwise NMI
-				 * windowing bit in VMCS02 is wrong.
-				 */
-				HALT_ON_ERRORCOND(nmi_pending && !vmcs12_info->guest_block_nmi);
-				/* Let the following code change the VMEXIT reason to NMI */
-				nmi_vmexit = true;
-			}
-		} else {
-			/*
-			 * When "NMI exiting" = 0 in VMCS12, NMI windowing is used by L0
-			 * XMHF to inject NMI to L2 nested guest. This is similar to
-			 * injecting to L1 guest when there is no nested virtualization.
-			 */
-			/* Inject NMI to L2 */
-			u16 encoding;
-			u32 idt_info;
-			encoding = VMCSENC_info_IDT_vectoring_information;
-			idt_info = __vmx_vmread32(encoding);
-			HALT_ON_ERRORCOND(!(idt_info & INTR_INFO_VALID_MASK));
-			idt_info = NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK;
-			encoding = VMCSENC_control_VM_entry_interruption_information;
-			__vmx_vmwrite32(encoding, idt_info);
-			encoding = VMCSENC_control_VM_entry_exception_errorcode;
-			__vmx_vmwrite32(encoding, 0U);
-			/* Update NMI windowing */
-			HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
-			vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
-			_update_nested_nmi(vcpu, vmcs12_info);
-			/* VMRESUME */
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-			/* Logging */
-#ifdef __DEBUG_EVENT_LOGGER__
-			xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
-							   &vmexit_reason);
-#endif							/* __DEBUG_EVENT_LOGGER__ */
-			if (0) {
-				printf("CPU(0x%02x): 202 vmexit due to NMI window\n", vcpu->id);
-			}
-			__vmx_vmentry_vmresume(r);
-			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
-		}
-	}
-
 	/*
-	 * Check whether this VMEXIT is caused by EPT violation.
-	 * If guest does not enable EPT, then the guest is doing illegal things.
-	 * If guest enables EPT, need to manually walk EPT12 and see.
+	 * Make sure that there is no interruption. (Currently not implemented if
+	 * there is one. If there is one, re-injecting the event is likely the
+	 * correct thing to do.)
 	 */
-	if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) {
-		int status = 3;
+	{
+		u32 idt_info;
+		u16 encoding = VMCSENC_info_IDT_vectoring_information;
+		idt_info = __vmx_vmread32(encoding);
+		HALT_ON_ERRORCOND((idt_info & INTR_INFO_VALID_MASK) == 0);
+	}
+	/* Resume to L2 (L2 -> L0 -> L2) */
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+	/* Logging */
+#ifdef __DEBUG_EVENT_LOGGER__
+	xmhf_dbg_log_event(vcpu, 0, XMHF_DBG_EVENTLOG_vmexit_202, &vmexit_reason);
+#endif							/* __DEBUG_EVENT_LOGGER__ */
+	if (0) {
+		printf("CPU(0x%02x): 202 vmexit due to NMI\n", vcpu->id);
+	}
+	__vmx_vmentry_vmresume(r);
+	HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+}
 
+static bool handle_vmexit20_nmi_window(VCPU * vcpu, struct regs *r,
+									   vmcs12_info_t *vmcs12_info)
+{
+	if (vmcs12_info->guest_nmi_exiting) {
 		/*
-		 * Begin blocking EPT02 flush (blocking is needed because
-		 * vmcs12_info->guest_ept_cache_line is accessed).
+		 * When "NMI exiting" = 1 in VMCS12, NMI windowing is shared by
+		 * 1. L2 VMEXITing to L1 (due to L1 setting NMI window exiting) and
+		 * 2. L0 injecting NMI to L2 (due to an NMI received by L0).
+		 * Through experiment the former has higher priority. So first
+		 * check whether L1 requests NMI window exiting. If so, forward the
+		 * L2 -> L0 VMEXIT to L1. Otherwise, change the VMEXIT reason
+		 * from NMI windowing (VMCS02) to NMI (VMCS12) by setting
+		 * nmi_vmexit to true.
 		 */
-		xmhf_nested_arch_x86vmx_block_ept02_flush(vcpu);
-
-		if (vmcs12_info->guest_ept_enable) {
-			ept02_cache_line_t *cache_line = vmcs12_info->guest_ept_cache_line;
-			u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
-			ulong_t qualification =
-				__vmx_vmreadNW(VMCSENC_info_exit_qualification);
-			HALT_ON_ERRORCOND(cache_line->key == vmcs12_info->guest_ept_root);
-#ifdef __DEBUG_QEMU__
+		if (vmcs12_info->guest_nmi_window_exiting) {
 			/*
-			 * Workaround a KVM bug:
-			 * https://bugzilla.kernel.org/show_bug.cgi?id=216234
-			 *
-			 * When enabled, the following code detects EPT violations on
-			 * REP INS instructions. However, the following code may be
-			 * disabled to increase efficiency. When such a situation is
-			 * detected EPT02 entries should be hard-coded for these addresses
-			 * beforehand.
+			 * Nothing to be done here. The following code will forward
+			 * this VMEXIT to L1.
 			 */
-			if (0) {
-				ulong_t cs_base = __vmx_vmreadNW(VMCSENC_guest_CS_base);
-				ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
-				ulong_t cs_rip = cs_base + rip;
-				u32 inst_len =
-					__vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
-				u8 insts[16];
-				int result;
-				HALT_ON_ERRORCOND(inst_len <= 16);
-				if (cs_rip != guest2_paddr) {
-					hptw_ctx_t *ctx = &cache_line->value.ept02_ctx.ctx;
-					result = hptw_checked_copy_from_va(ctx, 0, insts, cs_rip,
-													   inst_len);
-					if (result == 0) {
-						u32 i;
-						if ((inst_len >= 2 && insts[0] == 0xf3 &&
-							 (insts[1] == 0x6c || insts[1] == 0x6d)) ||
-							(inst_len >= 3 && insts[0] == 0x67 &&
-							 insts[1] == 0xf3 &&
-							 (insts[2] == 0x6c || insts[2] == 0x6d))) {
-							printf("Warning: possible EPT on REP INS\n");
-							printf("guest2_paddr = 0x%016llx\n", guest2_paddr);
-							printf("CS:RIP=0x%08lx: ", cs_rip);
-							for (i = 0; i < inst_len; i++) {
-								printf("%02x ", insts[i]);
-							}
-							HALT_ON_ERRORCOND(0);
+			return false;
+		} else {
+			/* Compute whether NMI is pending */
+			bool nmi_pending = false;
+			if (vcpu->vmx_guest_nmi_cfg.guest_nmi_block) {
+				nmi_pending = false;
+			} else if (vcpu->vmx_guest_nmi_cfg.guest_nmi_pending) {
+				nmi_pending = true;
+			}
+			/*
+			 * We must need to deliver NMI VMEXIT to L1, otherwise NMI
+			 * windowing bit in VMCS02 is wrong.
+			 */
+			HALT_ON_ERRORCOND(nmi_pending && !vmcs12_info->guest_block_nmi);
+			/* Let the following code change the VMEXIT reason to NMI */
+			return true;
+		}
+	} else {
+		/*
+		 * When "NMI exiting" = 0 in VMCS12, NMI windowing is used by L0
+		 * XMHF to inject NMI to L2 nested guest. This is similar to
+		 * injecting to L1 guest when there is no nested virtualization.
+		 */
+		/* Inject NMI to L2 */
+		u16 encoding;
+		u32 idt_info;
+		encoding = VMCSENC_info_IDT_vectoring_information;
+		idt_info = __vmx_vmread32(encoding);
+		HALT_ON_ERRORCOND(!(idt_info & INTR_INFO_VALID_MASK));
+		idt_info = NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK;
+		encoding = VMCSENC_control_VM_entry_interruption_information;
+		__vmx_vmwrite32(encoding, idt_info);
+		encoding = VMCSENC_control_VM_entry_exception_errorcode;
+		__vmx_vmwrite32(encoding, 0U);
+		/* Update NMI windowing */
+		HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
+		vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
+		_update_nested_nmi(vcpu, vmcs12_info);
+		/* VMRESUME */
+		xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+		/* Logging */
+#ifdef __DEBUG_EVENT_LOGGER__
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
+						   &vmexit_reason);
+#endif							/* __DEBUG_EVENT_LOGGER__ */
+		if (0) {
+			printf("CPU(0x%02x): 202 vmexit due to NMI window\n", vcpu->id);
+		}
+		__vmx_vmentry_vmresume(r);
+		HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+	}
+}
+
+static bool handle_vmexit20_ept_violation(VCPU * vcpu, struct regs *r,
+										  vmcs12_info_t *vmcs12_info)
+{
+	bool ept_misconfig = false;
+	int status = 3;
+
+	/*
+	 * Begin blocking EPT02 flush (blocking is needed because
+	 * vmcs12_info->guest_ept_cache_line is accessed).
+	 */
+	xmhf_nested_arch_x86vmx_block_ept02_flush(vcpu);
+
+	if (vmcs12_info->guest_ept_enable) {
+		ept02_cache_line_t *cache_line = vmcs12_info->guest_ept_cache_line;
+		u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
+		ulong_t qualification = __vmx_vmreadNW(VMCSENC_info_exit_qualification);
+		HALT_ON_ERRORCOND(cache_line->key == vmcs12_info->guest_ept_root);
+#ifdef __DEBUG_QEMU__
+		/*
+		 * Workaround a KVM bug:
+		 * https://bugzilla.kernel.org/show_bug.cgi?id=216234
+		 *
+		 * When enabled, the following code detects EPT violations on REP INS
+		 * instructions. However, the following code may be disabled to
+		 * increase efficiency. When such a situation is detected EPT02 entries
+		 * should be hard-coded for these addresses beforehand.
+		 */
+		if (0) {
+			ulong_t cs_base = __vmx_vmreadNW(VMCSENC_guest_CS_base);
+			ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
+			ulong_t cs_rip = cs_base + rip;
+			u32 inst_len =
+				__vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
+			u8 insts[16];
+			int result;
+			HALT_ON_ERRORCOND(inst_len <= 16);
+			if (cs_rip != guest2_paddr) {
+				hptw_ctx_t *ctx = &cache_line->value.ept02_ctx.ctx;
+				result = hptw_checked_copy_from_va(ctx, 0, insts, cs_rip,
+												   inst_len);
+				if (result == 0) {
+					u32 i;
+					if ((inst_len >= 2 && insts[0] == 0xf3 &&
+						 (insts[1] == 0x6c || insts[1] == 0x6d)) ||
+						(inst_len >= 3 && insts[0] == 0x67 &&
+						 insts[1] == 0xf3 &&
+						 (insts[2] == 0x6c || insts[2] == 0x6d))) {
+						printf("Warning: possible EPT on REP INS\n");
+						printf("guest2_paddr = 0x%016llx\n", guest2_paddr);
+						printf("CS:RIP=0x%08lx: ", cs_rip);
+						for (i = 0; i < inst_len; i++) {
+							printf("%02x ", insts[i]);
 						}
+						HALT_ON_ERRORCOND(0);
 					}
 				}
 			}
+		}
 #endif							/* !__DEBUG_QEMU__ */
-			status = xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu,
-															   cache_line,
-															   guest2_paddr,
-															   qualification);
-		}
-		switch (status) {
-		case 1:
-			/*
-			 * EPT handled by L0, continue running L2.
-			 * First re-inject interruption to make sure interrupts etc. are
-			 * not lost.
-			 */
-			{
-				u16 encoding;
-				u32 idt_info, idt_errcode, inst_len;
-				/* Copy IDT-vectoring information */
-				encoding = VMCSENC_info_IDT_vectoring_information;
-				idt_info = __vmx_vmread32(encoding);
-				encoding = VMCSENC_control_VM_entry_interruption_information;
-				__vmx_vmwrite32(encoding, idt_info);
-				/* Copy IDT-vectoring error code */
-				encoding = VMCSENC_info_IDT_vectoring_error_code;
-				idt_errcode = __vmx_vmread32(encoding);
-				encoding = VMCSENC_control_VM_entry_exception_errorcode;
-				__vmx_vmwrite32(encoding, idt_errcode);
-				/* Copy VM-exit instruction length */
-				encoding = VMCSENC_info_vmexit_instruction_length;
-				inst_len = __vmx_vmread32(encoding);
-				encoding = VMCSENC_control_VM_entry_instruction_length;
-				__vmx_vmwrite32(encoding, inst_len);
-				/*
-				 * When this EPT VMEXIT is caused by NMI injection indirectly,
-				 * the hardware will set virtual-NMI blocking. We need to
-				 * remove this virtual-NMI blocking in order to retry NMI
-				 * injection (otherwise VMENTRY failure will occur).
-				 */
-				if (is_interruption_nmi(idt_info) &&
-					vmcs12_info->guest_virtual_nmis) {
-					u16 encoding = VMCSENC_guest_interruptibility;
-					u32 guest_int = __vmx_vmread32(encoding);
-					HALT_ON_ERRORCOND(guest_int & (1U << 3));
-					guest_int &= ~(1U << 3);
-					__vmx_vmwrite32(encoding, guest_int);
-				}
-			}
-			/* End blocking EPT02 flush */
-			xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
-			/* Call VMRESUME */
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
-			/* Logging */
-#ifdef __DEBUG_EVENT_LOGGER__
-			xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
-							   &vmexit_reason);
-#endif							/* __DEBUG_EVENT_LOGGER__ */
-			if (0) {
-				printf("CPU(0x%02x): 202 vmexit due to EPT\n", vcpu->id);
-			}
-			__vmx_vmentry_vmresume(r);
-			HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
-			break;
-		case 2:
-			/*
-			 * Forward EPT violation to L1.
-			 *
-			 * There is no address L0 physical -> L1 physical address
-			 * translation needed, so just continue.
-			 */
-			break;
-		case 3:
-			/* Guest accesses illegal address, halt for safety */
-			printf("CPU(0x%02x): qualification: 0x%08lx\n", vcpu->id,
-				   __vmx_vmreadNW(VMCSENC_info_exit_qualification));
-			printf("CPU(0x%02x): paddr: 0x%016llx\n", vcpu->id,
-				   __vmx_vmread64(VMCSENC_guest_paddr));
-			printf("CPU(0x%02x): linear addr:   0x%08lx\n", vcpu->id,
-				   __vmx_vmreadNW(VMCSENC_info_guest_linear_address));
-			HALT_ON_ERRORCOND(0 && "Guest accesses illegal memory");
-			break;
-		case 4:
-			/*
-			 * Guest EPT is misconfigured, change VMEXIT reason from EPT
-			 * violation to EPT misconfiguration.
-			 */
-			ept_misconfig = true;
-			break;
-		default:
-			HALT_ON_ERRORCOND(0 && "Unknown status");
-			break;
-		}
-
+		status = xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, cache_line,
+														   guest2_paddr,
+														   qualification);
+	}
+	switch (status) {
+	case 1:
 		/*
-		 * End blocking EPT02 flush (blocking is needed because
-		 * vmcs12_info->guest_ept_cache_line is accessed).
+		 * EPT handled by L0, continue running L2.
+		 * First re-inject interruption to make sure interrupts etc. are not
+		 * lost.
 		 */
+		{
+			u16 encoding;
+			u32 idt_info, idt_errcode, inst_len;
+			/* Copy IDT-vectoring information */
+			encoding = VMCSENC_info_IDT_vectoring_information;
+			idt_info = __vmx_vmread32(encoding);
+			encoding = VMCSENC_control_VM_entry_interruption_information;
+			__vmx_vmwrite32(encoding, idt_info);
+			/* Copy IDT-vectoring error code */
+			encoding = VMCSENC_info_IDT_vectoring_error_code;
+			idt_errcode = __vmx_vmread32(encoding);
+			encoding = VMCSENC_control_VM_entry_exception_errorcode;
+			__vmx_vmwrite32(encoding, idt_errcode);
+			/* Copy VM-exit instruction length */
+			encoding = VMCSENC_info_vmexit_instruction_length;
+			inst_len = __vmx_vmread32(encoding);
+			encoding = VMCSENC_control_VM_entry_instruction_length;
+			__vmx_vmwrite32(encoding, inst_len);
+			/*
+			 * When this EPT VMEXIT is caused by NMI injection indirectly, the
+			 * hardware will set virtual-NMI blocking. We need to remove this
+			 * virtual-NMI blocking in order to retry NMI injection (otherwise
+			 * VMENTRY failure will occur).
+			 */
+			if (is_interruption_nmi(idt_info) &&
+				vmcs12_info->guest_virtual_nmis) {
+				u16 encoding = VMCSENC_guest_interruptibility;
+				u32 guest_int = __vmx_vmread32(encoding);
+				HALT_ON_ERRORCOND(guest_int & (1U << 3));
+				guest_int &= ~(1U << 3);
+				__vmx_vmwrite32(encoding, guest_int);
+			}
+		}
+		/* End blocking EPT02 flush */
 		xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
+		/* Call VMRESUME */
+		xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
+		/* Logging */
+#ifdef __DEBUG_EVENT_LOGGER__
+		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_202,
+						   &vmexit_reason);
+#endif							/* __DEBUG_EVENT_LOGGER__ */
+		if (0) {
+			printf("CPU(0x%02x): 202 vmexit due to EPT\n", vcpu->id);
+		}
+		__vmx_vmentry_vmresume(r);
+		HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+		break;
+	case 2:
+		/*
+		 * Forward EPT violation to L1.
+		 *
+		 * There is no address L0 physical -> L1 physical address translation
+		 * needed, so just continue.
+		 */
+		break;
+	case 3:
+		/* Guest accesses illegal address, halt for safety */
+		printf("CPU(0x%02x): qualification: 0x%08lx\n", vcpu->id,
+			   __vmx_vmreadNW(VMCSENC_info_exit_qualification));
+		printf("CPU(0x%02x): paddr: 0x%016llx\n", vcpu->id,
+			   __vmx_vmread64(VMCSENC_guest_paddr));
+		printf("CPU(0x%02x): linear addr:   0x%08lx\n", vcpu->id,
+			   __vmx_vmreadNW(VMCSENC_info_guest_linear_address));
+		HALT_ON_ERRORCOND(0 && "Guest accesses illegal memory");
+		break;
+	case 4:
+		/*
+		 * Guest EPT is misconfigured, change VMEXIT reason from EPT violation
+		 * to EPT misconfiguration.
+		 */
+		ept_misconfig = true;
+		break;
+	default:
+		HALT_ON_ERRORCOND(0 && "Unknown status");
+		break;
 	}
 
-	// TODO: handle EPT misconfiguration
-	if (vmexit_reason == VMX_VMEXIT_EPT_MISCONFIGURATION) {
-		HALT_ON_ERRORCOND(0 && "EPT misconfiguration not implemented");
-	}
+	/*
+	 * End blocking EPT02 flush (blocking is needed because
+	 * vmcs12_info->guest_ept_cache_line is accessed).
+	 */
+	xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 
+	return ept_misconfig;
+}
+
+static void handle_vmexit20_forward(VCPU * vcpu, struct regs *r,
+									vmcs12_info_t *vmcs12_info, bool nmi_vmexit,
+									bool ept_misconfig)
+{
 	/*
 	 * Begin blocking EPT02 flush (blocking is needed because VMCS translation
 	 * calls xmhf_nested_arch_x86vmx_get_ept02()).
@@ -684,6 +662,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 
 	/* NMI status be changed during L2, so update L1's NMI window exiting */
 	{
+		/* TODO: remove this duplicated code, see below */
 		u32 procctl = __vmx_vmread32(0x4002);
 		xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(vcpu, &procctl);
 		__vmx_vmwrite32(0x4002, procctl);
@@ -705,4 +684,52 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 
 	__vmx_vmentry_vmresume(r);
+	HALT_ON_ERRORCOND(0 && "VMRESUME should not return");
+}
+
+/* Handle VMEXIT from nested guest */
+void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
+{
+	bool nmi_vmexit = false;
+	bool ept_misconfig = false;
+	vmcs12_info_t *vmcs12_info;
+	u32 vmexit_reason = __vmx_vmread32(VMCSENC_info_vmexit_reason);
+
+	xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
+
+	/*
+	 * Check whether this VMEXIT is for quiescing. If so, printing before the
+	 * quiesce is completed will result in deadlock.
+	 */
+	if (vmexit_reason == VMX_VMEXIT_EXCEPTION) {
+		u32 intr_info =
+			__vmx_vmread32(VMCSENC_info_vmexit_interrupt_information);
+		HALT_ON_ERRORCOND(intr_info & INTR_INFO_VALID_MASK);
+		if (is_interruption_nmi(intr_info)) {
+			handle_vmexit20_nmi(vcpu, r);
+		}
+	}
+
+	vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
+
+	if (vmexit_reason == VMX_VMEXIT_NMI_WINDOW) {
+		nmi_vmexit = handle_vmexit20_nmi_window(vcpu, r, vmcs12_info);
+	}
+
+	/*
+	 * Check whether this VMEXIT is caused by EPT violation.
+	 * If guest does not enable EPT, then the guest is doing illegal things.
+	 * If guest enables EPT, need to manually walk EPT12 and see.
+	 */
+	if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) {
+		ept_misconfig = handle_vmexit20_ept_violation(vcpu, r, vmcs12_info);
+	}
+
+	// TODO: handle EPT misconfiguration
+	if (vmexit_reason == VMX_VMEXIT_EPT_MISCONFIGURATION) {
+		HALT_ON_ERRORCOND(0 && "EPT misconfiguration not implemented");
+	}
+
+	handle_vmexit20_forward(vcpu, r, vmcs12_info, nmi_vmexit, ept_misconfig);
+	HALT_ON_ERRORCOND(0 && "handle_vmexit20_forward() should not return");
 }
