@@ -242,11 +242,11 @@ DECLARE_FIELD_64_RW(0x2010, control_TSC_offset,
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2012, control_virtual_APIC_address,
 					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
-					(_vmx_hasctl_virtualize_apic_access(FIELD_CTLS_ARG)),
+					(_vmx_hasctl_use_tpr_shadow(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2014, control_APIC_access_address,
 					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
-					(_vmx_hasctl_process_posted_interrupts(FIELD_CTLS_ARG)),
+					(_vmx_hasctl_virtualize_apic_access(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2016, control_posted_interrupt_desc_address,
 					(FIELD_PROP_CTRL),
