@@ -1344,3 +1344,34 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		HALT_ON_ERRORCOND(0 && "Not implemented");
 	}
 }
+
+#ifdef __DEBUG_QEMU__
+/*
+ * Check whether VMCS fields exist as specified in the SDM. Return true if
+ * everything is well.
+ */
+bool xmhf_nested_arch_x86vmx_check_fields_existence(VCPU * vcpu)
+{
+	bool success;
+	printf("CPU(0x%02x): %s() is checking VMCS fields\n", vcpu->id, __func__);
+#define FIELD_CTLS_ARG (&vcpu->vmx_caps)
+#define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
+	{ \
+		unsigned long value; \
+		bool actual = !!__vmx_vmread(encoding, &value); \
+		bool expected = !!exist; \
+		if (actual != expected) { \
+			printf("CPU(0x%02x): Warning: unexpected field existence: " \
+				   "encoding=0x%04x, expected=%u, actual=%u, name=%s\n", \
+				   vcpu->id, (u32) encoding, (u32) expected, (u32) actual, \
+				   #name); \
+			success = false; \
+		} \
+	}
+#define DECLARE_FIELD_64(...) DECLARE_FIELD_16(__VA_ARGS__)
+#define DECLARE_FIELD_32(...) DECLARE_FIELD_16(__VA_ARGS__)
+#define DECLARE_FIELD_NW(...) DECLARE_FIELD_16(__VA_ARGS__)
+#include "nested-x86vmx-vmcs12-fields.h"
+	return success;
+}
+#endif							/* !__DEBUG_QEMU__ */
