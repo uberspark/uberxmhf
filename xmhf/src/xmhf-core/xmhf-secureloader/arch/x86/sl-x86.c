@@ -53,6 +53,11 @@
 #include <xmhf.h>
 
 
+// 2 pages of memory in untrusted SL memory for Intel to set up DMA protection
+// According to implementation, they should be simply memset to 0
+u8 g_sl_intel_dmap_buffer[2 * PAGE_SIZE_4K]
+__attribute__((section(".sl_untrusted_params"), aligned(PAGE_SIZE_4K)));
+
 //we only have confidence in the runtime's expected value here in the SL
 //static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
 //    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
@@ -291,9 +296,9 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 				protectedbuffer_vaddr = (sla_t)&g_sl_protected_dmabuffer;
 				protectedbuffer_size = (2 * PAGE_SIZE_4K);
 			}else{	//CPU_VENDOR_INTEL
-				protectedbuffer_paddr = sl_baseaddr + 0x100000;
-				protectedbuffer_vaddr = 0x100000;
-				protectedbuffer_size = (2 * PAGE_SIZE_4K);
+				protectedbuffer_paddr = sl_baseaddr + (sla_t)&g_sl_intel_dmap_buffer;
+				protectedbuffer_vaddr = (sla_t)&g_sl_intel_dmap_buffer;
+				protectedbuffer_size = sizeof(g_sl_intel_dmap_buffer);
 			}
 
 			memregionbase_paddr = sl_baseaddr;
