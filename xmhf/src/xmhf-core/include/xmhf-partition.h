@@ -107,6 +107,9 @@ void xmhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 pr
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
+
+bool xmhf_partition_arch_x86vmx_get_xmhf_msr(u32 msr, u32 *index);
+
 //initialize partition monitor for a given CPU
 void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu);
 
