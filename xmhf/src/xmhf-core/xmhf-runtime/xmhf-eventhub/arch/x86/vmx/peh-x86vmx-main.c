@@ -137,9 +137,14 @@ void _vmx_inject_exception(VCPU *vcpu, u32 vector, u32 has_ec, u32 errcode)
 
 u64 _vmx_get_guest_efer(VCPU *vcpu)
 {
-	msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[0];
-	HALT_ON_ERRORCOND(efer->index == MSR_EFER);
-	return efer->data;
+	u32 index;
+	if (xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_EFER, &index)) {
+		msr_entry_t *efer = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
+		HALT_ON_ERRORCOND(efer->index == MSR_EFER);
+		return efer->data;
+	} else {
+		HALT_ON_ERRORCOND(0 && "EFER is expected to be managed by XMHF");
+	}
 }
 
 
@@ -542,31 +547,19 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value)
 //---intercept handler (WRMSR)--------------------------------------------------
 static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 	u64 write_data = ((u64)r->edx << 32) | (u64)r->eax;
+	u32 index;
 
 	//printf("CPU(0x%02x): WRMSR 0x%08x 0x%08x%08x @ %p\n", vcpu->id, r->ecx, r->edx, r->eax, vcpu->vmcs.guest_RIP);
 
-	switch(r->ecx){
-		case MSR_EFER: /* fallthrough */
-		case MSR_IA32_PAT: /* fallthrough */
-		case MSR_K6_STAR: {
-			u32 found = 0;
-            u32 i = 0;
-			for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count; i++) {
-				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
-				if (entry->index == r->ecx) {
-					entry->data = write_data;
-					found = 1;
-					break;
-				}
-			}
-			HALT_ON_ERRORCOND(found != 0);
-			break;
+	if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
+		msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
+		HALT_ON_ERRORCOND(entry->index == r->ecx);
+		entry->data = write_data;
+	} else {
+		if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr(vcpu, r->ecx, write_data)) {
+			_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+			return;
 		}
-		default:
-			if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr(vcpu, r->ecx, write_data)) {
-				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
-				return;
-			}
 	}
 
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
@@ -691,32 +684,19 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_rdmsr(VCPU *vcpu, u32 index, u64 *value
 static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 	/* After switch statement, will assign this value to r->eax and r->edx */
 	u64 read_result = 0;
+	u32 index;
 
 	//printf("CPU(0x%02x): RDMSR 0x%08x @ %p\n", vcpu->id, r->ecx, vcpu->vmcs.guest_RIP);
 
-	switch(r->ecx){
-		case MSR_EFER: /* fallthrough */
-		case MSR_IA32_PAT: /* fallthrough */
-		case MSR_K6_STAR: {
-			u32 found = 0;
-            u32 i = 0;
-			for (i = 0; i < vcpu->vmcs.control_VM_exit_MSR_store_count; i++) {
-				msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[i];
-				if (entry->index == r->ecx) {
-					read_result = entry->data;
-					found = 1;
-					break;
-				}
-			}
-			HALT_ON_ERRORCOND(found != 0);
-			break;
+	if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
+		msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
+		HALT_ON_ERRORCOND(entry->index == r->ecx);
+		read_result = entry->data;
+	} else {
+		if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr(vcpu, r->ecx, &read_result)) {
+			_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+			return;
 		}
-		default:
-			if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr(vcpu, r->ecx, &read_result)) {
-				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
-				return;
-			}
-			break;
 	}
 
 	/* Assign read_result to r->eax and r->edx */

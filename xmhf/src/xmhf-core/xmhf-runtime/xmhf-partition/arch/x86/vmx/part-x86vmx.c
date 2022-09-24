@@ -57,8 +57,10 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 
 
 //critical MSRs that need to be saved/restored across guest VM switches
-// When changing this array, also change _vmx_handle_intercept_wrmsr(),
-// _vmx_handle_intercept_rdmsr(), and _vmx_get_guest_efer().
+// When changing this array, also change the following functions:
+// * xmhf_partition_arch_x86vmx_get_xmhf_msr()
+// * xmhf_parteventhub_arch_x86vmx_handle_wrmsr()
+// * xmhf_parteventhub_arch_x86vmx_handle_rdmsr()
 static const u32 vmx_msr_area_msrs[] = {
 	MSR_EFER,
 	MSR_IA32_PAT,
@@ -67,6 +69,27 @@ static const u32 vmx_msr_area_msrs[] = {
 //count of critical MSRs that need to be saved/restored across VM switches
 static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));
 
+/*
+ * Check whether msr is XMHF-managed (in VMCS MSR load / store area).
+ * If yes, the MSR's index is written to index and true is returned.
+ * If no, this function returns false.
+ */
+bool xmhf_partition_arch_x86vmx_get_xmhf_msr(u32 msr, u32 *index)
+{
+	switch (msr) {
+	case MSR_EFER:
+		*index = 0;
+		return true;
+	case MSR_IA32_PAT:
+		*index = 1;
+		return true;
+	case MSR_K6_STAR:
+		*index = 2;
+		return true;
+	default:
+		return false;
+	}
+}
 
 //---initVT: initializes CPU VT-------------------------------------------------
 static void _vmx_initVT(VCPU *vcpu){
