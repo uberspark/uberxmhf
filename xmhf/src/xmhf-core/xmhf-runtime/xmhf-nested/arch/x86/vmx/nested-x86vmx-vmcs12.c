@@ -752,41 +752,29 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 
 		/* Write the MSRs requested by guest */
 		for (i = 0; i < vmcs12->control_VM_entry_MSR_load_count; i++) {
+			u32 index;
 			msr_entry_t guest_entry;
 			guestmem_copy_gp2h(&ctx_pair, 0, &guest_entry,
 							   guest_addr + sizeof(msr_entry_t) * i,
 							   sizeof(msr_entry_t));
-			switch (guest_entry.index) {
-			case MSR_EFER:		/* fallthrough */
-			case MSR_IA32_PAT:	/* fallthrough */
-			case MSR_K6_STAR:
-				{
-					bool found = false;
-					u32 i = 0;
-					msr_entry_t *base =
-						(msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
-					for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count;
-						 i++) {
-						msr_entry_t *entry =
-							&vmcs12_info->vmcs02_vmentry_msr_load_area[i];
-						if (entry->index == guest_entry.index) {
-							entry->data = guest_entry.data;
-							/*
-							 * If L1 guest only loads in the MSR in VMENTRY and
-							 * does not load in VMEXIT, the L1 guest should get
-							 * the MSR loaded during VMENTRY after VMEXIT.
-							 */
-							HALT_ON_ERRORCOND(base[i].index ==
-											  guest_entry.index);
-							base[i].data = guest_entry.data;
-							found = true;
-							break;
-						}
-					}
-					HALT_ON_ERRORCOND(found);
-				}
-				break;
-			default:
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(guest_entry.index,
+														&index)) {
+				msr_entry_t *entry01 =
+					&((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
+				msr_entry_t *entry02 =
+					&vmcs12_info->vmcs02_vmentry_msr_load_area[index];
+				HALT_ON_ERRORCOND(entry01->index == guest_entry.index);
+				HALT_ON_ERRORCOND(entry02->index == guest_entry.index);
+				/*
+				 * If L1 guest only loads in the MSR in VMENTRY and does not
+				 * not load in VMEXIT, the L1 guest should get the MSR loaded
+				 * during VMENTRY after VMEXIT. Thus we need to also set
+				 * entry01.
+				 * TODO: should update entry01 during VMEXIT, not VMENTRY.
+				 */
+				entry01->data = guest_entry.data;
+				entry02->data = guest_entry.data;
+			} else {
 				if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr
 					(vcpu, guest_entry.index, guest_entry.data)) {
 					/*
@@ -794,7 +782,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 					 */
 					HALT_ON_ERRORCOND(0 && "WRMSR fail, what should I do?");
 				}
-				break;
 			}
 		}
 	}
@@ -1140,31 +1127,18 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 
 		/* Read MSRs and write to guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_store_count; i++) {
+			u32 index;
 			msr_entry_t guest_entry;
 			guestmem_copy_gp2h(&ctx_pair, 0, &guest_entry,
 							   guest_addr + sizeof(msr_entry_t) * i,
 							   sizeof(msr_entry_t));
-			switch (guest_entry.index) {
-			case MSR_EFER:		/* fallthrough */
-			case MSR_IA32_PAT:	/* fallthrough */
-			case MSR_K6_STAR:
-				{
-					bool found = false;
-					u32 i = 0;
-					for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count;
-						 i++) {
-						msr_entry_t *entry =
-							&vmcs12_info->vmcs02_vmexit_msr_store_area[i];
-						if (entry->index == guest_entry.index) {
-							guest_entry.data = entry->data;
-							found = true;
-							break;
-						}
-					}
-					HALT_ON_ERRORCOND(found);
-				}
-				break;
-			default:
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(guest_entry.index,
+														&index)) {
+				msr_entry_t *entry =
+					&vmcs12_info->vmcs02_vmexit_msr_store_area[index];
+				HALT_ON_ERRORCOND(entry->index == guest_entry.index);
+				guest_entry.data = entry->data;
+			} else {
 				if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr
 					(vcpu, guest_entry.index, &guest_entry.data)) {
 					/*
@@ -1172,7 +1146,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 					 */
 					HALT_ON_ERRORCOND(0 && "RDMSR fail, what should I do?");
 				}
-				break;
 			}
 			guestmem_copy_h2gp(&ctx_pair, 0,
 							   guest_addr + sizeof(msr_entry_t) * i,
@@ -1193,32 +1166,18 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 
 		/* Write MSRs as requested by guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_load_count; i++) {
+			u32 index;
 			msr_entry_t guest_entry;
 			guestmem_copy_gp2h(&ctx_pair, 0, &guest_entry,
 							   guest_addr + sizeof(msr_entry_t) * i,
 							   sizeof(msr_entry_t));
-			switch (guest_entry.index) {
-			case MSR_EFER:		/* fallthrough */
-			case MSR_IA32_PAT:	/* fallthrough */
-			case MSR_K6_STAR:
-				{
-					bool found = false;
-					u32 i = 0;
-					msr_entry_t *base =
-						(msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
-					for (i = 0; i < vcpu->vmcs.control_VM_entry_MSR_load_count;
-						 i++) {
-						msr_entry_t *entry = &base[i];
-						if (entry->index == guest_entry.index) {
-							entry->data = guest_entry.data;
-							found = true;
-							break;
-						}
-					}
-					HALT_ON_ERRORCOND(found);
-				}
-				break;
-			default:
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(guest_entry.index,
+														&index)) {
+				msr_entry_t *entry =
+					&((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
+				HALT_ON_ERRORCOND(entry->index == guest_entry.index);
+				entry->data = guest_entry.data;
+			} else {
 				if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr
 					(vcpu, guest_entry.index, guest_entry.data)) {
 					/*
@@ -1226,7 +1185,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 					 */
 					HALT_ON_ERRORCOND(0 && "WRMSR fail, what should I do?");
 				}
-				break;
 			}
 		}
 	}
