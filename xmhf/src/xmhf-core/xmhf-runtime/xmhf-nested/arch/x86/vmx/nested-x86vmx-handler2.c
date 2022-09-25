@@ -668,11 +668,6 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 			   vmcs12_info->vmcs12_value.info_vmexit_reason);
 	}
 
-	/* Follow SDM to load host state */
-	vcpu->vmcs.guest_DR7 = 0x400UL;
-	vcpu->vmcs.guest_IA32_DEBUGCTL = 0ULL;
-	vcpu->vmcs.guest_RFLAGS = (1UL << 1);
-
 	/*
 	 * Update NMI windowing in VMCS01 since nested virtualization may change
 	 * vcpu->vmx_guest_nmi_cfg.guest_nmi_pending.

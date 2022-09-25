@@ -1061,6 +1061,10 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	}
 
 	/* 64-Bit fields: VMCS12 host -> VMCS01 guest */
+	{
+		/* The IA32_DEBUGCTL MSR is cleared to 00000000_00000000H */
+		vcpu->vmcs.guest_IA32_DEBUGCTL = 0ULL;
+	}
 	if (_vmx_hasctl_vmexit_load_ia32_pat(&ctls)) {
 		wrmsr64(MSR_IA32_PAT, __vmx_vmread64(VMCSENC_host_IA32_PAT));
 	}
@@ -1271,6 +1275,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 
 	/* 32-Bit Guest-State Fields */
 	{
+		/* Handle "Blocking by NMI" */
 		u32 val = __vmx_vmread32(VMCSENC_guest_interruptibility);
 		if (vmcs12_info->guest_vmcs_block_nmi_overridden) {
 			vmcs12_info->guest_vmcs_block_nmi_overridden = false;
@@ -1304,11 +1309,121 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 			}
 		}
 		vmcs12->guest_interruptibility = val;
+		/* There is no blocking by STI or by MOV SS after a VM exit */
+		vcpu->vmcs.guest_interruptibility &= ~((1U << 0) | (1U << 1));
 	}
 
 	/* 32-Bit Host-State Field */
 
-	/* 32-Bit fields: VMCS12 host -> VMCS02 guest */
+	/* 32-Bit fields: VMCS12 host -> VMCS01 guest */
+	{
+		/* Undefined if the segment is unusable; otherwise, set to FFFFFFFFH */
+		vcpu->vmcs.guest_ES_limit = 0xffffffff;
+	}
+	{
+		/* The segment limit is set as follows: CS. Set to FFFFFFFFH */
+		vcpu->vmcs.guest_CS_limit = 0xffffffff;
+	}
+	{
+		/* Undefined if the segment is unusable; otherwise, set to FFFFFFFFH */
+		vcpu->vmcs.guest_SS_limit = 0xffffffff;
+	}
+	{
+		/* Undefined if the segment is unusable; otherwise, set to FFFFFFFFH */
+		vcpu->vmcs.guest_DS_limit = 0xffffffff;
+	}
+	{
+		/* Undefined if the segment is unusable; otherwise, set to FFFFFFFFH */
+		vcpu->vmcs.guest_FS_limit = 0xffffffff;
+	}
+	{
+		/* Undefined if the segment is unusable; otherwise, set to FFFFFFFFH */
+		vcpu->vmcs.guest_GS_limit = 0xffffffff;
+	}
+	{
+		/* Undefined */
+		vcpu->vmcs.guest_LDTR_limit = 0x0;
+	}
+	{
+		/* Set to 00000067H */
+		vcpu->vmcs.guest_TR_limit = 0x67;
+	}
+	{
+		/* Set to FFFFH */
+		vcpu->vmcs.guest_GDTR_limit = 0xffff;
+	}
+	{
+		/* Set to FFFFH */
+		vcpu->vmcs.guest_IDTR_limit = 0xffff;
+	}
+	{
+		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
+		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
+				   (1U << 14) | (1U << 15);
+		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
+		vcpu->vmcs.guest_ES_access_rights =
+			(vcpu->vmcs.guest_ES_access_rights & ~mask) | val;
+	}
+	{
+		/*
+		 * Type=11, S=1, DPL=0, P=1, L="host address-space size",
+		 * D/B=!"host address-space size", G=1.
+		 */
+		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
+				   (1U << 13) | (1U << 14) | (1U << 15);
+		u32 val = (11U << 0) | (1U << 4) | (1U << 7) | (1U << 15);
+		if (_vmx_hasctl_vmexit_host_address_space_size(&ctls)) {
+			val |= (1U << 13);
+		} else {
+			val |= (1U << 14);
+		}
+		vcpu->vmcs.guest_CS_access_rights =
+			(vcpu->vmcs.guest_CS_access_rights & ~mask) | val;
+	}
+	{
+		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
+		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
+				   (1U << 14) | (1U << 15);
+		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
+		vcpu->vmcs.guest_SS_access_rights =
+			(vcpu->vmcs.guest_SS_access_rights & ~mask) | val;
+	}
+	{
+		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
+		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
+				   (1U << 14) | (1U << 15);
+		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
+		vcpu->vmcs.guest_DS_access_rights =
+			(vcpu->vmcs.guest_DS_access_rights & ~mask) | val;
+	}
+	{
+		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
+		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
+				   (1U << 14) | (1U << 15);
+		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
+		vcpu->vmcs.guest_FS_access_rights =
+			(vcpu->vmcs.guest_FS_access_rights & ~mask) | val;
+	}
+	{
+		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
+		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
+				   (1U << 14) | (1U << 15);
+		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
+		vcpu->vmcs.guest_GS_access_rights =
+			(vcpu->vmcs.guest_GS_access_rights & ~mask) | val;
+	}
+	{
+		/* Unusable */
+		vcpu->vmcs.guest_LDTR_access_rights = (1U << 16);
+	}
+	{
+		/* Type=11, S=0, DPL=0, P=1, D/B=0, G=0 */
+		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
+				   (1U << 14) | (1U << 15);
+		u32 val = (11U << 0) | (1U << 7);
+		vcpu->vmcs.guest_TR_access_rights =
+			(vcpu->vmcs.guest_TR_access_rights & ~mask) | val;
+	}
 
 	/* Natural-Width Control Fields */
 
@@ -1329,6 +1444,46 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	}
 
 	/* Natural-Width fields: VMCS12 host -> VMCS01 guest */
+	{
+		/*
+		 * CR4.PAE is set to 1 if the "host address-space size" VM-exit control
+		 * is 1. CR4.PCIDE is set to 0 if the “host address-space size” VM-exit
+		 * control is 0.
+		 */
+		if (_vmx_hasctl_vmexit_host_address_space_size(&ctls)) {
+			vcpu->vmcs.guest_CR4 |= CR4_PAE;
+		} else {
+			vcpu->vmcs.guest_CR4 &= ~CR4_PCIDE;
+		}
+	}
+	{
+		/* Undefined if the segment is unusable; otherwise, cleared to zero */
+		vcpu->vmcs.guest_ES_base = 0;
+	}
+	{
+		/* The base address is set as follows: CS. Cleared to zero */
+		vcpu->vmcs.guest_CS_base = 0;
+	}
+	{
+		/* Undefined if the segment is unusable; otherwise, cleared to zero */
+		vcpu->vmcs.guest_SS_base = 0;
+	}
+	{
+		/* Undefined if the segment is unusable; otherwise, cleared to zero */
+		vcpu->vmcs.guest_DS_base = 0;
+	}
+	{
+		/* Undefined */
+		vcpu->vmcs.guest_LDTR_base = 0;
+	}
+	{
+		/* DR7 is set to 400H */
+		vcpu->vmcs.guest_DR7 = 0x400UL;
+	}
+	{
+		/* RFLAGS is cleared, except bit 1, which is always set */
+		vcpu->vmcs.guest_RFLAGS = (1UL << 1);
+	}
 	if (_vmx_hasctl_vmexit_load_cet_state(&ctls)) {
 		/*
 		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
