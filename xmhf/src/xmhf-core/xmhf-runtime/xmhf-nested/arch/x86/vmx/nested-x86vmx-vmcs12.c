@@ -732,7 +732,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		gva_t guest_addr = vmcs12->control_VM_entry_MSR_load_address;
 
 		/*
-		 * By default, MSRs in L1 are not changed after VMENTRY to L2.
+		 * By default, most MSRs in L1 are not changed after VMENTRY to L2.
 		 * This memcpy makes sure that XMHF managed MSRs follow this behavior.
 		 */
 		memcpy(vmcs12_info->vmcs02_vmentry_msr_load_area,
@@ -743,6 +743,30 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 						vcpu->vmcs.control_VM_entry_MSR_load_count);
 		__vmx_vmwrite64(VMCSENC_control_VM_entry_MSR_load_address,
 						hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area));
+
+		/*
+		 * According to SDM, IA32_EFER is changed as following:
+		 * * IA32_EFER.LMA = "IA-32e mode guest"
+		 * * If CR0.PG = 1, IA32_EFER.LME = "IA-32e mode guest"
+		 */
+		{
+			u32 index;
+			msr_entry_t *entry;
+			u64 mask = (1ULL << EFER_LMA);
+			if (vmcs12->guest_CR0 & CR0_PG) {
+				mask |= (1ULL << EFER_LME);
+			}
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_EFER, &index)) {
+				entry = &vmcs12_info->vmcs02_vmentry_msr_load_area[index];
+				if (_vmx_hasctl_vmentry_ia_32e_mode_guest(&ctls)) {
+					entry->data |= mask;
+				} else {
+					entry->data &= ~mask;
+				}
+			} else {
+				HALT_ON_ERRORCOND(0 && "MSR_EFER not found");
+			}
+		}
 
 		/* Write the MSRs requested by guest */
 		for (i = 0; i < vmcs12->control_VM_entry_MSR_load_count; i++) {
@@ -1148,13 +1172,35 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 						  __vmx_vmread64(encoding));
 
 		/*
-		 * By default, MSRs in L2 are not changed after VMEXIT to L1.
+		 * By default, most MSRs in L2 are not changed after VMEXIT to L1.
 		 * This memcpy makes sure that XMHF managed MSRs follow this behavior.
 		 */
 		memcpy((void *)vcpu->vmx_vaddr_msr_area_guest,
 			   vmcs12_info->vmcs02_vmentry_msr_load_area,
 			   vcpu->vmcs.control_VM_entry_MSR_load_count *
 			   sizeof(msr_entry_t));
+
+		/*
+		 * According to SDM, IA32_EFER is changed as following:
+		 * * IA32_EFER.LMA = "host address-space size"
+		 * * IA32_EFER.LME = "host address-space size"
+		 */
+		{
+			u32 index;
+			msr_entry_t *entry;
+			u64 mask = (1ULL << EFER_LMA) | (1ULL << EFER_LME);
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_EFER, &index)) {
+				entry =
+					&((msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest)[index];
+				if (_vmx_hasctl_vmexit_host_address_space_size(&ctls)) {
+					entry->data |= mask;
+				} else {
+					entry->data &= ~mask;
+				}
+			} else {
+				HALT_ON_ERRORCOND(0 && "MSR_EFER not found");
+			}
+		}
 
 		/* Write MSRs as requested by guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_load_count; i++) {
