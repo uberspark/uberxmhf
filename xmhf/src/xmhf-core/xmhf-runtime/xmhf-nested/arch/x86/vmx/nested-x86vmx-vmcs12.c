@@ -708,7 +708,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		__vmx_vmwrite32(VMCSENC_control_VM_exit_controls, val);
 	}
 	{
-		/* VMCS02 needs to always process the same fields as VMCS01 */
+		/* VMCS02 needs to always process the same MSRs as VMCS01 */
+		// TODO: only need to copy once
 		memcpy(vmcs12_info->vmcs02_vmexit_msr_store_area,
 			   (void *)vcpu->vmx_vaddr_msr_area_guest,
 			   vcpu->vmcs.control_VM_exit_MSR_store_count *
@@ -721,7 +722,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		/* VMX control is not checked here; will check in VMEXIT handler */
 	}
 	{
-		/* VMCS02 needs to always process the same fields as VMCS01 */
+		/* VMCS02 needs to always process the same MSRs as VMCS01 */
+		// TODO: only need to copy once
 		memcpy(vmcs12_info->vmcs02_vmexit_msr_load_area,
 			   (void *)vcpu->vmx_vaddr_msr_area_host,
 			   vcpu->vmcs.control_VM_exit_MSR_load_count * sizeof(msr_entry_t));
@@ -740,7 +742,12 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_entry_MSR_load_address;
 
-		/* VMCS02 needs to always process the same fields as VMCS01 */
+		/* VMCS02 needs to always process the same MSRs as VMCS01 */
+		// TODO: remove the comment above
+		/*
+		 * By default, MSRs in L1 are not changed after VMENTRY to L2.
+		 * This memcpy makes sure that XMHF managed MSRs follow this behavior.
+		 */
 		memcpy(vmcs12_info->vmcs02_vmentry_msr_load_area,
 			   (void *)vcpu->vmx_vaddr_msr_area_guest,
 			   vcpu->vmcs.control_VM_entry_MSR_load_count *
@@ -759,21 +766,10 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 							   sizeof(msr_entry_t));
 			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(guest_entry.index,
 														&index)) {
-				msr_entry_t *entry01 =
-					&((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
-				msr_entry_t *entry02 =
+				msr_entry_t *entry =
 					&vmcs12_info->vmcs02_vmentry_msr_load_area[index];
-				HALT_ON_ERRORCOND(entry01->index == guest_entry.index);
-				HALT_ON_ERRORCOND(entry02->index == guest_entry.index);
-				/*
-				 * If L1 guest only loads in the MSR in VMENTRY and does not
-				 * not load in VMEXIT, the L1 guest should get the MSR loaded
-				 * during VMENTRY after VMEXIT. Thus we need to also set
-				 * entry01.
-				 * TODO: should update entry01 during VMEXIT, not VMENTRY.
-				 */
-				entry01->data = guest_entry.data;
-				entry02->data = guest_entry.data;
+				HALT_ON_ERRORCOND(entry->index == guest_entry.index);
+				entry->data = guest_entry.data;
 			} else {
 				if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr
 					(vcpu, guest_entry.index, guest_entry.data)) {
@@ -1117,7 +1113,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_exit_MSR_store_address;
 
-		/* VMCS02 needs to always process the same fields as VMCS01 */
+		/* VMCS02 needs to always process the same MSRs as VMCS01 */
 		u16 encoding = VMCSENC_control_VM_exit_MSR_store_count;
 		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_exit_MSR_store_count ==
 						  __vmx_vmread32(encoding));
@@ -1156,13 +1152,22 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_exit_MSR_load_address;
 
-		/* VMCS02 needs to always process the same fields as VMCS01 */
+		/* VMCS02 needs to always process the same MSRs as VMCS01 */
 		u16 encoding = VMCSENC_control_VM_exit_MSR_store_count;
 		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_exit_MSR_load_count ==
 						  __vmx_vmread32(encoding));
 		encoding = VMCSENC_control_VM_exit_MSR_load_address;
 		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmexit_msr_load_area) ==
 						  __vmx_vmread64(encoding));
+
+		/*
+		 * By default, MSRs in L2 are not changed after VMEXIT to L1.
+		 * This memcpy makes sure that XMHF managed MSRs follow this behavior.
+		 */
+		memcpy((void *)vcpu->vmx_vaddr_msr_area_guest,
+			   vmcs12_info->vmcs02_vmentry_msr_load_area,
+			   vcpu->vmcs.control_VM_entry_MSR_load_count *
+			   sizeof(msr_entry_t));
 
 		/* Write MSRs as requested by guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_load_count; i++) {
@@ -1174,7 +1179,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(guest_entry.index,
 														&index)) {
 				msr_entry_t *entry =
-					&((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
+					&((msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest)[index];
 				HALT_ON_ERRORCOND(entry->index == guest_entry.index);
 				entry->data = guest_entry.data;
 			} else {
@@ -1197,7 +1202,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		vmcs12->control_VM_entry_controls = val;
 	}
 	{
-		/* VMCS02 needs to always process the same fields as VMCS01 */
+		/* VMCS02 needs to always process the same MSRs as VMCS01 */
 		u16 encoding = VMCSENC_control_VM_entry_MSR_load_count;
 		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_entry_MSR_load_count ==
 						  __vmx_vmread32(encoding));
