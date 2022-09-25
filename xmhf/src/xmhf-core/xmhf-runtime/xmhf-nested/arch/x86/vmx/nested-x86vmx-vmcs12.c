@@ -708,12 +708,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		__vmx_vmwrite32(VMCSENC_control_VM_exit_controls, val);
 	}
 	{
-		/* VMCS02 needs to always process the same MSRs as VMCS01 */
-		// TODO: only need to copy once
-		memcpy(vmcs12_info->vmcs02_vmexit_msr_store_area,
-			   (void *)vcpu->vmx_vaddr_msr_area_guest,
-			   vcpu->vmcs.control_VM_exit_MSR_store_count *
-			   sizeof(msr_entry_t));
 		__vmx_vmwrite32(VMCSENC_control_VM_exit_MSR_store_count,
 						vcpu->vmcs.control_VM_exit_MSR_store_count);
 		__vmx_vmwrite64(VMCSENC_control_VM_exit_MSR_store_address,
@@ -722,11 +716,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		/* VMX control is not checked here; will check in VMEXIT handler */
 	}
 	{
-		/* VMCS02 needs to always process the same MSRs as VMCS01 */
-		// TODO: only need to copy once
-		memcpy(vmcs12_info->vmcs02_vmexit_msr_load_area,
-			   (void *)vcpu->vmx_vaddr_msr_area_host,
-			   vcpu->vmcs.control_VM_exit_MSR_load_count * sizeof(msr_entry_t));
 		__vmx_vmwrite32(VMCSENC_control_VM_exit_MSR_load_count,
 						vcpu->vmcs.control_VM_exit_MSR_load_count);
 		__vmx_vmwrite64(VMCSENC_control_VM_exit_MSR_load_address,
@@ -742,8 +731,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_entry_MSR_load_address;
 
-		/* VMCS02 needs to always process the same MSRs as VMCS01 */
-		// TODO: remove the comment above
 		/*
 		 * By default, MSRs in L1 are not changed after VMENTRY to L2.
 		 * This memcpy makes sure that XMHF managed MSRs follow this behavior.
