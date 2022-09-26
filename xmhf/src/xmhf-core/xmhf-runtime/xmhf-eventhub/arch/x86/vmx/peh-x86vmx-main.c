@@ -397,7 +397,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
  * Simulate guest writing a MSR with ecx=index, value=edx:eax
  *
  * The MSRs that will be changed by VMENTRY/VMEXIT MSR load/store are not
- * supported: MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR
+ * supported: MSR_EFER, MSR_IA32_PAT
  *
  * Return 0 if success, 1 if failure (should inject #GP to guest)
  */
@@ -405,8 +405,7 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value)
 {
 	switch (index) {
 		case MSR_EFER: /* fallthrough */
-		case MSR_IA32_PAT: /* fallthrough */
-		case MSR_K6_STAR:
+		case MSR_IA32_PAT:
 			HALT_ON_ERRORCOND(0 && "Illegal behavior");
 			break;
 		case IA32_SYSENTER_CS_MSR:
@@ -525,7 +524,7 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
  * Simulate guest reading a MSR with ecx=index. *value will become edx:eax
  *
  * The MSRs that will be changed by VMENTRY/VMEXIT MSR load/store are not
- * supported: MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR
+ * supported: MSR_EFER, MSR_IA32_PAT
  *
  * Return 0 if success, 1 if failure (should inject #GP to guest)
  */
@@ -533,8 +532,7 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_rdmsr(VCPU *vcpu, u32 index, u64 *value
 {
 	switch (index) {
 		case MSR_EFER: /* fallthrough */
-		case MSR_IA32_PAT: /* fallthrough */
-		case MSR_K6_STAR:
+		case MSR_IA32_PAT:
 			HALT_ON_ERRORCOND(0 && "Illegal behavior");
 			break;
 		case IA32_SYSENTER_CS_MSR:
