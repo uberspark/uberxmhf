@@ -64,7 +64,6 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 static const u32 vmx_msr_area_msrs[] = {
 	MSR_EFER,
 	MSR_IA32_PAT,
-	MSR_K6_STAR,
 };
 //count of critical MSRs that need to be saved/restored across VM switches
 static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));
@@ -82,9 +81,6 @@ bool xmhf_partition_arch_x86vmx_get_xmhf_msr(u32 msr, u32 *index)
 		return true;
 	case MSR_IA32_PAT:
 		*index = 1;
-		return true;
-	case MSR_K6_STAR:
-		*index = 2;
 		return true;
 	default:
 		return false;
