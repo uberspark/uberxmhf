@@ -58,6 +58,7 @@ LRU_NEW_SET(event_log_##name##_set_t, event_log_##name##_line_t, lru_size, \
 
 typedef struct event_log_t {
 	u64 last_print_tsc;
+	u32 alive;
 	u32 total_count;
 #define DEFINE_EVENT_FIELD(name, count_type, ...) \
 	count_type count_##name; \
@@ -84,6 +85,7 @@ void xmhf_dbg_log_event(void *_vcpu, bool can_print, xmhf_dbg_eventlog_t event,
 	/* Get event log */
 	event_log_t *event_log = &global_event_log[vcpu->idx];
 	/* Increase count */
+	event_log->alive = 1;
 	event_log->total_count++;
 	switch (event) {
 #define DEFINE_EVENT_FIELD(name, count_type, count_fmt, lru_size, index_type, \
@@ -117,8 +119,9 @@ void xmhf_dbg_log_event(void *_vcpu, bool can_print, xmhf_dbg_eventlog_t event,
 			if (tsc > event_log->last_print_tsc + 0x100000000ULL) {
 				print_flag = true;
 				event_log->last_print_tsc = 0;
-				turn++;
-				turn %= g_midtable_numentries;
+				do {
+					turn = (turn + 1) % g_midtable_numentries;
+				} while (!global_event_log[turn].alive);
 			}
 		}
 	}
