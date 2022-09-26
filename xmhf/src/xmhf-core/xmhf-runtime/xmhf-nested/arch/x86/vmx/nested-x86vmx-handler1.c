@@ -527,6 +527,8 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 	{
 		/* "Activate tertiary controls" not supported */
 		u64 mask = ~(1ULL << (32 + VMX_PROCBASED_ACTIVATE_TERTIARY_CONTROLS));
+		/* MSR bitmap not supported */
+		mask &= ~(1ULL << (32 + VMX_PROCBASED_USE_MSR_BITMAPS));
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR] &= mask;
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_TRUE_PROCBASED_CTLS_MSR] &= mask;
 	}
