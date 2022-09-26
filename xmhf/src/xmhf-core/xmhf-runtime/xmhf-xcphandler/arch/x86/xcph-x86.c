@@ -195,7 +195,13 @@ void xmhf_xcphandler_arch_hub(uintptr_t vector, struct regs *r){
 
             if (found) {
                 /* Found in xcph table; Modify EIP on stack and iret */
-                printf("Found in xcph table\n");
+#ifdef __DEBUG_EVENT_LOGGER__
+                {
+                    u8 v8_vector = vector;
+                    xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_exception,
+                                       &v8_vector);
+                }
+#endif /* __DEBUG_EVENT_LOGGER__ */
 #ifdef __AMD64__
                 ((uintptr_t *)(r->rsp))[0] = found[2];
 #elif defined(__I386__)
