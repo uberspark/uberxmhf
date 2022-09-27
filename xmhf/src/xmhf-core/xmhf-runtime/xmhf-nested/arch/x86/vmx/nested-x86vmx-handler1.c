@@ -335,13 +335,12 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 	memcpy(vmcs12_info->vmcs02_vmexit_msr_load_area,
 		   (void *)vcpu->vmx_vaddr_msr_area_host,
 		   vcpu->vmcs.control_VM_exit_MSR_load_count * sizeof(msr_entry_t));
-	/*
-	 * vmcs02_vmentry_msr_load_area need to process the same MSRs as VMCS01,
-	 * but the memcpy will happen in xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02().
-	 */
-	// TODO: also memcpy here
+	/* vmcs02_vmentry_msr_load_area need to process the same MSRs as VMCS01 */
 	memset(&vmcs12_info->vmcs02_vmentry_msr_load_area, 0,
 		   sizeof(vmcs12_info->vmcs02_vmentry_msr_load_area));
+	memcpy(vmcs12_info->vmcs02_vmentry_msr_load_area,
+		   (void *)vcpu->vmx_vaddr_msr_area_guest,
+		   vcpu->vmcs.control_VM_entry_MSR_load_count * sizeof(msr_entry_t));
 	vmcs12_info->guest_ept_enable = 0;
 	vmcs12_info->guest_ept_root = 0;
 	vmcs12_info->guest_nmi_exiting = false;

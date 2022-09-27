@@ -839,21 +839,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_entry_MSR_load_address;
 
-		/*
-		 * By default, most MSRs in L1 are not changed after VMENTRY to L2.
-		 * This memcpy makes sure that XMHF managed MSRs follow this behavior.
-		 */
-		// TODO: this memcpy is redundant now
-		memcpy(vmcs12_info->vmcs02_vmentry_msr_load_area,
-			   (void *)vcpu->vmx_vaddr_msr_area_guest,
-			   vcpu->vmcs.control_VM_entry_MSR_load_count *
-			   sizeof(msr_entry_t));
-		__vmx_vmwrite32(VMCSENC_control_VM_entry_MSR_load_count,
-						vcpu->vmcs.control_VM_entry_MSR_load_count);
-		__vmx_vmwrite64(VMCSENC_control_VM_entry_MSR_load_address,
-						hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area));
-
-		/* Update IA32_PAT and IA32_EFER MSRs */
+		/* Set IA32_PAT and IA32_EFER in VMCS02 guest */
 		{
 			msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
 			msr02[ia32_pat_index].data = guest_ia32_pat;
@@ -1304,17 +1290,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmexit_msr_load_area) ==
 						  __vmx_vmread64(encoding));
 
-		/*
-		 * By default, most MSRs in L2 are not changed after VMEXIT to L1.
-		 * This memcpy makes sure that XMHF managed MSRs follow this behavior.
-		 */
-		// TODO: this memcpy is redundant now
-		memcpy((void *)vcpu->vmx_vaddr_msr_area_guest,
-			   vmcs12_info->vmcs02_vmentry_msr_load_area,
-			   vcpu->vmcs.control_VM_entry_MSR_load_count *
-			   sizeof(msr_entry_t));
-
-		/* Update IA32_PAT and IA32_EFER MSRs */
+		/* Set IA32_PAT and IA32_EFER in VMCS01 guest */
 		{
 			msr_entry_t *msr01 =
 				((msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest);
