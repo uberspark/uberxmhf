@@ -466,6 +466,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
 	vmx_ctls_t ctls;
 	guestmem_hptw_ctx_pair_t ctx_pair;
+	msr_entry_t *msr01 = (msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
+	msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
 	u64 guest_ia32_pat;
 	u64 guest_ia32_efer;
 	u32 ia32_pat_index;
@@ -660,7 +662,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		HALT_ON_ERRORCOND(_check_ia32_pat(guest_ia32_pat));
 	} else {
 		/* When not loading IA32_PAT, IA32_PAT from L1 is used */
-		msr_entry_t *msr01 = ((msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest);
 		guest_ia32_pat = msr01[ia32_pat_index].data;
 	}
 	if (_vmx_hasctl_vmentry_load_ia32_efer(&ctls)) {
@@ -676,7 +677,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		 * * IA32_EFER.LMA = "IA-32e mode guest"
 		 * * If CR0.PG = 1, IA32_EFER.LME = "IA-32e mode guest"
 		 */
-		msr_entry_t *msr01 = ((msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest);
 		u64 mask = (1ULL << EFER_LMA);
 		if (vmcs12->guest_CR0 & CR0_PG) {
 			mask |= (1ULL << EFER_LME);
@@ -840,28 +840,22 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		gva_t guest_addr = vmcs12->control_VM_entry_MSR_load_address;
 
 		/* Set IA32_PAT and IA32_EFER in VMCS02 guest */
-		{
-			msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
-			msr02[ia32_pat_index].data = guest_ia32_pat;
-			msr02[ia32_efer_index].data = guest_ia32_efer;
-		}
+		msr02[ia32_pat_index].data = guest_ia32_pat;
+		msr02[ia32_efer_index].data = guest_ia32_efer;
 
 		/* Write the MSRs requested by guest */
 		for (i = 0; i < vmcs12->control_VM_entry_MSR_load_count; i++) {
 			u32 index;
-			msr_entry_t guest_entry;
-			guestmem_copy_gp2h(&ctx_pair, 0, &guest_entry,
+			msr_entry_t msr12;
+			guestmem_copy_gp2h(&ctx_pair, 0, &msr12,
 							   guest_addr + sizeof(msr_entry_t) * i,
 							   sizeof(msr_entry_t));
-			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(guest_entry.index,
-														&index)) {
-				msr_entry_t *entry =
-					&vmcs12_info->vmcs02_vmentry_msr_load_area[index];
-				HALT_ON_ERRORCOND(entry->index == guest_entry.index);
-				entry->data = guest_entry.data;
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(msr12.index, &index)) {
+				HALT_ON_ERRORCOND(msr02[index].index == msr12.index);
+				msr02[index].data = msr12.data;
 			} else {
 				if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr
-					(vcpu, guest_entry.index, guest_entry.data)) {
+					(vcpu, msr12.index, msr12.data)) {
 					/*
 					 * Likely need to fail VMENTRY, but need to double check.
 					 */
@@ -942,6 +936,8 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
 	vmx_ctls_t ctls;
 	guestmem_hptw_ctx_pair_t ctx_pair;
+	msr_entry_t *msr01 = (msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
+	msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
 	u64 host_ia32_pat;
 	u64 host_ia32_efer;
 	u32 ia32_pat_index;
@@ -1125,12 +1121,10 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	/* 64-Bit Guest-State Fields */
 	if (_vmx_hasctl_vmexit_save_ia32_pat(&ctls)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
 		vmcs12->guest_IA32_PAT = msr02[ia32_pat_index].data;
 	}
 	if (_vmx_hasctl_vmexit_save_ia32_efer(&ctls)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
 		vmcs12->guest_IA32_EFER = msr02[ia32_efer_index].data;
 	}
 
@@ -1161,7 +1155,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		host_ia32_pat = vmcs12->host_IA32_PAT;
 	} else {
-		msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
 		host_ia32_pat = msr02[ia32_pat_index].data;
 	}
 	if (_vmx_hasctl_vmexit_load_ia32_efer(&ctls)) {
@@ -1173,7 +1166,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		 * * IA32_EFER.LMA = "host address-space size"
 		 * * IA32_EFER.LME = "host address-space size"
 		 */
-		msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
 		u64 mask = (1ULL << EFER_LMA) | (1ULL << EFER_LME);
 		if (_vmx_hasctl_vmexit_host_address_space_size(&ctls)) {
 			host_ia32_efer = msr02[ia32_efer_index].data | mask;
@@ -1254,19 +1246,17 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		/* Read MSRs and write to guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_store_count; i++) {
 			u32 index;
-			msr_entry_t guest_entry;
-			guestmem_copy_gp2h(&ctx_pair, 0, &guest_entry,
+			msr_entry_t msr12;
+			guestmem_copy_gp2h(&ctx_pair, 0, &msr12,
 							   guest_addr + sizeof(msr_entry_t) * i,
 							   sizeof(msr_entry_t));
-			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(guest_entry.index,
-														&index)) {
-				msr_entry_t *entry =
-					&vmcs12_info->vmcs02_vmexit_msr_store_area[index];
-				HALT_ON_ERRORCOND(entry->index == guest_entry.index);
-				guest_entry.data = entry->data;
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(msr12.index, &index)) {
+				msr_entry_t *msr02 = vmcs12_info->vmcs02_vmexit_msr_store_area;
+				HALT_ON_ERRORCOND(msr02[index].index == msr12.index);
+				msr12.data = msr02[index].data;
 			} else {
 				if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr
-					(vcpu, guest_entry.index, &guest_entry.data)) {
+					(vcpu, msr12.index, &msr12.data)) {
 					/*
 					 * Likely need to fail VMEXIT, but need to double check.
 					 */
@@ -1275,7 +1265,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 			}
 			guestmem_copy_h2gp(&ctx_pair, 0,
 							   guest_addr + sizeof(msr_entry_t) * i,
-							   &guest_entry, sizeof(msr_entry_t));
+							   &msr12, sizeof(msr_entry_t));
 		}
 	}
 	{
@@ -1291,29 +1281,22 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 						  __vmx_vmread64(encoding));
 
 		/* Set IA32_PAT and IA32_EFER in VMCS01 guest */
-		{
-			msr_entry_t *msr01 =
-				((msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest);
-			msr01[ia32_pat_index].data = host_ia32_pat;
-			msr01[ia32_efer_index].data = host_ia32_efer;
-		}
+		msr01[ia32_pat_index].data = host_ia32_pat;
+		msr01[ia32_efer_index].data = host_ia32_efer;
 
 		/* Write MSRs as requested by guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_load_count; i++) {
 			u32 index;
-			msr_entry_t guest_entry;
-			guestmem_copy_gp2h(&ctx_pair, 0, &guest_entry,
+			msr_entry_t msr12;
+			guestmem_copy_gp2h(&ctx_pair, 0, &msr12,
 							   guest_addr + sizeof(msr_entry_t) * i,
 							   sizeof(msr_entry_t));
-			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(guest_entry.index,
-														&index)) {
-				msr_entry_t *entry =
-					&((msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest)[index];
-				HALT_ON_ERRORCOND(entry->index == guest_entry.index);
-				entry->data = guest_entry.data;
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(msr12.index, &index)) {
+				HALT_ON_ERRORCOND(msr01[index].index == msr12.index);
+				msr01[index].data = msr12.data;
 			} else {
 				if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr
-					(vcpu, guest_entry.index, guest_entry.data)) {
+					(vcpu, msr12.index, msr12.data)) {
 					/*
 					 * Likely need to fail VMEXIT, but need to double check.
 					 */
