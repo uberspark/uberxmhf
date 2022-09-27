@@ -1359,7 +1359,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
 		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
-				   (1U << 14) | (1U << 15);
+			(1U << 14) | (1U << 15);
 		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
 		vcpu->vmcs.guest_ES_access_rights =
 			(vcpu->vmcs.guest_ES_access_rights & ~mask) | val;
@@ -1370,7 +1370,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		 * D/B=!"host address-space size", G=1.
 		 */
 		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
-				   (1U << 13) | (1U << 14) | (1U << 15);
+			(1U << 13) | (1U << 14) | (1U << 15);
 		u32 val = (11U << 0) | (1U << 4) | (1U << 7) | (1U << 15);
 		if (_vmx_hasctl_vmexit_host_address_space_size(&ctls)) {
 			val |= (1U << 13);
@@ -1383,7 +1383,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
 		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
-				   (1U << 14) | (1U << 15);
+			(1U << 14) | (1U << 15);
 		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
 		vcpu->vmcs.guest_SS_access_rights =
 			(vcpu->vmcs.guest_SS_access_rights & ~mask) | val;
@@ -1391,7 +1391,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
 		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
-				   (1U << 14) | (1U << 15);
+			(1U << 14) | (1U << 15);
 		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
 		vcpu->vmcs.guest_DS_access_rights =
 			(vcpu->vmcs.guest_DS_access_rights & ~mask) | val;
@@ -1399,7 +1399,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
 		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
-				   (1U << 14) | (1U << 15);
+			(1U << 14) | (1U << 15);
 		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
 		vcpu->vmcs.guest_FS_access_rights =
 			(vcpu->vmcs.guest_FS_access_rights & ~mask) | val;
@@ -1407,7 +1407,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		/* Type=3, S=1, DPL=0, P=1, D/B=1, G=1 */
 		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
-				   (1U << 14) | (1U << 15);
+			(1U << 14) | (1U << 15);
 		u32 val = (3U << 0) | (1U << 4) | (1U << 7) | (1U << 14) | (1U << 15);
 		vcpu->vmcs.guest_GS_access_rights =
 			(vcpu->vmcs.guest_GS_access_rights & ~mask) | val;
@@ -1419,7 +1419,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		/* Type=11, S=0, DPL=0, P=1, D/B=0, G=0 */
 		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
-				   (1U << 14) | (1U << 15);
+			(1U << 14) | (1U << 15);
 		u32 val = (11U << 0) | (1U << 7);
 		vcpu->vmcs.guest_TR_access_rights =
 			(vcpu->vmcs.guest_TR_access_rights & ~mask) | val;
