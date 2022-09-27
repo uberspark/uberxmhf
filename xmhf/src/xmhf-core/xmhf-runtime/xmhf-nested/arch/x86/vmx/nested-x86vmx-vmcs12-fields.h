@@ -333,11 +333,11 @@ DECLARE_FIELD_64_RW(0x2802, guest_IA32_DEBUGCTL,
 					(1),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2804, guest_IA32_PAT,
-					(FIELD_PROP_GUEST | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_GUEST),
 					(_vmx_hasctl_vmexit_save_ia32_pat(FIELD_CTLS_ARG) || _vmx_hasctl_vmentry_load_ia32_pat(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2806, guest_IA32_EFER,
-					(FIELD_PROP_GUEST | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_GUEST),
 					(_vmx_hasctl_vmexit_save_ia32_efer(FIELD_CTLS_ARG) || _vmx_hasctl_vmentry_load_ia32_efer(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2808, guest_IA32_PERF_GLOBAL_CTRL,

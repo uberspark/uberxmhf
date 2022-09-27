@@ -61,6 +61,10 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 // * xmhf_partition_arch_x86vmx_get_xmhf_msr()
 // * xmhf_parteventhub_arch_x86vmx_handle_wrmsr()
 // * xmhf_parteventhub_arch_x86vmx_handle_rdmsr()
+#ifdef __NESTED_VIRTUALIZATION__
+// * xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02()
+// * xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12()
+#endif /* __NESTED_VIRTUALIZATION__ */
 static const u32 vmx_msr_area_msrs[] = {
 	MSR_EFER,
 	MSR_IA32_PAT,
