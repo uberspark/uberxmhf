@@ -839,6 +839,11 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_entry_MSR_load_address;
 
+		__vmx_vmwrite32(VMCSENC_control_VM_entry_MSR_load_count,
+						vcpu->vmcs.control_VM_entry_MSR_load_count);
+		__vmx_vmwrite64(VMCSENC_control_VM_entry_MSR_load_address,
+						hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area));
+
 		/* Set IA32_PAT and IA32_EFER in VMCS02 guest */
 		msr02[ia32_pat_index].data = guest_ia32_pat;
 		msr02[ia32_efer_index].data = guest_ia32_efer;
