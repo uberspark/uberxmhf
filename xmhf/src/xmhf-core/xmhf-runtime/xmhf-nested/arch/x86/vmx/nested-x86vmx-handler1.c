@@ -574,12 +574,8 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR] &= mask;
 	}
 	{
-		/* "configure a EPT PDE to map a 2-Mbyte page" not supported */
-		u64 mask = ~(1ULL << 16);
-		/* "configure a EPT PDPTE to map a 1-Gbyte page" not supported */
-		mask &= ~(1ULL << 17);
 		/* "accessed and dirty flags for EPT" not supported */
-		mask &= ~(1ULL << 21);
+		u64 mask = ~(1ULL << 21);
 		vcpu->vmx_nested_msrs[INDEX_IA32_VMX_EPT_VPID_CAP_MSR] &= mask;
 	}
 	/* Select IA32_VMX_* or IA32_VMX_TRUE_* in guest mode */
