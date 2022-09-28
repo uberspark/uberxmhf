@@ -568,16 +568,9 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	 * control_VM_exit_MSR_store_address: see control_VM_exit_MSR_store_count
 	 * control_VM_exit_MSR_load_address: see control_VM_exit_MSR_load_count
 	 * control_VM_entry_MSR_load_address: see control_VM_entry_MSR_load_count
+	 * control_Executive_VMCS_pointer: ignored (0 in VMCS02), because we assume
+	 * XMHF is not in SMM. Also see IA32_VMX_BASIC bit 49.
 	 */
-	{
-		gpa_t addr = vmcs12->control_Executive_VMCS_pointer;
-		// TODO: related to SMM, check whether this restriction makes sense
-		HALT_ON_ERRORCOND(addr == 0);
-#ifndef __DEBUG_QEMU__
-		__vmx_vmwrite64(VMCSENC_control_Executive_VMCS_pointer,
-						guestmem_gpa2spa_page(&ctx_pair, addr));
-#endif							/* !__DEBUG_QEMU__ */
-	}
 	if (_vmx_hasctl_process_posted_interrupts(&ctls)) {
 		gpa_t addr = vmcs12->control_posted_interrupt_desc_address;
 		if (addr & (64 - 1)) {
@@ -1066,15 +1059,9 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	 * control_VM_exit_MSR_store_address: see control_VM_exit_MSR_store_count
 	 * control_VM_exit_MSR_load_address: see control_VM_exit_MSR_load_count
 	 * control_VM_entry_MSR_load_address: see control_VM_entry_MSR_load_count
+	 * control_Executive_VMCS_pointer: ignored (0 in VMCS02), because we assume
+	 * XMHF is not in SMM. Also see IA32_VMX_BASIC bit 49.
 	 */
-	{
-		// TODO: related to SMM, check whether this restriction makes sense
-#ifndef __DEBUG_QEMU__
-		u16 encoding = VMCSENC_control_Executive_VMCS_pointer;
-		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
-#endif							/* !__DEBUG_QEMU__ */
-		// vmcs12->control_Executive_VMCS_pointer = ...;
-	}
 	if (_vmx_hasctl_process_posted_interrupts(&ctls)) {
 		u16 encoding = VMCSENC_control_posted_interrupt_desc_address;
 		/* Note: currently assuming spa=gpa */
