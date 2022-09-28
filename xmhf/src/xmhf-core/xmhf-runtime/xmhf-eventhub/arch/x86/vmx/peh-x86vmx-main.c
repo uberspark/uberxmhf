@@ -867,11 +867,6 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	 */
 	vcpu->vmcs.control_CR4_shadow = cr4_proposed_value;
 	vcpu->vmcs.guest_CR4 = (cr4_proposed_value | vcpu->vmcs.control_CR4_mask);
-
-	#if defined (__NESTED_PAGING__)
-	//we need to flush EPT mappings as we emulated CR4 load above
-	HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
-	#endif
   }
 
   vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
