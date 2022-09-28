@@ -206,11 +206,11 @@ DECLARE_FIELD_16_RW(0x0C0C, host_TR_selector,
 /* 64-Bit Control Fields */
 DECLARE_FIELD_64_RW(0x2000, control_IO_BitmapA_address,
 					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
-					(1),
+					(_vmx_hasctl_use_io_bitmaps(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2002, control_IO_BitmapB_address,
 					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
-					(1),
+					(_vmx_hasctl_use_io_bitmaps(FIELD_CTLS_ARG)),
 					UNDEFINED)
 DECLARE_FIELD_64_RW(0x2004, control_MSR_Bitmaps_address,
 					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
