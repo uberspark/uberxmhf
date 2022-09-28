@@ -1193,9 +1193,18 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU * vcpu, struct regs *r)
 			}
 			vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 		}
+	} else if (!vcpu->vmx_nested_is_vmx_root_operation) {
+		/*
+		 * Guest hypervisor is likely performing nested virtualization.
+		 * This case should be handled in
+		 * xmhf_parteventhub_arch_x86vmx_intercept_handler(). So panic if we
+		 * end up here.
+		 */
+		HALT_ON_ERRORCOND(0 && "Nested vmexit should be handled elsewhere");
+	} else if (_vmx_guest_get_cpl(vcpu) > 0) {
+		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
-		/* This may happen if guest tries nested virtualization */
-		printf("Not implemented, HALT!\n");
-		HALT();
+		_vmx_nested_vm_fail(vcpu, VM_INST_ERRNO_VMXON_IN_VMXROOT);
+		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	}
 }
