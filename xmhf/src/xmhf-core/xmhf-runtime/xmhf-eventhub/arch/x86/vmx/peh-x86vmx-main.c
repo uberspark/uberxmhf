@@ -924,11 +924,11 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
 	cr4_proposed_value = *((uintptr_t *)_vmx_decode_reg(gpr, vcpu, r));
 
-	printf("CPU(0x%02x): CS:RIP=0x%04x:0x%08lx MOV CR4, xx\n", vcpu->id,
-			(u32)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP);
+	//printf("CPU(0x%02x): CS:RIP=0x%04x:0x%08lx MOV CR4, xx\n", vcpu->id,
+	//		(u32)vcpu->vmcs.guest_CS_selector, vcpu->vmcs.guest_RIP);
 
-	printf("MOV TO CR4 (flush TLB?), current=0x%08lx, proposed=0x%08lx\n",
-			vcpu->vmcs.guest_CR4, cr4_proposed_value);
+	//printf("MOV TO CR4 (flush TLB?), current=0x%08lx, proposed=0x%08lx\n",
+	//		vcpu->vmcs.guest_CR4, cr4_proposed_value);
 
 	/*
 	 * CR4 mask is the IA32_VMX_CR4_FIXED0 MSR. Modify CR4 shadow to let the
@@ -936,11 +936,6 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	 */
 	vcpu->vmcs.control_CR4_shadow = cr4_proposed_value;
 	vcpu->vmcs.guest_CR4 = (cr4_proposed_value | vcpu->vmcs.control_CR4_mask);
-
-	#if defined (__NESTED_PAGING__)
-	//we need to flush EPT mappings as we emulated CR4 load above
-	HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
-	#endif
   }
 
   vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
