@@ -955,12 +955,14 @@ void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU * vcpu, struct regs *r)
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
 	} else {
 		gva_t addr = _vmx_decode_m64(vcpu, r);
-		vmcs12_info_t *vmcs12_info;
-		gpa_t vmcs_ptr;
+		gpa_t vmcs_ptr = CUR_VMCS_PTR_INVALID;
 		guestmem_hptw_ctx_pair_t ctx_pair;
-		vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
-		vmcs_ptr = vmcs12_info->vmcs12_ptr;
 		guestmem_init(vcpu, &ctx_pair);
+		if (cpu_has_current_vmcs12(vcpu)) {
+			vmcs12_info_t *vmcs12_info;
+			vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
+			vmcs_ptr = vmcs12_info->vmcs12_ptr;
+		}
 		guestmem_copy_h2gv(&ctx_pair, 0, addr, &vmcs_ptr, sizeof(vmcs_ptr));
 		_vmx_nested_vm_succeed(vcpu);
 		vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
