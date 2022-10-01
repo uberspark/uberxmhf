@@ -71,10 +71,6 @@ xmhf_sl_arch_x86_invoke_runtime_entrypoint:
     movq    $0, %rdi
     call    xmhf_setup_sl_paging
 
-    /* flush TLB */
-    movq    %cr3, %rax
-    movq    %rax, %cr3
-
     /* restore arguments */
     pop     %rdi
     pop     %rsi

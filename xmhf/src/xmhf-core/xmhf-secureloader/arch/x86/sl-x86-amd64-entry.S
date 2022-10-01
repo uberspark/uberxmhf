@@ -243,6 +243,9 @@ our C main*/
     orq $0x83, %rbx
     movq %rbx, sl_pdt(%ebp)         /* store PDT[0] */
 
+    /* flush TLB for PDT[0] */
+    invlpg 0
+
     /* jump to virtual page 0 */
     movq $4f, %rax                  /* RAX now has link time address */
     jmpq *%rax

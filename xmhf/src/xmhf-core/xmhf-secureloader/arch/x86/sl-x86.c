@@ -87,6 +87,8 @@ void xmhf_setup_sl_paging(u32 baseaddr) {
         hva &= ADDR_4GB - 1ULL; /* wrap around for low physical addresses */
         sl_pdt[i] = p4l_make_pde_big(hva, default_flags);
     }
+    /* Flush TLB */
+    write_cr3(read_cr3());
 }
 #elif !defined(__I386__)
     #error "Unsupported Arch"
