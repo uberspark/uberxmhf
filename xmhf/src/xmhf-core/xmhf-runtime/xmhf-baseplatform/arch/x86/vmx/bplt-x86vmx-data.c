@@ -55,7 +55,8 @@
     {                                                           \
         encoding,                                               \
         offsetof(struct _vmx_vmcsfields, member),               \
-        sizeof((struct _vmx_vmcsfields){}.member)               \
+        sizeof((struct _vmx_vmcsfields){}.member),              \
+        1,                                                      \
     },
 
 //VMX VMCS read-only field encodings
@@ -134,6 +135,7 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
     #if defined(__NESTED_PAGING__)
     DECLARE_FIELD(0x201A, control_EPT_pointer)
     #endif
+    DECLARE_FIELD(0x202C, control_XSS_exiting_bitmap)
     // Host-State fields
     // Natural 64-bit Host-State fields
     DECLARE_FIELD(0x6C00, host_CR0)

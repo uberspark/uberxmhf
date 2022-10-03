@@ -329,6 +329,16 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
+	//set "exist" field of VMCS
+	if (!_vmx_hasctl_enable_xsaves_xrstors(&vcpu->vmx_caps)) {
+		// Set "XSS-exiting bitmap" as not exist
+		u32 i;
+		for (i = 0; i < g_vmx_vmcsrwfields_encodings_count; i++) {
+			if (g_vmx_vmcsrwfields_encodings[i].encoding == 0x202C) {
+				g_vmx_vmcsrwfields_encodings[i].exist = 0;
+			}
+		}
+	}
 	//setup host state
 	vcpu->vmcs.host_CR0 = read_cr0();
 	vcpu->vmcs.host_CR4 = read_cr4();
@@ -579,7 +589,8 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//allow XSAVES/XRSTORS (provided by Dell OptiPlex 7050, used by Debian 11)
 	if (_vmx_hasctl_enable_xsaves_xrstors(&vcpu->vmx_caps)) {
 		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_XSAVES_XRSTORS);
-		// TODO: Set the "XSS-exiting bitmap" to 0 to prevent VMEXIT
+		// Set the "XSS-exiting bitmap" to 0 to prevent VMEXIT
+		vcpu->vmcs.control_XSS_exiting_bitmap = 0ULL;
 	}
 
 	//setup VMCS link pointer
