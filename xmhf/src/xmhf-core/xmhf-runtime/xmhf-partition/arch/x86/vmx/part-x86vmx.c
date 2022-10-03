@@ -576,6 +576,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_RDTSCP);
 	}
 
+	//allow XSAVES/XRSTORS (provided by Dell OptiPlex 7050, used by Debian 11)
+	if (_vmx_hasctl_enable_xsaves_xrstors(&vcpu->vmx_caps)) {
+		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_XSAVES_XRSTORS);
+		// TODO: Set the "XSS-exiting bitmap" to 0 to prevent VMEXIT
+	}
+
 	//setup VMCS link pointer
 	vcpu->vmcs.guest_VMCS_link_pointer = (u64)0xFFFFFFFFFFFFFFFFULL;
 
