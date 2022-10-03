@@ -885,14 +885,7 @@ static void _vmx_handle_intercept_xsetbv(VCPU *vcpu, struct regs *r){
 
 	//XXX: TODO: check for invalid states and inject GP accordingly
 
-	printf("%s: xcr_value=0x%llx\n", __FUNCTION__, xcr_value);
-
-	//XXX: debug: dump CR4 contents
-	{
-		ulong_t t_cr4;
-		t_cr4 = read_cr4();
-		printf("%s: host cr4 value=0x%08lx\n", __FUNCTION__, t_cr4);
-	}
+	// printf("%s: xcr_value=0x%llx\n", __FUNCTION__, xcr_value);
 
 	//set XCR with supplied value
 	xsetbv(XCR_XFEATURE_ENABLED_MASK, xcr_value);
