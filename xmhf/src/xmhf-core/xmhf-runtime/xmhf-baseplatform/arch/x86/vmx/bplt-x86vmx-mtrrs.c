@@ -192,11 +192,11 @@ void print_mtrrs(const mtrr_state_t *saved_state)
            saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
            saved_state->mtrr_def_type.type );
     printf("mtrrs:\n");
-    printf("\t\tbase\tmask\ttype\tv\n");
+    printf("\t\t    base          mask      type  v\n");
     for ( i = 0; i < saved_state->num_var_mtrrs; i++ ) {
-        printf("\t\t%6.6x\t%6.6x\t%2.2x\t%d\n",
-               saved_state->mtrr_physbases[i].base,
-               saved_state->mtrr_physmasks[i].mask,
+        printf("\t\t%13.13Lx %13.13Lx  %2.2x  %d\n",
+               (uint64_t)saved_state->mtrr_physbases[i].base,
+               (uint64_t)saved_state->mtrr_physmasks[i].mask,
                saved_state->mtrr_physbases[i].type,
                saved_state->mtrr_physmasks[i].v );
     }
