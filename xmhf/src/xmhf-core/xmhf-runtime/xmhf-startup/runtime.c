@@ -205,7 +205,7 @@ void xmhf_runtime_entry(void){
 				protectedbuffer_size = xmhf_dmaprot_getbuffersize(DMAPROT_PHY_ADDR_SPACE_SIZE); // ADDR_512GB
 				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
 
-                xmhf_iommu_init();
+        xmhf_iommu_init();
 
 				printf("Runtime: Re-initializing DMA protection (physical address space size:0x%llX)...\n", DMAPROT_PHY_ADDR_SPACE_SIZE);
 				if(!xmhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){

@@ -44,23 +44,25 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF DMA protection component implementation
-// x86 backends
-// author: amit vasudevan (amitvasudevan@acm.org)
+// author: Miao Yu [Superymk]
+#ifdef __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__
 
-#include <xmhf.h>
-
-//"early" DMA protection initialization to setup minimal
-//structures to protect a range of physical memory
-//return 1 on success 0 on failure
-u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 memregionbase_paddr, u32 memregion_size){
-	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+#ifndef XMHF_DMAP_VMX_QUIRKS_H
+#define XMHF_DMAP_VMX_QUIRKS_H
 
 
-	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86_svm_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr,	memregion_size);
-	}
-	else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86_vmx_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr, memregion_size);
-	}
-}
+#ifndef __ASSEMBLY__
+
+//! \brief Enable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+extern bool _vtd_enable_igfx_drhd(VTD_DRHD* drhds, uint32_t vtd_num_drhd);
+
+//! \brief Disable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+extern bool _vtd_disable_igfx_drhd(VTD_DRHD* drhds, uint32_t vtd_num_drhd);
+
+#endif	//__ASSEMBLY__
+#endif //XMHF_DMAP_VMX_QUIRKS_H
+#endif // __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__

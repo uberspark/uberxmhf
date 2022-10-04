@@ -1,3 +1,49 @@
+/*
+ * @XMHF_LICENSE_HEADER_START@
+ *
+ * eXtensible, Modular Hypervisor Framework (XMHF)
+ * Copyright (c) 2009-2012 Carnegie Mellon University
+ * Copyright (c) 2010-2012 VDG Inc.
+ * All Rights Reserved.
+ *
+ * Developed by: XMHF Team
+ *               Carnegie Mellon University / CyLab
+ *               VDG Inc.
+ *               http://xmhf.org
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * Neither the names of Carnegie Mellon or VDG Inc, nor the names of
+ * its contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * @XMHF_LICENSE_HEADER_END@
+ */
+
 // XMHF must separate earlyinit from runtime, because secure loader links different files from the runtime.
 
 #include <xmhf.h>
@@ -23,13 +69,10 @@ static u32 vtd_num_drhd = 0; // total number of DMAR h/w units
 // we ensure that every entry in the RET is 0 which means that the DRHD will
 // not allow any DMA requests for PCI bus 0-255 (Sec 3.3.2, IVTD Spec. v1.2)
 // we zero out the CET just for sanity
-static void _vtd_setupRETCET_bootstrap(spa_t vtd_ret_paddr, hva_t vtd_ret_vaddr, spa_t vtd_cet_paddr, hva_t vtd_cet_vaddr)
+static void _vtd_setupRETCET_bootstrap(spa_t vtd_ret_paddr, hva_t vtd_ret_vaddr)
 {
     // sanity check that RET and CET are page-aligned
-    HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(vtd_ret_paddr) && PA_PAGE_ALIGNED_4K(vtd_cet_paddr));
-
-    // zero out CET, we dont require it for bootstrapping
-    memset((void *)vtd_cet_vaddr, 0, PAGE_SIZE_4K);
+    HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K(vtd_ret_paddr));
 
     // zero out RET, effectively preventing DMA reads and writes in the system
     memset((void *)vtd_ret_vaddr, 0, PAGE_SIZE_4K);
@@ -45,8 +88,7 @@ static u32 vmx_eap_initialize_early(
     spa_t vtd_pdpt_paddr, hva_t vtd_pdpt_vaddr,
     spa_t vtd_pdts_paddr, hva_t vtd_pdts_vaddr,
     spa_t vtd_pts_paddr, hva_t vtd_pts_vaddr,
-    spa_t vtd_ret_paddr, hva_t vtd_ret_vaddr,
-    spa_t vtd_cet_paddr, hva_t vtd_cet_vaddr)
+    spa_t vtd_ret_paddr, hva_t vtd_ret_vaddr)
 {
     ACPI_RSDP rsdp;
     ACPI_RSDT rsdt;
@@ -67,7 +109,7 @@ static u32 vmx_eap_initialize_early(
     // zero out rsdp and rsdt structures
     memset(&rsdp, 0, sizeof(ACPI_RSDP));
     memset(&rsdt, 0, sizeof(ACPI_RSDT));
-    memset(&g_vtd_cap, 0, sizeof(struct dmap_vmx_cap));
+    memset(&g_vtd_cap_sagaw_mgaw_nd, 0, sizeof(struct dmap_vmx_cap));
 
     // get ACPI RSDP
     //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
@@ -171,7 +213,7 @@ static u32 vmx_eap_initialize_early(
     }
 
     // Verify VT-d capabilities
-    status2 = _vtd_verify_cap(vtd_drhd, vtd_num_drhd, &g_vtd_cap);
+    status2 = _vtd_verify_cap(vtd_drhd, vtd_num_drhd, &g_vtd_cap_sagaw_mgaw_nd);
     if (!status2)
     {
         printf("%s: verify VT-d units' capabilities error! Halting!\n", __FUNCTION__);
@@ -179,8 +221,11 @@ static u32 vmx_eap_initialize_early(
     }
 
     // initialize VT-d RET and CET using empty RET and CET, so no DMA is allowed
-    _vtd_setupRETCET_bootstrap(vtd_ret_paddr, vtd_ret_vaddr, vtd_cet_paddr, vtd_cet_vaddr);
-    printf("%s: setup VT-d RET (%08x) and CET (%08x) for bootstrap.\n", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+    _vtd_setupRETCET_bootstrap(vtd_ret_paddr, vtd_ret_vaddr);
+    printf("%s: setup VT-d RET (0x%llX) for bootstrap.\n", __FUNCTION__, vtd_ret_paddr);
+
+    // Flush CPU cache
+    wbinvd();
 
 #endif //__XMHF_VERIFICATION__
 
@@ -189,11 +234,11 @@ static u32 vmx_eap_initialize_early(
     for (i = 0; i < vtd_num_drhd; i++)
     {
         printf("%s: initializing DRHD unit %u...\n", __FUNCTION__, i);
-        _vtd_drhd_initialize(&vtd_drhd[i], vtd_ret_paddr);
+        _vtd_drhd_initialize_earlyinit(&vtd_drhd[i], vtd_ret_paddr);
     }
 #else
     printf("%s: initializing DRHD unit %u...\n", __FUNCTION__, i);
-    _vtd_drhd_initialize(&vtd_drhd[0], vtd_ret_paddr);
+    _vtd_drhd_initialize_earlyinit(&vtd_drhd[0], vtd_ret_paddr);
 #endif
 
     // success
@@ -210,21 +255,19 @@ static u32 vmx_eap_initialize_early(
 // return 1 on success 0 on failure
 u32 xmhf_dmaprot_arch_x86_vmx_earlyinitialize(sla_t protectedbuffer_paddr, sla_t protectedbuffer_vaddr, size_t protectedbuffer_size, sla_t __attribute__((unused)) memregionbase_paddr, u32 __attribute__((unused)) memregion)
 {
-    u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr, vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
+    u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
 
     //(void)memregionbase_paddr;
     //(void)memregion_size;
 
     printf("SL: Bootstrapping VMX DMA protection...\n");
 
-    // we use 2 pages for Vt-d bootstrapping
-    HALT_ON_ERRORCOND(protectedbuffer_size >= (2 * PAGE_SIZE_4K));
+    // we use 1 pages for Vt-d bootstrapping
+    HALT_ON_ERRORCOND(protectedbuffer_size >= (1 * PAGE_SIZE_4K));
 
     vmx_eap_vtd_ret_paddr = protectedbuffer_paddr;
     vmx_eap_vtd_ret_vaddr = protectedbuffer_vaddr;
-    vmx_eap_vtd_cet_paddr = protectedbuffer_paddr + PAGE_SIZE_4K;
-    vmx_eap_vtd_cet_vaddr = protectedbuffer_vaddr + PAGE_SIZE_4K;
 
     return vmx_eap_initialize_early(0, 0, 0, 0, 0, 0, 0, 0,
-                vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr, vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr);
+                vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr);
 }

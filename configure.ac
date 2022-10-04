@@ -69,7 +69,20 @@ AC_ARG_WITH([target_arch],
                 , [with_target_arch=x86-vmx])
 TARGET_ARCH=$[]with_target_arch
 
+# Allow hypapps to disable integrated GPU's IOMMU when needed due to hardware quirks.
+# WARNING: If set this config, then XMHF must trust ALL code that can disable igfx's IOMMU and configuring igfx
+# Default: no
+AC_SUBST([ALLOW_HYPAPP_DISABLE_IGFX_IOMMU])
+AC_ARG_ENABLE([allow_hypapp_disable_igfx_iommu],
+        AS_HELP_STRING([--allow-hypapp-disable-igfx-iommu@<:@=yes|no@:>@],
+                [Allow a hypapp to disable igfx's IOMMU when needed due to igfx's hardware quirks. WARNING: If set this config, then XMHF MUST TRUST ALL code that can disable igfx's IOMMU and configuring igfx]),
+                , [allow_hypapp_disable_igfx_iommu=no])
+AS_IF([test "x${allow_hypapp_disable_igfx_iommu}" != "xno"],
+      [ALLOW_HYPAPP_DISABLE_IGFX_IOMMU=y],
+      [ALLOW_HYPAPP_DISABLE_IGFX_IOMMU=n])
+
 # Enable CPU quiescing in guest memory/PIO access traps
+# Default: yes
 AC_SUBST([ENABLE_QUIESCING_IN_GUEST_MEM_PIO_TRAPS])
 AC_ARG_ENABLE([quiesce_in_guest_mem_pio_traps],
         AS_HELP_STRING([--enable-quiesce-in-guest-mem-pio-traps@<:@=yes|no@:>@],

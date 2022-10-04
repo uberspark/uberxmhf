@@ -215,6 +215,31 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size);
 extern void xmhf_dmaprot_arch_x86_vmx_unprotect(spa_t start_paddr, size_t size);
 extern void xmhf_dmaprot_arch_x86_vmx_invalidate_cache(void);
 
+
+
+/********* Support hypapps to control igfx's IOMMU *********/
+#ifdef __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__
+//! \brief Enable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+extern bool xmhf_dmaprot_arch_x86_vmx_enable_igfx_iommu(void);
+
+//! \brief Disable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+extern bool xmhf_dmaprot_arch_x86_vmx_disable_igfx_iommu(void);
+#endif // __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__
+
+
+
+
+/********* Debug functions *********/
+extern void xmhf_dmaprot_arch_x86_vmx_print_and_clear_fault_registers(void);
+extern void xmhf_dmaprot_arch_x86_vmx_restart_dma_iommu(void);
+extern void xmhf_dmaprot_arch_x86_vmx_disable_dma_iommu(void);
+extern void xmhf_dmaprot_arch_x86_vmx_print_tes(char* s);
+
+
 //----------------------------------------------------------------------
 //svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------

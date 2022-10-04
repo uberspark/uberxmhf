@@ -44,23 +44,36 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF DMA protection component implementation
-// x86 backends
-// author: amit vasudevan (amitvasudevan@acm.org)
+#ifndef __XMHF_BASEPLATFORM_CPU_H__
+#define __XMHF_BASEPLATFORM_CPU_H__
 
-#include <xmhf.h>
+#include "xmhf-types.h"
 
-//"early" DMA protection initialization to setup minimal
-//structures to protect a range of physical memory
-//return 1 on success 0 on failure
-u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 memregionbase_paddr, u32 memregion_size){
-	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+// This macro is used by microsec CPU delay. The delayed time is imprecise.
+// [TODO] We assume the CPU frequency is 3.5GHz.
+#define CPU_CYCLES_PER_MICRO_SEC        3500UL
+#define SEC_TO_CYCLES(x)                (1000UL * 1000UL) * CPU_CYCLES_PER_MICRO_SEC * x
 
 
-	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86_svm_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr,	memregion_size);
-	}
-	else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86_vmx_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr, memregion_size);
-	}
+#ifndef __ASSEMBLY__
+
+#define mb()	asm volatile("mfence" ::: "memory")
+#define __force	__attribute__((force))
+
+//! @brief Save energy when waiting in a busy loop
+static inline void xmhf_cpu_relax(void) 
+{
+	asm volatile ("pause");
 }
+
+// Flushing functions
+extern void xmhf_cpu_flush_cache_range(void *vaddr, unsigned int size);
+
+//! @brief Sleep the current core for <us> micro-second.
+extern void xmhf_cpu_delay_us(uint64_t us);
+
+#endif	//__ASSEMBLY__
+
+
+
+#endif //__XMHF_BASEPLATFORM_CPU_H__
