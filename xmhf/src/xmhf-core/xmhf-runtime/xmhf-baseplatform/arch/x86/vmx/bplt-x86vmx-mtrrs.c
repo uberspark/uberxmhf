@@ -90,10 +90,36 @@
 #define NR_MMIO_APIC_PAGES      1
 #define NR_MMIO_IOAPIC_PAGES    1
 #define NR_MMIO_PCICFG_PAGES    1
+#define SINIT_MTRR_MASK         0xFFFFFF  /* SINIT requires 36b mask */
 
 /* saved MTRR state or NULL if orig. MTRRs have not been changed */
 //static __data mtrr_state_t *g_saved_mtrrs = NULL;
 static mtrr_state_t *g_saved_mtrrs = NULL;
+
+static uint64_t get_maxphyaddr_mask(void)
+{
+    static bool printed_msg = false;
+    union {
+        uint32_t raw;
+        struct {
+            uint32_t num_pa_bits  : 8;
+            uint32_t num_la_bits  : 8;
+            uint32_t reserved     : 16;
+        };
+    } num_addr_bits;
+
+    /* does CPU support 0x80000008 CPUID leaf? (all TXT CPUs should) */
+    uint32_t max_ext_fn = cpuid_eax(0x80000000);
+    if ( max_ext_fn < 0x80000008 )
+        return 0xffffff;      /* if not, default is 36b support */
+
+    num_addr_bits.raw = cpuid_eax(0x80000008);
+    if ( !printed_msg ) {
+        printf("CPU supports %u phys address bits\n", num_addr_bits.num_pa_bits);
+        printed_msg = true;
+    }
+    return ((1ULL << num_addr_bits.num_pa_bits) - 1) >> PAGE_SHIFT_4K;
+}
 
 /*
  * this must be done for each processor so that all have the same
@@ -349,6 +375,8 @@ static int get_region_type(const mtrr_state_t *saved_state,
 bool validate_mtrrs(const mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
+    uint64_t maxphyaddr_mask = get_maxphyaddr_mask();
+    uint64_t max_pages = maxphyaddr_mask + 1;  /* max # 4k pages supported */
     u64 ndx;
 
     /* check is meaningless if MTRRs were disabled */
@@ -371,19 +399,23 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
         if ( saved_state->mtrr_physmasks[ndx].v == 0 )
             continue;
 
-        for ( tb = 0x1; tb != 0x1000000; tb = tb << 1 ) {
-            if ( (tb & saved_state->mtrr_physmasks[ndx].mask) != 0 )
+        for ( tb = 0x1; tb != max_pages; tb = tb << 1 ) {
+            if ( (tb & saved_state->mtrr_physmasks[ndx].mask & maxphyaddr_mask)
+                 != 0 )
                 break;
         }
-        for ( ; tb != 0x1000000; tb = tb << 1 ) {
-            if ( (tb & saved_state->mtrr_physmasks[ndx].mask) == 0 )
+        for ( ; tb != max_pages; tb = tb << 1 ) {
+            if ( (tb & saved_state->mtrr_physmasks[ndx].mask & maxphyaddr_mask)
+                 == 0 )
                 break;
         }
-        if ( tb != 0x1000000 ) {
+        if ( tb != max_pages ) {
             printf("var MTRRs with non-contiguous regions: "
                    "base=%06x, mask=%06x\n",
-                   (unsigned int) saved_state->mtrr_physbases[ndx].base,
-                   (unsigned int) saved_state->mtrr_physmasks[ndx].mask);
+                   (uint64_t) saved_state->mtrr_physbases[ndx].base
+                                   & maxphyaddr_mask,
+                   (uint64_t) saved_state->mtrr_physmasks[ndx].mask
+                                   & maxphyaddr_mask);
             print_mtrrs(saved_state);
             return false;
         }
@@ -406,10 +438,10 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
             if ( mask_i->v == 0 )
                 continue;
 
-            if ( (base_ndx->base & mask_ndx->mask & mask_i->mask)
-                    != (base_i->base & mask_i->mask)
-                 && (base_i->base & mask_i->mask & mask_ndx->mask)
-                    != (base_ndx->base & mask_ndx->mask) )
+            if ( (base_ndx->base & mask_ndx->mask & mask_i->mask & maxphyaddr_mask)
+                    != (base_i->base & mask_i->mask & maxphyaddr_mask)
+                 && (base_i->base & mask_i->mask & mask_ndx->mask & maxphyaddr_mask)
+                    != (base_ndx->base & mask_ndx->mask & maxphyaddr_mask) )
                 continue;
 
             if ( base_ndx->type == base_i->type )
@@ -440,14 +472,14 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
                 if ( base_j->type != MTRR_TYPE_UNCACHABLE )
                     continue;
 
-                if ( (base_ndx->base & mask_ndx->mask & mask_j->mask)
-                        == (base_j->base & mask_j->mask)
-                     && (mask_j->mask & ~mask_ndx->mask) == 0 )
+                if ( (base_ndx->base & mask_ndx->mask & mask_j->mask & maxphyaddr_mask)
+                        == (base_j->base & mask_j->mask & maxphyaddr_mask)
+                     && (mask_j->mask & ~mask_ndx->mask & maxphyaddr_mask) == 0 )
                     break;
 
-                if ( (base_i->base & mask_i->mask & mask_j->mask)
-                        == (base_j->base & mask_j->mask)
-                     && (mask_j->mask & ~mask_i->mask) == 0 )
+                if ( (base_i->base & mask_i->mask & mask_j->mask & maxphyaddr_mask)
+                        == (base_j->base & mask_j->mask & maxphyaddr_mask)
+                     && (mask_j->mask & ~mask_i->mask & maxphyaddr_mask) == 0 )
                     break;
             }
             if ( j < saved_state->num_var_mtrrs )
@@ -549,10 +581,9 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
 
         /* set the base of the current MTRR */
         mtrr_physbase.raw = rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
-        mtrr_physbase.base = (unsigned long)base >> PAGE_SHIFT_4K;
+        mtrr_physbase.base = ((unsigned long)base >> PAGE_SHIFT_4K) &
+                             SINIT_MTRR_MASK;
         mtrr_physbase.type = mem_type;
-        /* set explicitly in case base field is >24b (MAXPHYADDR >36) */
-        mtrr_physbase.reserved2 = 0;
         wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2, mtrr_physbase.raw);
 
         /*
@@ -563,10 +594,8 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
         pages_in_range = 1 << (fls(num_pages) - 1);
 
         mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
-        mtrr_physmask.mask = ~(pages_in_range - 1);
+        mtrr_physmask.mask = ~(pages_in_range - 1) & SINIT_MTRR_MASK;
         mtrr_physmask.v = 1;
-        /* set explicitly in case mask field is >24b (MAXPHYADDR >36) */
-        mtrr_physmask.reserved2 = 0;
         wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, mtrr_physmask.raw);
 
         /* prepare for the next loop depending on number of pages
