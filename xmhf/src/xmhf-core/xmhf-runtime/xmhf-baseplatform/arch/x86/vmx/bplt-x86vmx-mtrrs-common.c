@@ -136,7 +136,7 @@ void print_mtrrs(const mtrr_state_t *saved_state)
     printf("mtrrs:\n");
     printf("\t\t    base          mask      type  v\n");
     for ( i = 0; i < saved_state->num_var_mtrrs; i++ ) {
-        printf("\t\t%13.13Lx %13.13Lx  %2.2x  %d\n",
+        printf("\t\t%13.13llx %13.13llx  %2.2x  %d\n",
                (uint64_t)saved_state->mtrr_physbases[i].base,
                (uint64_t)saved_state->mtrr_physmasks[i].mask,
                saved_state->mtrr_physbases[i].type,
