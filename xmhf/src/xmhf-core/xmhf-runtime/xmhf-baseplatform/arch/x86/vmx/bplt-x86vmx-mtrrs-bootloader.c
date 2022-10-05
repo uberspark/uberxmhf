@@ -197,6 +197,9 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
 {
     int num_pages;
     int ndx;
+    unsigned long base_v;
+    int i;
+    int mtrr_s;
     mtrr_def_type_t mtrr_def_type;
     mtrr_cap_t mtrr_cap;
     mtrr_physmask_t mtrr_physmask;
@@ -231,6 +234,42 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
     printf("setting MTRRs for acmod: base=%p, size=%x, num_pages=%d\n",
            base, size, num_pages);
 
+    /*
+     * Each VAR MTRR base must be a multiple if that MTRR's Size
+     */
+    base_v = (unsigned long) base;
+    i = 0;
+    // mtrr size in pages
+    mtrr_s = 1;
+    while ((base_v & 0x01) == 0) {
+          i++;
+          base_v = base_v >> 1;
+    }
+    for (int j=i-12; j>0; j--) mtrr_s =mtrr_s*2; // mtrr_s = mtrr_s << 1
+    printf("The maximum allowed MTRR range size=%d Pages \n", mtrr_s);
+
+    while (num_pages >= mtrr_s){
+
+        /* set the base of the current MTRR */
+        mtrr_physbase.raw = rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
+        mtrr_physbase.base = ((unsigned long)base >> PAGE_SHIFT_4K) &
+                             SINIT_MTRR_MASK;
+        mtrr_physbase.type = mem_type;
+        wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2, mtrr_physbase.raw);
+
+        mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
+        mtrr_physmask.mask = ~(mtrr_s - 1) & SINIT_MTRR_MASK;
+        mtrr_physmask.v = 1;
+        wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, mtrr_physmask.raw);
+
+        base += (mtrr_s * PAGE_SIZE_4K);
+        num_pages -= mtrr_s;
+        ndx++;
+        if ( ndx == mtrr_cap.vcnt ) {
+            printf("exceeded number of var MTRRs when mapping range\n");
+            return false;
+        }
+    }
     while ( num_pages > 0 ) {
         uint32_t pages_in_range;
 
