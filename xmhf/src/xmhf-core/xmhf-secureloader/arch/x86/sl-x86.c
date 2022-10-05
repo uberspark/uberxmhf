@@ -325,7 +325,14 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 
 
 void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
-	u32 ptba;	//page table base address
+#ifdef __AMD64__
+	u64 ptba;	//page table base address
+#elif defined(__I386__)
+    u32 ptba;	//page table base address
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+
 	TSSENTRY *t;
 	hva_t tss_base;
 	hva_t gdt_base;
