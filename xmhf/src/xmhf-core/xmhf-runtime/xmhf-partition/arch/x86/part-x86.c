@@ -96,3 +96,25 @@ void xmhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 pr
 	}
 
 }
+
+//set legacy I/O protection for the partition
+void xmhf_partition_arch_legacyIO_setprot_bitmap(hva_t iobitmap, u32 port, u32 size, u32 prottype)
+{
+	u8 *bit_vector = (u8 *)iobitmap;
+	u32 byte_offset, bit_offset;
+	u32 i;
+
+	if((iobitmap != (hva_t)g_vmx_iobitmap_buffer) && (iobitmap != (hva_t)g_vmx_iobitmap_buffer_2nd))
+		return;
+
+	for(i=0; i < size; i++){
+		byte_offset = (port+i) / 8;
+		bit_offset = (port+i) % 8;
+		if(prottype & PART_LEGACYIO_NOACCESS){
+			bit_vector[byte_offset] |= (1 << bit_offset);
+		}else{
+			prottype = PART_LEGACYIO_READWRITE;
+			bit_vector[byte_offset] &= ~((1 << bit_offset));
+		}
+	}
+}
