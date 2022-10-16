@@ -771,6 +771,9 @@ extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".bss.palign_data") ));
 //VMX IO bitmap buffers
 extern u8 g_vmx_iobitmap_buffer[] __attribute__(( section(".bss.palign_data") ));
 
+// 2nd IO bitmap buffers. Some hypapps may need a 2nd bitmap.
+extern u8 g_vmx_iobitmap_buffer_2nd[] __attribute__(( section(".bss.palign_data") ));
+
 //VMX guest and host MSR save area buffers
 extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".bss.palign_data") ));
 extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".bss.palign_data") ));

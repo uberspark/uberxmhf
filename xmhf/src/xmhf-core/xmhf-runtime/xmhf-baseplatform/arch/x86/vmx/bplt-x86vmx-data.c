@@ -239,6 +239,9 @@ u8 g_vmx_vmcs_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section("
 //VMX IO bitmap buffer (one buffer for the entire platform)
 u8 g_vmx_iobitmap_buffer[2 * PAGE_SIZE_4K] __attribute__(( section(".bss.palign_data") ));
 
+// 2nd IO bitmap buffers. Some hypapps may need a 2nd bitmap.
+u8 g_vmx_iobitmap_buffer_2nd[2 * PAGE_SIZE_4K] __attribute__(( section(".bss.palign_data") ));
+
 //VMX guest and host MSR save area buffers
 u8 g_vmx_msr_area_host_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".bss.palign_data") ));
 u8 g_vmx_msr_area_guest_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".bss.palign_data") ));
