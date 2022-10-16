@@ -232,6 +232,72 @@ static bool check_sinit_module(void *base, size_t size)
     return false;
 }
 
+/* should be called after os_mle_data initialized */
+static void *init_event_log(void)
+{
+    os_mle_data_t *os_mle_data = get_os_mle_data_start(get_txt_heap());
+    event_log_container_t *elog;
+    elog = (event_log_container_t *)&os_mle_data->event_log_buffer;
+
+    memcpy((void *)elog->signature, EVTLOG_SIGNATURE,
+           sizeof(elog->signature));
+    elog->container_ver_major = EVTLOG_CNTNR_MAJOR_VER;
+    elog->container_ver_minor = EVTLOG_CNTNR_MINOR_VER;
+    elog->pcr_event_ver_major = EVTLOG_EVT_MAJOR_VER;
+    elog->pcr_event_ver_minor = EVTLOG_EVT_MINOR_VER;
+    elog->size = sizeof(os_mle_data->event_log_buffer);
+    elog->pcr_events_offset = sizeof(*elog);
+    elog->next_event_offset = sizeof(*elog);
+
+    return (void *)elog;
+}
+
+/* initialize TCG compliant TPM 2.0 event log descriptor */
+static void init_evtlog_desc_1(heap_event_log_ptr_elt2_1_t *evt_log)
+{
+    os_mle_data_t *os_mle_data = get_os_mle_data_start(get_txt_heap());
+
+    evt_log->phys_addr = (uint64_t)(unsigned long)(os_mle_data->event_log_buffer);
+    evt_log->allcoated_event_container_size = 2*PAGE_SIZE_4K;
+    evt_log->first_record_offset = 0;
+    evt_log->next_record_offset = 0;
+    printf("TCG compliant TPM 2.0 event log descriptor:\n");
+    printf("\t phys_addr = 0x%llX\n",  evt_log->phys_addr);
+    printf("\t allcoated_event_container_size = 0x%x \n", evt_log->allcoated_event_container_size);
+    printf("\t first_record_offset = 0x%x \n", evt_log->first_record_offset);
+    printf("\t next_record_offset = 0x%x \n", evt_log->next_record_offset);
+}
+
+// XMHF: Add argument version get_evtlog_type().
+static void init_os_sinit_ext_data(heap_ext_data_element_t* elts, u32 version)
+{
+    heap_ext_data_element_t* elt = elts;
+
+    if (version == 6) {
+        heap_event_log_ptr_elt_t* evt_log = (heap_event_log_ptr_elt_t *)elt->data;
+        evt_log->event_log_phys_addr = (uint64_t)(unsigned long)init_event_log();
+        elt->type = HEAP_EXTDATA_TYPE_TPM_EVENT_LOG_PTR;
+        elt->size = sizeof(*elt) + sizeof(*evt_log);
+    } else if (version == 7) {
+        /*
+         * Assuming get_evtlog_type() == EVTLOG_TPM2_TCG.
+         * EVTLOG_TPM2_LEGACY not implemented.
+         */
+        static heap_event_log_ptr_elt2_1_t *elog_2_1;
+        elog_2_1 = (heap_event_log_ptr_elt2_1_t *)elt->data;
+        init_evtlog_desc_1(elog_2_1);
+        elt->type = HEAP_EXTDATA_TYPE_TPM_EVENT_LOG_PTR_2_1;
+        elt->size = sizeof(*elt) + sizeof(heap_event_log_ptr_elt2_1_t);
+        printf("heap_ext_data_element TYPE = %d \n", elt->type);
+        printf("heap_ext_data_element SIZE = %d \n", elt->size);
+    } else {
+        HALT_ON_ERRORCOND(0 && "Unsupported version");
+    }
+
+    elt = (void *)elt + elt->size;
+    elt->type = HEAP_EXTDATA_TYPE_END;
+    elt->size = sizeof(*elt);
+}
 
 /*
  * sets up TXT heap
@@ -245,9 +311,16 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     os_sinit_data_t *os_sinit_data;
     /* uint64_t min_lo_ram, max_lo_ram, min_hi_ram, max_hi_ram; */
     txt_caps_t sinit_caps;
-    txt_caps_t caps_mask;
+    txt_caps_t caps_mask = { 0 };
+    u32 version;
 
     txt_heap = get_txt_heap();
+    sinit_caps._raw = get_sinit_capabilities(sinit);
+    /* TODO: tboot-1.10.5 sets those bits for no reason. Why? */
+    caps_mask.rlp_wake_getsec = 1;
+    caps_mask.rlp_wake_monitor = 1;
+    caps_mask.pcr_map_da = 1;
+    caps_mask.tcg_event_log_format = 1;
 
     /*
      * BIOS data already setup by BIOS
@@ -269,11 +342,55 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /*
      * OS/loader to SINIT data
      */
+    /*
+     * Old XMHF hardcodes version = 5, which breaks on new hardware.
+     * New hardware CPU info: Intel(R) Core(TM) i5-7600 CPU.
+     * In SDM 315168-006, version is defined for 4 - 5 (assuming TPM 1.2).
+     * In SDM 315168-017, version 6 is for TPM 1.2 and version 7 for TPM 2.0.
+     * TODO: Currently skipping TPM version check and using OS to SINIT data
+     * version. Assuming 5,6 = TPM 1.2, 7+ = TPM 2.0.
+     */
+    version = get_supported_os_sinit_data_ver(sinit);
+    printf("Maximum OS to SINIT data version supported by hardware: %u\n",
+           version);
+    if (version < MIN_OS_SINIT_DATA_VER) {
+        printf("unsupported OS to SINIT data version(%u) in sinit\n", version);
+        return NULL;
+    }
+    if (version > MAX_OS_SINIT_DATA_VER) {
+        version = MAX_OS_SINIT_DATA_VER;
+    }
+    printf("Actual OS to SINIT data version using: %u\n", version);
     os_sinit_data = get_os_sinit_data_start(txt_heap);
+    os_sinit_data->capabilities._raw = MLE_HDR_CAPS & ~caps_mask._raw;
     size = (uint64_t *)((uint32_t)os_sinit_data - sizeof(uint64_t));
-    *size = sizeof(*os_sinit_data) + sizeof(uint64_t);
+    /* Refer to tboot 1.10.5 function calc_os_sinit_data_size() */
+    switch (version) {
+    case 5:
+        *size = sizeof(*os_sinit_data) + sizeof(uint64_t);
+        break;
+    case 6:
+        *size = sizeof(os_sinit_data_t) + sizeof(uint64_t) +
+                2 * sizeof(heap_ext_data_element_t) +
+                sizeof(heap_event_log_ptr_elt_t);
+        break;
+    case 7:
+        os_sinit_data->capabilities.tcg_event_log_format = 1;
+        if (sinit_caps.tcg_event_log_format) {
+            *size = sizeof(os_sinit_data_t) + sizeof(uint64_t) +
+                    2 * sizeof(heap_ext_data_element_t) +
+                    sizeof(heap_event_log_ptr_elt2_1_t);
+        } else {
+            HALT_ON_ERRORCOND(0 && "EVTLOG_TPM2_LEGACY not implemented");
+            /* Note: after implementing, also update init_os_sinit_ext_data() */
+        }
+        break;
+    default:
+        HALT_ON_ERRORCOND(0 && "Unsupported version");
+        break;
+    }
     memset(os_sinit_data, 0, sizeof(*os_sinit_data));
-    os_sinit_data->version = 5; // XXX too magical
+    os_sinit_data->version = version;
     /* this is phys addr */
     os_sinit_data->mle_ptab = (uint64_t)(unsigned long)ptab_base;
     os_sinit_data->mle_size = g_mle_hdr.mle_end_off - g_mle_hdr.mle_start_off;
@@ -304,7 +421,6 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
     /* capabilities : choose monitor wake mechanism first */
     ///XXX I don't really understand this
-    sinit_caps._raw = get_sinit_capabilities(sinit);
     caps_mask._raw = 0;
     caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
     os_sinit_data->capabilities._raw = MLE_HDR_CAPS & ~caps_mask._raw;
@@ -322,6 +438,42 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
      */
     os_sinit_data->capabilities.ecx_pgtbl = 0;
     /* TODO: when tboot supports EFI then set efi_rsdt_ptr */
+
+    /* capabilities : choose DA/LG */
+    os_sinit_data->capabilities.pcr_map_no_legacy = 1;
+    // XMHF: Assume get_tboot_prefer_da() returns false.
+    //if ( sinit_caps.pcr_map_da && (get_tboot_prefer_da() || sinit_caps.cbnt_supported) )
+    if ( sinit_caps.pcr_map_da && sinit_caps.cbnt_supported )
+        os_sinit_data->capabilities.pcr_map_da = 1;
+    else if ( !sinit_caps.pcr_map_no_legacy )
+        os_sinit_data->capabilities.pcr_map_no_legacy = 0;
+    else if ( sinit_caps.pcr_map_da ) {
+        printf(
+               "DA is the only supported PCR mapping by SINIT, use it\n");
+        os_sinit_data->capabilities.pcr_map_da = 1;
+    }
+    else {
+        printf("SINIT capabilities are incompatible (0x%x)\n",
+               sinit_caps._raw);
+        return NULL;
+    }
+
+    /*
+     * TODO: review "Flags" (offset 4) field when version = 7. Currently
+     * hardcoding 0 (Maximum Agility Policy).
+     */
+
+    /* PCR mapping selection MUST be zero in TPM2.0 mode
+     * since D/A mapping is the only supported by TPM2.0 */
+    if ( version >= 7 ) {
+        os_sinit_data->reserved = 0;
+        os_sinit_data->capabilities.pcr_map_no_legacy = 0;
+        os_sinit_data->capabilities.pcr_map_da = 0;
+    }
+
+    /* Event log initialization */
+    if ( os_sinit_data->version >= 6 )
+        init_os_sinit_ext_data(os_sinit_data->ext_data_elts, os_sinit_data->version);
 
     print_os_sinit_data(os_sinit_data);
 

@@ -95,7 +95,14 @@ typedef union {
         uint32_t  rlp_wake_getsec     : 1;
         uint32_t  rlp_wake_monitor    : 1;
         uint32_t  ecx_pgtbl           : 1;
-        uint32_t  reserved            : 29;
+        uint32_t  stm                 : 1;
+        uint32_t  pcr_map_no_legacy   : 1;
+        uint32_t  pcr_map_da          : 1;
+        uint32_t  platform_type       : 2;
+        uint32_t  max_phy_addr        : 1;
+        uint32_t  tcg_event_log_format: 1;
+        uint32_t  cbnt_supported      : 1;
+        uint32_t  reserved1           : 21;
     };
 } txt_caps_t;
 
@@ -138,8 +145,9 @@ typedef struct {
  * values supported by current version of tboot
  */
 #define MLE_HDR_VER       0x00020001     /* 2.1 */
-#define MLE_HDR_CAPS      0x00000007     /* rlp_wake_{getsec, monitor} = 1,
-                                            ecx_pgtbl = 1 */
+#define MLE_HDR_CAPS      0x000000627     /* rlp_wake_{getsec, monitor} = 1,
+                                            ecx_pgtbl = 1, nolg = 0, da = 1
+                                            tcg_event_log_format = 1, cbnt_supported = 1 */
 
 /* from tboot-20101005/include/tb_error.h */
 typedef enum {
