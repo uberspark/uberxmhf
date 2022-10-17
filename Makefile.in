@@ -37,6 +37,7 @@ export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
 export MP_VERSION := @MP_VERSION@
 export ALLOW_HYPAPP_DISABLE_IGFX_IOMMU := @ALLOW_HYPAPP_DISABLE_IGFX_IOMMU@
 export ENABLE_QUIESCING_IN_GUEST_MEM_PIO_TRAPS := @ENABLE_QUIESCING_IN_GUEST_MEM_PIO_TRAPS@
+export ENABLE_LD_GC_SECTIONS := @ENABLE_LD_GC_SECTIONS@
 export DEBUG_SYMBOLS := @DEBUG_SYMBOLS@
 export DEBUG_QEMU := @DEBUG_QEMU@
 export DEBUG_SERIAL := @DEBUG_SERIAL@
@@ -208,13 +209,20 @@ CFLAGS += -nostdinc -pipe
 CFLAGS += -Wno-address-of-packed-member
 CFLAGS += -fno-pie -fno-pic -mno-red-zone
 
+
 # Compiler optimization (-O1, -O3, ...)
 CFLAGS += $(OPT_FLAGS)
 
 CFLAGS += $(ADDL_INCLUDES)
 VFLAGS = $(ADDL_INCLUDES)
-
 LDFLAGS =
+
+ifeq ($(ENABLE_LD_GC_SECTIONS), y)
+# TODO: gcc man page says these options may cause slower code. Consider only
+# using -fdata-sections -ffunction-sections on files used by secureloader.
+CFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS += --gc-sections
+endif
 
 ifeq ($(ALLOW_HYPAPP_DISABLE_IGFX_IOMMU), y)
 	CFLAGS += -D__XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__

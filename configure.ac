@@ -92,6 +92,17 @@ AS_IF([test "x${enable_quiesce_in_guest_mem_pio_traps}" != "xno"],
       [ENABLE_QUIESCING_IN_GUEST_MEM_PIO_TRAPS=y],
       [ENABLE_QUIESCING_IN_GUEST_MEM_PIO_TRAPS=n])
 
+# Enable --gc-sections in ld to remove unused symbols, reduce secureloader size
+# Default: yes
+AC_SUBST([ENABLE_LD_GC_SECTIONS])
+AC_ARG_ENABLE([ld_gc_sections],
+        AS_HELP_STRING([--enable-ld-gc-sections@<:@=yes|no@:>@],
+                [enable garbage collecting unused symbols in ld]),
+                , [ld_gc_sections=yes])
+AS_IF([test "x${ld_gc_sections}" != "xno"],
+      [ENABLE_LD_GC_SECTIONS=y],
+      [ENABLE_LD_GC_SECTIONS=n])
+
 # debug symbols (-g in gcc)
 AC_SUBST([DEBUG_SYMBOLS])
 AC_ARG_ENABLE([debug_symbols],
