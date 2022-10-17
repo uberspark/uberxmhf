@@ -53,8 +53,10 @@
 
 #ifdef __I386__
 OUTPUT_ARCH(i386)
+OUTPUT_FORMAT(elf32-i386)
 #elif defined(__AMD64__)
 OUTPUT_ARCH(i386:x86-64)
+OUTPUT_FORMAT(elf64-x86-64)
 #else /* !defined(__I386__) && !defined(__AMD64__) */
 #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
