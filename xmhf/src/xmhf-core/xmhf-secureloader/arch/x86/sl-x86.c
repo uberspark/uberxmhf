@@ -53,9 +53,9 @@
 #include <xmhf.h>
 
 
-// 2 pages of memory in untrusted SL memory for Intel to set up DMA protection
+// 1 pages of memory in untrusted SL memory for Intel to disable all DMA accesses
 // According to implementation, they should be simply memset to 0
-u8 g_sl_intel_dmap_buffer[2 * PAGE_SIZE_4K]
+u8 g_sl_intel_dmap_buffer[1 * PAGE_SIZE_4K]
 __attribute__((section(".sl_untrusted_params"), aligned(PAGE_SIZE_4K)));
 
 //we only have confidence in the runtime's expected value here in the SL
@@ -325,7 +325,14 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 
 
 void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
-	u32 ptba;	//page table base address
+#ifdef __AMD64__
+	u64 ptba;	//page table base address
+#elif defined(__I386__)
+    u32 ptba;	//page table base address
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+
 	TSSENTRY *t;
 	hva_t tss_base;
 	hva_t gdt_base;

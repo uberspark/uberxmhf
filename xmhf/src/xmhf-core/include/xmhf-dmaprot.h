@@ -215,6 +215,31 @@ void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size);
 extern void xmhf_dmaprot_arch_x86_vmx_unprotect(spa_t start_paddr, size_t size);
 extern void xmhf_dmaprot_arch_x86_vmx_invalidate_cache(void);
 
+
+
+/********* Support hypapps to control igfx's IOMMU *********/
+#ifdef __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__
+//! \brief Enable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+extern bool xmhf_dmaprot_arch_x86_vmx_enable_igfx_iommu(void);
+
+//! \brief Disable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+extern bool xmhf_dmaprot_arch_x86_vmx_disable_igfx_iommu(void);
+#endif // __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__
+
+
+
+
+/********* Debug functions *********/
+extern void xmhf_dmaprot_arch_x86_vmx_print_and_clear_fault_registers(void);
+extern void xmhf_dmaprot_arch_x86_vmx_restart_dma_iommu(void);
+extern void xmhf_dmaprot_arch_x86_vmx_disable_dma_iommu(void);
+extern void xmhf_dmaprot_arch_x86_vmx_print_tes(char* s);
+
+
 //----------------------------------------------------------------------
 //svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------
@@ -228,20 +253,20 @@ extern void xmhf_dmaprot_arch_x86_svm_invalidate_cache(void);
 
 //VMX VT-d page table buffers; we support a 3 level page-table walk,
 //4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
-//extern u8 g_vmx_vtd_pdp_table[] __attribute__(( section(".bss.palign_data") ));
-//extern u8 g_vmx_vtd_pd_tables[] __attribute__(( section(".bss.palign_data") ));
-//extern u8 g_vmx_vtd_p_tables[] __attribute__(( section(".bss.palign_data") ));
+//extern u8 g_vmx_vtd_pdp_table[] __attribute__((aligned(PAGE_SIZE_4K)));
+//extern u8 g_vmx_vtd_pd_tables[] __attribute__((aligned(PAGE_SIZE_4K)));
+//extern u8 g_vmx_vtd_p_tables[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX VT-d Root Entry Table (RET)
 //the RET is 4kb, each root entry (RE) is 128-bits
 //this gives us 256 entries in the RET, each corresponding to a PCI bus num. (0-255)
-extern u8 g_vmx_vtd_ret[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_vtd_ret[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX VT-d Context Entry Table (CET)
 //each RE points to a context entry table (CET) of 4kb, each context entry (CE)
 //is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
 //with 8 functions each as per the PCI spec.
-extern u8 g_vmx_vtd_cet[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_vtd_cet[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 
 #endif	//__ASSEMBLY__

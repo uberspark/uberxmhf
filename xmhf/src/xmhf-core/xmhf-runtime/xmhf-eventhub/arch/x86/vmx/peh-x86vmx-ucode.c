@@ -63,7 +63,7 @@ extern u32 ucode_recognized_sha1s_len;
 
 /* Space to temporarily copy microcode update (prevent TOCTOU attack) */
 static u8 ucode_copy_area[MAX_VCPU_ENTRIES * UCODE_TOTAL_SIZE_MAX]
-__attribute__(( section(".bss.palign_data") ));
+__attribute__((aligned(PAGE_SIZE_4K)));
 
 typedef struct __attribute__ ((packed)) {
 	u32 header_version;

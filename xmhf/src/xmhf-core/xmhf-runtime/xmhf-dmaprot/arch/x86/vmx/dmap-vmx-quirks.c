@@ -44,56 +44,72 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * smpg-x86vmx-data.c
- * EMHF SMP guest component x86 (VMX) backend data
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// author: Miao Yu [Superymk]
+#ifdef __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__
 
 #include <xmhf.h>
+#include "dmap-vmx-internal.h"
 
-//the BSP LAPIC base address
-//smpguest x86vmx
-u32 g_vmx_lapic_base __attribute__(( section(".data") )) = 0;
+static VTD_DRHD* _vtd_find_igfx_drhd(VTD_DRHD* drhds, uint32_t vtd_num_drhd)
+{
+    // uint32_t i = 0;
 
-//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
-//during INIT-SIPI-SIPI emulation
-//smpguest x86vmx
-u8 g_vmx_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
+    // FOREACH_S(i, vtd_num_drhd, VTD_MAX_DRHD, 0, 1)
+    // {
+    //     VTD_DRHD* drhd = &drhds[i];
 
-//the quiesce counter, all CPUs except for the one requesting the
-//quiesce will increment this when they get their quiesce signal
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
+    //     if(drhd->flags & ACPI_DMAR_INCLUDE_ALL == 0)
+    //     {
+    //         // Find the DRHD for an integrated GPU only
+    //         return drhd;
+    //     }
+    // }
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
+    // [TODO][Urgent] We hardcode the result for HP 2540p currently, a correct implementation should refer to 
+    // <acpi_parse_dev_scope> in Xen 4.16.1
+    static uint32_t ioh_bus = 0, ioh_dev = 0, ioh_fn = 0;
+    uint32_t ioh_id = 0;
 
-//resume counter to rally all CPUs after resumption from quiesce
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
+    #define IS_ILK(id)    (id == 0x00408086 || id == 0x00448086 || id== 0x00628086 || id == 0x006A8086)
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1;
 
-//the "quiesce" variable, if 1, then we have a quiesce in process
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
+    xmhf_baseplatform_arch_x86_pci_type1_read(ioh_bus, ioh_dev, ioh_fn, 0, sizeof(u32), &ioh_id);
+    if(IS_ILK(ioh_id))
+        return &drhds[1];
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
+    (void)vtd_num_drhd;
+    return NULL;
+}
 
-//resume signal, becomes 1 to signal resume after quiescing
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
+//! \brief Disable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+bool _vtd_disable_igfx_drhd(VTD_DRHD* drhds, uint32_t vtd_num_drhd)
+{
+    VTD_DRHD* drhd = NULL;
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
+    drhd = _vtd_find_igfx_drhd(drhds, vtd_num_drhd);
+    if(!drhd)
+        return false;
 
-//Flush all EPT TLB on all cores
-//smpguest x86vmx
-volatile u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )) = 0;
+    _vtd_disable_dma_iommu(drhd);
+    return true;
+}
+
+//! \brief Enable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+bool _vtd_enable_igfx_drhd(VTD_DRHD* drhds, uint32_t vtd_num_drhd)
+{
+    VTD_DRHD* drhd = NULL;
+
+    drhd = _vtd_find_igfx_drhd(drhds, vtd_num_drhd);
+    if(!drhd)
+        return false;
+
+    _vtd_enable_dma_iommu(drhd);
+    return true;
+}
+
+
+#endif // __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__

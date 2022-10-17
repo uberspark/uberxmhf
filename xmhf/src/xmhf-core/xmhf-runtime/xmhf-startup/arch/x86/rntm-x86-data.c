@@ -80,19 +80,20 @@ arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 
 #ifdef __AMD64__
 // runtime 4-level page tables
-u8 x_4level_pml4[P4L_NPLM4T * PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
-u8 x_4level_pdpt[P4L_NPDPT * PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
-u8 x_4level_pdt[P4L_NPDT * PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
+u8 x_4level_pml4[P4L_NPLM4T * PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
+u8 x_4level_pdpt[P4L_NPDPT * PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
+u8 x_4level_pdt[P4L_NPDT * PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
 #elif defined(__I386__)
 //runtime PAE page tables
-u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".bss.palign_data") ));
-u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".bss.palign_data") ));
+u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
+u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
 #else /* !defined(__I386__) && !defined(__AMD64__) */
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) && !defined(__AMD64__) */
 
 //runtime stack
-u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".bss.stack") ));
+// TODO: Removed the section(".bss.stack") attribute. Maybe we want to keep the stack at the end of bss.
+u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__((aligned(PAGE_SIZE_4K)));
 
 
 RPB arch_rpb __attribute__(( section(".s_rpb") )) = {

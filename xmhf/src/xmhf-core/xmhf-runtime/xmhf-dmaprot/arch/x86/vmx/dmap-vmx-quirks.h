@@ -44,56 +44,25 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * smpg-x86vmx-data.c
- * EMHF SMP guest component x86 (VMX) backend data
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// author: Miao Yu [Superymk]
+#ifdef __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__
 
-#include <xmhf.h>
+#ifndef XMHF_DMAP_VMX_QUIRKS_H
+#define XMHF_DMAP_VMX_QUIRKS_H
 
-//the BSP LAPIC base address
-//smpguest x86vmx
-u32 g_vmx_lapic_base __attribute__(( section(".data") )) = 0;
 
-//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
-//during INIT-SIPI-SIPI emulation
-//smpguest x86vmx
-u8 g_vmx_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
+#ifndef __ASSEMBLY__
 
-//the quiesce counter, all CPUs except for the one requesting the
-//quiesce will increment this when they get their quiesce signal
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
+//! \brief Enable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+extern bool _vtd_enable_igfx_drhd(VTD_DRHD* drhds, uint32_t vtd_num_drhd);
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
+//! \brief Disable the IOMMU servicing the integrated GPU only. Other IOMMUs are not modified.
+//!
+//! @return Return true on success
+extern bool _vtd_disable_igfx_drhd(VTD_DRHD* drhds, uint32_t vtd_num_drhd);
 
-//resume counter to rally all CPUs after resumption from quiesce
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
-
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1;
-
-//the "quiesce" variable, if 1, then we have a quiesce in process
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
-
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
-
-//resume signal, becomes 1 to signal resume after quiescing
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
-
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
-
-//Flush all EPT TLB on all cores
-//smpguest x86vmx
-volatile u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )) = 0;
+#endif	//__ASSEMBLY__
+#endif //XMHF_DMAP_VMX_QUIRKS_H
+#endif // __XMHF_ALLOW_HYPAPP_DISABLE_IGFX_IOMMU__

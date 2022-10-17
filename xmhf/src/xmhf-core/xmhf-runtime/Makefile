@@ -52,7 +52,9 @@ OBJECTS_PRECOMPILED += ./xmhf-dmaprot/dmap-interface-runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/iommu-pt.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/dmap-x86-runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/svm/dmap-svm.o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-internal.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-internal-common.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-internal-runtime.o
+OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-quirks.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-utils.o
 OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-vmx-data.o
@@ -84,7 +86,7 @@ OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-data.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-smp.o
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-vmcs.o
 ifeq ($(DRT), y)
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
+OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs-common.o
 endif
 OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-reboot.o
 
@@ -146,8 +148,7 @@ endif
 
 OBJCOPY_FLAGS = --output-format=binary
 ifneq ($(SKIP_RUNTIME_BSS), y)
-OBJCOPY_FLAGS += --set-section-flags .palign_data=alloc,load,contents
-OBJCOPY_FLAGS += --set-section-flags .stack=alloc,load,contents
+OBJCOPY_FLAGS += --set-section-flags .bss=alloc,load,contents
 endif
 
 # targets
@@ -166,7 +167,7 @@ $(OBJECTS_PRECOMPILED): %: runtimecomponents
 $(OBJECTS_PRECOMPILED_LIBBACKENDS): %: runtimecomponents
 
 runtime.bin: runtimecomponents $(APP_ARCHIVE) runtime.lds
-	$(LD) -T runtime.lds -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+	$(LD) $(LDFLAGS) -T runtime.lds -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	# .palign_data and .stack are NOBITS in the ELF file (similar to .bss), but
 	# we need them in runtime.bin. So use the --set-section-flags option to
 	# force objcopy to zero them and add to runtime.bin. See OBJCOPY_FLAGS

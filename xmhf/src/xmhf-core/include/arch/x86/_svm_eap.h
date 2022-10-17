@@ -85,11 +85,11 @@ struct _svm_eap {
 typedef union dev_base_lo {
 	u32 bytes;
   struct{
-    u32 valid:1; 			//1= DEV enabled, 0= DEV disabled
-    u32 protect:1; 		//0= allow out-of-range addresses, 1= disallow out-of-range addresses
-    u32 size:5; 			//size of memory region that DEV covers (4GB*(2^size))
-    u32 resv:5; 			//reserved
-    u32 base_addr:20; //bits 12-31 of physical address of DEV table
+    u32 valid:1, 			//1= DEV enabled, 0= DEV disabled
+     protect:1, 		//0= allow out-of-range addresses, 1= disallow out-of-range addresses
+     size:5, 			//size of memory region that DEV covers (4GB*(2^size))
+     resv:5, 			//reserved
+     base_addr:20; //bits 12-31 of physical address of DEV table
   }fields;
 } __attribute__ ((packed)) dev_base_lo_t;
 
@@ -97,8 +97,8 @@ typedef union dev_base_lo {
 typedef union dev_base_hi {
   u32 bytes;
   struct{
-    u32 base_addr:16; //bits 32-47 of physical address of DEV table
-    u32 resv:16; 			//reserved
+    u32 base_addr:16, //bits 32-47 of physical address of DEV table
+     resv:16; 			//reserved
   }fields;
 } __attribute__ ((packed)) dev_base_hi_t;
 
@@ -106,13 +106,13 @@ typedef union dev_base_hi {
 typedef union dev_map{
   u32 bytes;
   struct{
-    u32 unit0:5; 	//I/O link unit 0 ID
-    u32 valid0:1; //1= enable DEV for unit 0 and dom 0
-    u32 unit1:5; 	//I/O link unit 1 ID
-    u32 valid1:1; //1= enable DEV for unit 1 and dom 1
-    u32 busno:8; 	//HT bus number
-    u32 dom0:6; 	//protection domain number assigned to unit 0
-    u32 dom1:6;		//protection domain number assigned to unit 1
+    u32 unit0:5, 	//I/O link unit 0 ID
+     valid0:1, //1= enable DEV for unit 0 and dom 0
+     unit1:5, 	//I/O link unit 1 ID
+     valid1:1, //1= enable DEV for unit 1 and dom 1
+     busno:8, 	//HT bus number
+     dom0:6, 	//protection domain number assigned to unit 0
+     dom1:6;		//protection domain number assigned to unit 1
   }fields;
 } __attribute__ ((packed)) dev_map_t;
 
@@ -120,10 +120,10 @@ typedef union dev_map{
 typedef union dev_cap{
   u32 bytes;
   struct{
-    u32 rev:8; 		//DEV register set revision number (00h for current)
-    u32 n_doms:8; 	//number of protection domains implemented
-    u32 n_maps:8; //number of map registers implemented
-    u32 resv:8; 	//reserved
+    u32 rev:8, 		//DEV register set revision number (00h for current)
+     n_doms:8, 	//number of protection domains implemented
+     n_maps:8, //number of map registers implemented
+     resv:8; 	//reserved
   }fields;
 } __attribute__ ((packed)) dev_cap_t;
 
@@ -131,14 +131,14 @@ typedef union dev_cap{
 typedef union dev_cr {
   u32 bytes;
   struct{
-    u32 deven:1; 		//1=enable DEV
-    u32 resv0:1;			//reserved
-    u32 iodis:1; 		//1=disable upstream i/o cycles, set to 1 after SKINIT
-    u32 mceen:1; 		//1=enable logging and reporting of DEV violations through MCE
-    u32 devinv:1; 	//1=invalidate DEV table walk cache. bit cleared by h/w when complete
-    u32 sldev:1; 		//1=memory region associated with SKINIT is internally protected, 0=use DEV table instead
-    u32 walkprobe:1;//1=disable probing of CPU caches during DEV table walks
-    u32 resv1:25; 		//bits 7-31 reserved
+    u32 deven:1, 		//1=enable DEV
+     resv0:1,			//reserved
+     iodis:1, 		//1=disable upstream i/o cycles, set to 1 after SKINIT
+     mceen:1, 		//1=enable logging and reporting of DEV violations through MCE
+     devinv:1, 	//1=invalidate DEV table walk cache. bit cleared by h/w when complete
+     sldev:1, 		//1=memory region associated with SKINIT is internally protected, 0=use DEV table instead
+     walkprobe:1,//1=disable probing of CPU caches during DEV table walks
+     resv1:25; 		//bits 7-31 reserved
   }fields;
 } __attribute__ ((packed)) dev_cr_t;
 
@@ -147,27 +147,27 @@ typedef union dev_cr {
 typedef union dev_err_status {
 	u32 bytes;
 	struct{
-		u32 accesstype:2;	//error code access type
+		u32 accesstype:2,	//error code access type
 #define	DEV_ERR_STATUS_ACCESSTYPE_GENERIC						0
 #define	DEV_ERR_STATUS_ACCESSTYPE_READ              1
 #define DEV_ERR_STATUS_ACCESSTYPE_WRITE             2
 #define DEV_ERR_STATUS_ACCESSTYPE_READMODIFYWRITE		3
-		u32 source:3;		//error code source
+		 source:3,		//error code source
 #define DEV_ERR_STATUS_SOURCE_GENERIC								0
 #define DEV_ERR_STATUS_SOURCE_CPU                   1
 #define DEV_ERR_STATUS_SOURCE_DEVICE                2
-		u32 dest:3;			//error code destination
+		 dest:3,			//error code destination
 #define DEV_ERR_STATUS_DEST_GENERIC									0
 #define DEV_ERR_STATUS_DEST_DRAM                    1
 #define DEV_ERR_STATUS_DEST_MMIO                    2
 #define DEV_ERR_STATUS_DEST_IO                      4
 #define DEV_ERR_STATUS_DEST_CONFIGURATION           5
-		u32 resv0:8;			//reserved
-		u32 mserror:8;		//model-specific error
-		u32 resv1:5;			//reserved
-		u32 addrvalid:1;	//error address valid
-		u32 overflow:1;		//error overflow, 1=DEV violation was detected
-		u32 valid:1;			//error valid, 1=DEV violation has been logged
+		 resv0:8,			//reserved
+		 mserror:8,		//model-specific error
+		 resv1:5,			//reserved
+		 addrvalid:1,	//error address valid
+		 overflow:1,		//error overflow, 1=DEV violation was detected
+		 valid:1;			//error valid, 1=DEV violation has been logged
 	}fields;
 } __attribute__ ((packed)) dev_err_status_t;
 
@@ -176,8 +176,8 @@ typedef union dev_err_status {
 typedef union dev_err_addr_lo {
 	u32 bytes;
 	struct{
-		u32 resv0:2;	//reserved
-		u32 addr:30;	//bits 2:31 of error address
+		u32 resv0:2,	//reserved
+		 addr:30;	//bits 2:31 of error address
 	}fields;
 } __attribute__((packed)) dev_err_addr_lo_t;
 
@@ -185,8 +185,8 @@ typedef union dev_err_addr_lo {
 typedef union dev_err_addr_hi {
 	u32 bytes;
 	struct{
-		u32 addr:16;	//bits 32-47 of error address
-		u32 resv:16;	//reserved
+		u32 addr:16,	//bits 32-47 of error address
+		 resv:16;	//reserved
 	}fields;
 } __attribute__((packed)) dev_err_addr_hi_t;
 

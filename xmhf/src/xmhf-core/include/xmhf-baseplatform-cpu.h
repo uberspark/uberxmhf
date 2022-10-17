@@ -44,56 +44,36 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * smpg-x86vmx-data.c
- * EMHF SMP guest component x86 (VMX) backend data
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+#ifndef __XMHF_BASEPLATFORM_CPU_H__
+#define __XMHF_BASEPLATFORM_CPU_H__
 
-#include <xmhf.h>
+#include "xmhf-types.h"
 
-//the BSP LAPIC base address
-//smpguest x86vmx
-u32 g_vmx_lapic_base __attribute__(( section(".data") )) = 0;
+// This macro is used by microsec CPU delay. The delayed time is imprecise.
+// [TODO] We assume the CPU frequency is 3.5GHz.
+#define CPU_CYCLES_PER_MICRO_SEC        3500UL
+#define SEC_TO_CYCLES(x)                (1000UL * 1000UL) * CPU_CYCLES_PER_MICRO_SEC * x
 
-//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
-//during INIT-SIPI-SIPI emulation
-//smpguest x86vmx
-u8 g_vmx_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
 
-//the quiesce counter, all CPUs except for the one requesting the
-//quiesce will increment this when they get their quiesce signal
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
+#ifndef __ASSEMBLY__
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
+#define mb()	asm volatile("mfence" ::: "memory")
+#define __force	__attribute__((force))
 
-//resume counter to rally all CPUs after resumption from quiesce
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
+//! @brief Save energy when waiting in a busy loop
+static inline void xmhf_cpu_relax(void) 
+{
+	asm volatile ("pause");
+}
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1;
+// Flushing functions
+extern void xmhf_cpu_flush_cache_range(void *vaddr, unsigned int size);
 
-//the "quiesce" variable, if 1, then we have a quiesce in process
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
+//! @brief Sleep the current core for <us> micro-second.
+extern void xmhf_cpu_delay_us(uint64_t us);
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
+#endif	//__ASSEMBLY__
 
-//resume signal, becomes 1 to signal resume after quiescing
-//smpguest x86vmx
-volatile u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
 
-//SMP lock to access the above variable
-//smpguest x86vmx
-volatile u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
 
-//Flush all EPT TLB on all cores
-//smpguest x86vmx
-volatile u32 g_vmx_flush_all_tlb_signal __attribute__(( section(".data") )) = 0;
+#endif //__XMHF_BASEPLATFORM_CPU_H__

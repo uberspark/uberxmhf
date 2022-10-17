@@ -52,6 +52,11 @@
 
 #include <xmhf.h>
 
+static inline void clflush_ins(volatile void *__p)
+{
+	asm volatile("clflush %0" : "+m" (*(volatile char *)__p));
+}
+
 //returns true if CPU has support for XSAVE/XRSTOR
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	u32 eax, ebx, ecx, edx;
@@ -66,4 +71,26 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	else
 		return false;
 
+}
+
+//! @brief Sleep the current core for <us> micro-second.
+void xmhf_cpu_delay_us(uint64_t us)
+{
+    uint64_t cycles = CPU_CYCLES_PER_MICRO_SEC * us;
+    uint64_t start = rdtsc64();
+    
+    while ( rdtsc64()-start < cycles ) ;
+}
+
+void xmhf_cpu_flush_cache_range(void *vaddr, unsigned int size)
+{
+	const unsigned long clflush_size = ((cpuid_ebx(1) >> 8) & 0xff) << 3;
+	void *p = (void *)((unsigned long)vaddr & ~(clflush_size - 1));
+	void *vend = vaddr + size;
+
+	if (p >= vend)
+		return;
+
+	for (; p < vend; p += clflush_size)
+		clflush_ins(p);
 }

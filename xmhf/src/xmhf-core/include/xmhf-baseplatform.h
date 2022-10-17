@@ -103,7 +103,7 @@ typedef struct _pcpu {
 extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
 
 //runtime stacks for individual cores
-extern u8 g_cpustacks[] __attribute__(( section(".bss.stack") ));
+extern u8 g_cpustacks[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VCPU structure for each "guest OS" core
 extern VCPU g_vcpubuffers[] __attribute__(( section(".data") ));
@@ -214,13 +214,6 @@ extern bool xmhf_baseplatform_x86_e820_paddr_range(spa_t* machine_base_spa, spa_
 
 #endif //__XMHF_VERIFICATION__
 
-/* Save energy when waiting in a busy loop */
-static inline void xmhf_cpu_relax(void) {
-	asm volatile ("pause");
-}
 
 #endif	//__ASSEMBLY__
-
-
-
 #endif //__XMHF_BASEPLATFORM_H__

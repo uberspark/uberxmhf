@@ -1,3 +1,49 @@
+/*
+ * @XMHF_LICENSE_HEADER_START@
+ *
+ * eXtensible, Modular Hypervisor Framework (XMHF)
+ * Copyright (c) 2009-2012 Carnegie Mellon University
+ * Copyright (c) 2010-2012 VDG Inc.
+ * All Rights Reserved.
+ *
+ * Developed by: XMHF Team
+ *               Carnegie Mellon University / CyLab
+ *               VDG Inc.
+ *               http://xmhf.org
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * Neither the names of Carnegie Mellon or VDG Inc, nor the names of
+ * its contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * @XMHF_LICENSE_HEADER_END@
+ */
+
 // author: Miao Yu
 
 #include <xmhf.h>
@@ -5,10 +51,22 @@
 #include "../../../iommu-pt.h"
 
 extern void *vtd_cet; // cet holds all its structures in the memory linearly
-extern struct dmap_vmx_cap g_vtd_cap;
+extern struct dmap_vmx_cap g_vtd_cap_sagaw_mgaw_nd;
 
 //! Return the spaddr of the VT-d page root
 extern spa_t xmhf_dmaprot_arch_x86_vmx_get_eap_vtd_pt_root(void);
+
+//------------------------------------------------------------------------------
+// [TODO] Move util functions to a better place
+void __iommu_flush_cpu_cache(VTD_DRHD* drhd, void *addr, int size)
+{
+    VTD_ECAP_REG ecap;
+    _vtd_reg(drhd, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
+
+	if (!vtd_ecap_c(drhd))
+		xmhf_cpu_flush_cache_range(addr, size);
+}
+
 
 //! Invalidate the IOMMU PageTable corresponding to <pt_info>
 void iommu_vmx_invalidate_pt(IOMMU_PT_INFO *pt_info)
@@ -106,6 +164,7 @@ static void *__vtd_get_nextlvl_pt(IOMMU_PT_INFO *pt_info, void *pt_base, uint32_
 		}
 
 		*p_pte = (hva2spa(nextlvl_pt) & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE | (uint64_t)VTD_EXECUTE);
+		// xmhf_cpu_flush_cache_range(p_pte, sizeof(*p_pte));
 	}
 
 	return spa2hva(*p_pte & ADDR64_PAGE_MASK_4K);
@@ -121,7 +180,7 @@ bool iommu_vmx_map(IOMMU_PT_INFO *pt_info, gpa_t gpa, spa_t spa, uint32_t flags)
 	pd_idx = PAE_get_pdtindex(gpa);
 	pt_idx = PAE_get_ptindex(gpa);
 
-	if (g_vtd_cap.sagaw & 0x4)
+	if (g_vtd_cap_sagaw_mgaw_nd.sagaw & 0x4)
 	{
 		// Preferred to use 4-level PT
 		// Step 1. Get PML4
@@ -134,7 +193,7 @@ bool iommu_vmx_map(IOMMU_PT_INFO *pt_info, gpa_t gpa, spa_t spa, uint32_t flags)
 		if (!pdp)
 			return false;
 	}
-	else if (g_vtd_cap.sagaw & 0x2)
+	else if (g_vtd_cap_sagaw_mgaw_nd.sagaw & 0x2)
 	{
 		// Step 1. Get PDP
 		pdp = __vtd_get_l1pt(pt_info);
@@ -160,11 +219,15 @@ bool iommu_vmx_map(IOMMU_PT_INFO *pt_info, gpa_t gpa, spa_t spa, uint32_t flags)
 	// Step 5. Map spa
 	if (flags == DMA_ALLOW_ACCESS)
 	{
-		((uint64_t *)pt)[pt_idx] = (spa & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE | (uint64_t)VTD_EXECUTE);
+		uint64_t* ptr = &((uint64_t *)pt)[pt_idx];
+		*ptr = (spa & ADDR64_PAGE_MASK_4K) | ((uint64_t)VTD_READ | (uint64_t)VTD_WRITE | (uint64_t)VTD_EXECUTE);
+		// xmhf_cpu_flush_cache_range(ptr, sizeof(*ptr));
 	}
 	else if (flags == DMA_DENY_ACCESS)
 	{
-		((uint64_t *)pt)[pt_idx] = (spa & ADDR64_PAGE_MASK_4K) & (uint64_t)0xfffffffe; // remove the present bit
+		uint64_t* ptr = &((uint64_t *)pt)[pt_idx];
+		*ptr = (spa & ADDR64_PAGE_MASK_4K) & (uint64_t)0xfffffffe; // remove the present bit
+		// xmhf_cpu_flush_cache_range(ptr, sizeof(*ptr));
 	}
 
 	return true;
@@ -178,12 +241,12 @@ static bool __x86vmx_bind_cet(DEVICEDESC *device, iommu_pt_t pt_id, spa_t iommu_
 	value = (uint64_t *)((hva_t)vtd_cet + (device->bus * PAGE_SIZE_4K) +
 						 (device->dev * PCI_FUNCTION_MAX + device->func) * 16);
 
-	if (g_vtd_cap.sagaw & 0x4)
+	if (g_vtd_cap_sagaw_mgaw_nd.sagaw & 0x4)
 	{
 		// Preferred to use 4-level PT
 		*(value + 1) = (uint64_t)0x0000000000000002ULL | (((uint64_t)pt_id & 0xFFFFULL) << 8); // domain:<pt_id>, aw=48 bits, 4 level pt
 	}
-	else if (g_vtd_cap.sagaw & 0x2)
+	else if (g_vtd_cap_sagaw_mgaw_nd.sagaw & 0x2)
 	{
 		// If no 4-level PT, then try 3-level PT
 		*(value + 1) = (uint64_t)0x0000000000000001ULL | (((uint64_t)pt_id & 0xFFFFULL) << 8); // domain:<pt_id>, aw=39 bits, 3 level pt
@@ -197,6 +260,7 @@ static bool __x86vmx_bind_cet(DEVICEDESC *device, iommu_pt_t pt_id, spa_t iommu_
 	*value = iommu_pt_root;
 	*value |= 0x1ULL; // present, enable fault recording/processing, multilevel pt translation
 
+	// xmhf_cpu_flush_cache_range(value, 16); // 128-bits
 	return true;
 }
 

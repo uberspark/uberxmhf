@@ -44,275 +44,324 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//vmx_eap.h - VMX VT-d (External Access Protection) declarations/definitions
-//author: amit vasudevan (amitvasudevan@acm.org)
+// vmx_eap.h - VMX VT-d (External Access Protection) declarations/definitions
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 #ifndef __VMX_EAP_H__
 #define __VMX_EAP_H__
 
-#define VTD_DMAR_SIGNATURE  (0x52414D44) //"DMAR"
-#define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units
+#define VTD_DMAR_SIGNATURE (0x52414D44) //"DMAR"
+#define VTD_MAX_DRHD 8					// maximum number of DMAR h/w units
 
-//VT-d register offsets (sec. 10.4, Intel_VT_for_Direct_IO)
-#define VTD_VER_REG_OFF 		0x000				//arch. version (32-bit)
-#define VTD_CAP_REG_OFF 		0x008				//h/w capabilities (64-bit)
-#define VTD_ECAP_REG_OFF  	0x010				//h/w extended capabilities (64-bit)
-#define VTD_GCMD_REG_OFF  	0x018				//global command (32-bit)
-#define VTD_GSTS_REG_OFF  	0x01C				//global status (32-bit)
-#define VTD_RTADDR_REG_OFF  0x020				//root-entry table address (64-bit)
-#define VTD_CCMD_REG_OFF  	0x028				//manage context-entry cache (64-bit)
-#define VTD_FSTS_REG_OFF  	0x034				//report fault/error status (32-bit)
-#define VTD_FECTL_REG_OFF 	0x038				//interrupt control (32-bit)
-#define VTD_PMEN_REG_OFF  	0x064				//enable DMA protected memory regions (32-bits)
-#define VTD_IVA_REG_OFF  		0x0DEAD  		//invalidate address register (64-bits)
-																				//note: the offset of this register is computed
-                                    		//at runtime for a specified DMAR device
-#define VTD_IOTLB_REG_OFF   0x0BEEF     //IOTLB invalidate register (64-bits)
-																				//note: the offset is VTD_IVA_REG_OFF + 8 and
-																				//computed at runtime for a specified DMAR device
+// VT-d register offsets (sec. 10.4, Intel_VT_for_Direct_IO)
+#define VTD_VER_REG_OFF 0x000	 // arch. version (32-bit)
+#define VTD_CAP_REG_OFF 0x008	 // h/w capabilities (64-bit)
+#define VTD_ECAP_REG_OFF 0x010	 // h/w extended capabilities (64-bit)
+#define VTD_GCMD_REG_OFF 0x018	 // global command (32-bit)
+#define VTD_GSTS_REG_OFF 0x01C	 // global status (32-bit)
+#define VTD_RTADDR_REG_OFF 0x020 // root-entry table address (64-bit)
+#define VTD_CCMD_REG_OFF 0x028	 // manage context-entry cache (64-bit)
+#define VTD_FSTS_REG_OFF 0x034	 // report fault/error status (32-bit)
+#define VTD_FECTL_REG_OFF 0x038	 // interrupt control (32-bit)
+#define VTD_PMEN_REG_OFF 0x064	 // enable DMA protected memory regions (32-bits)
+#define VTD_IVA_REG_OFF 0x0DEAD	 // invalidate address register (64-bits)
+								// note: the offset of this register is computed
+// at runtime for a specified DMAR device
+#define VTD_IOTLB_REG_OFF 0x0BEEF // IOTLB invalidate register (64-bits)
+								  // note: the offset is VTD_IVA_REG_OFF + 8 and
+								  // computed at runtime for a specified DMAR device
 
-
-#define VTD_RTADDR_LEGACY_MODE (0UL << 10)  // Enables legacy mode in the Root Table Address Register
+#define VTD_RTADDR_LEGACY_MODE (0UL << 10)	  // Enables legacy mode in the Root Table Address Register
 #define VTD_RTADDR_SCALABLE_MODE (1UL << 10)  // Enables scalable mode in the Root Table Address Register
-#define VTD_RTADDR_ABORT_DMA_MODE (3UL << 10)  // Enables Abort-DMA mode in the Root Table Address Register
+#define VTD_RTADDR_ABORT_DMA_MODE (3UL << 10) // Enables Abort-DMA mode in the Root Table Address Register
 
-//VT-d register access types (custom definitions)
-#define VTD_REG_READ  			0xaa				//read VTD register
-#define VTD_REG_WRITE 			0xbb				//write VTD register
+// GCMD_REG
+#define VTD_GCMD_BIT_IRE	(25)
+#define VTD_GCMD_BIT_QIE	(26)
+#define VTD_GCMD_BIT_WBF	(27)
+#define VTD_GCMD_BIT_EAFL	(28)
+#define VTD_GCMD_BIT_SRTP	(30)
+#define VTD_GCMD_BIT_TE		(31)
 
-//Vt-d register access widths (custom definitions)
-#define VTD_REG_32BITS  		0x32ff
-#define VTD_REG_64BITS  		0x64ff
+// FSTS_REG
+#define VTD_FSTS_PFO (1 << 0) /* Primary Fault Overflow */
+#define VTD_FSTS_PPF (1 << 1) /* Primary Pending Fault */
+#define VTD_FSTS_IQE (1 << 4) /* Invalidation Queue Error */
+#define VTD_FSTS_ICE (1 << 5) /* Invalidation Completion Error */
+#define VTD_FSTS_ITE (1 << 6) /* Invalidation Time-out Error */
+#define VTD_FSTS_PRO (1 << 7) /* Page Request Overflow */
 
-//Vt-d page-table bits
-#define VTD_READ						0x1
-#define VTD_WRITE						0x2
-#define VTD_EXECUTE					0x4
-#define VTD_SUPERPAGE				(0x1UL << 7)
+// VT-d register access types (custom definitions)
+#define VTD_REG_READ 0xaa  // read VTD register
+#define VTD_REG_WRITE 0xbb // write VTD register
 
+// Vt-d register access widths (custom definitions)
+#define VTD_REG_32BITS 0x32ff
+#define VTD_REG_64BITS 0x64ff
+
+// Vt-d page-table bits
+#define VTD_READ 0x1
+#define VTD_WRITE 0x2
+#define VTD_EXECUTE 0x4
+#define VTD_SUPERPAGE (0x1UL << 7)
+#define VTD_SNOOP (0x1UL << 11)
+
+#define VTD_CAP_REG_FRO_MULTIPLIER (16UL) // If the register base address is X, and the value reported in this field
+										  // is Y, the address for the first fault recording register is calculated as X+(16*Y).
 
 #ifndef __ASSEMBLY__
 
-//Vt-d DMAR structure
-typedef struct{
-  u32 signature;
-  u32 length;
-  u8 revision;
-  u8 checksum;
-  u8 oemid[6];
-  u64 oemtableid;
+//------------------------------------------------------------------------------
+// VT-d register structure definitions
+
+// VTD_VER_REG (sec. 10.4.1)
+typedef union
+{
+	u32 value;
+	struct
+	{
+		u32 min : 4,	// minor version no.
+			max : 4,	// major version no.
+			rsvdz : 24; // reserved
+	} bits;
+} __attribute__((packed)) VTD_VER_REG;
+
+// VTD_CAP_REG (sec. 10.4.2)
+typedef union
+{
+	u64 value;
+	struct
+	{
+		u64 nd : 3,		// no. of domains
+			afl : 1,	// advanced fault logging
+			rwbf : 1,	// required write-buffer flushing
+			plmr : 1,	// protected low-memory region
+			phmr : 1,	// protected high-memory region
+			cm : 1,		// caching mode
+			sagaw : 5,	// supported adjuested guest address widths
+			rsvdz0 : 3, // reserved
+			mgaw : 6,	// maximum guest address width
+			zlr : 1,	// zero length read
+			isoch : 1,	// isochrony
+			fro : 10,	// fault-recording register offset
+			sps : 4,	// super-page support
+			rsvdz1 : 1, // reserved
+			psi : 1,	// page selective invalidation
+			nfr : 8,	// no. of fault-recording registers
+			mamv : 6,	// max. address mask value
+			dwd : 1,	// DMA write draining
+			drd : 1,	// DMA read draining
+			rsvdz2 : 8; // reserved
+	} bits;
+} __attribute__((packed)) VTD_CAP_REG;
+
+// VTD_ECAP_REG (sec. 10.4.3)
+typedef union
+{
+	u64 value;
+	struct
+	{
+		u64 c : 1,		 // coherency
+			qi : 1,		 // queued invalidation support
+			di : 1,		 // device IOTLB support
+			ir : 1,		 // interrupt remapping support
+			eim : 1,	 // extended interrupt mode
+			ch : 1,		 // caching hints
+			pt : 1,		 // pass through
+			sc : 1,		 // snoop control
+			iro : 10,	 // IOTLB register offset
+			rsvdz0 : 2,	 // reserved
+			mhmv : 4,	 // maximum handle mask value
+			rsvdz1 : 40; // reserved
+	} bits;
+} __attribute__((packed)) VTD_ECAP_REG;
+
+// VTD_GCMD_REG (sec. 10.4.4)
+typedef union
+{
+	u32 value;
+	struct
+	{
+		u32 rsvdz0 : 23, // reserved
+			cfi : 1,	 // compatibility format interrupt
+			sirtp : 1,	 // set interrupt remap table pointer
+			ire : 1,	 // interrupt remapping enable
+			qie : 1,	 // queued invalidation enable
+			wbf : 1,	 // write buffer flush
+			eafl : 1,	 // enable advanced fault logging
+			sfl : 1,	 // set fault log
+			srtp : 1,	 // set root table pointer
+			te : 1;		 // translation enable
+	} bits;
+} __attribute__((packed)) VTD_GCMD_REG;
+
+// VTD_GSTS_REG (sec. 10.4.5)
+typedef union
+{
+	u32 value;
+	struct
+	{
+		u32 rsvdz0 : 23, // reserved
+			cfis : 1,	 // compatibility interrupt format status
+			irtps : 1,	 // interrupt remapping table pointer status
+			ires : 1,	 // interrupt remapping enable status
+			qies : 1,	 // queued invalidation enable status
+			wbfs : 1,	 // write buffer flush status
+			afls : 1,	 // advanced fault logging status
+			fls : 1,	 // fault log status
+			rtps : 1,	 // root table pointer status
+			tes : 1;	 // translation enable status
+	} bits;
+} __attribute__((packed)) VTD_GSTS_REG;
+
+// VTD_RTADDR_REG (sec. 10.4.6)
+typedef union
+{
+	u64 value;
+	struct
+	{
+		u64 rsvdz0 : 12, // reserved
+			rta : 52;	 // root table address
+	} bits;
+} __attribute__((packed)) VTD_RTADDR_REG;
+
+// VTD_CCMD_REG (sec. 10.4.7)
+typedef union
+{
+	u64 value;
+	struct
+	{
+		u64 did : 16,	 // domain id
+			sid : 16,	 // source id
+			fm : 2,		 // function mask
+			rsvdz0 : 25, // reserved
+			caig : 2,	 // context invalidation actual granularity
+			cirg : 2,	 // context invalidation request granularity
+			icc : 1;	 // invalidate context-cache
+	} bits;
+} __attribute__((packed)) VTD_CCMD_REG;
+
+// VTD_IOTLB_REG (sec. 10.4.8.1)
+typedef union
+{
+	u64 value;
+	struct
+	{
+		u64 rsvdz0 : 32, // reserved
+			did : 16,	 // domain-id
+			dw : 1,		 // drain writes
+			dr : 1,		 // drain reads
+			rsvdz1 : 7,	 // reserved
+			iaig : 3,	 // IOTLB actual invalidation granularity
+			iirg : 3,	 // IOTLB request invalidation granularity
+			ivt : 1;	 // invalidate IOTLB
+	} bits;
+} __attribute__((packed)) VTD_IOTLB_REG;
+
+// VTD_IVA_REG (sec. 10.4.8.2)
+typedef union
+{
+	u64 value;
+	struct
+	{
+		u64 am : 6,		// address mask
+			ih : 1,		// invalidation hint
+			rsvdz0 : 5, // reserved
+			addr : 52;	// address
+	} bits;
+} __attribute__((packed)) VTD_IVA_REG;
+
+// VTD_FSTS_REG	(sec. 10.4.9)
+typedef union
+{
+	u32 value;
+	struct
+	{
+		u32 pfo : 1,	 // fault overflow
+			ppf : 1,	 // primary pending fault
+			afo : 1,	 // advanced fault overflow
+			apf : 1,	 // advanced pending fault
+			iqe : 1,	 // invalidation queue error
+			ice : 1,	 // invalidation completion error
+			ite : 1,	 // invalidation time-out error
+			pro : 1,	 // page request overflow
+			fri : 8,	 // fault record index
+			rsvdz1 : 16; // reserved
+	} bits;
+} __attribute__((packed)) VTD_FSTS_REG;
+
+// VTD_FECTL_REG	(sec. 10.4.10)
+typedef union
+{
+	u32 value;
+	struct
+	{
+		u32 rsvdp0 : 30, // reserved
+			ip : 1,		 // interrupt pending
+			im : 1;		 // interrupt mask
+	} bits;
+} __attribute__((packed)) VTD_FECTL_REG;
+
+// VTD_PMEN_REG (sec. 10.4.16)
+typedef union
+{
+	u32 value;
+	struct
+	{
+		u32 prs : 1,	// protected region status
+			rsvdp : 30, // reserved
+			epm : 1;	// enable protected memory
+	} bits;
+} __attribute__((packed)) VTD_PMEN_REG;
+
+//------------------------------------------------------------------------------
+// Vt-d DMAR structure
+typedef struct
+{
+	u32 signature;
+	u32 length;
+	u8 revision;
+	u8 checksum;
+	u8 oemid[6];
+	u64 oemtableid;
 	u32 oemrevision;
 	u32 creatorid;
 	u32 creatorrevision;
-  u8 hostaddresswidth;
-  u8 flags;
-  u8 rsvdz[10];
-}__attribute__ ((packed)) VTD_DMAR;
+	u8 hostaddresswidth;
+	u8 flags;
+	u8 rsvdz[10];
+} __attribute__((packed)) VTD_DMAR;
 
-//VT-d DRHD structure
-typedef struct{
-  u16 type;
-  u16 length;
-  u8 flags;
-  u8 rsvdz0;
-  u16 pcisegment;
-  u64 regbaseaddr;
-}__attribute__ ((packed)) VTD_DRHD;
+typedef struct
+{
+	VTD_CAP_REG cap;
+	VTD_ECAP_REG ecap;
+} VTD_IOMMU_FLAGS;
 
+// VT-d DRHD structure
+typedef struct
+{
+	u16 type;
+	u16 length;
+	u8 flags;
+	u8 rsvdz0;
+	u16 pcisegment;
+	u64 regbaseaddr;
 
-//------------------------------------------------------------------------------
-//VT-d register structure definitions
+	// Flags (not part of DRHD structure, but useful for DRHD programming)
+	VTD_IOMMU_FLAGS iommu_flags;
+} __attribute__((packed)) VTD_DRHD;
 
-//VTD_VER_REG (sec. 10.4.1)
-typedef union {
-  u32 value;
-  struct
-  {
-    u32 min : 4;			//minor version no.
-    u32 max : 4;			//major version no.
-    u32 rsvdz : 24;		//reserved
-  } bits;
-} __attribute__ ((packed)) VTD_VER_REG;
+#define ACPI_DMAR_INCLUDE_ALL       (1)
 
-//VTD_CAP_REG (sec. 10.4.2)
-typedef union {
-  u64 value;
-  struct
-  {
-    u32 nd : 3;    		//no. of domains
-    u32 afl : 1;			//advanced fault logging
-    u32 rwbf : 1;			//required write-buffer flushing
-    u32 plmr : 1;			//protected low-memory region
-    u32 phmr : 1;			//protected high-memory region
-    u32 cm : 1;				//caching mode
-    u32 sagaw: 5;			//supported adjuested guest address widths
-    u32 rsvdz0: 3;		//reserved
-    u32 mgaw : 6;			//maximum guest address width
-    u32 zlr: 1;				//zero length read
-    u32 isoch: 1;			//isochrony
-    u32 fro : 10;			//fault-recording register offset
-    u32 sps : 4;			//super-page support
-    u32 rsvdz1: 1;		//reserved
-    u32 psi: 1;				//page selective invalidation
-    u32 nfr: 8;				//no. of fault-recording registers
-    u32 mamv: 6;			//max. address mask value
-    u32 dwd: 1;				//DMA write draining
-    u32 drd: 1;				//DMA read draining
-    u32 rsvdz2: 8;		//reserved
-  } bits;
-} __attribute__ ((packed)) VTD_CAP_REG;
+#define vtd_cap_frr_mem_offset(drhd)	(uint32_t)(drhd->iommu_flags.cap.bits.fro * VTD_CAP_REG_FRO_MULTIPLIER)
+#define vtd_cap_frr_nums(drhd)	(uint32_t)(drhd->iommu_flags.cap.bits.nfr + 1)
+#define vtd_cap_require_wbf(drhd)	(drhd->iommu_flags.cap.bits.rwbf)
+#define vtd_cap_plmr(drhd)	(drhd->iommu_flags.cap.bits.plmr)
+#define vtd_cap_phmr(drhd)	(drhd->iommu_flags.cap.bits.phmr)
 
-//VTD_ECAP_REG (sec. 10.4.3)
-typedef union {
-  u64 value;
-  struct
-  {
-    u32 c:1;					//coherency
-    u32 qi:1;					//queued invalidation support
-    u32 di:1;					//device IOTLB support
-    u32 ir:1;					//interrupt remapping support
-    u32 eim:1;				//extended interrupt mode
-    u32 ch:1;					//caching hints
-    u32 pt:1;					//pass through
-    u32 sc:1;					//snoop control
-    u32 iro:10;				//IOTLB register offset
-    u32 rsvdz0: 2;		//reserved
-    u32 mhmv: 4;			//maximum handle mask value
-    u64 rsvdz1: 40;		//reserved
-  } bits;
-} __attribute__ ((packed)) VTD_ECAP_REG;
-
-//VTD_GCMD_REG (sec. 10.4.4)
-typedef union {
-  u32 value;
-  struct
-  {
-    u32 rsvdz0: 23;		//reserved
-    u32 cfi: 1;				//compatibility format interrupt
-    u32 sirtp: 1;			//set interrupt remap table pointer
-    u32 ire:1;				//interrupt remapping enable
-    u32 qie:1;				//queued invalidation enable
-    u32 wbf:1;				//write buffer flush
-    u32 eafl:1;				//enable advanced fault logging
-    u32 sfl:1;				//set fault log
-    u32 srtp:1;				//set root table pointer
-    u32 te:1;					//translation enable
-  } bits;
-} __attribute__ ((packed)) VTD_GCMD_REG;
-
-//VTD_GSTS_REG (sec. 10.4.5)
-typedef union {
-  u32 value;
-  struct
-  {
-    u32 rsvdz0: 23;		//reserved
-    u32 cfis:1;				//compatibility interrupt format status
-    u32 irtps:1;			//interrupt remapping table pointer status
-    u32 ires:1;				//interrupt remapping enable status
-    u32 qies:1;				//queued invalidation enable status
-    u32 wbfs:1;				//write buffer flush status
-    u32 afls:1;				//advanced fault logging status
-    u32 fls:1;				//fault log status
-    u32 rtps:1;				//root table pointer status
-    u32 tes:1;				//translation enable status
-  } bits;
-} __attribute__ ((packed)) VTD_GSTS_REG;
-
-//VTD_RTADDR_REG (sec. 10.4.6)
-typedef union {
-  u64 value;
-  struct
-  {
-    u32 rsvdz0: 12;		//reserved
-    u64 rta: 52;			//root table address
-  } bits;
-} __attribute__ ((packed)) VTD_RTADDR_REG;
-
-//VTD_CCMD_REG (sec. 10.4.7)
-typedef union {
-  u64 value;
-  struct
-  {
-    u32 did:16;				//domain id
-    u32 sid:16;				//source id
-    u32 fm:2;					//function mask
-    u32 rsvdz0: 25;		//reserved
-    u32 caig:2;				//context invalidation actual granularity
-    u32 cirg:2;				//context invalidation request granularity
-    u32 icc:1;				//invalidate context-cache
-  } bits;
-} __attribute__ ((packed)) VTD_CCMD_REG;
-
-//VTD_IOTLB_REG (sec. 10.4.8.1)
-typedef union {
-  u64 value;
-  struct
-  {
-    u32 rsvdz0: 32;		//reserved
-    u32 did:16;				//domain-id
-    u32 dw: 1;				//drain writes
-    u32 dr:1;					//drain reads
-    u32 rsvdz1: 7;		//reserved
-    u32 iaig: 3;			//IOTLB actual invalidation granularity
-    u32 iirg: 3;			//IOTLB request invalidation granularity
-    u32 ivt: 1;				//invalidate IOTLB
-  } bits;
-} __attribute__ ((packed)) VTD_IOTLB_REG;
-
-//VTD_IVA_REG (sec. 10.4.8.2)
-typedef union {
-  u64 value;
-  struct
-  {
-    u32 am: 6;				//address mask
-    u32 ih:1;					//invalidation hint
-    u32 rsvdz0: 5;		//reserved
-    u64 addr:52;			//address
-  } bits;
-} __attribute__ ((packed)) VTD_IVA_REG;
-
-
-//VTD_FSTS_REG	(sec. 10.4.9)
-typedef union {
-  u32 value;
-  struct
-  {
-    u32 pfo:1;				//fault overflow
-    u32 ppf:1;				//primary pending fault
-    u32 afo:1;				//advanced fault overflow
-    u32 apf:1;				//advanced pending fault
-    u32 iqe:1;				//invalidation queue error
-    u32 ice:1;				//invalidation completion error
-    u32 ite:1;				//invalidation time-out error
-    u32 rsvdz0: 1;		//reserved
-    u32 fri:8;				//fault record index
-    u32 rsvdz1: 16;		//reserved
-  } bits;
-} __attribute__ ((packed)) VTD_FSTS_REG;
-
-//VTD_FECTL_REG	(sec. 10.4.10)
-typedef union {
-  u32 value;
-  struct
-  {
-    u32 rsvdp0:30;		//reserved
-    u32 ip:1;					//interrupt pending
-    u32 im:1;					//interrupt mask
-  } bits;
-} __attribute__ ((packed)) VTD_FECTL_REG;
-
-//VTD_PMEN_REG (sec. 10.4.16)
-typedef union {
-  u32 value;
-  struct
-  {
-    u32 prs:1;			//protected region status
-    u32 rsvdp:30;		//reserved
-    u32 epm:1;			//enable protected memory
-  } bits;
-} __attribute__ ((packed)) VTD_PMEN_REG;
-
+#define vtd_ecap_sc(drhd)	(drhd->iommu_flags.ecap.bits.sc)
+#define vtd_ecap_c(drhd)	(drhd->iommu_flags.ecap.bits.c)
 
 #endif //__ASSEMBLY__
-
 #endif //__VMX_EAP_H__

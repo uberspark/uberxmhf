@@ -248,9 +248,10 @@ bool xmhf_iommu_pt_map(iommu_pt_t pt_handle, gpa_t gpa, spa_t spa, uint32_t flag
     if(xmhf_is_mhv_memory(spa))
         return false;
 
-    // printf("<xmhf_iommu_pt_map> pt_handle:%u, gpa:%#X, spa:%#X, flags:%u\n",
+    // printf("<xmhf_iommu_pt_map> pt_handle:%u, gpa:0x%llX, spa:0x%llX, flags:%u\n",
 	// 			pt_handle, gpa, spa, flags);
     status = iommu_vmx_map(pt_info, gpa, spa, flags);
+    
     return status;
 }
 
@@ -264,6 +265,8 @@ bool xmhf_iommu_bind_device(iommu_pt_t pt_handle, DEVICEDESC* device)
     if (!pt_info)
         return false;
 
+    // printf("<xmhf_iommu_bind_device> Device [%02X:%02X:%02X] uses IOMMU PT %u. pt_info->iommu_pt_id:%u\n",
+	// 			device->bus, device->dev, device->func, pt_handle, pt_info->iommu_pt_id);
     status = iommu_vmx_bind_device(pt_info, device);
 
 	// Flush the IOMMU PT to the main memory

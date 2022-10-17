@@ -46,6 +46,7 @@
 
 /*OUTPUT_FORMAT("pe-i386")*/
 OUTPUT_ARCH(i386)
+OUTPUT_FORMAT(elf32-i386)
 
 ENTRY(init_start)
 
@@ -60,22 +61,33 @@ SECTIONS
 {
   . = 0x1E00000;
   .multiboot_header : {
+    KEEP(*(.multiboot_header))
     *(.multiboot_header)
     . = ALIGN(4096);
   } = 0x9090
 
   .text : {
     *(.text)
-    *(.text.unlikely)
+    *(.text.*)
+    *(.rel.text)
+    *(.rel.text.*)
     . = ALIGN(4096);
   } =0x9090
 
   .data : {
     *(.data)
+    *(.data.*)
+    *(.rel.data)
+    *(.rel.data.*)
     *(.rodata)
-    *(.rodata.str1.*)
+    *(.rodata.*)
+    *(.rel.rodata)
+    *(.rel.rodata.*)
     *(.eh_frame)
     *(.bss)
+    *(.bss.*)
+    *(.rel.bss)
+    *(.rel.bss.*)
     . = ALIGN(4096);
   } =0x9090
 
@@ -101,6 +113,9 @@ SECTIONS
   .debug_ranges : { *(.debug_ranges) } >debug
   .debug_rnglists : { *(.debug_rnglists) } >debug
   .debug_str : { *(.debug_str) } >debug
+  .rel.debug_info : { *(.rel.debug_info) } >debug
+  .rel.debug_aranges : { *(.rel.debug_aranges) } >debug
+  .rel.debug_line : { *(.rel.debug_line) } >debug
 
   /* this is to cause the link to fail if there is
    * anything we didn't explicitly place.

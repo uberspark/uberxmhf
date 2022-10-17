@@ -94,6 +94,72 @@
  *   - SINIT to MLE
  */
 
+#define SHA1_SIZE      20
+typedef uint8_t   sha1_hash_t[SHA1_SIZE];
+
+/*
+ * Extensible TXT heap data structure
+ */
+
+typedef struct __attribute__((packed)) {
+    uint32_t   type;
+    uint32_t   size;
+    uint8_t    data[];
+} heap_ext_data_element_t;
+
+/*
+ * HEAP_END_ELEMENT
+ */
+#define HEAP_EXTDATA_TYPE_END             0
+
+/*
+ * HEAP_EVENT_LOG_POINTER_ELEMENT
+ */
+#define HEAP_EXTDATA_TYPE_TPM_EVENT_LOG_PTR   5
+
+typedef struct __attribute__((packed)) {
+    uint64_t   event_log_phys_addr;
+} heap_event_log_ptr_elt_t;
+
+typedef struct __attribute__((packed)) {
+    uint32_t pcr_index;
+    uint32_t type;
+    sha1_hash_t digest;
+    uint32_t data_size;
+    uint8_t data[];
+} tpm12_pcr_event_t;
+
+#define EVTLOG_SIGNATURE "TXT Event Container\0"
+#define EVTLOG_CNTNR_MAJOR_VER 1
+#define EVTLOG_CNTNR_MINOR_VER 0
+#define EVTLOG_EVT_MAJOR_VER 1
+#define EVTLOG_EVT_MINOR_VER 0
+typedef struct __packed {
+    uint8_t signature[20];
+    uint8_t reserved[12];
+    uint8_t container_ver_major;
+    uint8_t container_ver_minor;
+    uint8_t pcr_event_ver_major;
+    uint8_t pcr_event_ver_minor;
+    uint32_t size;
+    uint32_t pcr_events_offset;
+    uint32_t next_event_offset;
+    tpm12_pcr_event_t pcr_events[];
+} event_log_container_t;
+
+/*
+ * HEAP_EVENT_LOG_POINTER_ELEMENT2
+ */
+#define HEAP_EXTDATA_TYPE_TPM_EVENT_LOG_PTR_2  7
+#define HEAP_EXTDATA_TYPE_TPM_EVENT_LOG_PTR_2_1  8
+
+typedef struct {
+	uint64_t phys_addr;
+	uint32_t allcoated_event_container_size;
+	uint32_t first_record_offset;
+	uint32_t next_record_offset;
+} heap_event_log_ptr_elt2_1_t;
+
 /*
  * BIOS structure
  */
@@ -112,6 +178,7 @@ typedef struct {
  *   - private to tboot (so can be any format we need)
  */
 #define MAX_LCP_PO_DATA_SIZE     64*1024  /* 64k */
+#define MAX_EVENT_LOG_SIZE       5*4*1024   /* 4k*5 */
 
 /* This struct is manually aligned */
 typedef struct {
@@ -123,8 +190,12 @@ typedef struct {
     uint32_t          saved_misc_enable_msr;  /* saved prior to SENTER */
                                          /* PO policy data */
     uint8_t           lcp_po_data[MAX_LCP_PO_DATA_SIZE];
+    uint8_t           event_log_buffer[MAX_EVENT_LOG_SIZE];
 } __attribute__((packed)) os_mle_data_t;
 
+/* tboot 1.10.5 supports version 4 - 7, but we only support 5 - 7 */
+#define MIN_OS_SINIT_DATA_VER    5
+#define MAX_OS_SINIT_DATA_VER    7
 /*
  * OS/loader to SINIT structure
  */
@@ -143,6 +214,8 @@ typedef struct {
     txt_caps_t  capabilities;
     /* versions >= 5 */
     uint64_t    efi_rsdt_ptr;
+    /* versions >= 6 */
+    heap_ext_data_element_t  ext_data_elts[];
 } __attribute__((packed)) os_sinit_data_t;
 
 /*
@@ -160,9 +233,6 @@ typedef struct __attribute__ ((packed)) {
     uint8_t   mem_type;
     uint8_t   reserved[7];
 } __attribute__((packed)) sinit_mdr_t;
-
-#define SHA1_SIZE      20
-typedef uint8_t   sha1_hash_t[SHA1_SIZE];
 
 typedef struct {
     uint32_t     version;             /* currently 6-8 */
