@@ -84,6 +84,7 @@ SECTIONS
 {
   . = 0x00000000;
   .sl_header : {
+    KEEP(*(.sl_header))
     *(.sl_header)
     . = ALIGN(4096);
   } >low

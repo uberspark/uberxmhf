@@ -73,6 +73,7 @@ SECTIONS
   . = __TARGET_BASE;
 
   .text : {
+    KEEP(*(.s_rpb))
     *(.s_rpb)
     *(.text)
     *(.text.unlikely)
@@ -87,6 +88,7 @@ SECTIONS
     *(.eh_frame) /* exception-metadata. might be able to discard */
     . = ALIGN(4);
     _begin_xcph_table = .;
+    KEEP(*(.xcph_table))
     *(.xcph_table)
     _end_xcph_table = .;
   } =0x9090
