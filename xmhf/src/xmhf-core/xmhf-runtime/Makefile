@@ -137,8 +137,7 @@ RUNTIME_COMPONENTS += xmhf-startup
 
 OBJCOPY_FLAGS = --output-format=binary
 ifneq ($(SKIP_RUNTIME_BSS), y)
-OBJCOPY_FLAGS += --set-section-flags .palign_data=alloc,load,contents
-OBJCOPY_FLAGS += --set-section-flags .stack=alloc,load,contents
+OBJCOPY_FLAGS += --set-section-flags .bss=alloc,load,contents
 endif
 
 # targets

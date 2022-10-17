@@ -763,23 +763,23 @@ extern struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attri
 extern unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") ));
 
 //VMX VMXON buffers
-extern u8 g_vmx_vmxon_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_vmxon_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX VMCS buffers
-extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_vmcs_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX IO bitmap buffers
-extern u8 g_vmx_iobitmap_buffer[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_iobitmap_buffer[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 // 2nd IO bitmap buffers. Some hypapps may need a 2nd bitmap.
-extern u8 g_vmx_iobitmap_buffer_2nd[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_iobitmap_buffer_2nd[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX guest and host MSR save area buffers
-extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".bss.palign_data") ));
-extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_msr_area_host_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
+extern u8 g_vmx_msr_area_guest_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX MSR bitmap buffers
-extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_msrbitmap_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 
 //initialize CPU state
@@ -822,16 +822,16 @@ void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 #endif
 
 //SVM VM_HSAVE buffers
-extern u8 g_svm_hsave_buffers[]__attribute__(( section(".bss.palign_data") ));
+extern u8 g_svm_hsave_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //SVM VMCB buffers
-extern u8 g_svm_vmcb_buffers[]__attribute__(( section(".bss.palign_data") ));
+extern u8 g_svm_vmcb_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //SVM IO bitmap buffer
-extern u8 g_svm_iobitmap_buffer[]__attribute__(( section(".bss.palign_data") ));
+extern u8 g_svm_iobitmap_buffer[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //SVM MSR bitmap buffer
-extern u8 g_svm_msrpm[]__attribute__(( section(".bss.palign_data") ));
+extern u8 g_svm_msrpm[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 
 //wake up application processors (cores) in the system

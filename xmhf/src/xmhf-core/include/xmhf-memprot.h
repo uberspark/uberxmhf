@@ -176,16 +176,16 @@ u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu); // get or set EPTP (only vali
 void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
 
 //VMX EPT PML4 table buffers
-extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX EPT PDP table buffers
-extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX EPT PD table buffers
-extern u8 g_vmx_ept_pd_table_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_ept_pd_table_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //VMX EPT P table buffers
-extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_vmx_ept_p_table_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 
 //----------------------------------------------------------------------
@@ -200,13 +200,13 @@ u64 xmhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu); // get or set host cr3 (only
 void xmhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 hcr3);
 
 //SVM NPT PDPT buffers
-extern u8 g_svm_npt_pdpt_buffers[] __attribute__(( section(".bss.palign_data") ));
+extern u8 g_svm_npt_pdpt_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //SVM NPT PDT buffers
-extern u8 g_svm_npt_pdts_buffers[]__attribute__(( section(".bss.palign_data") ));
+extern u8 g_svm_npt_pdts_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 //SVM NPT PT buffers
-extern u8 g_svm_npt_pts_buffers[]__attribute__(( section(".bss.palign_data") ));
+extern u8 g_svm_npt_pts_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 
 
 #endif	//__ASSEMBLY__

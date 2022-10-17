@@ -3,7 +3,7 @@
 #include <xmhf.h>
 #include "xmhf-tlsf.h"
 
-static u8 g_xmhf_heap[XMHF_HEAP_SIZE] __attribute__(( section(".bss.palign_data") ));
+static u8 g_xmhf_heap[XMHF_HEAP_SIZE] __attribute__((aligned(PAGE_SIZE_4K)));
 static xmhf_tlsf_pool g_pool;
 
 // [Ticket 156][TODO] [SecBase][SecOS] Use Slab + Page Allocator to save memory space
