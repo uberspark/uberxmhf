@@ -97,19 +97,19 @@ static vmcs12_info_t
 
 /* The VMCS02's in each CPU */
 static u8 cpu_vmcs02[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS][PAGE_SIZE_4K]
-	__attribute__((section(".bss.palign_data")));
+	__attribute__((aligned(PAGE_SIZE_4K)));
 
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 /*
  * A blank page in memory that is only read from. This page is used as VMREAD
  * and VMWRITE bitmaps when using shadow VMCS.
  */
-static u8 blank_page[PAGE_SIZE_4K] __attribute__((section(".bss.palign_data")));
+static u8 blank_page[PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
 
 /* The shadow VMCS12's in each CPU */
 static u8 cpu_shadow_vmcs12[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
 	[PAGE_SIZE_4K]
-	__attribute__((section(".bss.palign_data")));
+	__attribute__((aligned(PAGE_SIZE_4K)));
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 
 /*

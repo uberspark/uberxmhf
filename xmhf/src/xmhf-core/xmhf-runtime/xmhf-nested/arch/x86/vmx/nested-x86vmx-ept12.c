@@ -67,7 +67,7 @@ static ept02_cache_set_t ept02_cache[MAX_VCPU_ENTRIES];
 /* Page pool for ept02_cache */
 static u8 ept02_page_pool[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT]
 	[EPT02_PAGE_POOL_SIZE][PAGE_SIZE_4K]
-	__attribute__((section(".bss.palign_data")));
+	__attribute__((aligned(PAGE_SIZE_4K)));
 
 /* Page allocation flags for ept02_cache */
 static u8 ept02_page_alloc[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_EPT]
