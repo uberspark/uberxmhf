@@ -45,6 +45,34 @@
  */
 
 /*
+ * XMHF: The following file is taken from:
+ *  tboot-1.10.5/tboot/txt/mtrrs.c
+ * Changes made include:
+ *  Split to bplt-x86vmx-mtrrs-common.c and bplt-x86vmx-mtrrs-bootloader.c .
+ *  Remove use of global variable g_saved_mtrrs.
+ * The list of symbols in the order of appearance in mtrrs.c is:
+ *  symbol                  location    comment
+ *  MTRR_TYPE_MIXED         common
+ *  MMIO_APIC_BASE          common
+ *  NR_MMIO_APIC_PAGES      common
+ *  NR_MMIO_IOAPIC_PAGES    common
+ *  NR_MMIO_PCICFG_PAGES    common
+ *  SINIT_MTRR_MASK         bootloader
+ *  g_saved_mtrrs           discarded
+ *  get_maxphyaddr_mask     common
+ *  set_mtrrs_for_acmod     bootloader
+ *  save_mtrrs              bootloader
+ *  print_mtrrs             common      set to non-static
+ *  get_page_type           discarded
+ *  get_region_type         discarded
+ *  validate_mmio_regions   discarded
+ *  validate_mtrrs          common
+ *  restore_mtrrs           common
+ *  set_mem_type            bootloader
+ *  set_all_mtrrs           common
+ */
+
+/*
  * mtrrs.c: support functions for manipulating MTRRs
  *
  * Copyright (c) 2003-2010, Intel Corporation
@@ -79,16 +107,6 @@
  *
  */
 
-/*
- * Modified for XMHF by jonmccune@cmu.edu, 2011.01.05
- */
-
-/*
- * Modified for XMHF by jonmccune@cmu.edu, 2011.01.05
- * To save space in secure loader, bplt-x86vmx-mtrrs.c is split to
- * bplt-x86vmx-mtrrs-common.c and bplt-x86vmx-mtrrs-bootloader.c, 2022.10.04
- */
-
 #include <xmhf.h>
 
 #define SINIT_MTRR_MASK         0xFFFFFF  /* SINIT requires 36b mask */
@@ -97,7 +115,7 @@
  * this must be done for each processor so that all have the same
  * memory types
  */
-bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
+bool set_mtrrs_for_acmod(const acm_hdr_t *hdr)
 {
     unsigned long eflags;
     unsigned long cr0, cr4;
@@ -152,14 +170,12 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
     /* enable interrupts */
     set_eflags(eflags);
 
-
     return true;
 }
 
 void save_mtrrs(mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
-    u64 ndx;
 
     /* IA32_MTRR_DEF_TYPE MSR */
     saved_state->mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
@@ -177,15 +193,14 @@ void save_mtrrs(mtrr_state_t *saved_state)
         saved_state->num_var_mtrrs = mtrr_cap.vcnt;
 
     /* physmask's and physbase's */
-    for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
+    for ( unsigned int ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
         saved_state->mtrr_physmasks[ndx].raw =
             rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
         saved_state->mtrr_physbases[ndx].raw =
             rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
     }
 
-    print_mtrrs(saved_state);
-
+    // XMHF: Remove use of global variable g_saved_mtrrs.
     // g_saved_mtrrs = saved_state;
 }
 
@@ -193,17 +208,17 @@ void save_mtrrs(mtrr_state_t *saved_state)
  * set the memory type for specified range (base to base+size)
  * to mem_type and everything else to UC
  */
-bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
+bool set_mem_type(const void *base, uint32_t size, uint32_t mem_type)
 {
     int num_pages;
     int ndx;
-    unsigned long base_v;
-    int i;
-    int mtrr_s;
     mtrr_def_type_t mtrr_def_type;
     mtrr_cap_t mtrr_cap;
     mtrr_physmask_t mtrr_physmask;
     mtrr_physbase_t mtrr_physbase;
+    unsigned long base_v;
+    int i;
+    int mtrr_s;
 
     /*
      * disable all fixed MTRRs
@@ -228,32 +243,32 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
      * map all AC module pages as mem_type
      */
 
-    num_pages = (size + PAGE_SIZE_4K - 1) >> PAGE_SHIFT_4K;
+    num_pages = PA_PAGE_ALIGN_UP_4K((u64)size) >> PAGE_SHIFT_4K;
     ndx = 0;
 
     printf("setting MTRRs for acmod: base=%p, size=%x, num_pages=%d\n",
            base, size, num_pages);
-
     /*
      * Each VAR MTRR base must be a multiple if that MTRR's Size
-     */
+    */
     base_v = (unsigned long) base;
-    i = 0;
+    i =0;
     // mtrr size in pages
     mtrr_s = 1;
     while ((base_v & 0x01) == 0) {
           i++;
-          base_v = base_v >> 1;
+          base_v = base_v >>1 ;
+
     }
-    for (int j=i-12; j>0; j--) mtrr_s =mtrr_s*2; // mtrr_s = mtrr_s << 1
+    for (int j=i-12; j>0; j--) mtrr_s =mtrr_s*2; //mtrr_s = mtrr_s << 1
     printf("The maximum allowed MTRR range size=%d Pages \n", mtrr_s);
 
     while (num_pages >= mtrr_s){
 
-        /* set the base of the current MTRR */
+	/* set the base of the current MTRR */
         mtrr_physbase.raw = rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
         mtrr_physbase.base = ((unsigned long)base >> PAGE_SHIFT_4K) &
-                             SINIT_MTRR_MASK;
+	                     SINIT_MTRR_MASK;
         mtrr_physbase.type = mem_type;
         wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2, mtrr_physbase.raw);
 
@@ -276,7 +291,7 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
         /* set the base of the current MTRR */
         mtrr_physbase.raw = rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
         mtrr_physbase.base = ((unsigned long)base >> PAGE_SHIFT_4K) &
-                             SINIT_MTRR_MASK;
+	                     SINIT_MTRR_MASK;
         mtrr_physbase.type = mem_type;
         wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2, mtrr_physbase.raw);
 
@@ -292,7 +307,7 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
         mtrr_physmask.v = 1;
         wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, mtrr_physmask.raw);
 
-        /* prepare for the next loop depending on number of pages
+        /*prepare for the next loop depending on number of pages
          * We figure out from the above how many pages could be used in this
          * mtrr. Then we decrement the count, increment the base,
          * increment the mtrr we are dealing with, and if num_pages is
@@ -306,7 +321,14 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
             return false;
         }
     }
-
     return true;
 }
 
+/*
+ * Local variables:
+ * mode: C
+ * c-set-style: "BSD"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil * End:
+ */

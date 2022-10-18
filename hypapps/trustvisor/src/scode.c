@@ -286,6 +286,11 @@ void init_scode(VCPU * vcpu)
   memset(scode_curr, 0xFF, ((max+1) * sizeof(*scode_curr)));
 
 #ifdef __DRT__
+  /* After upgrading to tboot 1.10.5, need to call tpm_detect() */
+  if (get_tpm_fp() == NULL) {
+    HALT_ON_ERRORCOND(tpm_detect());
+  }
+
   /* init PRNG and long-term crypto keys */
   EU_VERIFYN(trustvisor_master_crypto_init());
   eu_trace("trustvisor_master_crypto_init successful.");

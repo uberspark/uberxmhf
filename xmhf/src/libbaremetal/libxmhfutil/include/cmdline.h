@@ -51,8 +51,9 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #endif /* ARRAY_SIZE */
 
+/* Used for kernel command line parameter setup */
 typedef struct {
-    const char *name;    /* set to NULL for last item in list */
+    const char *name;          /* set to NULL for last item in list */
     const char *def_val;
 } cmdline_option_t;
 

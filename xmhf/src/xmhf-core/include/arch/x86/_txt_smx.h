@@ -45,6 +45,14 @@
  */
 
 /*
+ * XMHF: The following file is taken from:
+ *  tboot-1.10.5/tboot/include/txt/smx.h
+ * Changes made include:
+ *  Change return type of __getsec_capabilities() to uint32_t.
+ *  Comment get_parameters().
+ */
+
+/*
  * smx.h: Intel(r) TXT SMX architecture-related definitions
  *
  * Copyright (c) 2003-2008, Intel Corporation
@@ -79,11 +87,6 @@
  *
  */
 
-/*
- * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
- */
-
-
 #ifndef __TXT_SMX_H__
 #define __TXT_SMX_H__
 
@@ -96,6 +99,7 @@
 
 /* GETSEC leaf function codes */
 #define IA32_GETSEC_CAPABILITIES	0
+#define IA32_GETSEC_ENTERACCS		2
 #define IA32_GETSEC_SENTER		4
 #define IA32_GETSEC_SEXIT		5
 #define IA32_GETSEC_PARAMETERS		6
@@ -123,6 +127,7 @@ typedef union {
     };
 } capabilities_t;
 
+// XMHF: Change return type of __getsec_capabilities() to uint32_t.
 static inline uint32_t __getsec_capabilities(uint32_t index)
 {
     uint32_t cap;
@@ -149,7 +154,8 @@ typedef struct {
     bool preserve_mce;
 } getsec_parameters_t;
 
-///extern bool get_parameters(getsec_parameters_t *params);
+// XMHF: Comment get_parameters().
+//extern bool get_parameters(getsec_parameters_t *params);
 
 
 static inline void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
@@ -195,18 +201,80 @@ static inline void __getsec_parameters(uint32_t index, int* param_type,
     if ( pecx != NULL )         *pecx = ecx;
 }
 
-static inline bool txt_is_launched(void)
+static inline void __getsec_enteraccs(uint32_t acm_base, uint32_t acm_size,
+                                      uint32_t fn)
 {
-    txt_sts_t sts;
-
-    sts._raw = read_pub_config_reg(TXTCR_STS);
-
-    return sts.senter_done_sts;
+    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
+			  :
+			  : "a"(IA32_GETSEC_ENTERACCS),
+			    "b"(acm_base),
+			    "c"(acm_size),
+			    "D"(0),
+			    "S"(fn));
 }
 
-bool txt_prepare_cpu(void);
-tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
-                                  void *phys_mle_start, size_t mle_size);
+/*
+ * XMHF: The following function declarations are taken from:
+ *  tboot-1.10.5/tboot/include/txt/txt.h
+ * List of functions:
+ *  EVTLOG_UNKNOWN
+ *  EVTLOG_TPM12
+ *  EVTLOG_TPM2_LEGACY
+ *  EVTLOG_TPM2_TCG
+ *  txt_prepare_cpu()
+ *  txt_launch_environment()
+ * Changes made include:
+ *  TODO: Changed arguments of txt_launch_environment().
+ */
+
+/*
+ * txt.h: Intel(r) TXT support functions
+ *
+ * Copyright (c) 2003-2008, Intel Corporation
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of the Intel Corporation nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/* TPM event log types */
+#define EVTLOG_UNKNOWN       0
+#define EVTLOG_TPM12         1
+#define EVTLOG_TPM2_LEGACY   2
+#define EVTLOG_TPM2_TCG      3
+
+extern bool txt_prepare_cpu(void);
+
+// XMHF: TODO: Changed arguments of txt_launch_environment().
+//extern tb_error_t txt_launch_environment(loader_ctx *lctx);
+extern tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
+                                         void *phys_mle_start, size_t mle_size);
+
 #endif /* __TXT_SMX_H__ */
 
 /*

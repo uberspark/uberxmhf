@@ -44,36 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef _NV_H_
-#define _NV_H_
+#ifndef __SHA512_H__
+#define __SHA512_H__
 
-/* Currently this file depends on tpm.h having been included earlier
- * (for tpm_nv_index_t).  Given that there are also such dependencies
- * for uint32_t, VCPU, etc., I choose to do nothing in here. */
+#define SHA512_RESULTLEN (64)
+#define SHA512_DIGEST_LENGTH	SHA512_RESULTLEN
 
-typedef uint32_t tpm_nv_index_t;
+int sha512_buffer(const unsigned char *buffer, size_t len,
+                unsigned char md[SHA512_DIGEST_LENGTH]);
 
-/* TODO: Make the index a boot-time parameter with a sane default */
-#define HW_TPM_MASTER_SEALING_SECRET_INDEX 0x00015213
-#define HW_TPM_MASTER_SEALING_SECRET_SIZE 20
-/* TODO: Make this a build-time config option */
-#define HALT_UPON_NV_PROBLEM 0
-
-/* Use Locality 2 for hardware TPM operations involving NV RAM */
-#define TRUSTVISOR_HWTPM_NV_LOCALITY 2
-
-#define HW_TPM_ROLLBACK_PROT_INDEX 0x00014E56 /* "NV" */
-#define HW_TPM_ROLLBACK_PROT_SIZE 32 /* SHA-256 */
-
-int validate_trustvisor_nv_region(unsigned int locality,
-                                  tpm_nv_index_t idx,
-                                  unsigned int expected_size);
-
-int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
-                          uint8_t *mss, unsigned int mss_size);
-
-uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr);
-uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr);
-uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr);
-
-#endif /* _NV_H_ */
+#endif /* __SHA512_H__ */

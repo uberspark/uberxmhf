@@ -59,7 +59,55 @@
 extern int *scode_curr;
 extern whitelist_entry_t *whitelist;
 
+// TODO: XMHF: Begin of content copied from tpm_12.c
+// TODO: not very well ordered
 
+typedef uint8_t tpm_locality_selection_t;
+
+typedef uint16_t tpm_structure_tag_t;
+
+typedef struct __packed {
+    uint8_t     digest[SHA1_LENGTH];
+} tpm12_digest_t;
+
+typedef tpm12_digest_t tpm_composite_hash_t;
+
+typedef struct __packed {
+    uint16_t    size_of_select;
+    uint8_t     pcr_select[3];
+} tpm_pcr_selection_t;
+
+typedef struct __packed {
+    tpm_pcr_selection_t         pcr_selection;
+    tpm_locality_selection_t    locality_at_release;
+    tpm_composite_hash_t        digest_at_release;
+} tpm_pcr_info_short_t;
+
+typedef struct __packed {
+    tpm_structure_tag_t tag;
+    uint32_t            attributes;
+} tpm_nv_attributes_t;
+
+typedef uint16_t tpm_structure_tag_t;
+
+typedef tpm12_digest_t tpm_composite_hash_t;
+
+typedef struct __packed {
+    tpm_structure_tag_t     tag;
+    uint32_t                nv_index;
+    tpm_pcr_info_short_t    pcr_info_read;
+    tpm_pcr_info_short_t    pcr_info_write;
+    tpm_nv_attributes_t     permission;
+    uint8_t                 b_read_st_clear;
+    uint8_t                 b_write_st_clear;
+    uint8_t                 b_write_define;
+    uint32_t                data_size;
+} tpm_nv_data_public_t;
+
+// TODO: XMHF: End of content copied from tpm_12.c
+
+// XMHF: TODO: unused function
+#if 0
 /**
  * XXX REDUNDANT; identical logic exists in tv_utpm.h. Useful
  * primitives may exist in bitfield.h.
@@ -124,6 +172,7 @@ static void dump_nv_data_public(tpm_nv_data_public_t *pub) {
 
   eu_trace("data_size            %d",	pub->data_size);
 }
+#endif
 
 /**
  * Ensure that the provided NV index is access controlled based on
@@ -134,6 +183,14 @@ static void dump_nv_data_public(tpm_nv_data_public_t *pub) {
  */
 static int validate_nv_access_controls(unsigned int locality,
                                        tpm_nv_index_t idx) {
+  // XMHF: TODO: not implemented
+  // Need to copy tpm_get_nvindex_size() and modify a little bit to get
+  // tpm_get_nv_data_public().
+  printf("Warning: validate_nv_access_controls() not implemented yet.\n");
+  (void) locality;
+  (void) idx;
+  return 0;
+#if 0
   tpm_nv_data_public_t pub;
   int rv = 1;
 
@@ -172,6 +229,7 @@ static int validate_nv_access_controls(unsigned int locality,
   rv = 0;
  out:
   return rv;
+#endif
 }
 
 /**
@@ -187,8 +245,13 @@ int validate_trustvisor_nv_region(unsigned int locality,
                                   unsigned int expected_size) {
   int rv = 1;
   unsigned int actual_size = 0;
+  struct tpm_if *tpm;
+  const struct tpm_if_fp *tpm_fp;
 
-  EU_CHKN( rv = tpm_get_nvindex_size(locality, idx, &actual_size));
+  EU_CHK( tpm = get_tpm());
+  EU_CHK( tpm_fp = get_tpm_fp());
+
+  EU_CHK( tpm_fp->get_nvindex_size(tpm, locality, idx, &actual_size));
 
   EU_CHK( actual_size == expected_size,
           eu_err_e("ERROR: actual_size (%d) != expected_size (%d)!",
@@ -223,10 +286,15 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
   unsigned int i;
   unsigned int actual_size = mss_size;
   bool first_boot;
+  struct tpm_if *tpm;
+  const struct tpm_if_fp *tpm_fp;
+
+  EU_CHK( tpm = get_tpm());
+  EU_CHK( tpm_fp = get_tpm_fp());
 
   EU_CHKN( rv = validate_trustvisor_nv_region(locality, idx, mss_size));
 
-  EU_CHKN( rv = tpm_nv_read_value(locality, idx, 0, mss, &actual_size));
+  EU_CHK( tpm_fp->nv_read(tpm, locality, idx, 0, mss, &actual_size));
 
   EU_CHK( actual_size == mss_size,
           eu_err_e("NVRAM read size %d != MSS expected size %d",
@@ -250,7 +318,7 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
   if(first_boot) {
     eu_trace("first_boot detected!");
     rand_bytes_or_die(mss, mss_size); /* "or_die" is VERY important! */
-    EU_CHKN( rv = tpm_nv_write_value(locality, idx, 0, mss, mss_size),
+    EU_CHK( tpm_fp->nv_write(tpm, locality, idx, 0, mss, mss_size),
              eu_err_e("ERROR: Unable to write new MSS to TPM NVRAM!"));
   } else {
     eu_trace("MSS successfully read from TPM NVRAM");
@@ -381,6 +449,11 @@ static uint32_t authenticate_nv_mux_pal(VCPU *vcpu) {
 uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
   uint32_t rv = 1;
   uint32_t actual_size;
+  struct tpm_if *tpm;
+  const struct tpm_if_fp *tpm_fp;
+
+  EU_CHK( tpm = get_tpm());
+  EU_CHK( tpm_fp = get_tpm_fp());
 
   eu_pulse();
 
@@ -393,7 +466,7 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
            eu_err_e("FATAL ERROR: Could not access HW TPM."));
 
   /* Make the actual TPM call */
-  EU_CHKN( rv = tpm_get_nvindex_size(TRUSTVISOR_HWTPM_NV_LOCALITY,
+  EU_CHK( tpm_fp->get_nvindex_size(tpm, TRUSTVISOR_HWTPM_NV_LOCALITY,
                                      HW_TPM_ROLLBACK_PROT_INDEX, &actual_size));
 
   /* Close TPM */
@@ -414,6 +487,11 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
   uint32_t data_size = HW_TPM_ROLLBACK_PROT_SIZE;
   uint8_t data[HW_TPM_ROLLBACK_PROT_SIZE];
   bool opened_tpm = false;
+  struct tpm_if *tpm;
+  const struct tpm_if_fp *tpm_fp;
+
+  EU_CHK( tpm = get_tpm());
+  EU_CHK( tpm_fp = get_tpm_fp());
 
   eu_pulse();
 
@@ -426,7 +504,7 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
   opened_tpm = true;
 
   /* Make the actual TPM call */
-  EU_CHKN( rv = tpm_nv_read_value(TRUSTVISOR_HWTPM_NV_LOCALITY,
+  EU_CHK( tpm_fp->nv_read(tpm, TRUSTVISOR_HWTPM_NV_LOCALITY,
                                   HW_TPM_ROLLBACK_PROT_INDEX, 0,
                                   data,
                                   &data_size));
@@ -453,6 +531,11 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
   uint32_t rv = 1;
   uint8_t data[HW_TPM_ROLLBACK_PROT_SIZE];
   bool opened_tpm = false;
+  struct tpm_if *tpm;
+  const struct tpm_if_fp *tpm_fp;
+
+  EU_CHK( tpm = get_tpm());
+  EU_CHK( tpm_fp = get_tpm_fp());
 
   eu_pulse();
 
@@ -468,7 +551,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
   EU_CHKN( copy_from_current_guest(vcpu, data, in_addr, HW_TPM_ROLLBACK_PROT_SIZE));
 
   /* Make the actual TPM call */
-  EU_CHKN( rv = tpm_nv_write_value(TRUSTVISOR_HWTPM_NV_LOCALITY,
+  EU_CHK( tpm_fp->nv_write(tpm, TRUSTVISOR_HWTPM_NV_LOCALITY,
                                    HW_TPM_ROLLBACK_PROT_INDEX, 0,
                                    data,
                                    HW_TPM_ROLLBACK_PROT_SIZE));
