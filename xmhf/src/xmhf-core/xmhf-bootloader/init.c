@@ -1299,6 +1299,8 @@ void mp_cstartup (VCPU *vcpu){
             printf("AP(0x%02x): Microcode clear.\n", vcpu->id);
         }
 
+        printf("AP(0x%02x): Waiting for DRTM establishment...\n", vcpu->id);
+
 #ifndef __SKIP_INIT_SMP__
         //update the AP startup counter
         spin_lock(&lock_cpus_active);
@@ -1306,7 +1308,13 @@ void mp_cstartup (VCPU *vcpu){
         spin_unlock(&lock_cpus_active);
 #endif /* __SKIP_INIT_SMP__ */
 
-        printf("AP(0x%02x): Waiting for DRTM establishment...\n", vcpu->id);
+        /*
+         * Note: calling printf() here may lead to deadlock. After BSP
+         * see cpus_active = nproc, it calls send_init_ipi_to_all_APs() to send
+         * INIT interrupt to APs. If an AP receives the INIT interrupt while
+         * holding the printf lock, BSP will deadlock when printing anything
+         * afterwards.
+         */
 
         HALT();
     }
