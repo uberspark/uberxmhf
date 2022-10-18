@@ -45,9 +45,59 @@
  */
 
 /*
+ * XMHF: The following file is taken from:
+ *  tboot-1.10.5/tboot/common/cmdline.c
+ * Changes made include:
+ *  Split to xmhf-bootloader/cmdline.c and xmhf-bootloader/cmdline.c .
+ *  Rename get_option_val() to cmdline_get_option_val(), make it non-static.
+ *  Make cmdline_parse() non-static.
+ * The list of symbols in the order of appearance in cmdline.c is:
+ *  symbol                          location
+ *  g_cmdline                       xmhf-bootloader/cmdline.c
+ *  cmdline_option_t                libxmhfutil/include/cmdline.h
+ *  MAX_VALUE_LEN                   libxmhfutil/include/cmdline.h
+ *  g_tboot_cmdline_options         xmhf-bootloader/cmdline.c
+ *  g_tboot_param_values            xmhf-bootloader/cmdline.c
+ *  g_linux_cmdline_options         discarded
+ *  g_linux_param_values            discarded
+ *  tb_loglvl_map_t                 discarded
+ *  g_loglvl_map                    discarded
+ *  get_option_val                  libxmhfutil/cmdline.c
+ *  cmdline_parse                   libxmhfutil/cmdline.c
+ *  tboot_parse_cmdline             xmhf-bootloader/cmdline.c
+ *  linux_parse_cmdline             discarded
+ *  get_loglvl_prefix               discarded
+ *  get_tboot_loglvl                discarded
+ *  get_tboot_log_targets           discarded
+ *  parse_pci_bdf                   discarded
+ *  g_psbdf_enabled                 discarded
+ *  parse_com_psbdf                 discarded
+ *  g_pbbdf_enabled                 discarded
+ *  parse_com_pbbdf                 discarded
+ *  parse_com_fmt                   xmhf-bootloader/cmdline.c
+ *  parse_serial_param              xmhf-bootloader/cmdline.c
+ *  get_tboot_serial                xmhf-bootloader/cmdline.c
+ *  get_tboot_vga_delay             discarded
+ *  get_tboot_prefer_da             discarded
+ *  g_min_ram                       discarded
+ *  get_tboot_min_ram               discarded
+ *  get_tboot_mwait                 discarded
+ *  get_tboot_call_racm             discarded
+ *  get_tboot_call_racm_check       discarded
+ *  get_tboot_measure_nv            discarded
+ *  get_tboot_extpol                discarded
+ *  get_tboot_force_tpm2_legacy_log discarded
+ *  get_tboot_ignore_prev_err       discarded
+ *  get_tboot_save_vtd              discarded
+ *  get_tboot_dump_memmap           discarded
+ *  get_linux_vga                   discarded
+ *  get_linux_mem                   discarded
+ */
+
+/*
  * cmdline.c: command line parsing fns
  *
- * Copyright (c) 2006-2010, Intel Corporation
+ * Copyright (c) 2006-2012, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,19 +129,12 @@
  *
  */
 
-/**
- * Modified for XMHF.
- */
-
 #include <xmhf.h>
 #include <cmdline.h>
 
-const char* cmdline_get_option_val(const cmdline_option_t *options,
-                                   char vals[][MAX_VALUE_LEN],
-                                   const char *opt_name)
+const char* cmdline_get_option_val(const cmdline_option_t *options,  char vals[][MAX_VALUE_LEN],    const char *opt_name)
 {
-    int i;
-    for ( i = 0; options[i].name != NULL; i++ ) {
+    for ( int i = 0; options[i].name != NULL; i++ ) {
         if ( strcmp(options[i].name, opt_name) == 0 )
             return vals[i];
     }
@@ -117,50 +160,48 @@ void cmdline_parse(const char *cmdline, const cmdline_option_t *options,
     /* parse options */
     while ( true )
     {
+        const char *opt_start;
+        const char *opt_end;
+        const char *val_start;
+        unsigned int opt_name_size;
+        unsigned int copy_size;
+
         /* skip whitespace */
         while ( isspace(*p) )
             p++;
         if ( *p == '\0' )
             break;
 
-        {
-            /* find end of current option */
-            const char *opt_start = p;
-            const char *opt_end = strchr(opt_start, ' ');
-            if ( opt_end == NULL )
-                opt_end = opt_start + strlen(opt_start);
-            p = opt_end;
+        /* find end of current option */
+        opt_start = p;
+        opt_end = strchr(opt_start, ' ');
+        if ( opt_end == NULL )
+            opt_end = opt_start + strlen(opt_start);
+        p = opt_end;
 
-            {
-                /* find value part; if no value found, use default and continue */
-                const char *val_start = strchr(opt_start, '=');
-                if ( val_start == NULL || val_start > opt_end )
-                    continue;
-                val_start++;
+        /* find value part; if no value found, use default and continue */
+        val_start = strchr(opt_start, '=');
+        if ( val_start == NULL || val_start > opt_end )
+            continue;
+        val_start++;
 
-                {
-                    unsigned int opt_name_size = val_start - opt_start - 1;
-                    unsigned int copy_size = opt_end - val_start;
-                    if ( copy_size > MAX_VALUE_LEN - 1 )
-                        copy_size = MAX_VALUE_LEN - 1;
-                    if ( opt_name_size == 0 || copy_size == 0 )
-                        continue;
+        opt_name_size = val_start - opt_start - 1;
+        copy_size = opt_end - val_start;
+        if ( copy_size > MAX_VALUE_LEN - 1 )
+            copy_size = MAX_VALUE_LEN - 1;
+        if ( opt_name_size == 0 || copy_size == 0 )
+            continue;
 
-                    /* value found, so copy it */
-                    for ( i = 0; options[i].name != NULL; i++ ) {
-                        if ( strncmp(options[i].name, opt_start, opt_name_size ) == 0 ) {
-                            strncpy(vals[i], val_start, copy_size);
-                            vals[i][copy_size] = '\0'; /* add '\0' to the end of string */
-                            break;
-                        }
-                    }
-                }
+        /* value found, so copy it */
+        for ( i = 0; options[i].name != NULL; i++ ) {
+            if ( strncmp(options[i].name, opt_start, opt_name_size ) == 0 ) {
+                strncpy(vals[i], val_start, copy_size);
+                vals[i][copy_size] = '\0'; /* add '\0' to the end of string */
+                break;
             }
         }
     }
 }
-
-
 
 /*
  * Local variables:

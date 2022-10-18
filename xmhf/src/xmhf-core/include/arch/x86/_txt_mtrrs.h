@@ -45,6 +45,13 @@
  */
 
 /*
+ * XMHF: The following file is taken from:
+ *  tboot-1.10.5/tboot/include/txt/mtrrs.h
+ * Changes made include:
+ *  Add "__attribute__((packed))" to structs.
+ */
+
+/*
  * mtrrs.c: Intel(r) TXT MTRR-related definitions
  *
  * Copyright (c) 2003-2010, Intel Corporation
@@ -79,17 +86,10 @@
  *
  */
 
-/*
- * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
- */
-
 #ifndef __TXT_MTRRS_H__
 #define __TXT_MTRRS_H__
 
-/* XXX TODO eliminate this dependency.  txt_heap.h is also dependent
- * on the current file.  tboot code has the ugly structure.  we should
- * do better. */
-#include "_txt_acmod.h"
+// XMHF: removed #include <txt/acmod.h>
 
 enum fix_mtrr_t {
     MTRR_FIX64K_00000 = 0x250,
@@ -176,17 +176,16 @@ typedef union {
 
 typedef struct {
     mtrr_def_type_t	    mtrr_def_type;
-    uint64_t            num_var_mtrrs;
+    unsigned int        num_var_mtrrs;
     mtrr_physbase_t     mtrr_physbases[MAX_VARIABLE_MTRRS];
     mtrr_physmask_t     mtrr_physmasks[MAX_VARIABLE_MTRRS];
 } __attribute__((packed)) mtrr_state_t;
 
-extern bool set_mtrrs_for_acmod(acm_hdr_t *hdr);
-extern void print_mtrrs(const mtrr_state_t *saved_state);
+extern bool set_mtrrs_for_acmod(const acm_hdr_t *hdr);
 extern void save_mtrrs(mtrr_state_t *saved_state);
 extern void set_all_mtrrs(bool enable);
-extern bool set_mem_type(void *base, uint32_t size, uint32_t mem_type);
-extern void restore_mtrrs(mtrr_state_t *saved_state);
+extern bool set_mem_type(const void *base, uint32_t size, uint32_t mem_type);
+extern void restore_mtrrs(const mtrr_state_t *saved_state);
 extern bool validate_mtrrs(const mtrr_state_t *saved_state);
 
 #endif /*__TXT_MTRRS_H__ */

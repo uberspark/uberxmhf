@@ -71,8 +71,11 @@ int xmhf_tpm_open_locality(int locality){
       return 1;
     };
 
-    if(!xmhf_tpm_is_tpm_ready(locality)) {
-        printf("%s: ERROR TPM is not ready, failed to open locality %d\n", __FUNCTION__, locality);
+    // TODO: in earlier code xmhf_tpm_is_tpm_ready() from tboot-20101005
+    // is_tpm_ready() is called, but now this function is gone. So only calling
+    // tpm_validate_locality().
+    if (!tpm_validate_locality(locality)) {
+        printf("TPM is not available, failed to open locality %d\n", locality);
         return 1;
     }
 
@@ -80,19 +83,9 @@ int xmhf_tpm_open_locality(int locality){
     return 0;
 }
 
-//check if TPM is ready for use
-bool xmhf_tpm_is_tpm_ready(uint32_t locality){
-		return xmhf_tpm_arch_is_tpm_ready(locality);
-}
-
 //deactivate all TPM localities
 void xmhf_tpm_deactivate_all_localities(void){
 	xmhf_tpm_arch_deactivate_all_localities();
-}
-
-//prepare TPM for use
-bool xmhf_tpm_prepare_tpm(void){
-	return xmhf_tpm_arch_prepare_tpm();
 }
 
 

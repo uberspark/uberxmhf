@@ -58,7 +58,7 @@ int xmhf_tpm_arch_x86svm_open_locality(int locality){
         xmhf_tpm_arch_deactivate_all_localities();
         //dump_locality_access_regs();
 
-        if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
+        if(tpm_wait_cmd_ready(locality)) {
             printf("%s: TPM successfully opened in Locality %d.\n", __FUNCTION__, locality);
 			return 0;
         } else {

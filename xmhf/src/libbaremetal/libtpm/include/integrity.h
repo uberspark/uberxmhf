@@ -46,29 +46,16 @@
 
 /*
  * XMHF: The following file is taken from:
- *  tboot-1.10.5/include/hash.h
+ *  tboot-1.10.5/tboot/include/integrity.h
  * Changes made include:
- *  Split to hash.h (in libbaremetal) and _txt_hash.h (in xmhf-core).
- * List of symbols in hash.h (others are in _txt_hash.h):
- *  TB_HALG_SHA1_LG
- *  TB_HALG_SHA1
- *  TB_HALG_SHA256
- *  TB_HALG_SM3
- *  TB_HALG_SHA384
- *  TB_HALG_SHA512
- *  TB_HALG_NULL
- *  SHA1_LENGTH
- *  SHA256_LENGTH
- *  SM3_LENGTH
- *  SHA384_LENGTH
- *  SHA512_LENGTH
- *  tb_hash_t
+ *  Skip including poly1305.h.
  */
 
 /*
- * hash.h:  definition of and support fns for tb_hash_t type
+ * integrity.h: routines for memory integrity measurement &
+ *          verification. Memory integrity is protected with tpm seal
  *
- * Copyright (c) 2006-2007, Intel Corporation
+ * Copyright (c) 2007-2009, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -100,60 +87,68 @@
  *
  */
 
-#ifndef __TXT_HASH_H__
-#define __TXT_HASH_H__
+#ifndef _TBOOT_INTEGRITY_H_
+#define _TBOOT_INTEGRITY_H_
 
-typedef uint8_t sha1_hash_t[SHA1_LENGTH];
-typedef uint8_t sha256_hash_t[SHA256_LENGTH];
-typedef uint8_t sm3_hash_t[SM3_LENGTH];
-typedef uint8_t sha384_hash_t[SHA384_LENGTH];
-typedef uint8_t sha512_hash_t[SHA512_LENGTH];
+#include <hash.h>
 
-static inline const char *hash_alg_to_string(uint16_t hash_alg)
-{
-    if ( hash_alg == TB_HALG_SHA1 || hash_alg == TB_HALG_SHA1_LG )
-        return "TB_HALG_SHA1";
-    else if ( hash_alg == TB_HALG_SHA256 )
-        return "TB_HALG_SHA256";
-    else if ( hash_alg == TB_HALG_SM3 )
-        return "TB_HALG_SM3";
-    else if ( hash_alg == TB_HALG_SHA384 )
-        return "TB_HALG_SHA384";
-    else if ( hash_alg == TB_HALG_SHA512 )
-        return "TB_HALG_SHA512";
-    else
-        return "unsupported";
-}
+// XMHF: Skip including poly1305.h.
+//#include <poly1305.h>
+#define POLY1305_DIGEST_SIZE 16
 
-static inline unsigned int get_hash_size(uint16_t hash_alg)
-{
-    if ( hash_alg == TB_HALG_SHA1 || hash_alg == TB_HALG_SHA1_LG )
-        return SHA1_LENGTH;
-    else if ( hash_alg == TB_HALG_SHA256 )
-        return SHA256_LENGTH;
-    else if ( hash_alg == TB_HALG_SM3 )
-        return SM3_LENGTH;
-    else if ( hash_alg == TB_HALG_SHA384 )
-        return SHA384_LENGTH;
-    else if ( hash_alg == TB_HALG_SHA512 )
-        return SHA512_LENGTH;
-    else
-        return 0;
-}
+/*
+ * state that must be saved across S3 and will be sealed for integrity
+ * before extending PCRs and launching kernel
+ */
+#define MAX_VL_HASHES 32
+#define MAX_ALG_NUM 5
 
-extern bool are_hashes_equal(const tb_hash_t *hash1, const tb_hash_t *hash2,
-                             uint16_t hash_alg);
-extern bool hash_buffer(const unsigned char* buf, size_t size, tb_hash_t *hash,
-                        uint16_t hash_alg);
-extern bool extend_hash(tb_hash_t *hash1, const tb_hash_t *hash2,
-                        uint16_t hash_alg);
-extern void print_hash(const tb_hash_t *hash, uint16_t hash_alg);
-extern bool import_hash(const char *string, tb_hash_t *hash, uint16_t alg);
-extern void copy_hash(tb_hash_t *dest_hash, const tb_hash_t *src_hash,
-                      uint16_t hash_alg);
+typedef struct {
+    uint16_t  alg;
+    tb_hash_t hash;
+} hash_entry_t;
+
+typedef struct {
+    uint32_t  count;
+    hash_entry_t entries[MAX_ALG_NUM];
+} hash_list_t;
+
+typedef struct {
+    /* low and high memory regions to protect w/ VT-d PMRs */
+    uint64_t vtd_pmr_lo_base;
+    uint64_t vtd_pmr_lo_size;
+    uint64_t vtd_pmr_hi_base;
+    uint64_t vtd_pmr_hi_size;
+    /* VL policy at time of sealing */
+    tb_hash_t pol_hash;
+    /* verified launch measurements to be re-extended in DRTM PCRs
+     * a given PCR may have more than one hash and will get extended in the
+     * order it appears in the list */
+    uint8_t num_vl_entries;
+    struct {
+        uint8_t pcr;
+        hash_list_t hl;
+    } vl_entries[MAX_VL_HASHES];
+} pre_k_s3_state_t;
+
+/*
+ * state that must be saved across S3 and will be sealed for integrity
+ * just before entering S3 (after kernel shuts down)
+ */
+typedef struct {
+    uint64_t kernel_s3_resume_vector;
+    uint8_t  kernel_integ[POLY1305_DIGEST_SIZE];
+} post_k_s3_state_t;
 
 
-#endif    /* __TXT_HASH_H__ */
+extern pre_k_s3_state_t g_pre_k_s3_state;
+extern post_k_s3_state_t g_post_k_s3_state;
+
+extern bool seal_pre_k_state(void);
+extern bool seal_post_k_state(void);
+extern bool verify_integrity(void);
+
+#endif /* _TBOOT_INTEGRITY_H_ */
 
 
 /*

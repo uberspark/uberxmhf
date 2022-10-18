@@ -45,6 +45,14 @@
  */
 
 /*
+ * XMHF: The following file is taken from:
+ *  tboot-1.10.5/tboot/include/cmdline.h
+ * Changes made include:
+ *  Remove functions removed from XMHF.
+ *  Add declaration of get_tboot_boot_drive().
+ */
+
+/*
  * cmdline.h: support functions for command line parsing
  *
  * Copyright (c) 2006-2010, Intel Corporation
@@ -82,19 +90,47 @@
 #ifndef __CMDLINE_H__
 #define __CMDLINE_H__
 
-#define CMDLINE_SIZE   512
-
 #ifndef __ASSEMBLY__
 
+#define CMDLINE_SIZE   512
 extern char g_cmdline[CMDLINE_SIZE];
 
+
 extern void tboot_parse_cmdline(void);
-extern void get_tboot_loglvl(void);
-extern void get_tboot_log_targets(void);
+
+// XMHF: Remove functions removed from XMHF.
+//extern void get_tboot_loglvl(void);
+//extern void get_tboot_log_targets(void);
+
+#ifdef __DEBUG_SERIAL__
 extern bool get_tboot_serial(void);
+#endif /* __DEBUG_SERIAL__ */
+
+// XMHF: Add declaration of get_tboot_boot_drive().
 extern u8 get_tboot_boot_drive(void);
-extern void get_tboot_baud(void);
-extern void get_tboot_fmt(void);
+
+// XMHF: Remove functions removed from XMHF.
+//extern void get_tboot_baud(void);
+//extern void get_tboot_fmt(void);
+//extern void get_tboot_vga_delay(void);
+//extern bool get_tboot_mwait(void);
+//extern bool get_tboot_prefer_da(void);
+//extern void get_tboot_min_ram(void);
+//extern bool get_tboot_call_racm(void);
+//extern bool get_tboot_call_racm_check(void);
+//extern bool get_tboot_ignore_prev_err(void);
+//extern bool get_tboot_measure_nv(void);
+//extern void get_tboot_extpol(void);
+//extern bool get_tboot_force_tpm2_legacy_log(void);
+//extern bool get_tboot_save_vtd(void);
+//extern bool get_tboot_dump_memmap(void);
+//
+///* for parse cmdline of linux kernel, say vga and mem */
+//extern void linux_parse_cmdline(const char *cmdline);
+//extern bool get_linux_vga(int *vid_mode);
+//extern bool get_linux_mem(uint64_t *initrd_max_mem);
+//
+//extern uint8_t get_loglvl_prefix(char **pbuf, int *len);
 
 #endif // __ASSEMBLY__
 

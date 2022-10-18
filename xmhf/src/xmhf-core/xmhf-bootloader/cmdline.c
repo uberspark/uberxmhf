@@ -45,9 +45,63 @@
  */
 
 /*
+ * XMHF: The following file is taken from:
+ *  tboot-1.10.5/tboot/common/cmdline.c
+ * Changes made include:
+ *  Split to xmhf-bootloader/cmdline.c and xmhf-bootloader/cmdline.c .
+ *  Remove unneeded command line arguments.
+ *  Remove some parsing in parse_serial_param().
+ *  Add boot_drive command line arguments.
+ *  Rename get_option_val() to cmdline_get_option_val().
+ *  Remove 3 functions when __DEBUG_SERIAL__ is not defined.
+ *  Rename g_com_port to g_uart_config.
+ * The list of symbols in the order of appearance in cmdline.c is:
+ *  symbol                          location
+ *  g_cmdline                       xmhf-bootloader/cmdline.c
+ *  cmdline_option_t                libxmhfutil/include/cmdline.h
+ *  MAX_VALUE_LEN                   libxmhfutil/include/cmdline.h
+ *  g_tboot_cmdline_options         xmhf-bootloader/cmdline.c
+ *  g_tboot_param_values            xmhf-bootloader/cmdline.c
+ *  g_linux_cmdline_options         discarded
+ *  g_linux_param_values            discarded
+ *  tb_loglvl_map_t                 discarded
+ *  g_loglvl_map                    discarded
+ *  get_option_val                  libxmhfutil/cmdline.c
+ *  cmdline_parse                   libxmhfutil/cmdline.c
+ *  tboot_parse_cmdline             xmhf-bootloader/cmdline.c
+ *  linux_parse_cmdline             discarded
+ *  get_loglvl_prefix               discarded
+ *  get_tboot_loglvl                discarded
+ *  get_tboot_log_targets           discarded
+ *  parse_pci_bdf                   discarded
+ *  g_psbdf_enabled                 discarded
+ *  parse_com_psbdf                 discarded
+ *  g_pbbdf_enabled                 discarded
+ *  parse_com_pbbdf                 discarded
+ *  parse_com_fmt                   xmhf-bootloader/cmdline.c
+ *  parse_serial_param              xmhf-bootloader/cmdline.c
+ *  get_tboot_serial                xmhf-bootloader/cmdline.c
+ *  get_tboot_vga_delay             discarded
+ *  get_tboot_prefer_da             discarded
+ *  g_min_ram                       discarded
+ *  get_tboot_min_ram               discarded
+ *  get_tboot_mwait                 discarded
+ *  get_tboot_call_racm             discarded
+ *  get_tboot_call_racm_check       discarded
+ *  get_tboot_measure_nv            discarded
+ *  get_tboot_extpol                discarded
+ *  get_tboot_force_tpm2_legacy_log discarded
+ *  get_tboot_ignore_prev_err       discarded
+ *  get_tboot_save_vtd              discarded
+ *  get_tboot_dump_memmap           discarded
+ *  get_linux_vga                   discarded
+ *  get_linux_mem                   discarded
+ */
+
+/*
  * cmdline.c: command line parsing fns
  *
- * Copyright (c) 2006-2010, Intel Corporation
+ * Copyright (c) 2006-2012, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,10 +133,6 @@
  *
  */
 
-/**
- * Modified for XMHF.
- */
-
 #include <xmhf.h>
 #include <cmdline.h>
 
@@ -102,135 +152,44 @@ char g_cmdline[CMDLINE_SIZE] = { 0 };
 
 /* global option array for command line */
 static const cmdline_option_t g_tboot_cmdline_options[] = {
-    { "loglvl",     "all" },     /* all|none */
+    { "loglvl",     "all" },         /* all|err,warn,info|none */
     { "logging",    "serial,vga" },  /* vga,serial,memory|none */
     { "serial",     "115200,8n1,0x3f8" },
+    // XMHF: Add boot_drive command line arguments.
     { "boot_drive", "0x80" },
     /* serial=<baud>[/<clock_hz>][,<DPS>[,<io-base>[,<irq>[,<serial-bdf>[,<bridge-bdf>]]]]] */
-
-    /* { "vga_delay",  "0" },      /\* # secs *\/ */
-    /* { "no_usb",     "true" },   /\* true|false *\/ */
+    // XMHF: Remove unneeded command line arguments.
+    //{ "vga_delay",  "0" },           /* # secs */
+    //{ "ap_wake_mwait", "false" },    /* true|false */
+    //{ "pcr_map", "legacy" },         /* legacy|da */
+    //{ "min_ram", "0" },              /* size in bytes | 0 for no min */
+    //{ "call_racm", "false" },        /* true|false|check */
+    //{ "measure_nv", "false" },       /* true|false */
+    //{ "extpol",    "sha256" },         /*agile|embedded|sha1|sha256|sm3|... */
+    //{ "ignore_prev_err", "true"},    /* true|false */
+    //{ "force_tpm2_legacy_log", "false"}, /* true|false */
+    //{ "save_vtd", "false"},          /* true|false */
+    //{ "dump_memmap", "false"},          /* true|false */
     { NULL, NULL }
 };
-
-/* static const cmdline_option_t g_linux_cmdline_options[] = { */
-/*     { "vga", "" }, */
-/*     { "mem", "" }, */
-/*     { NULL, NULL } */
-/* }; */
-/* static char g_linux_param_values[ARRAY_SIZE(g_linux_cmdline_options)][MAX_VALUE_LEN]; */
 static char g_tboot_param_values[ARRAY_SIZE(g_tboot_cmdline_options)][MAX_VALUE_LEN];
-
 
 void tboot_parse_cmdline(void)
 {
     cmdline_parse(g_cmdline, g_tboot_cmdline_options, g_tboot_param_values);
 }
 
-/* void linux_parse_cmdline(char *cmdline) */
-/* { */
-/*     cmdline_parse(cmdline, g_linux_cmdline_options, g_linux_param_values); */
-/* } */
-
-void get_tboot_loglvl(void)
-{
-    const char *loglvl = cmdline_get_option_val(g_tboot_cmdline_options,
-                                        g_tboot_param_values, "loglvl");
-    if ( loglvl == NULL )
-        return;
-
-    if ( strcmp(loglvl, "none") == 0 )
-        g_log_level = LOG_LEVEL_NONE; /* print nothing */
-}
-
-void get_tboot_log_targets(void)
-{
-    const char *targets = cmdline_get_option_val(g_tboot_cmdline_options,
-                                         g_tboot_param_values, "logging");
-
-    /* nothing set, leave defaults */
-    if ( targets == NULL || *targets == '\0' )
-        return;
-
-    /* determine if no targets set explicitly */
-    if ( strcmp(targets, "none") == 0 ) {
-        g_log_targets = LOG_TARGET_NONE; /* print nothing */
-        return;
-    }
-
-    /* else init to nothing and parse the possible targets */
-    g_log_targets = LOG_TARGET_NONE;
-
-    while ( *targets != '\0' ) {
-        if ( strncmp(targets, "memory", 6) == 0 ) {
-            g_log_targets |= LOG_TARGET_MEMORY;
-            targets += 6;
-        }
-        else if ( strncmp(targets, "serial", 6) == 0 ) {
-            g_log_targets |= LOG_TARGET_SERIAL;
-            targets += 6;
-        }
-        else if ( strncmp(targets, "vga", 3) == 0 ) {
-            g_log_targets |= LOG_TARGET_VGA;
-            targets += 3;
-        }
-        else
-            break; /* unrecognized, end loop */
-
-        if ( *targets == ',' )
-            targets++;
-        else
-            break; /* unrecognized, end loop */
-    }
-}
-
-/* static bool parse_pci_bdf(const char **bdf, uint32_t *bus, uint32_t *slot, */
-/*                           uint32_t *func) */
-/* { */
-/*     *bus = strtoul(*bdf, bdf, 16); */
-/*     if ( **bdf != ':' ) */
-/*         return false; */
-/*     (*bdf)++; */
-/*     *slot = strtoul(*bdf, bdf, 16); */
-/*     if ( **bdf != '.' ) */
-/*         return false; */
-/*     (*bdf)++; */
-/*     *func = strtoul(*bdf, bdf, 16); */
-
-/*     return true; */
-/* } */
-
-/* bool g_psbdf_enabled = false; */
-/* static bool parse_com_psbdf(const char **bdf) */
-/* { */
-/*     g_psbdf_enabled = parse_pci_bdf(bdf, */
-/*                   &g_com_port.comc_psbdf.bus, */
-/*                   &g_com_port.comc_psbdf.slot, */
-/*                   &g_com_port.comc_psbdf.func); */
-
-/*     return g_psbdf_enabled; */
-/* } */
-
-/* bool g_pbbdf_enabled = false; */
-/* static bool parse_com_pbbdf(const char **bdf) */
-/* { */
-/*     g_pbbdf_enabled = parse_pci_bdf(bdf, */
-/*                   &g_com_port.comc_pbbdf.bus, */
-/*                   &g_com_port.comc_pbbdf.slot, */
-/*                   &g_com_port.comc_pbbdf.func); */
-
-/*     return g_pbbdf_enabled; */
-/* } */
-
-#if defined (__DEBUG_SERIAL__)
+// XMHF: Remove 3 functions when __DEBUG_SERIAL__ is not defined.
+#ifdef __DEBUG_SERIAL__
 
 static bool parse_com_fmt(const char **fmt)
 {
     /* fmt:  <5|6|7|8><n|o|e|m|s><0|1> */
     /* default 8n1 */
-    /* uint8_t data_bits = 8; */
-    /* uint8_t parity = 'n'; */
-    /* uint8_t stop_bits = 1; */
+    uint8_t data_bits = 8;
+    uint8_t parity = 'n';
+    uint8_t stop_bits = 1;
+
 
     /* must specify all values */
     if ( strlen(*fmt) < 3 )
@@ -238,7 +197,7 @@ static bool parse_com_fmt(const char **fmt)
 
     /* data bits */
     if ( **fmt >= '5' && **fmt <= '8' )
-        g_uart_config.data_bits = **fmt - '0';
+        data_bits = **fmt - '0';
     else
         return false;
     (*fmt)++;
@@ -246,26 +205,19 @@ static bool parse_com_fmt(const char **fmt)
     /* parity */
     if ( **fmt == 'n' || **fmt == 'o' || **fmt == 'e' || **fmt == 'm' ||
          **fmt == 's' )
-        g_uart_config.parity =
-            (**fmt == 'n')
-            ? PARITY_NONE
-            : (**fmt == 'o')
-            ? PARITY_ODD
-            : (**fmt == 'e')
-            ? PARITY_EVEN
-            : (**fmt == 'm')
-            ? PARITY_MARK
-            : PARITY_SPACE;
+        parity = **fmt;
     else
         return false;
     (*fmt)++;
 
     /* stop bits */
     if ( **fmt == '0' || **fmt == '1' )
-        g_uart_config.stop_bits = **fmt - '0';
+        stop_bits = **fmt - '0';
     else
         return false;
     (*fmt)++;
+
+    g_uart_config.comc_fmt = GET_LCR_VALUE(data_bits, stop_bits, parity);
 
     return true;
 }
@@ -273,16 +225,16 @@ static bool parse_com_fmt(const char **fmt)
 static bool parse_serial_param(const char *com)
 {
     /* parse baud */
-    g_uart_config.baud = strtoul(com, &com, 10);
-    if ( (g_uart_config.baud < 1200) ||
-         (g_uart_config.baud > 115200) )
+    g_uart_config.comc_curspeed = strtoul(com, &com, 10);
+    if ( (g_uart_config.comc_curspeed < 1200) ||
+         (g_uart_config.comc_curspeed > 115200) )
         return false;
 
     /* parse clock hz */
     if ( *com == '/' ) {
         ++com;
-        g_uart_config.clock_hz = strtoul(com, &com, 0) << 4;
-        if ( g_uart_config.clock_hz == 0 )
+        g_uart_config.comc_clockhz = strtoul(com, &com, 0) << 4;
+        if ( g_uart_config.comc_clockhz == 0 )
             return false;
     }
 
@@ -299,36 +251,32 @@ static bool parse_serial_param(const char *com)
     if ( *com != ',' )
         goto exit;
     ++com;
-    g_uart_config.port = strtoul(com, &com, 0);
-    if ( g_uart_config.port == 0 )
+    g_uart_config.comc_port = strtoul(com, &com, 0);
+    if ( g_uart_config.comc_port == 0 )
         return false;
 
-    /* we don't handle additional params */
-    if ( *com == ',' ) {
-        return false;
-    }
-
-    /* parse irq */
-    /* if ( *com != ',' ) */
-    /*     goto exit; */
-    /* ++com; */
-    /* g_com_port.comc_irq = strtoul(com, &com, 10); */
-    /* if ( g_com_port.comc_irq == 0 ) */
-    /*     return false; */
-
-    /* /\* parse PCI serial controller bdf *\/ */
-    /* if ( *com != ',' ) */
-    /*     goto exit; */
-    /* ++com; */
-    /* if ( !parse_com_psbdf(&com) ) */
-    /*     return false; */
-
-    /* /\* parse PCI bridge bdf *\/ */
-    /* if ( *com != ',' ) */
-    /*     goto exit; */
-    /* ++com; */
-    /* if ( !parse_com_pbbdf(&com) ) */
-    /*     return false; */
+    // XMHF: Remove some parsing in parse_serial_param().
+    ///* parse irq */
+    //if ( *com != ',' )
+    //    goto exit;
+    //++com;
+    //g_uart_config.comc_irq = strtoul(com, (char **)&com, 10);
+    //if ( g_uart_config.comc_irq == 0 )
+    //    return false;
+    //
+    ///* parse PCI serial controller bdf */
+    //if ( *com != ',' )
+    //    goto exit;
+    //++com;
+    //if ( !parse_com_psbdf(&com) )
+    //    return false;
+    //
+    ///* parse PCI bridge bdf */
+    //if ( *com != ',' )
+    //    goto exit;
+    //++com;
+    //if ( !parse_com_pbbdf(&com) )
+    //    return false;
 
  exit:
     return true;
@@ -336,6 +284,7 @@ static bool parse_serial_param(const char *com)
 
 bool get_tboot_serial(void)
 {
+    // XMHF: Rename get_option_val() to cmdline_get_option_val().
     const char *serial = cmdline_get_option_val(g_tboot_cmdline_options,
                                         g_tboot_param_values, "serial");
     if ( serial == NULL || *serial == '\0' )
@@ -344,9 +293,11 @@ bool get_tboot_serial(void)
     return parse_serial_param(serial);
 }
 
-#endif
+// XMHF: Remove 3 functions when __DEBUG_SERIAL__ is not defined.
+#endif /* __DEBUG_SERIAL__ */
 
-u8 get_tboot_boot_drive()
+// XMHF: Add boot_drive command line arguments.
+u8 get_tboot_boot_drive(void)
 {
     const char *boot_drive = cmdline_get_option_val(g_tboot_cmdline_options,
                                                     g_tboot_param_values,
@@ -356,102 +307,6 @@ u8 get_tboot_boot_drive()
     }
     return (u8)strtoul(boot_drive, NULL, 0);
 }
-
-/* void get_tboot_vga_delay(void) */
-/* { */
-/*     const char *vga_delay = cmdline_get_option_val(g_tboot_cmdline_options, */
-/*                                            g_tboot_param_values, "vga_delay"); */
-/*     if ( vga_delay == NULL ) */
-/*         return; */
-
-/*     g_vga_delay = strtoul(vga_delay, NULL, 0); */
-/* } */
-
-/* void get_tboot_no_usb(void) */
-/* { */
-/*     const char *no_usb = cmdline_get_option_val(g_tboot_cmdline_options, */
-/*                                         g_tboot_param_values, "no_usb"); */
-/*     if ( no_usb == NULL ) */
-/*         return; */
-
-/*     g_no_usb = ( strcmp(no_usb, "true") == 0 ); */
-/* } */
-
-
-/*
- * linux kernel command line parsing
- */
-
-/* bool get_linux_vga(int *vid_mode) */
-/* { */
-/*     const char *vga = cmdline_get_option_val(g_linux_cmdline_options, */
-/*                                      g_linux_param_values, "vga"); */
-/*     if ( vga == NULL || vid_mode == NULL ) */
-/*         return false; */
-
-/*     if ( strcmp(vga, "normal") == 0 ) */
-/*         *vid_mode = 0xFFFF; */
-/*     else if ( strcmp(vga, "ext") == 0 ) */
-/*         *vid_mode = 0xFFFE; */
-/*     else if ( strcmp(vga, "ask") == 0 ) */
-/*         *vid_mode = 0xFFFD; */
-/*     else */
-/*         *vid_mode = strtoul(vga, NULL, 0); */
-
-/*     return true; */
-/* } */
-
-/* bool get_linux_mem(uint64_t *max_mem) */
-/* { */
-/*     char *last = NULL; */
-/*     const char *mem = cmdline_get_option_val(g_linux_cmdline_options, */
-/*                                      g_linux_param_values, "mem"); */
-/*     if ( mem == NULL || max_mem == NULL ) */
-/*         return false; */
-
-/*     *max_mem = strtoul(mem, &last, 0); */
-/*     if ( *max_mem == 0 ) */
-/*         return false; */
-
-/*     if ( last == NULL ) */
-/*         return true; */
-
-/*     switch ( *last ) { */
-/*         case 'G': */
-/*         case 'g': */
-/*             *max_mem = *max_mem << 30; */
-/*             return true; */
-/*         case 'M': */
-/*         case 'm': */
-/*             *max_mem = *max_mem << 20; */
-/*             return true; */
-/*         case 'K': */
-/*         case 'k': */
-/*             *max_mem = *max_mem << 10; */
-/*             return true; */
-/*         default: */
-/*             return false; */
-/*     } */
-
-/*     return true; */
-/* } */
-
-/* const char *skip_filename(const char *cmdline) */
-/* { */
-/*     if ( cmdline == NULL || *cmdline == '\0' ) */
-/*         return cmdline; */
-
-/*     /\* strip leading spaces, file name, then any spaces until the next */
-/*      non-space char (e.g. "  /foo/bar   baz" -> "baz"; "/foo/bar" -> "")*\/ */
-/*     while ( *cmdline != '\0' && isspace(*cmdline) ) */
-/*         cmdline++; */
-/*     while ( *cmdline != '\0' && !isspace(*cmdline) ) */
-/*         cmdline++; */
-/*     while ( *cmdline != '\0' && isspace(*cmdline) ) */
-/*         cmdline++; */
-/*     return cmdline; */
-/* } */
-
 
 /*
  * Local variables:

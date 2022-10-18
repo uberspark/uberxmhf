@@ -45,10 +45,17 @@
  */
 
 /*
+ * XMHF: The following file is taken from:
+ *  tboot-1.10.5/tboot/include/txt/acmod.h
+ * Changes made include:
+ *  Remove RACM declarations.
+ */
+
+/*
  * acmod.c: support functions for use of Intel(r) TXT Authenticated
  *          Code (AC) Modules
  *
- * Copyright (c) 2003-2010, Intel Corporation
+ * Copyright (c) 2003-2011, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,13 +87,6 @@
  *
  */
 
-/*
- * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
- *
- * XXX TODO: [Almost?] All of this is only needed in init; pull out of
- * common include directory to reduce SL/Runtime TCB.
- */
-
 #ifndef __TXT_ACMOD_H__
 #define __TXT_ACMOD_H__
 
@@ -104,7 +104,8 @@ typedef union {
 } acm_flags_t;
 
 typedef struct {
-    uint32_t     module_type;
+    uint16_t     module_type;
+    uint16_t     module_subtype;
     uint32_t     header_len;
     uint32_t     header_ver;          /* currently 0.0 */
     uint16_t     chipset_id;
@@ -112,7 +113,8 @@ typedef struct {
     uint32_t     module_vendor;
     uint32_t     date;
     uint32_t     size;
-    uint32_t     reserved1;
+    uint16_t     txt_svn;
+    uint16_t     se_svn;
     uint32_t     code_control;
     uint32_t     error_entry_point;
     uint32_t     gdt_limit;
@@ -125,27 +127,68 @@ typedef struct {
     uint8_t      rsa2048_pubkey[256];
     uint32_t     pub_exp;
     uint8_t      rsa2048_sig[256];
-    uint32_t     scratch[143];
+    uint32_t     scratch[143];//
     uint8_t      user_area[];
 } __attribute__((packed)) acm_hdr_t;
+extern acm_hdr_t *g_sinit;
 
 /* value of module_type field */
 #define ACM_TYPE_CHIPSET        0x02
 
+/* value of module_subtype field */
+#define ACM_SUBTYPE_RESET       0x01
+
 /* value of module_vendor field */
 #define ACM_VENDOR_INTEL        0x8086
+
+/* ranges of padding present in TXTCR_SINIT_SIZE reg */
+#define ACM_SIZE_MIN_PADDING    0x10000
+#define ACM_SIZE_MAX_PADDING    0x40000
+
+typedef union {
+    uint32_t _raw;
+    struct {
+        uint32_t  ext_policy        : 2;
+        uint32_t  tpm_family        : 4;
+        uint32_t  tpm_nv_index_set  : 1;
+        uint32_t  reserved          : 25;
+    } __attribute__((packed));
+} tpm_cap_t;
+
+/* ext_policy field values */
+#define TPM_EXT_POLICY_ILLEGAL          0x00
+#define TPM_EXT_POLICY_ALG_AGILE_CMD    0x01
+#define TPM_EXT_POLICY_EMBEDED_ALGS     0x10
+#define TPM_EXT_POLICY_BOTH             0x11
+
+/* tpm_family field values */
+#define TPM_FAMILY_ILLEGAL      0x0000
+#define TPM_FAMILY_DTPM_12      0x0001
+#define TPM_FAMILY_DTPM_20      0x0010
+#define TPM_FAMILY_DTPM_BOTH    0x0011
+#define TPM_FAMILY_PTT_20       0x1000
+
+typedef struct {
+    tpm_cap_t   capabilities;
+    uint16_t    count;
+    uint16_t    alg_id[];
+} __attribute__((packed)) tpm_info_list_t;
 
 typedef struct {
     uuid_t      uuid;
     uint8_t     chipset_acm_type;
-    uint8_t     version;             /* currently 3 */
+    uint8_t     version;             /* currently 7 */
     uint16_t    length;
     uint32_t    chipset_id_list;
     uint32_t    os_sinit_data_ver;
     uint32_t    min_mle_hdr_ver;
     txt_caps_t  capabilities;
     uint8_t     acm_ver;
-    uint8_t     reserved[3];
+    uint8_t     acm_revision[3];
+    /* versions >= 4 */
+    uint32_t    processor_id_list;
+    /* versions >= 5 */
+    uint32_t    tpm_info_list_off;
 } __attribute__((packed)) acm_info_table_t;
 
 /* ACM UUID value */
@@ -155,6 +198,8 @@ typedef struct {
 /* chipset_acm_type field values */
 #define ACM_CHIPSET_TYPE_BIOS         0x00
 #define ACM_CHIPSET_TYPE_SINIT        0x01
+#define ACM_CHIPSET_TYPE_BIOS_REVOC   0x08
+#define ACM_CHIPSET_TYPE_SINIT_REVOC  0x09
 
 typedef struct {
     uint32_t  flags;
@@ -170,14 +215,36 @@ typedef struct {
     acm_chipset_id_t   chipset_ids[];
 } __attribute__((packed)) acm_chipset_id_list_t;
 
-extern void print_uuid(const uuid_t *uuid);
+typedef struct {
+    uint32_t  fms;
+    uint32_t  fms_mask;
+    uint64_t  platform_id;
+    uint64_t  platform_mask;
+} __attribute__((packed)) acm_processor_id_t;
+
+typedef struct {
+    uint32_t             count;
+    acm_processor_id_t   processor_ids[];
+} __attribute__((packed)) acm_processor_id_list_t;
+
 extern void print_txt_caps(const char *prefix, txt_caps_t caps);
-extern bool is_sinit_acmod(void *acmod_base, uint32_t acmod_size, bool quiet);
-extern bool does_acmod_match_chipset(acm_hdr_t* hdr);
-extern acm_hdr_t *copy_sinit(acm_hdr_t *sinit);
-extern bool verify_acmod(acm_hdr_t *acm_hdr);
-extern uint32_t get_supported_os_sinit_data_ver(acm_hdr_t* hdr);
-extern uint32_t get_sinit_capabilities(acm_hdr_t* hdr);
+
+// XMHF: Remove RACM declarations.
+//extern bool is_racm_acmod(const void *acmod_base, uint32_t acmod_size, bool quiet);
+//extern acm_hdr_t *copy_racm(const acm_hdr_t *racm);
+//extern bool verify_racm(const acm_hdr_t *acm_hdr);
+
+extern bool is_sinit_acmod(const void *acmod_base, uint32_t acmod_size, bool quiet);
+extern bool does_acmod_match_platform(const acm_hdr_t* hdr);
+extern acm_hdr_t *copy_sinit(const acm_hdr_t *sinit);
+extern bool verify_acmod(const acm_hdr_t *acm_hdr);
+extern uint32_t get_supported_os_sinit_data_ver(const acm_hdr_t* hdr);
+
+// XMHF: Change return type of __getsec_capabilities() to uint32_t.
+extern uint32_t get_sinit_capabilities(const acm_hdr_t* hdr);
+
+extern tpm_info_list_t *get_tpm_info_list(const acm_hdr_t* hdr);
+extern void verify_IA32_se_svn_status(const acm_hdr_t *acm_hdr);
 #endif /* __TXT_ACMOD_H__ */
 
 /*

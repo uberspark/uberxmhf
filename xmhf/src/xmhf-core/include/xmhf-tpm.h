@@ -70,14 +70,8 @@
 //open TPM locality
 int xmhf_tpm_open_locality(int locality);
 
-//check if TPM is ready for use
-bool xmhf_tpm_is_tpm_ready(uint32_t locality);
-
 //deactivate all TPM localities
 void xmhf_tpm_deactivate_all_localities(void);
-
-//prepare TPM for use
-bool xmhf_tpm_prepare_tpm(void);
 
 
 

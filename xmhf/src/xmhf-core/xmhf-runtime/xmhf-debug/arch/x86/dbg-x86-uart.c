@@ -55,23 +55,22 @@
 #define UART_CLOCKFREQ   1843200
 
 // default config parameters for serial port
-uart_config_t g_uart_config = {115200,
-							   8,
-							   PARITY_NONE,
-							   1,
-							   0,
-							   UART_CLOCKFREQ,
-							   DEBUG_PORT};
+uart_config_t g_uart_config = {
+    115200,
+    UART_CLOCKFREQ,
+    LCR_8BITS | (!LCR_PENAB) | 0,    // GET_LCR_VALUE(8, 'n', 1)
+    DEBUG_PORT,
+};
 
 //low-level UART character output
 static void dbg_x86_uart_putc_bare(char ch){
   //wait for xmit hold register to be empty
-  while ( ! (inb(g_uart_config.port+0x5) & 0x20) ) {
+  while ( ! (inb(g_uart_config.comc_port+0x5) & 0x20) ) {
     xmhf_cpu_relax();
   }
 
   //write the character
-  outb((u8)ch, g_uart_config.port);
+  outb((u8)ch, g_uart_config.comc_port);
 
   return;
 }
@@ -100,33 +99,28 @@ void dbg_x86_uart_init(char *params){
   //command line
   memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
 
-  // FIXME: work-around for issue #143
-  g_uart_config.fifo = 0;
-
   // disable UART interrupts
-  outb((u8)0, g_uart_config.port+0x1); //clear interrupt enable register
+  outb((u8)0, g_uart_config.comc_port+0x1); //clear interrupt enable register
 
   //compute divisor latch data from baud-rate and set baud-rate
   {
-	u16 divisor_latch_data = g_uart_config.clock_hz / (g_uart_config.baud * 16);
+	u16 divisor_latch_data = g_uart_config.comc_clockhz / (g_uart_config.comc_curspeed * 16);
 
-	outb(0x80, g_uart_config.port+0x3); //enable divisor latch access by
+	outb(0x80, g_uart_config.comc_port+0x3); //enable divisor latch access by
 									    //writing to line control register
 
-	outb((u8)divisor_latch_data, g_uart_config.port); //write low 8-bits of divisor latch data
-	outb((u8)(divisor_latch_data >> 8), g_uart_config.port+0x1); //write high 8-bits of divisor latch data
+	outb((u8)divisor_latch_data, g_uart_config.comc_port); //write low 8-bits of divisor latch data
+	outb((u8)(divisor_latch_data >> 8), g_uart_config.comc_port+0x1); //write high 8-bits of divisor latch data
 
    }
 
   //set data bits, stop bits and parity info. by writing to
   //line control register
-  outb((u8)((g_uart_config.data_bits - 5) |
-               ((g_uart_config.stop_bits - 1) << 2) |
-                      g_uart_config.parity), g_uart_config.port+0x3);
+  outb(g_uart_config.comc_fmt, g_uart_config.comc_port+0x3);
 
   //signal ready by setting DTR and RTS high in
   //modem control register
-  outb((u8)0x3, g_uart_config.port+0x4);
+  outb((u8)0x3, g_uart_config.comc_port+0x4);
 
   return;
 }
