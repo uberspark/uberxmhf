@@ -1103,7 +1103,7 @@ void cstartup(multiboot_info_t *mbi){
     hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP_2M((sl_rt_size)));
 
     //relocate the hypervisor binary to the above calculated address
-    memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
+    memmove((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
 
     HALT_ON_ERRORCOND(sl_rt_size > 0x200000); /* 2M */
 
