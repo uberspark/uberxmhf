@@ -911,9 +911,6 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		}
 	}
 
-	//flush mappings
-	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
-
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
 
