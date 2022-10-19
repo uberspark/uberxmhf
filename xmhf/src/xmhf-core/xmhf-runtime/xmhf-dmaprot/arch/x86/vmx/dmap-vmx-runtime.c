@@ -319,18 +319,21 @@ static u32 vmx_eap_initialize(
         // Minimum length required by VT-d spec.
         hva_t remappingstructures_vaddr = (hva_t)remappingstructuresaddrphys;
 
+        // TODO: remove magic number 16. Should be something like
+        // sizeof(VTD_DRHD), but unfortunately VTD_DRHD contains other data.
+        _Static_assert(sizeof(VTD_DRHD) >= 16);
+
         xmhf_baseplatform_arch_flat_copy((u8 *)&type, (u8 *)(remappingstructures_vaddr + i), sizeof(u16));
         xmhf_baseplatform_arch_flat_copy((u8 *)&length, (u8 *)(remappingstructures_vaddr + i + sizeof(u16)), sizeof(u16));
 
         switch (type)
         {
         case 0: // DRHD
-            // TODO: remove magic number 16. Should be something like
-            // sizeof(VTD_DRHD), but unfortunately VTD_DRHD contains other data.
-            _Static_assert(sizeof(VTD_DRHD) >= 16);
             printf("DRHD at %lx, len=%u bytes\n", (remappingstructures_vaddr + i), length);
             HALT_ON_ERRORCOND(vtd_num_drhd < VTD_MAX_DRHD);
+            // TODO: remove magic number 16.
             HALT_ON_ERRORCOND(length >= 16);
+            // TODO: remove magic number 16.
             xmhf_baseplatform_arch_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructures_vaddr + i), 16);
             vtd_num_drhd++;
             i += (u32)length;
