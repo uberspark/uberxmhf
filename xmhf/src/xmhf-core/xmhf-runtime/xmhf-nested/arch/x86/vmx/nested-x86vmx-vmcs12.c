@@ -609,9 +609,12 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 			 * xmhf_nested_arch_x86vmx_handle_ept02_exit() with guest2_paddr =
 			 * CR3.
 			 */
-			if (vmcs12->guest_CR3 != 0) {
-				xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, cache_line,
-													 vmcs12->guest_CR3);
+			{
+				extern bool is_in_kvm;
+				if (is_in_kvm && vmcs12->guest_CR3 != 0) {
+					xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, cache_line,
+														 vmcs12->guest_CR3);
+				}
 			}
 #endif							/* !__DEBUG_QEMU__ */
 		} else {

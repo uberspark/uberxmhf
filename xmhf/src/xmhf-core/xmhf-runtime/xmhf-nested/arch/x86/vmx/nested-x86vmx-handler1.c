@@ -64,6 +64,10 @@
 
 _Static_assert(VMX_NESTED_MAX_ACTIVE_VMCS < INVALID_VMCS12_INDEX);
 
+#ifdef __DEBUG_QEMU__
+bool is_in_kvm = false;
+#endif							/* !__DEBUG_QEMU__ */
+
 /*
  * This structure follows Table 26-14. Format of the VM-Exit
  * Instruction-Information Field as Used for VMREAD and VMWRITE in Intel's
@@ -592,6 +596,18 @@ void xmhf_nested_arch_x86vmx_vcpu_init(VCPU * vcpu)
 	/* Initialize EPT and VPID cache */
 	xmhf_nested_arch_x86vmx_ept_init(vcpu);
 	xmhf_nested_arch_x86vmx_vpid_init(vcpu);
+
+#ifdef __DEBUG_QEMU__
+	/* Compute is_in_kvm */
+	{
+		u32 eax, ebx, ecx, edx;
+		cpuid(0x40000000U, &eax, &ebx, &ecx, &edx);
+		if (ebx == 0x4b4d564bU && ecx == 0x564b4d56U && edx == 0x0000004d) {
+			is_in_kvm = true;
+			printf("CPU(0x%02x): KVM detected\n", vcpu->id);
+		}
+	}
+#endif							/* !__DEBUG_QEMU__ */
 }
 
 void xmhf_nested_arch_x86vmx_handle_vmentry_fail(VCPU * vcpu, bool is_resume)

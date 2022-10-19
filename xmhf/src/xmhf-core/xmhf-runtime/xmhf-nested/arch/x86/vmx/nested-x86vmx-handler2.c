@@ -460,32 +460,35 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 		 * should be hard-coded for these addresses beforehand.
 		 */
 		if (0) {
-			ulong_t cs_base = __vmx_vmreadNW(VMCSENC_guest_CS_base);
-			ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
-			ulong_t cs_rip = cs_base + rip;
-			u32 inst_len =
-				__vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
-			u8 insts[16];
-			int result;
-			HALT_ON_ERRORCOND(inst_len <= 16);
-			if (cs_rip != guest2_paddr) {
-				hptw_ctx_t *ctx = &cache_line->value.ept02_ctx.ctx;
-				result = hptw_checked_copy_from_va(ctx, 0, insts, cs_rip,
-												   inst_len);
-				if (result == 0) {
-					u32 i;
-					if ((inst_len >= 2 && insts[0] == 0xf3 &&
-						 (insts[1] == 0x6c || insts[1] == 0x6d)) ||
-						(inst_len >= 3 && insts[0] == 0x67 &&
-						 insts[1] == 0xf3 &&
-						 (insts[2] == 0x6c || insts[2] == 0x6d))) {
-						printf("Warning: possible EPT on REP INS\n");
-						printf("guest2_paddr = 0x%016llx\n", guest2_paddr);
-						printf("CS:RIP=0x%08lx: ", cs_rip);
-						for (i = 0; i < inst_len; i++) {
-							printf("%02x ", insts[i]);
+			extern bool is_in_kvm;
+			if (is_in_kvm) {
+				ulong_t cs_base = __vmx_vmreadNW(VMCSENC_guest_CS_base);
+				ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
+				ulong_t cs_rip = cs_base + rip;
+				u32 inst_len =
+					__vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
+				u8 insts[16];
+				int result;
+				HALT_ON_ERRORCOND(inst_len <= 16);
+				if (cs_rip != guest2_paddr) {
+					hptw_ctx_t *ctx = &cache_line->value.ept02_ctx.ctx;
+					result = hptw_checked_copy_from_va(ctx, 0, insts, cs_rip,
+													   inst_len);
+					if (result == 0) {
+						u32 i;
+						if ((inst_len >= 2 && insts[0] == 0xf3 &&
+							 (insts[1] == 0x6c || insts[1] == 0x6d)) ||
+							(inst_len >= 3 && insts[0] == 0x67 &&
+							 insts[1] == 0xf3 &&
+							 (insts[2] == 0x6c || insts[2] == 0x6d))) {
+							printf("Warning: possible EPT on REP INS\n");
+							printf("guest2_paddr = 0x%016llx\n", guest2_paddr);
+							printf("CS:RIP=0x%08lx: ", cs_rip);
+							for (i = 0; i < inst_len; i++) {
+								printf("%02x ", insts[i]);
+							}
+							HALT_ON_ERRORCOND(0);
 						}
-						HALT_ON_ERRORCOND(0);
 					}
 				}
 			}
