@@ -156,6 +156,10 @@ u32 xmhf_dmaprot_earlyinitialize(u64 protectedbuffer_paddr,
 u32 xmhf_dmaprot_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
 
+// Call memprot to protect DRHD pages. Should be called by each CPU after
+// xmhf_dmaprot_initialize().
+void xmhf_dmaprot_protect_drhd(VCPU *vcpu);
+
 // Enable the DMA protection HW
 // [NOTE] This function must be separated from <xmhf_dmaprot_initialize>. Otherwise, misconfigured devices can have a 
 // chance to modify XMHF binary between the function <xmhf_dmaprot_initialize> and <xmhf_dmaprot_protect> inside 
@@ -181,6 +185,7 @@ u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr,
 	u64 memregionbase_paddr, u32 memregion_size);
 u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
+void xmhf_dmaprot_arch_protect_drhd(VCPU *vcpu);
 u32 xmhf_dmaprot_arch_enable(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
 void xmhf_dmaprot_arch_protect(spa_t start_paddr, size_t size);
@@ -209,6 +214,7 @@ u32 xmhf_dmaprot_arch_x86_vmx_earlyinitialize(sla_t protectedbuffer_paddr,
 	sla_t memregionbase_paddr, u32 memregion_size);
 u32 xmhf_dmaprot_arch_x86_vmx_initialize(spa_t protectedbuffer_paddr,
 	hva_t protectedbuffer_vaddr, size_t protectedbuffer_size);
+void xmhf_dmaprot_arch_x86_vmx_protect_drhd(VCPU *vcpu);
 u32 xmhf_dmaprot_arch_x86_vmx_enable(spa_t protectedbuffer_paddr,
 	hva_t protectedbuffer_vaddr, size_t protectedbuffer_size);
 void xmhf_dmaprot_arch_x86_vmx_protect(spa_t start_paddr, size_t size);

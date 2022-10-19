@@ -263,6 +263,9 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //initialize memory protection for this core
   xmhf_memprot_initialize(vcpu);
 
+  //remove DMAP structures from guest memory
+  xmhf_dmaprot_protect_drhd(vcpu);
+
   //initialize application parameter block and call app main
   {
     APP_PARAM_BLOCK appParamBlock;

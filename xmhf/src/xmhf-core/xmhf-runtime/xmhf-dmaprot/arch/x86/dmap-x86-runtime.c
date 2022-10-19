@@ -79,6 +79,18 @@ u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 	}
 }
 
+// Call memprot to protect DRHD pages. Should be called by each CPU after
+// xmhf_dmaprot_initialize().
+void xmhf_dmaprot_arch_protect_drhd(VCPU *vcpu){
+	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+
+	if(cpu_vendor == CPU_VENDOR_AMD){
+	  HALT_ON_ERRORCOND(0 && "DRHD protection not implmeneted");
+	}else{	//CPU_VENDOR_INTEL
+		xmhf_dmaprot_arch_x86_vmx_protect_drhd(vcpu);
+	}
+}
+
 u32 xmhf_dmaprot_arch_enable(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
