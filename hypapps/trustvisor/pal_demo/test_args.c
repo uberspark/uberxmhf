@@ -228,6 +228,7 @@ unsigned int test_5_ptr(unsigned int iters) {
 			}
 		}
 		// Free
+		free(nums_original);
 		free(nums_expected);
 		free(nums_actual);
 	}
