@@ -1595,6 +1595,37 @@ void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
 	}
 #include "nested-x86vmx-vmcs12-fields.h"
 
+	if (vmcs12_info->guest_ept_enable) {
+		ept02_cache_line_t *cache_line;
+		bool cache_hit;
+		gpa_t ept12 = vmcs12_info->guest_ept_root;
+		spa_t ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_hit,
+														&cache_line);
+		HALT_ON_ERRORCOND(!cache_hit);
+		vmcs12_info->guest_ept_cache_line = cache_line;
+		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
+#ifdef __DEBUG_QEMU__
+		/*
+		 * Workaround a KVM bug:
+		 * https://bugzilla.kernel.org/show_bug.cgi?id=216212
+		 *
+		 * Looks like KVM has a problem setting CR0.PG when nested guest's
+		 * PDPTEs are not in guest hypervisor's EPT. So we always make sure
+		 * the EPT entry for PDPTEs is available. To achieve this effect,
+		 * simulating a EPT violation by calling
+		 * xmhf_nested_arch_x86vmx_handle_ept02_exit() with guest2_paddr =
+		 * CR3.
+		 */
+		{
+			extern bool is_in_kvm;
+			if (is_in_kvm && vmcs12->guest_CR3 != 0) {
+				xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, cache_line,
+													 vmcs12->guest_CR3);
+			}
+		}
+#endif							/* !__DEBUG_QEMU__ */
+		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
+	}
 	if (0) {
 		// Note: EPTP Switching not supported
 		// Note: likely need to sanitize input
