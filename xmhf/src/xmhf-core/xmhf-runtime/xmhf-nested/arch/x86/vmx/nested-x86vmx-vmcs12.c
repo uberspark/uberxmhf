@@ -352,11 +352,11 @@ static bool _check_ia32_pat(u64 ia32_pat)
 	for (offset = 0; offset < 64; offset += 8) {
 		u8 pa = (u8) (ia32_pat >> offset);
 		switch (pa) {
-		case 0: /* fallthrough */
-		case 1: /* fallthrough */
-		case 4: /* fallthrough */
-		case 5: /* fallthrough */
-		case 6: /* fallthrough */
+		case 0:				/* fallthrough */
+		case 1:				/* fallthrough */
+		case 4:				/* fallthrough */
+		case 5:				/* fallthrough */
+		case 6:				/* fallthrough */
 		case 7:
 			break;
 		default:
@@ -477,8 +477,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		return status;
 	}
 	guestmem_init(vcpu, &ctx_pair);
-	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_IA32_PAT,
-												 &ia32_pat_index)) {
+	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_IA32_PAT, &ia32_pat_index)) {
 		HALT_ON_ERRORCOND(0 && "MSR_IA32_PAT not found");
 	}
 	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_EFER, &ia32_efer_index)) {
@@ -664,9 +663,10 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		guest_ia32_efer = vmcs12->guest_IA32_EFER;
 		/* Note: ideally should return VMENTRY error */
-		HALT_ON_ERRORCOND(_check_ia32_efer(
-			guest_ia32_efer, _vmx_hasctl_vmentry_ia_32e_mode_guest(&ctls),
-			vmcs12->guest_CR0 & CR0_PG));
+		HALT_ON_ERRORCOND(_check_ia32_efer
+						  (guest_ia32_efer,
+						   _vmx_hasctl_vmentry_ia_32e_mode_guest(&ctls),
+						   vmcs12->guest_CR0 & CR0_PG));
 	} else {
 		/*
 		 * When not loading IA32_EFER, IA32_EFER is changed as following:
@@ -718,9 +718,9 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	if (_vmx_hasctl_vmexit_load_ia32_efer(&ctls)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		/* Note: ideally should return VMENTRY error */
-		HALT_ON_ERRORCOND(_check_ia32_efer(
-			vmcs12->host_IA32_EFER,
-			_vmx_hasctl_vmexit_host_address_space_size(&ctls), true));
+		HALT_ON_ERRORCOND(_check_ia32_efer(vmcs12->host_IA32_EFER,
+										   _vmx_hasctl_vmexit_host_address_space_size
+										   (&ctls), true));
 	}
 	if (_vmx_hasctl_vmexit_load_ia32_perf_global_ctrl(&ctls)) {
 		u32 eax, ebx, ecx, edx;
@@ -946,8 +946,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 
 	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
 	guestmem_init(vcpu, &ctx_pair);
-	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_IA32_PAT,
-												 &ia32_pat_index)) {
+	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_IA32_PAT, &ia32_pat_index)) {
 		HALT_ON_ERRORCOND(0 && "MSR_IA32_PAT not found");
 	}
 	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_EFER, &ia32_efer_index)) {
