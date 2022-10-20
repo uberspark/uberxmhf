@@ -1089,6 +1089,10 @@ void cstartup(multiboot_info_t *mbi){
     //deal with MP and get CPU table
     dealwithMP();
 
+    //check number of elements in mod_array. Currently bootloader assumes that
+    //mod_array[0] is SL+RT, mod_array[1] is guest OS boot module.
+    HALT_ON_ERRORCOND(mods_count >= 2);
+
     //find highest 2MB aligned physical memory address that the hypervisor
     //binary must be moved to
     sl_rt_size = mod_array[0].mod_end - mod_array[0].mod_start;
@@ -1102,8 +1106,23 @@ void cstartup(multiboot_info_t *mbi){
 
     hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP_2M((sl_rt_size)));
 
+    //check whether multiboot modules overlap with SL+RT. mod_array[0] can
+    //overlap because we will use memmove() instead of memcpy(). Currently
+    //will panic if other mod_array[i] overlaps with SL+RT.
+    {
+        u32 i;
+        u32 sl_rt_start = hypervisor_image_baseaddress;
+        u32 sl_rt_end;
+        HALT_ON_ERRORCOND(!plus_overflow_u32(sl_rt_start, sl_rt_size));
+        sl_rt_end = sl_rt_start + sl_rt_size;
+        for(i=1; i < mods_count; i++) {
+			HALT_ON_ERRORCOND(mod_array[i].mod_start >= sl_rt_end ||
+			                  sl_rt_start >= mod_array[i].mod_end);
+        }
+    }
+
     //relocate the hypervisor binary to the above calculated address
-    memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
+    memmove((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
 
     HALT_ON_ERRORCOND(sl_rt_size > 0x200000); /* 2M */
 
