@@ -6,7 +6,7 @@ properties([
     parameters([
         string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64-nest'),
         string(name: 'BUILD_OPTS', defaultValue:
-               '--no-x2apic fast circleci O3'),
+               '--no-x2apic fast circleci O3 --ept-num 4 --ept-pool 128'),
         string(name: 'NESTED_BUILD_OPTS', defaultValue:
                '--no-x2apic fast circleci O3 --sl-base 0x20000000 ' + \
                '--no-init-smp --ept-num 4 --ept-pool 128')
