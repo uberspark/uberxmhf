@@ -52,8 +52,11 @@
 #include "nested-x86vmx-handler1.h"
 #include "nested-x86vmx-vmcs12.h"
 
-/* Number of pages in page_pool in ept02_ctx_t */
-#define EPT02_PAGE_POOL_SIZE 128
+/*
+ * Number of pages in page_pool in ept02_ctx_t.
+ * This value is configured using --with-vmx-nested-ept02-page-pool-size.
+ */
+#define EPT02_PAGE_POOL_SIZE (__VMX_NESTED_EPT02_PAGE_POOL_SIZE__)
 
 /*
  * For each CPU, information about all EPT12 -> EPT02 it caches.
