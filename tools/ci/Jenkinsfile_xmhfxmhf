@@ -9,7 +9,7 @@ properties([
                '--no-x2apic fast circleci O3'),
         string(name: 'NESTED_BUILD_OPTS', defaultValue:
                '--no-x2apic fast circleci O3 --sl-base 0x20000000 ' + \
-               '--no-init-smp')
+               '--no-init-smp --ept-num 4 --ept-pool 128')
     ])
 ])
 

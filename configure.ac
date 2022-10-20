@@ -193,19 +193,19 @@ AS_IF([test "x${enable_nested_virtualization}" != "xno"],
 # When NESTED_VIRTUALIZATION=n, this configuration is ignored
 AC_SUBST([VMX_NESTED_MAX_ACTIVE_EPT])
 AC_ARG_WITH([vmx_nested_max_active_ept],
-        AS_HELP_STRING([--with-vmx-nested-max-active-ept=@<:@OPT@:>@],
+        AS_HELP_STRING([--with-vmx-nested-max-active-ept=@<:@VMX_NESTED_MAX_ACTIVE_EPT@:>@],
                 [when nested virtualization, number of active EPTs per CPU]),
-                , [vmx_nested_max_active_ept=8])
-VMX_NESTED_MAX_ACTIVE_EPT=$[]vmx_nested_max_active_ept
+                , [with_vmx_nested_max_active_ept=8])
+VMX_NESTED_MAX_ACTIVE_EPT=$[]with_vmx_nested_max_active_ept
 
 # When supporting nested virtualization, maximum number of EPTs per CPU
 # When NESTED_VIRTUALIZATION=n, this configuration is ignored
 AC_SUBST([VMX_NESTED_EPT02_PAGE_POOL_SIZE])
 AC_ARG_WITH([vmx_nested_ept02_page_pool_size],
-        AS_HELP_STRING([--with-vmx-nested-ept02-page-pool-size=@<:@OPT@:>@],
+        AS_HELP_STRING([--with-vmx-nested-ept02-page-pool-size=@<:@VMX_NESTED_EPT02_PAGE_POOL_SIZE@:>@],
                 [when nested virtualization, size of each EPT02 page pool]),
-                , [vmx_nested_ept02_page_pool_size=512])
-VMX_NESTED_EPT02_PAGE_POOL_SIZE=$[]vmx_nested_ept02_page_pool_size
+                , [with_vmx_nested_ept02_page_pool_size=512])
+VMX_NESTED_EPT02_PAGE_POOL_SIZE=$[]with_vmx_nested_ept02_page_pool_size
 
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])

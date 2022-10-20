@@ -18,6 +18,8 @@
 #   fast: equivalent to --no-rt-bss --no-bl-hash (For running XMHF quickly)
 #   nv: enable nested virtualization (--enable-nested-virtualization)
 #   no_nv: disable nested virtualization (--disable-nested-virtualization)
+#   --ept-num EPT_NUM: # max active ept (--with-vmx-nested-max-active-ept)
+#   --ept-pool EPT_POOL: pool for ept (--with-vmx-nested-ept02-page-pool-size)
 #   release: equivalent to --drt --dmap --no-dbg (For GitHub actions)
 #   debug: ignored (For GitHub actions)
 #   O0: ignored (For GitHub actions)
@@ -49,6 +51,8 @@ NO_BL_HASH="n"
 NO_INIT_SMP="n"
 SL_BASE="0x10000000"
 NV="y"
+EPT_NUM="8"
+EPT_POOL="512"
 OPT=""
 
 # Determine LINUX_BASE (may not be 100% correct all the time)
@@ -141,6 +145,14 @@ while [ "$#" -gt 0 ]; do
 			;;
 		no_nv)
 			NV="n"
+			;;
+		--ept-num)
+			EPT_NUM="$2"
+			shift
+			;;
+		--ept-pool)
+			EPT_POOL="$2"
+			shift
 			;;
 		release)
 			# For GitHub actions
@@ -250,6 +262,8 @@ fi
 
 if [ "$NV" == "y" ]; then
 	CONF+=("--enable-nested-virtualization")
+	CONF+=("--with-vmx-nested-max-active-ept=$EPT_NUM")
+	CONF+=("--with-vmx-nested-ept02-page-pool-size=$EPT_POOL")
 fi
 
 # Output configure arguments, if `-n`
