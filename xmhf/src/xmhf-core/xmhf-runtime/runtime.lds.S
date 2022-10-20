@@ -112,7 +112,7 @@ SECTIONS
     _begin_rt_bss = .;
 #endif /* __SKIP_RUNTIME_BSS__ */
     *(.bss)
-    *(.bss.*)
+    *(SORT_BY_ALIGNMENT(.bss.*))
     *(.rel.bss)
     *(.rel.bss.*)
 #ifdef __SKIP_RUNTIME_BSS__
