@@ -194,6 +194,8 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 											 vmcs12_info_t * vmcs12_info);
 void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info);
+void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
+										  vmcs12_info_t * vmcs12_info);
 #ifdef __DEBUG_QEMU__
 bool xmhf_nested_arch_x86vmx_check_fields_existence(VCPU * vcpu);
 #endif							/* !__DEBUG_QEMU__ */

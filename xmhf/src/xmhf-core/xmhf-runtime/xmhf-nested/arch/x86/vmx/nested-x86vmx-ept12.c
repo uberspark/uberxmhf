@@ -562,6 +562,9 @@ static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU * vcpu)
 	xmhf_nested_arch_x86vmx_clear_all_vmcs12_ept02(vcpu);
 
 	/*
+	 * If L2 (nested guest) is running, the VMCS02 fields that depend on EPT01
+	 * need to be recomputed (e.g. fields with flag FIELD_PROP_GPADDR).
+	 *
 	 * If the guest is using EPT02, the flushing above would make
 	 * vmcs12_info->guest_ept_cache_line invalid. We need to create new EPT02
 	 * to make it valid. This also applies to the EPT pointer in VMCS02.
@@ -571,6 +574,10 @@ static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU * vcpu)
 		/* Find vmcs12_info similar to calling find_current_vmcs12() */
 		vmcs12_info_t *vmcs12_info;
 		vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
+		/* Re-compute VMCS fields that depend on EPT01 */
+		xmhf_nested_arch_x86vmx_rewalk_ept01(vcpu, vmcs12_info);
+		/* Re-compute vmcs12_info->guest_ept_cache_line and EPT02 */
+		// TODO: move to xmhf_nested_arch_x86vmx_rewalk_ept01()
 		if (vmcs12_info->guest_ept_enable) {
 			ept02_cache_line_t *cache_line;
 			bool cache_hit;

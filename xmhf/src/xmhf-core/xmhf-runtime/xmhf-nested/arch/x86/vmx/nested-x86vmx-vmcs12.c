@@ -1571,6 +1571,46 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	}
 }
 
+/*
+ * Perform operations in xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02() that depend
+ * on walking EPT01. This is intended to be called when XMHF or hypapp decides
+ * to flush EPT.
+ */
+void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
+										  vmcs12_info_t * vmcs12_info)
+{
+	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
+	vmx_ctls_t ctls;
+	guestmem_hptw_ctx_pair_t ctx_pair;
+	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
+	guestmem_init(vcpu, &ctx_pair);
+
+#define FIELD_CTLS_ARG (&ctls)
+#define DECLARE_FIELD_64_RW(encoding, name, prop, exist, ...) \
+	if (exist) { \
+		if (prop & FIELD_PROP_GPADDR) { \
+			gpa_t addr = vmcs12->name; \
+			__vmx_vmwrite64(encoding, guestmem_gpa2spa_page(&ctx_pair, addr)); \
+		} \
+	}
+#include "nested-x86vmx-vmcs12-fields.h"
+
+	if (0) {
+		// Note: EPTP Switching not supported
+		// Note: likely need to sanitize input
+		u16 encoding = VMCSENC_control_EPTP_list_address;
+		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
+		// vmcs12->control_EPTP_list_address = ...
+	}
+	if (_vmx_hasctl_sub_page_write_permissions_for_ept(&ctls)) {
+		// Note: Sub-page write permissions for EPT not supported
+		// Note: likely need to sanitize input
+		u16 encoding = VMCSENC_control_subpage_permission_table_pointer;
+		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
+		// vmcs12->control_subpage_permission_table_pointer = ...
+	}
+}
+
 #ifdef __DEBUG_QEMU__
 /*
  * Check whether VMCS fields exist as specified in the SDM. Return true if
