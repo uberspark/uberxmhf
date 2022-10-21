@@ -455,6 +455,1126 @@ static u32 _vmcs12_get_ctls(VCPU * vcpu, struct nested_vmcs12 *vmcs12,
 	return VM_INST_SUCCESS;
 }
 
+typedef struct _vmcs12_to_vmcs02_arg {
+	VCPU *vcpu;
+	vmcs12_info_t *vmcs12_info;
+	struct nested_vmcs12 *vmcs12;
+	vmx_ctls_t *ctls;
+	guestmem_hptw_ctx_pair_t *ctx_pair;
+	u64 guest_ia32_pat;
+	u64 guest_ia32_efer;
+	u32 ia32_pat_index;
+	u32 ia32_efer_index;
+	msr_entry_t *msr01;
+} ARG10;
+
+typedef struct _vmcs02_to_vmcs12_arg {
+	VCPU *vcpu;
+	vmcs12_info_t *vmcs12_info;
+	struct nested_vmcs12 *vmcs12;
+	vmx_ctls_t *ctls;
+	u64 host_ia32_pat;
+	u64 host_ia32_efer;
+	u32 ia32_pat_index;
+	u32 ia32_efer_index;
+	msr_entry_t *msr02;
+} ARG01;
+
+#define FIELD_CTLS_ARG (arg->ctls)
+
+#define DECLARE_FIELD_16_RW(encoding, name, prop, exist, trans_suf, ...) \
+DECLARE_FIELD_16_RO(encoding, name, prop, exist, trans_suf, ...) \
+static u32 _vmcs12_to_vmcs02_##name##trans_suf(ARG10 * arg) \
+{ \
+	if (prop & FIELD_PROP_ID_GUEST) { \
+		if (exist) { \
+			__vmx_vmwrite16(encoding, arg->vmcs12->name); \
+		} \
+		return VM_INST_SUCCESS; \
+	} else if (prop & (FIELD_PROP_IGNORE | FIELD_PROP_ID_HOST)) { \
+		return VM_INST_SUCCESS; \
+	} else if (prop & FIELD_PROP_UNSUPP) { \
+		HALT_ON_ERRORCOND(!exist); \
+		return VM_INST_SUCCESS; \
+	} else { \
+		HALT_ON_ERRORCOND(0 && "Not implemented"); \
+	} \
+}
+
+#define DECLARE_FIELD_16_RO(encoding, name, prop, exist, trans_suf, ...) \
+static void _vmcs02_to_vmcs12_##name##trans_suf(ARG01 * arg) \
+{ \
+	if (prop & FIELD_PROP_ID_GUEST) { \
+		if (exist) { \
+			if (prop & FIELD_PROP_SWWRONLY) { \
+				HALT_ON_ERRORCOND(arg->vmcs12->name == \
+								  __vmx_vmread16(encoding)); \
+			} else { \
+				arg->vmcs12->name = __vmx_vmread16(encoding); \
+			} \
+		} \
+	} else if (prop & FIELD_PROP_UNSUPP) { \
+		HALT_ON_ERRORCOND(!exist); \
+	} else if (!(prop & (FIELD_PROP_IGNORE | FIELD_PROP_ID_HOST))) { \
+		HALT_ON_ERRORCOND(0 && "Not implemented"); \
+	} \
+}
+
+#define DECLARE_FIELD_64_RW(encoding, name, prop, exist, trans_suf, ...) \
+DECLARE_FIELD_64_RO(encoding, name, prop, exist, trans_suf, ...) \
+static u32 _vmcs12_to_vmcs02_##name##trans_suf(ARG10 * arg) \
+{ \
+	if (prop & FIELD_PROP_ID_GUEST) { \
+		if (exist) { \
+			__vmx_vmwrite64(encoding, arg->vmcs12->name); \
+		} \
+		return VM_INST_SUCCESS; \
+	} else if (prop & FIELD_PROP_GPADDR) { \
+		if (exist) { \
+			gpa_t addr = arg->vmcs12->name; \
+			__vmx_vmwrite64(encoding, guestmem_gpa2spa_page(arg->ctx_pair, \
+															addr)); \
+		} \
+		return VM_INST_SUCCESS; \
+	} else if (prop & (FIELD_PROP_IGNORE | FIELD_PROP_ID_HOST)) { \
+		return VM_INST_SUCCESS; \
+	} else if (prop & FIELD_PROP_UNSUPP) { \
+		HALT_ON_ERRORCOND(!exist); \
+		return VM_INST_SUCCESS; \
+	} else { \
+		HALT_ON_ERRORCOND(0 && "Not implemented"); \
+	} \
+}
+
+#define DECLARE_FIELD_64_RO(encoding, name, prop, exist, trans_suf, ...) \
+static void _vmcs02_to_vmcs12_##name##trans_suf(ARG01 * arg) \
+{ \
+	if ((prop & FIELD_PROP_ID_GUEST) || (prop & FIELD_PROP_GPADDR)) { \
+		if (exist) { \
+			if (prop & FIELD_PROP_SWWRONLY) { \
+				/* Note: currently for FIELD_PROP_GPADDR, assuming spa=gpa */ \
+				HALT_ON_ERRORCOND(arg->vmcs12->name == \
+								  __vmx_vmread64(encoding)); \
+			} else { \
+				arg->vmcs12->name = __vmx_vmread64(encoding); \
+			} \
+		} \
+	} else if (prop & FIELD_PROP_UNSUPP) { \
+		HALT_ON_ERRORCOND(!exist); \
+	} else if (!(prop & (FIELD_PROP_IGNORE | FIELD_PROP_ID_HOST))) { \
+		HALT_ON_ERRORCOND(0 && "Not implemented"); \
+	} \
+}
+
+#define DECLARE_FIELD_32_RW(encoding, name, prop, exist, trans_suf, ...) \
+DECLARE_FIELD_32_RO(encoding, name, prop, exist, trans_suf, ...) \
+static u32 _vmcs12_to_vmcs02_##name##trans_suf(ARG10 * arg) \
+{ \
+	if (prop & FIELD_PROP_ID_GUEST) { \
+		if (exist) { \
+			__vmx_vmwrite32(encoding, arg->vmcs12->name); \
+		} \
+		return VM_INST_SUCCESS; \
+	} else if (prop & (FIELD_PROP_IGNORE | FIELD_PROP_ID_HOST)) { \
+		return VM_INST_SUCCESS; \
+	} else if (prop & FIELD_PROP_UNSUPP) { \
+		HALT_ON_ERRORCOND(!exist); \
+		return VM_INST_SUCCESS; \
+	} else { \
+		HALT_ON_ERRORCOND(0 && "Not implemented"); \
+	} \
+}
+
+#define DECLARE_FIELD_32_RO(encoding, name, prop, exist, trans_suf, ...) \
+static void _vmcs02_to_vmcs12_##name##trans_suf(ARG01 * arg) \
+{ \
+	if (prop & FIELD_PROP_ID_GUEST) { \
+		if (exist) { \
+			if (prop & FIELD_PROP_SWWRONLY) { \
+				HALT_ON_ERRORCOND(arg->vmcs12->name == \
+								  __vmx_vmread32(encoding)); \
+			} else { \
+				arg->vmcs12->name = __vmx_vmread32(encoding); \
+			} \
+		} \
+	} else if (prop & FIELD_PROP_UNSUPP) { \
+		HALT_ON_ERRORCOND(!exist); \
+	} else if (!(prop & (FIELD_PROP_IGNORE | FIELD_PROP_ID_HOST))) { \
+		HALT_ON_ERRORCOND(0 && "Not implemented"); \
+	} \
+}
+
+#define DECLARE_FIELD_NW_RW(encoding, name, prop, exist, trans_suf, ...) \
+DECLARE_FIELD_NW_RO(encoding, name, prop, exist, trans_suf, ...) \
+static u32 _vmcs12_to_vmcs02_##name##trans_suf(ARG10 * arg) \
+{ \
+	if (prop & FIELD_PROP_ID_GUEST) { \
+		if (exist) { \
+			__vmx_vmwriteNW(encoding, arg->vmcs12->name); \
+		} \
+		return VM_INST_SUCCESS; \
+	} else if (prop & (FIELD_PROP_IGNORE | FIELD_PROP_ID_HOST)) { \
+		return VM_INST_SUCCESS; \
+	} else if (prop & FIELD_PROP_UNSUPP) { \
+		HALT_ON_ERRORCOND(!exist); \
+		return VM_INST_SUCCESS; \
+	} else { \
+		HALT_ON_ERRORCOND(0 && "Not implemented"); \
+	} \
+}
+
+#define DECLARE_FIELD_NW_RO(encoding, name, prop, exist, trans_suf, ...) \
+static void _vmcs02_to_vmcs12_##name##trans_suf(ARG01 * arg) \
+{ \
+	if (prop & FIELD_PROP_ID_GUEST) { \
+		if (exist) { \
+			if (prop & FIELD_PROP_SWWRONLY) { \
+				HALT_ON_ERRORCOND(arg->vmcs12->name == \
+								  __vmx_vmreadNW(encoding)); \
+			} else { \
+				arg->vmcs12->name = __vmx_vmreadNW(encoding); \
+			} \
+		} \
+	} else if (prop & FIELD_PROP_UNSUPP) { \
+		HALT_ON_ERRORCOND(!exist); \
+	} else if (!(prop & (FIELD_PROP_IGNORE | FIELD_PROP_ID_HOST))) { \
+		HALT_ON_ERRORCOND(0 && "Not implemented"); \
+	} \
+}
+
+#include "nested-x86vmx-vmcs12-fields.h"
+
+#define DECLARE_FIELDPAIR_16(guest_encoding, host_encoding, name) \
+static u32 _vmcs12_to_vmcs02_host_##name(ARG10 * arg) \
+{ \
+	__vmx_vmwrite16(host_encoding, arg->vcpu->vmcs.host_##name); \
+	return VM_INST_SUCCESS; \
+	(void) _vmcs12_to_vmcs02_host_##name##_unused; \
+} \
+\
+static void _vmcs02_to_vmcs12_host_##name(ARG01 * arg) \
+{ \
+	HALT_ON_ERRORCOND(__vmx_vmread16(host_encoding) == \
+					  arg->vcpu->vmcs.host_##name); \
+	arg->vcpu->vmcs.guest_##name = arg->vmcs12->host_##name; \
+	(void) _vmcs02_to_vmcs12_host_##name##_unused; \
+}
+
+#define DECLARE_FIELDPAIR_64(guest_encoding, host_encoding, name) \
+static u32 _vmcs12_to_vmcs02_host_##name(ARG10 * arg) \
+{ \
+	__vmx_vmwrite64(host_encoding, arg->vcpu->vmcs.host_##name); \
+	return VM_INST_SUCCESS; \
+	(void) _vmcs12_to_vmcs02_host_##name##_unused; \
+} \
+\
+static void _vmcs02_to_vmcs12_host_##name(ARG01 * arg) \
+{ \
+	HALT_ON_ERRORCOND(__vmx_vmread64(host_encoding) == \
+					  arg->vcpu->vmcs.host_##name); \
+	arg->vcpu->vmcs.guest_##name = arg->vmcs12->host_##name; \
+	(void) _vmcs02_to_vmcs12_host_##name##_unused; \
+}
+
+#define DECLARE_FIELDPAIR_32(guest_encoding, host_encoding, name) \
+static u32 _vmcs12_to_vmcs02_host_##name(ARG10 * arg) \
+{ \
+	__vmx_vmwrite32(host_encoding, arg->vcpu->vmcs.host_##name); \
+	return VM_INST_SUCCESS; \
+	(void) _vmcs12_to_vmcs02_host_##name##_unused; \
+} \
+\
+static void _vmcs02_to_vmcs12_host_##name(ARG01 * arg) \
+{ \
+	HALT_ON_ERRORCOND(__vmx_vmread32(host_encoding) == \
+					  arg->vcpu->vmcs.host_##name); \
+	arg->vcpu->vmcs.guest_##name = arg->vmcs12->host_##name; \
+	(void) _vmcs02_to_vmcs12_host_##name##_unused; \
+}
+
+#define DECLARE_FIELDPAIR_NW(guest_encoding, host_encoding, name) \
+static u32 _vmcs12_to_vmcs02_host_##name(ARG10 * arg) \
+{ \
+	__vmx_vmwriteNW(host_encoding, arg->vcpu->vmcs.host_##name); \
+	return VM_INST_SUCCESS; \
+	(void) _vmcs12_to_vmcs02_host_##name##_unused; \
+} \
+\
+static void _vmcs02_to_vmcs12_host_##name(ARG01 * arg) \
+{ \
+	HALT_ON_ERRORCOND(__vmx_vmreadNW(host_encoding) == \
+					  arg->vcpu->vmcs.host_##name); \
+	arg->vcpu->vmcs.guest_##name = arg->vmcs12->host_##name; \
+	(void) _vmcs02_to_vmcs12_host_##name##_unused; \
+}
+
+#include "nested-x86vmx-vmcs12-guesthost.h"
+
+/*
+ * 16-Bit Control Fields
+ */
+
+/* Virtual-processor identifier (VPID) */
+
+static u32 _vmcs12_to_vmcs02_control_vpid(ARG10 * arg)
+{
+	u16 vpid02;
+	if (_vmx_hasctl_enable_vpid(arg->ctls)) {
+		bool cache_hit;
+		u16 vpid12 = arg->vmcs12->control_vpid;
+		if (vpid12 == 0) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		vpid02 = xmhf_nested_arch_x86vmx_get_vpid02(arg->vcpu, vpid12,
+													&cache_hit);
+	} else {
+		/*
+		 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result in
+		 * flushing linear and combination TLB. We simulate this effect here by
+		 * setting VPID of L2 guest to the same as L1 guest (VPID = 1) and
+		 * manually executing INVVPID for every VNENTRY and VMEXIT.
+		 */
+		vpid02 = 1;
+		HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
+	}
+	__vmx_vmwrite16(VMCSENC_control_vpid, vpid02);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_vpid_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_vpid(ARG01 * arg)
+{
+	u16 vpid02;
+	if (_vmx_hasctl_enable_vpid(arg->ctls)) {
+		bool cache_hit;
+		u16 vpid12 = arg->vmcs12->control_vpid;
+		HALT_ON_ERRORCOND(vpid12 != 0);
+		vpid02 = xmhf_nested_arch_x86vmx_get_vpid02(arg->vcpu, vpid12,
+													&cache_hit);
+		HALT_ON_ERRORCOND(cache_hit);
+	} else {
+		/*
+		 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result in
+		 * flushing linear and combination TLB. We simulate this effect here by
+		 * setting VPID of L2 guest to the same as L1 guest (VPID = 1) and
+		 * manually executing INVVPID for every VNENTRY and VMEXIT.
+		 */
+		vpid02 = 1;
+		HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
+	}
+	HALT_ON_ERRORCOND(__vmx_vmread16(VMCSENC_control_vpid) == vpid02);
+	(void)_vmcs02_to_vmcs12_control_vpid_unused;
+}
+
+/*
+ * 16-Bit Guest-State Fields
+ */
+
+/*
+ * 16-Bit Host-State Fields
+ */
+
+/*
+ * 64-Bit Control Fields
+ */
+
+/* VM-exit MSR-store address */
+
+static u32 _vmcs12_to_vmcs02_control_VM_exit_MSR_store_address(ARG10 * arg)
+{
+	/* VMCS02 needs to always process the same MSRs as VMCS01 */
+	__vmx_vmwrite64(VMCSENC_control_VM_exit_MSR_store_address,
+					hva2spa(arg->vmcs12_info->vmcs02_vmexit_msr_store_area));
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_exit_MSR_store_address_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_exit_MSR_store_address(ARG01 * arg)
+{
+	u16 encoding = VMCSENC_control_VM_exit_MSR_store_address;
+	HALT_ON_ERRORCOND(hva2spa(arg->vmcs12_info->vmcs02_vmexit_msr_store_area) ==
+					  __vmx_vmread64(encoding));
+	(void)_vmcs02_to_vmcs12_control_VM_exit_MSR_store_address_unused;
+}
+
+/* VM-exit MSR-load address */
+
+static u32 _vmcs12_to_vmcs02_control_VM_exit_MSR_load_address(ARG10 * arg)
+{
+	/* VMCS02 needs to always process the same MSRs as VMCS01 */
+	__vmx_vmwrite64(VMCSENC_control_VM_exit_MSR_load_address,
+					hva2spa(arg->vmcs12_info->vmcs02_vmexit_msr_load_area));
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_exit_MSR_load_address_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_exit_MSR_load_address(ARG01 * arg)
+{
+	u16 encoding = VMCSENC_control_VM_exit_MSR_load_address;
+	HALT_ON_ERRORCOND(hva2spa(arg->vmcs12_info->vmcs02_vmexit_msr_load_area) ==
+					  __vmx_vmread64(encoding));
+	(void)_vmcs02_to_vmcs12_control_VM_exit_MSR_load_address_unused;
+}
+
+/* VM-entry MSR-load address */
+
+static u32 _vmcs12_to_vmcs02_control_VM_entry_MSR_load_address(ARG10 * arg)
+{
+	/* VMCS02 needs to always process the same MSRs as VMCS01 */
+	__vmx_vmwrite64(VMCSENC_control_VM_entry_MSR_load_address,
+					hva2spa(arg->vmcs12_info->vmcs02_vmentry_msr_load_area));
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_entry_MSR_load_address_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_entry_MSR_load_address(ARG01 * arg)
+{
+	u16 encoding = VMCSENC_control_VM_entry_MSR_load_address;
+	HALT_ON_ERRORCOND(hva2spa(arg->vmcs12_info->vmcs02_vmentry_msr_load_area)
+					  == __vmx_vmread64(encoding));
+	(void)_vmcs02_to_vmcs12_control_VM_entry_MSR_load_address_unused;
+}
+
+/*
+ * control_Executive_VMCS_pointer: ignored (0 in VMCS02), because we assume
+ * XMHF is not in SMM. Also see IA32_VMX_BASIC bit 49.
+ */
+
+/* Posted-interrupt descriptor address */
+
+static u32 _vmcs12_to_vmcs02_control_posted_interrupt_desc_address(ARG10 * arg)
+{
+	if (_vmx_hasctl_process_posted_interrupts(arg->ctls)) {
+		gpa_t addr = arg->vmcs12->control_posted_interrupt_desc_address;
+		if (addr & (64 - 1)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		__vmx_vmwrite64(VMCSENC_control_posted_interrupt_desc_address,
+						guestmem_gpa2spa_size(arg->ctx_pair, addr, 64));
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_posted_interrupt_desc_address_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_posted_interrupt_desc_address(ARG01 * arg)
+{
+	if (_vmx_hasctl_process_posted_interrupts(arg->ctls)) {
+		u16 encoding = VMCSENC_control_posted_interrupt_desc_address;
+		/* Note: currently assuming spa=gpa */
+		HALT_ON_ERRORCOND(arg->vmcs12->control_posted_interrupt_desc_address ==
+						  __vmx_vmread64(encoding));
+	}
+	(void)_vmcs02_to_vmcs12_control_posted_interrupt_desc_address_unused;
+}
+
+/* EPT pointer */
+
+static void _update_pae_pdpte(ARG10 * arg)
+{
+	/*
+	 * Assume guest does not enable EPT. Check whether guest is in PAE. If so,
+	 * XMHF needs to re-compute PDPTEs VMCS fields. (Otherwise the nested guest
+	 * may triple fault.
+	 */
+	bool pae = ((arg->vmcs12->guest_CR0 & CR0_PG) &&
+				(arg->vmcs12->guest_CR4 & CR4_PAE));
+#ifdef __AMD64__
+	if (_vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls)) {
+		pae = false;
+	}
+#elif !defined(__I386__)
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) */
+	if (pae) {
+		/* Walk EPT and retrieve values for guest_PDPTE* */
+		u64 pdptes[4];
+		u64 addr = arg->vmcs12->guest_CR3 & ~0x1FUL;
+		guestmem_copy_gp2h(arg->ctx_pair, 0, pdptes, addr, sizeof(pdptes));
+		__vmx_vmwrite64(VMCSENC_guest_PDPTE0, pdptes[0]);
+		__vmx_vmwrite64(VMCSENC_guest_PDPTE1, pdptes[1]);
+		__vmx_vmwrite64(VMCSENC_guest_PDPTE2, pdptes[2]);
+		__vmx_vmwrite64(VMCSENC_guest_PDPTE3, pdptes[3]);
+	}
+}
+
+#ifdef __DEBUG_QEMU__
+static void _workaround_kvm_216212(ARG10 * arg, ept02_cache_line_t * cache_line)
+{
+	/*
+	 * Workaround a KVM bug: https://bugzilla.kernel.org/show_bug.cgi?id=216212
+	 *
+	 * Looks like KVM has a problem setting CR0.PG when nested guest's PDPTEs
+	 * are not in guest hypervisor's EPT. So we always make sure the EPT entry
+	 * for PDPTEs is available. To achieve this effect, simulating a EPT
+	 * violation by calling xmhf_nested_arch_x86vmx_handle_ept02_exit() with
+	 * guest2_paddr = CR3.
+	 */
+	extern bool is_in_kvm;
+	if (is_in_kvm && arg->vmcs12->guest_CR3 != 0) {
+		xmhf_nested_arch_x86vmx_hardcode_ept(arg->vcpu, cache_line,
+											 arg->vmcs12->guest_CR3);
+	}
+}
+#endif							/* !__DEBUG_QEMU__ */
+
+static u32 _vmcs12_to_vmcs02_control_EPT_pointer(ARG10 * arg)
+{
+	/* Note: VMX_SECPROCBASED_ENABLE_EPT is always enabled */
+	spa_t ept02;
+	HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&arg->vcpu->vmx_caps));
+	if (_vmx_hasctl_enable_ept(arg->ctls)) {
+		/* Construct shadow EPT */
+		u64 eptp12 = arg->vmcs12->control_EPT_pointer;
+		gpa_t ept12;
+		ept02_cache_line_t *cache_line;
+		bool cache_hit;
+		arg->vmcs12_info->guest_ept_enable = 1;
+		if (!xmhf_nested_arch_x86vmx_check_ept_lower_bits(eptp12, &ept12)) {
+			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+		}
+		ept02 = xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
+												  &cache_line);
+		arg->vmcs12_info->guest_ept_cache_line = cache_line;
+		arg->vmcs12_info->guest_ept_root = ept12;
+#ifdef __DEBUG_QEMU__
+		_workaround_kvm_216212(arg, cache_line);
+#endif							/* !__DEBUG_QEMU__ */
+	} else {
+		/* Guest does not use EPT, just use XMHF's EPT */
+		arg->vmcs12_info->guest_ept_enable = 0;
+		ept02 = arg->vcpu->vmcs.control_EPT_pointer;
+		_update_pae_pdpte(arg);
+	}
+	__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_EPT_pointer_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_EPT_pointer(ARG01 * arg)
+{
+	spa_t ept02;
+	u16 encoding = VMCSENC_control_EPT_pointer;
+	HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&arg->vcpu->vmx_caps));
+	if (_vmx_hasctl_enable_ept(arg->ctls)) {
+		gpa_t ept12 = arg->vmcs12_info->guest_ept_root;
+		ept02_cache_line_t *cache_line;
+		bool cache_hit;
+		ept02 = xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
+												  &cache_line);
+		HALT_ON_ERRORCOND(cache_hit);
+	} else {
+		ept02 = arg->vcpu->vmcs.control_EPT_pointer;
+	}
+	HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == ept02);
+	/* vmcs12->control_EPT_pointer is ignored here */
+	(void)_vmcs02_to_vmcs12_control_EPT_pointer_unused;
+}
+
+/*
+ * 64-Bit Read-Only Data Field
+ */
+
+/*
+ * 64-Bit Guest-State Fields
+ */
+
+/* Guest IA32_PAT */
+
+static u32 _vmcs12_to_vmcs02_guest_IA32_PAT(ARG10 * arg)
+{
+	if (_vmx_hasctl_vmentry_load_ia32_pat(arg->ctls)) {
+		/* XMHF never uses this feature. Instead, uses MSR load / save area */
+		arg->guest_ia32_pat = arg->vmcs12->guest_IA32_PAT;
+		/* Note: ideally should return VMENTRY error */
+		HALT_ON_ERRORCOND(_check_ia32_pat(arg->guest_ia32_pat));
+	} else {
+		/* When not loading IA32_PAT, IA32_PAT from L1 is used */
+		arg->guest_ia32_pat = arg->msr01[arg->ia32_pat_index].data;
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_guest_IA32_PAT_unused;
+}
+
+static void _vmcs02_to_vmcs12_guest_IA32_PAT(ARG01 * arg)
+{
+	if (_vmx_hasctl_vmexit_save_ia32_pat(arg->ctls)) {
+		/* XMHF never uses this feature. Instead, uses MSR load / save area */
+		arg->vmcs12->guest_IA32_PAT = arg->msr02[arg->ia32_pat_index].data;
+	}
+	(void)_vmcs02_to_vmcs12_guest_IA32_PAT_unused;
+}
+
+/* Guest IA32_EFER */
+
+static u32 _vmcs12_to_vmcs02_guest_IA32_EFER(ARG10 * arg)
+{
+	if (_vmx_hasctl_vmentry_load_ia32_efer(arg->ctls)) {
+		/* XMHF never uses this feature. Instead, uses MSR load / save area */
+		arg->guest_ia32_efer = arg->vmcs12->guest_IA32_EFER;
+		/* Note: ideally should return VMENTRY error */
+		HALT_ON_ERRORCOND(_check_ia32_efer
+						  (arg->guest_ia32_efer,
+						   _vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls),
+						   arg->vmcs12->guest_CR0 & CR0_PG));
+	} else {
+		/*
+		 * When not loading IA32_EFER, IA32_EFER is changed as following:
+		 * * IA32_EFER.LMA = "IA-32e mode guest"
+		 * * If CR0.PG = 1, IA32_EFER.LME = "IA-32e mode guest"
+		 */
+		u64 val01 = arg->msr01[arg->ia32_efer_index].data;
+		u64 mask = (1ULL << EFER_LMA);
+		if (arg->vmcs12->guest_CR0 & CR0_PG) {
+			mask |= (1ULL << EFER_LME);
+		}
+		if (_vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls)) {
+			arg->guest_ia32_efer = val01 | mask;
+		} else {
+			arg->guest_ia32_efer = val01 & ~mask;
+		}
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_guest_IA32_EFER_unused;
+}
+
+static void _vmcs02_to_vmcs12_guest_IA32_EFER(ARG01 * arg)
+{
+	if (_vmx_hasctl_vmexit_save_ia32_efer(arg->ctls)) {
+		/* XMHF never uses this feature. Instead, uses MSR load / save area */
+		arg->vmcs12->guest_IA32_EFER = arg->msr02[arg->ia32_efer_index].data;
+	}
+	(void)_vmcs02_to_vmcs12_guest_IA32_EFER_unused;
+}
+
+/*
+ * 64-Bit Host-State Fields
+ */
+
+/* Host IA32_PAT */
+
+static u32 _vmcs12_to_vmcs02_host_IA32_PAT(ARG10 * arg)
+{
+	if (_vmx_hasctl_vmexit_load_ia32_pat(arg->ctls)) {
+		/* XMHF never uses this feature. Instead, uses MSR load / save area */
+		/* Note: ideally should return VMENTRY error */
+		HALT_ON_ERRORCOND(_check_ia32_pat(arg->vmcs12->host_IA32_PAT));
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_host_IA32_PAT_unused;
+}
+
+static void _vmcs02_to_vmcs12_host_IA32_PAT(ARG01 * arg)
+{
+	if (_vmx_hasctl_vmexit_load_ia32_pat(arg->ctls)) {
+		/* XMHF never uses this feature. Instead, uses MSR load / save area */
+		arg->host_ia32_pat = arg->vmcs12->host_IA32_PAT;
+	} else {
+		arg->host_ia32_pat = arg->msr02[arg->ia32_pat_index].data;
+	}
+	(void)_vmcs02_to_vmcs12_host_IA32_PAT_unused;
+}
+
+/* Host IA32_EFER */
+
+static u32 _vmcs12_to_vmcs02_host_IA32_EFER(ARG10 * arg)
+{
+	if (_vmx_hasctl_vmexit_load_ia32_efer(arg->ctls)) {
+		/* XMHF never uses this feature. Instead, uses MSR load / save area */
+		/* Note: ideally should return VMENTRY error */
+		bool host_long = _vmx_hasctl_vmexit_host_address_space_size(arg->ctls);
+		HALT_ON_ERRORCOND(_check_ia32_efer(arg->vmcs12->host_IA32_EFER,
+										   host_long, true));
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_host_IA32_EFER_unused;
+}
+
+static void _vmcs02_to_vmcs12_host_IA32_EFER(ARG01 * arg)
+{
+	if (_vmx_hasctl_vmexit_load_ia32_efer(arg->ctls)) {
+		/* XMHF never uses this feature. Instead, uses MSR load / save area */
+		arg->host_ia32_efer = arg->vmcs12->host_IA32_EFER;
+	} else {
+		/*
+		 * When not loading IA32_EFER, IA32_EFER is changed as following:
+		 * * IA32_EFER.LMA = "host address-space size"
+		 * * IA32_EFER.LME = "host address-space size"
+		 */
+		u64 mask = (1ULL << EFER_LMA) | (1ULL << EFER_LME);
+		if (_vmx_hasctl_vmexit_host_address_space_size(arg->ctls)) {
+			arg->host_ia32_efer = arg->msr02[arg->ia32_efer_index].data | mask;
+		} else {
+			arg->host_ia32_efer = arg->msr02[arg->ia32_efer_index].data & mask;
+		}
+	}
+	(void)_vmcs02_to_vmcs12_host_IA32_EFER_unused;
+}
+
+/* Host IA32_PERF_GLOBAL_CTRL */
+
+static u32 _vmcs12_to_vmcs02_host_IA32_PERF_GLOBAL_CTRL(ARG10 * arg)
+{
+	if (_vmx_hasctl_vmexit_load_ia32_perf_global_ctrl(arg->ctls)) {
+		u32 eax, ebx, ecx, edx;
+		cpuid(0x0, &eax, &ebx, &ecx, &edx);
+		if (eax >= 0xA) {
+			cpuid(0xA, &eax, &ebx, &ecx, &edx);
+			if (eax & 0xffU) {
+				__vmx_vmwrite64(VMCSENC_host_IA32_PERF_GLOBAL_CTRL,
+								rdmsr64(IA32_PERF_GLOBAL_CTRL));
+			}
+		}
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_host_IA32_PERF_GLOBAL_CTRL_unused;
+}
+
+static void _vmcs02_to_vmcs12_host_IA32_PERF_GLOBAL_CTRL(ARG01 * arg)
+{
+	if (_vmx_hasctl_vmexit_load_ia32_perf_global_ctrl(arg->ctls)) {
+		u32 eax, ebx, ecx, edx;
+		cpuid(0x0, &eax, &ebx, &ecx, &edx);
+		if (eax >= 0xA) {
+			cpuid(0xA, &eax, &ebx, &ecx, &edx);
+			if (eax & 0xffU) {
+				/* Check L1 */
+				u16 encoding = VMCSENC_host_IA32_PERF_GLOBAL_CTRL;
+				HALT_ON_ERRORCOND(__vmx_vmread64(encoding) ==
+								  rdmsr64(IA32_PERF_GLOBAL_CTRL));
+				/* Update L0 */
+				wrmsr64(IA32_PERF_GLOBAL_CTRL,
+						__vmx_vmread64(VMCSENC_host_IA32_PERF_GLOBAL_CTRL));
+			}
+		}
+	}
+	(void)_vmcs02_to_vmcs12_host_IA32_PERF_GLOBAL_CTRL_unused;
+}
+
+/* Host IA32_PKRS */
+
+static u32 _vmcs12_to_vmcs02_host_IA32_PKRS(ARG10 * arg)
+{
+	if (_vmx_hasctl_vmexit_load_pkrs(arg->ctls)) {
+		__vmx_vmwrite64(VMCSENC_host_IA32_PKRS, rdmsr64(IA32_PKRS));
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_host_IA32_PKRS_unused;
+}
+
+static void _vmcs02_to_vmcs12_host_IA32_PKRS(ARG01 * arg)
+{
+	if (_vmx_hasctl_vmexit_load_pkrs(arg->ctls)) {
+		/* Check L1 */
+		HALT_ON_ERRORCOND(__vmx_vmread64(VMCSENC_host_IA32_PKRS) ==
+						  rdmsr64(IA32_PKRS));
+		/* Update L0 */
+		wrmsr64(IA32_PKRS, __vmx_vmread64(VMCSENC_host_IA32_PKRS));
+	}
+	(void)_vmcs02_to_vmcs12_host_IA32_PKRS_unused;
+}
+
+/*
+ * 32-Bit Control Fields
+ */
+
+/* Pin-based VM-execution controls */
+
+static u32 _vmcs12_to_vmcs02_control_VMX_pin_based(ARG10 * arg)
+{
+	/*
+	 * Note: this function needs to be called before 
+	 * _vmcs12_to_vmcs02_control_VMX_cpu_based().
+	 */
+	u32 val = arg->vmcs12->control_VMX_pin_based;
+	/* Check for relationship between "NMI exiting" and "virtual NMIs" */
+	arg->vmcs12_info->guest_nmi_exiting = _vmx_hasctl_nmi_exiting(arg->ctls);
+	arg->vmcs12_info->guest_virtual_nmis = _vmx_hasctl_virtual_nmis(arg->ctls);
+	if (!arg->vmcs12_info->guest_nmi_exiting &&
+		arg->vmcs12_info->guest_virtual_nmis) {
+		return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+	}
+	/*
+	 * Disallow NMI injection if NMI exiting = 0.
+	 * This is a limitation of XMHF. The correct behavior is to make NMI
+	 * not blocked after injecting NMI. However, this requires non-trivial
+	 * XMHF implementation effort. So not implemented, at least for now.
+	 */
+	if (!arg->vmcs12_info->guest_nmi_exiting) {
+		u32 injection = arg->vmcs12->control_VM_entry_interruption_information;
+		if (xmhf_nested_arch_x86vmx_is_interruption_nmi(injection)) {
+			HALT_ON_ERRORCOND(0 && "Not supported (XMHF limitation)");
+		}
+	}
+	/* Enable NMI exiting because needed by quiesce */
+	val |= (1U << VMX_PINBASED_NMI_EXITING);
+	val |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
+	__vmx_vmwrite32(VMCSENC_control_VMX_pin_based, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VMX_pin_based_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VMX_pin_based(ARG01 * arg)
+{
+	u32 val = arg->vmcs12->control_VMX_pin_based;
+	/* Enable NMI exiting because needed by quiesce */
+	val |= (1U << VMX_PINBASED_NMI_EXITING);
+	val |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
+	HALT_ON_ERRORCOND(val == __vmx_vmread32(VMCSENC_control_VMX_pin_based));
+	(void)_vmcs02_to_vmcs12_control_VMX_pin_based_unused;
+}
+
+/* Primary processor-based VM-execution controls */
+
+static u32 _vmcs12_to_vmcs02_control_VMX_cpu_based(ARG10 * arg)
+{
+	/*
+	 * Note: this function needs to be called after
+	 * _vmcs12_to_vmcs02_control_VMX_pin_based().
+	 */
+	u32 val = arg->vmcs12->control_VMX_cpu_based;
+	/* Check for relationship between "virtual NMIs" and "NMI-window exiting" */
+	arg->vmcs12_info->guest_nmi_window_exiting =
+		_vmx_hasctl_nmi_window_exiting(arg->ctls);
+	if (!arg->vmcs12_info->guest_virtual_nmis &&
+		arg->vmcs12_info->guest_nmi_window_exiting) {
+		return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
+	}
+	/* XMHF needs to activate secondary controls because of EPT */
+	val |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
+	__vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VMX_cpu_based_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VMX_cpu_based(ARG01 * arg)
+{
+	u32 val12 = arg->vmcs12->control_VMX_cpu_based;
+	u32 val02 = __vmx_vmread32(VMCSENC_control_VMX_cpu_based);
+	/* Secondary controls are always required in VMCS02 for EPT */
+	val12 |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
+	/* NMI window exiting may change due to L0 */
+	val12 &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+	val02 &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
+	HALT_ON_ERRORCOND(val12 == val02);
+	(void)_vmcs02_to_vmcs12_control_VMX_cpu_based_unused;
+}
+
+/* VM-exit controls */
+
+static u32 _vmcs12_to_vmcs02_control_VM_exit_controls(ARG10 * arg)
+{
+	u32 val = arg->vmcs12->control_VM_exit_controls;
+	u32 g64 = VCPU_g64(arg->vcpu);
+	/* Check the "IA-32e mode guest" bit of the guest hypervisor */
+	if (val & (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE)) {
+		HALT_ON_ERRORCOND(g64);
+	} else {
+		HALT_ON_ERRORCOND(!g64);
+	}
+	/*
+	 * The "IA-32e mode guest" bit need to match XMHF. A mismatch can only
+	 * happen when amd64 XMHF runs i386 guest hypervisor.
+	 */
+#ifdef __AMD64__
+	val |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
+#elif !defined(__I386__)
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) */
+	/* XMHF does not use save / load IA32_PAT / IA32_EFER */
+	val &= ~(1U << VMX_VMEXIT_SAVE_IA32_PAT);
+	val &= ~(1U << VMX_VMEXIT_LOAD_IA32_PAT);
+	val &= ~(1U << VMX_VMEXIT_SAVE_IA32_EFER);
+	val &= ~(1U << VMX_VMEXIT_LOAD_IA32_EFER);
+	__vmx_vmwrite32(VMCSENC_control_VM_exit_controls, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_exit_controls_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_exit_controls(ARG01 * arg)
+{
+	u32 val = arg->vmcs12->control_VM_exit_controls;
+	u16 encoding = VMCSENC_control_VM_exit_controls;
+	/*
+	 * The "IA-32e mode guest" bit need to match XMHF. A mismatch can only
+	 * happen when amd64 XMHF runs i386 guest hypervisor.
+	 */
+#ifdef __AMD64__
+	val |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
+#elif !defined(__I386__)
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) */
+	/* XMHF does not use save / load IA32_PAT / IA32_EFER */
+	val &= ~(1U << VMX_VMEXIT_SAVE_IA32_PAT);
+	val &= ~(1U << VMX_VMEXIT_LOAD_IA32_PAT);
+	val &= ~(1U << VMX_VMEXIT_SAVE_IA32_EFER);
+	val &= ~(1U << VMX_VMEXIT_LOAD_IA32_EFER);
+	HALT_ON_ERRORCOND(val == __vmx_vmread32(encoding));
+	(void)_vmcs02_to_vmcs12_control_VM_exit_controls_unused;
+}
+
+/* VM-exit MSR-store count */
+
+static u32 _vmcs12_to_vmcs02_control_VM_exit_MSR_store_count(ARG10 * arg)
+{
+	/* VMCS02 needs to always process the same MSRs as VMCS01 */
+	__vmx_vmwrite32(VMCSENC_control_VM_exit_MSR_store_count,
+					arg->vcpu->vmcs.control_VM_exit_MSR_store_count);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_exit_MSR_store_count_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_exit_MSR_store_count(ARG01 * arg)
+{
+	u16 encoding = VMCSENC_control_VM_exit_MSR_store_count;
+	HALT_ON_ERRORCOND(arg->vcpu->vmcs.control_VM_exit_MSR_store_count ==
+					  __vmx_vmread32(encoding));
+	(void)_vmcs02_to_vmcs12_control_VM_exit_MSR_store_count_unused;
+}
+
+/* VM-exit MSR-load count */
+
+static u32 _vmcs12_to_vmcs02_control_VM_exit_MSR_load_count(ARG10 * arg)
+{
+	/* VMCS02 needs to always process the same MSRs as VMCS01 */
+	__vmx_vmwrite32(VMCSENC_control_VM_exit_MSR_load_count,
+					arg->vcpu->vmcs.control_VM_exit_MSR_load_count);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_exit_MSR_load_count_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_exit_MSR_load_count(ARG01 * arg)
+{
+	u16 encoding = VMCSENC_control_VM_exit_MSR_load_count;
+	HALT_ON_ERRORCOND(arg->vcpu->vmcs.control_VM_exit_MSR_load_count ==
+					  __vmx_vmread32(encoding));
+	(void)_vmcs02_to_vmcs12_control_VM_exit_MSR_load_count_unused;
+}
+
+/* VM-entry controls */
+
+static u32 _vmcs12_to_vmcs02_control_VM_entry_controls(ARG10 * arg)
+{
+	u32 val = arg->vmcs12->control_VM_entry_controls;
+	/* XMHF does not use load IA32_PAT / IA32_EFER */
+	val &= ~(1U << VMX_VMENTRY_LOAD_IA32_PAT);
+	val &= ~(1U << VMX_VMENTRY_LOAD_IA32_EFER);
+	__vmx_vmwrite32(VMCSENC_control_VM_entry_controls, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_entry_controls_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_entry_controls(ARG01 * arg)
+{
+	u32 val02 = __vmx_vmread32(VMCSENC_control_VM_entry_controls);
+	u32 val12 = arg->vmcs12->control_VM_entry_controls;
+	u32 mask = ~(1U << VMX_VMENTRY_IA_32E_MODE_GUEST);
+	/* XMHF does not use load IA32_PAT / IA32_EFER */
+	val12 &= ~(1U << VMX_VMENTRY_LOAD_IA32_PAT);
+	val12 &= ~(1U << VMX_VMENTRY_LOAD_IA32_EFER);
+	/* Check that other bits are not changed */
+	HALT_ON_ERRORCOND((val12 & mask) == (val02 & mask));
+	/* Copy "IA-32e mode guest" bit from VMCS02 to VMCS12 */
+	arg->vmcs12->control_VM_entry_controls &= mask;
+	arg->vmcs12->control_VM_entry_controls |= val02 & ~mask;
+	(void)_vmcs02_to_vmcs12_control_VM_entry_controls_unused;
+}
+
+/* VM-entry MSR-load count */
+
+static u32 _vmcs12_to_vmcs02_control_VM_entry_MSR_load_count(ARG10 * arg)
+{
+	/* VMCS02 needs to always process the same MSRs as VMCS01 */
+	__vmx_vmwrite32(VMCSENC_control_VM_entry_MSR_load_count,
+					arg->vcpu->vmcs.control_VM_entry_MSR_load_count);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_entry_MSR_load_count_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_entry_MSR_load_count(ARG01 * arg)
+{
+	u16 encoding = VMCSENC_control_VM_entry_MSR_load_count;
+	HALT_ON_ERRORCOND(arg->vcpu->vmcs.control_VM_entry_MSR_load_count ==
+					  __vmx_vmread32(encoding));
+	(void)_vmcs02_to_vmcs12_control_VM_entry_MSR_load_count_unused;
+}
+
+/* VM-entry interruption-information field */
+
+static u32 _vmcs12_to_vmcs02_control_VM_entry_interruption_information(ARG10 *
+																	   arg)
+{
+	u32 val = arg->vmcs12->control_VM_entry_interruption_information;
+	__vmx_vmwrite32(VMCSENC_control_VM_entry_interruption_information, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_entry_interruption_information_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_entry_interruption_information(ARG01 *
+																		arg)
+{
+	/*
+	 * VMCS02 may be changed during L2 -> L0 -> L2 VMEXITs. So don't copy to
+	 * VMCS12. Only clear bit 31 as required by SDM.
+	 */
+	arg->vmcs12->control_VM_entry_interruption_information &=
+		~INTR_INFO_VALID_MASK;
+	(void)_vmcs02_to_vmcs12_control_VM_entry_interruption_information_unused;
+}
+
+/* VM-entry exception error code */
+
+static u32 _vmcs12_to_vmcs02_control_VM_entry_exception_errorcode(ARG10 * arg)
+{
+	u32 val = arg->vmcs12->control_VM_entry_exception_errorcode;
+	__vmx_vmwrite32(VMCSENC_control_VM_entry_exception_errorcode, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_entry_exception_errorcode_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_entry_exception_errorcode(ARG01 * arg)
+{
+	/*
+	 * VMCS02 may be changed during L2 -> L0 -> L2 VMEXITs. So don't copy to
+	 * VMCS12.
+	 */
+	(void)arg;
+	(void)_vmcs02_to_vmcs12_control_VM_entry_exception_errorcode_unused;
+}
+
+/* VM-entry instruction length */
+
+static u32 _vmcs12_to_vmcs02_control_VM_entry_instruction_length(ARG10 * arg)
+{
+	u32 val = arg->vmcs12->control_VM_entry_instruction_length;
+	__vmx_vmwrite32(VMCSENC_control_VM_entry_instruction_length, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VM_entry_instruction_length_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VM_entry_instruction_length(ARG01 * arg)
+{
+	/*
+	 * VMCS02 may be changed during L2 -> L0 -> L2 VMEXITs. So don't copy to
+	 * VMCS12.
+	 */
+	(void)arg;
+	(void)_vmcs02_to_vmcs12_control_VM_entry_instruction_length_unused;
+}
+
+/* Secondary processor-based VM-execution controls */
+
+static u32 _vmcs12_to_vmcs02_control_VMX_seccpu_based(ARG10 * arg)
+{
+	/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is always enabled */
+	u32 val = arg->vmcs12->control_VMX_seccpu_based;
+	/* XMHF needs the guest to run in EPT to protect memory */
+	val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
+	__vmx_vmwrite32(VMCSENC_control_VMX_seccpu_based, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_control_VMX_seccpu_based_unused;
+}
+
+static void _vmcs02_to_vmcs12_control_VMX_seccpu_based(ARG01 * arg)
+{
+	u32 val = arg->vmcs12->control_VMX_seccpu_based;
+	u16 encoding = VMCSENC_control_VMX_seccpu_based;
+	/* XMHF needs the guest to run in EPT to protect memory */
+	val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
+	HALT_ON_ERRORCOND(val == __vmx_vmread32(encoding));
+	(void)_vmcs02_to_vmcs12_control_VMX_seccpu_based_unused;
+}
+
+/*
+ * 32-Bit Read-Only Data Fields
+ */
+
+/*
+ * 32-Bit Guest-State Fields
+ */
+
+/* Guest interruptibility state */
+
+static u32 _vmcs12_to_vmcs02_guest_interruptibility(ARG10 * arg)
+{
+	u32 val = arg->vmcs12->guest_interruptibility;
+	if (arg->vmcs12_info->guest_nmi_exiting) {
+		if (arg->vmcs12_info->guest_virtual_nmis) {
+			/* NMI Exiting = 1, virtual NMIs = 1 */
+			arg->vmcs12_info->guest_block_nmi = false;
+		} else {
+			/* NMI Exiting = 1, virtual NMIs = 0 */
+			arg->vmcs12_info->guest_block_nmi = val & (1U << 3);
+		}
+	} else {
+		/* NMI Exiting = 0, virtual NMIs = 0, guest_block_nmi is ignored */
+	}
+	HALT_ON_ERRORCOND(!arg->vmcs12_info->guest_vmcs_block_nmi_overridden);
+	__vmx_vmwrite32(VMCSENC_guest_interruptibility, val);
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_guest_interruptibility_unused;
+}
+
+static void _vmcs02_to_vmcs12_guest_interruptibility(ARG01 * arg)
+{
+	/* Handle "Blocking by NMI" */
+	u32 val = __vmx_vmread32(VMCSENC_guest_interruptibility);
+	if (arg->vmcs12_info->guest_vmcs_block_nmi_overridden) {
+		arg->vmcs12_info->guest_vmcs_block_nmi_overridden = false;
+		if (arg->vmcs12_info->guest_vmcs_block_nmi) {
+			val |= (1U << 3);
+		} else {
+			val &= ~(1U << 3);
+		}
+	}
+	if (arg->vmcs12_info->guest_nmi_exiting) {
+		/* Copy guest NMI blocking to host (VMCS01) */
+		if (arg->vmcs12_info->guest_block_nmi) {
+			arg->vcpu->vmcs.guest_interruptibility |= (1U << 3);
+		} else {
+			arg->vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
+		}
+		/* Set guest interruptibility state in VMCS12 */
+		if (!arg->vmcs12_info->guest_virtual_nmis) {
+			if (arg->vmcs12_info->guest_block_nmi) {
+				val |= (1U << 3);
+			} else {
+				val &= ~(1U << 3);
+			}
+		}
+	} else {
+		/* Copy guest NMI blocking to host (VMCS01) */
+		if (val & (1U << 3)) {
+			arg->vcpu->vmcs.guest_interruptibility |= (1U << 3);
+		} else {
+			arg->vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
+		}
+	}
+	arg->vmcs12->guest_interruptibility = val;
+	/* There is no blocking by STI or by MOV SS after a VM exit */
+	arg->vcpu->vmcs.guest_interruptibility &= ~((1U << 0) | (1U << 1));
+	(void)_vmcs02_to_vmcs12_guest_interruptibility_unused;
+}
+
+/*
+ * 32-Bit Host-State Field
+ */
+
+/*
+ * Natural-Width Control Fields
+ */
+
+/*
+ * Natural-Width Read-Only Data Fields
+ */
+
+/*
+ * Natural-Width Guest-State Fields
+ */
+
+/*
+ * Natural-Width Host-State Fields
+ */
+
 /*
  * Translate VMCS12 (vmcs12) to VMCS02 (already loaded as current VMCS).
  * Return an error code following VM instruction error number, or 0 when
@@ -468,11 +1588,21 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	msr_entry_t *msr01 = (msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
 	msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
-	u64 guest_ia32_pat;
-	u64 guest_ia32_efer;
 	u32 ia32_pat_index;
 	u32 ia32_efer_index;
 	u32 status = _vmcs12_get_ctls(vcpu, vmcs12, &ctls);
+	ARG10 arg = {
+		.vcpu = vcpu,
+		.vmcs12_info = vmcs12_info,
+		.vmcs12 = vmcs12,
+		.ctls = &ctls,
+		.ctx_pair = &ctx_pair,
+		.guest_ia32_pat = 0,
+		.guest_ia32_efer = 0,
+		.ia32_pat_index = 0,
+		.ia32_efer_index = 0,
+		.msr01 = msr01,
+	};
 	if (status != 0) {
 		return status;
 	}
@@ -480,369 +1610,34 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_IA32_PAT, &ia32_pat_index)) {
 		HALT_ON_ERRORCOND(0 && "MSR_IA32_PAT not found");
 	}
+	arg.ia32_pat_index = ia32_pat_index;
 	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_EFER, &ia32_efer_index)) {
 		HALT_ON_ERRORCOND(0 && "MSR_EFER not found");
 	}
+	arg.ia32_efer_index = ia32_efer_index;
 	/* TODO: Check settings of VMX controls and host-state area */
 
 #define FIELD_CTLS_ARG (&ctls)
-#define DECLARE_FIELD_16_RW(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if (prop & FIELD_PROP_ID_GUEST) { \
-			__vmx_vmwrite16(encoding, vmcs12->name); \
+#define DECLARE_FIELD_16_RW(encoding, name, ...) \
+	{ \
+		u32 status = _vmcs12_to_vmcs02_##name(&arg); \
+		if (status != VM_INST_SUCCESS) { \
+			return status; \
 		} \
 	}
-#define DECLARE_FIELD_64_RW(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if (prop & FIELD_PROP_ID_GUEST) { \
-			__vmx_vmwrite64(encoding, vmcs12->name); \
-		} else if (prop & FIELD_PROP_GPADDR) { \
-			gpa_t addr = vmcs12->name; \
-			__vmx_vmwrite64(encoding, guestmem_gpa2spa_page(&ctx_pair, addr)); \
-		} \
-	}
-#define DECLARE_FIELD_32_RW(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if (prop & FIELD_PROP_ID_GUEST) { \
-			__vmx_vmwrite32(encoding, vmcs12->name); \
-		} \
-	}
-#define DECLARE_FIELD_NW_RW(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if (prop & FIELD_PROP_ID_GUEST) { \
-			__vmx_vmwriteNW(encoding, vmcs12->name); \
-		} \
-	}
+#define DECLARE_FIELD_64_RW(...) DECLARE_FIELD_16_RW(__VA_ARGS__)
+#define DECLARE_FIELD_32_RW(...) DECLARE_FIELD_16_RW(__VA_ARGS__)
+#define DECLARE_FIELD_NW_RW(...) DECLARE_FIELD_16_RW(__VA_ARGS__)
 #include "nested-x86vmx-vmcs12-fields.h"
 
-#define DECLARE_FIELDPAIR_16(guest_encoding, host_encoding, name) \
-	{ \
-		__vmx_vmwrite16(host_encoding, vcpu->vmcs.host_##name); \
-	}
-#define DECLARE_FIELDPAIR_64(guest_encoding, host_encoding, name) \
-	{ \
-		__vmx_vmwrite64(host_encoding, vcpu->vmcs.host_##name); \
-	}
-#define DECLARE_FIELDPAIR_32(guest_encoding, host_encoding, name) \
-	{ \
-		__vmx_vmwrite32(host_encoding, vcpu->vmcs.host_##name); \
-	}
-#define DECLARE_FIELDPAIR_NW(guest_encoding, host_encoding, name) \
-	{ \
-		__vmx_vmwriteNW(host_encoding, vcpu->vmcs.host_##name); \
-	}
-#include "nested-x86vmx-vmcs12-guesthost.h"
-
-	/* 16-Bit Control Fields */
-	{
-		u16 vpid02;
-		if (_vmx_hasctl_enable_vpid(&ctls)) {
-			bool cache_hit;
-			u16 vpid12 = vmcs12->control_vpid;
-			if (vpid12 == 0) {
-				return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-			}
-			vpid02 = xmhf_nested_arch_x86vmx_get_vpid02(vcpu, vpid12,
-														&cache_hit);
-		} else {
-			/*
-			 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result
-			 * in flushing linear and combination TLB. We simulate this effect
-			 * here by setting VPID of L2 guest to the same as L1 guest
-			 * (VPID = 1) and manually executing INVVPID for every VNENTRY and
-			 * VMEXIT.
-			 */
-			vpid02 = 1;
-			HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
-		}
-		__vmx_vmwrite16(VMCSENC_control_vpid, vpid02);
-	}
-
-	/* 16-Bit Guest-State Fields */
-
-	/* 16-Bit Host-State Fields */
-
-	/* 64-Bit Control Fields */
-	/*
-	 * control_VM_exit_MSR_store_address: see control_VM_exit_MSR_store_count
-	 * control_VM_exit_MSR_load_address: see control_VM_exit_MSR_load_count
-	 * control_VM_entry_MSR_load_address: see control_VM_entry_MSR_load_count
-	 * control_Executive_VMCS_pointer: ignored (0 in VMCS02), because we assume
-	 * XMHF is not in SMM. Also see IA32_VMX_BASIC bit 49.
-	 */
-	if (_vmx_hasctl_process_posted_interrupts(&ctls)) {
-		gpa_t addr = vmcs12->control_posted_interrupt_desc_address;
-		if (addr & (64 - 1)) {
-			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-		}
-		__vmx_vmwrite64(VMCSENC_control_posted_interrupt_desc_address,
-						guestmem_gpa2spa_size(&ctx_pair, addr, 64));
-	}
-	{
-		/* XMHF always needs EPT, so this block is unconditional */
-		spa_t ept02;
-		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
-		if (_vmx_hasctl_enable_ept(&ctls)) {
-			/* Construct shadow EPT */
-			u64 eptp12 = vmcs12->control_EPT_pointer;
-			gpa_t ept12;
-			ept02_cache_line_t *cache_line;
-			bool cache_hit;
-			vmcs12_info->guest_ept_enable = 1;
-			if (!xmhf_nested_arch_x86vmx_check_ept_lower_bits(eptp12, &ept12)) {
-				return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-			}
-			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_hit,
-													  &cache_line);
-			vmcs12_info->guest_ept_cache_line = cache_line;
-			vmcs12_info->guest_ept_root = ept12;
-#ifdef __DEBUG_QEMU__
-			/*
-			 * Workaround a KVM bug:
-			 * https://bugzilla.kernel.org/show_bug.cgi?id=216212
-			 *
-			 * Looks like KVM has a problem setting CR0.PG when nested guest's
-			 * PDPTEs are not in guest hypervisor's EPT. So we always make sure
-			 * the EPT entry for PDPTEs is available. To achieve this effect,
-			 * simulating a EPT violation by calling
-			 * xmhf_nested_arch_x86vmx_handle_ept02_exit() with guest2_paddr =
-			 * CR3.
-			 */
-			{
-				extern bool is_in_kvm;
-				if (is_in_kvm && vmcs12->guest_CR3 != 0) {
-					xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, cache_line,
-														 vmcs12->guest_CR3);
-				}
-			}
-#endif							/* !__DEBUG_QEMU__ */
-		} else {
-			/* Guest does not use EPT, just use XMHF's EPT */
-			vmcs12_info->guest_ept_enable = 0;
-			ept02 = vcpu->vmcs.control_EPT_pointer;
-		}
-		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
-	}
-	if (0) {
-		// Note: EPTP Switching not supported
-		gpa_t addr = vmcs12->control_EPTP_list_address;
-		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(addr == 0);
-		__vmx_vmwrite64(VMCSENC_control_EPTP_list_address,
-						guestmem_gpa2spa_page(&ctx_pair, addr));
-	}
-	if (_vmx_hasctl_sub_page_write_permissions_for_ept(&ctls)) {
-		// Note: Sub-page write permissions for EPT not supported
-		gpa_t addr = vmcs12->control_subpage_permission_table_pointer;
-		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(addr == 0);
-		__vmx_vmwrite64(VMCSENC_control_subpage_permission_table_pointer,
-						guestmem_gpa2spa_page(&ctx_pair, addr));
-	}
-	if (_vmx_hasctl_activate_tertiary_controls(&ctls)) {
-		// Note: Activate tertiary controls not supported
-		u64 val = vmcs12->control_tertiary_proc_based_VMexec_ctls;
-		// Note: likely need to sanitize input
-		HALT_ON_ERRORCOND(val == 0);
-		__vmx_vmwrite64(VMCSENC_control_tertiary_proc_based_VMexec_ctls, val);
-	}
-
-	/* 64-Bit Read-Only Data Field: skipped */
-
-	/* 64-Bit Guest-State Fields */
-	if (_vmx_hasctl_vmentry_load_ia32_pat(&ctls)) {
-		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		guest_ia32_pat = vmcs12->guest_IA32_PAT;
-		/* Note: ideally should return VMENTRY error */
-		HALT_ON_ERRORCOND(_check_ia32_pat(guest_ia32_pat));
-	} else {
-		/* When not loading IA32_PAT, IA32_PAT from L1 is used */
-		guest_ia32_pat = msr01[ia32_pat_index].data;
-	}
-	if (_vmx_hasctl_vmentry_load_ia32_efer(&ctls)) {
-		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		guest_ia32_efer = vmcs12->guest_IA32_EFER;
-		/* Note: ideally should return VMENTRY error */
-		HALT_ON_ERRORCOND(_check_ia32_efer
-						  (guest_ia32_efer,
-						   _vmx_hasctl_vmentry_ia_32e_mode_guest(&ctls),
-						   vmcs12->guest_CR0 & CR0_PG));
-	} else {
-		/*
-		 * When not loading IA32_EFER, IA32_EFER is changed as following:
-		 * * IA32_EFER.LMA = "IA-32e mode guest"
-		 * * If CR0.PG = 1, IA32_EFER.LME = "IA-32e mode guest"
-		 */
-		u64 mask = (1ULL << EFER_LMA);
-		if (vmcs12->guest_CR0 & CR0_PG) {
-			mask |= (1ULL << EFER_LME);
-		}
-		if (_vmx_hasctl_vmentry_ia_32e_mode_guest(&ctls)) {
-			guest_ia32_efer = msr01[ia32_efer_index].data | mask;
-		} else {
-			guest_ia32_efer = msr01[ia32_efer_index].data & ~mask;
-		}
-	}
-	if (!_vmx_hasctl_enable_ept(&ctls)) {
-		/*
-		 * Guest does not use EPT, but XMHF uses EPT. When the guest is running
-		 * in PAE mode, the guest PDPTEs need to be computed by XMHF in
-		 * software. Otherwise the nested guest may triple fault.
-		 */
-		u32 pae = (vmcs12->guest_CR0 & CR0_PG) && (vmcs12->guest_CR4 & CR4_PAE);
-#ifdef __AMD64__
-		if (_vmx_hasctl_vmentry_ia_32e_mode_guest(&ctls)) {
-			pae = 0;
-		}
-#elif !defined(__I386__)
-#error "Unsupported Arch"
-#endif							/* !defined(__I386__) */
-		if (pae) {
-			/* Walk EPT and retrieve values for guest_PDPTE* */
-			u64 pdptes[4];
-			u64 addr = vmcs12->guest_CR3 & ~0x1FUL;
-			guestmem_copy_gp2h(&ctx_pair, 0, pdptes, addr, sizeof(pdptes));
-			__vmx_vmwrite64(VMCSENC_guest_PDPTE0, pdptes[0]);
-			__vmx_vmwrite64(VMCSENC_guest_PDPTE1, pdptes[1]);
-			__vmx_vmwrite64(VMCSENC_guest_PDPTE2, pdptes[2]);
-			__vmx_vmwrite64(VMCSENC_guest_PDPTE3, pdptes[3]);
-		}
-	}
-
-	/* 64-Bit Host-State Fields */
-	if (_vmx_hasctl_vmexit_load_ia32_pat(&ctls)) {
-		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		/* Note: ideally should return VMENTRY error */
-		HALT_ON_ERRORCOND(_check_ia32_pat(vmcs12->host_IA32_PAT));
-	}
-	if (_vmx_hasctl_vmexit_load_ia32_efer(&ctls)) {
-		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		/* Note: ideally should return VMENTRY error */
-		HALT_ON_ERRORCOND(_check_ia32_efer(vmcs12->host_IA32_EFER,
-										   _vmx_hasctl_vmexit_host_address_space_size
-										   (&ctls), true));
-	}
-	if (_vmx_hasctl_vmexit_load_ia32_perf_global_ctrl(&ctls)) {
-		u32 eax, ebx, ecx, edx;
-		cpuid(0x0, &eax, &ebx, &ecx, &edx);
-		if (eax >= 0xA) {
-			cpuid(0xA, &eax, &ebx, &ecx, &edx);
-			if (eax & 0xffU) {
-				__vmx_vmwrite64(VMCSENC_host_IA32_PERF_GLOBAL_CTRL,
-								rdmsr64(IA32_PERF_GLOBAL_CTRL));
-			}
-		}
-	}
-	if (_vmx_hasctl_vmexit_load_pkrs(&ctls)) {
-		__vmx_vmwrite64(VMCSENC_host_IA32_PKRS, rdmsr64(IA32_PKRS));
-	}
-
-	/* 32-Bit Control Fields */
-	{
-		u32 val = vmcs12->control_VMX_pin_based;
-		/* Check for relationship between "NMI exiting" and "virtual NMIs" */
-		vmcs12_info->guest_nmi_exiting = _vmx_hasctl_nmi_exiting(&ctls);
-		vmcs12_info->guest_virtual_nmis = _vmx_hasctl_virtual_nmis(&ctls);
-		if (!vmcs12_info->guest_nmi_exiting && vmcs12_info->guest_virtual_nmis) {
-			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-		}
-		/*
-		 * Disallow NMI injection if NMI exiting = 0.
-		 * This is a limitation of XMHF. The correct behavior is to make NMI
-		 * not blocked after injecting NMI. However, this requires non-trivial
-		 * XMHF implementation effort. So not implemented, at least for now.
-		 */
-		if (!vmcs12_info->guest_nmi_exiting) {
-			u32 injection = vmcs12->control_VM_entry_interruption_information;
-			if (xmhf_nested_arch_x86vmx_is_interruption_nmi(injection)) {
-				HALT_ON_ERRORCOND(0 && "Not supported (XMHF limitation)");
-			}
-		}
-		/* Enable NMI exiting because needed by quiesce */
-		val |= (1U << VMX_PINBASED_NMI_EXITING);
-		val |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
-		__vmx_vmwrite32(VMCSENC_control_VMX_pin_based, val);
-	}
-	{
-		u32 val = vmcs12->control_VMX_cpu_based;
-		/*
-		 * Check for relationship between "virtual NMIs" and "NMI-window
-		 * exiting"
-		 */
-		vmcs12_info->guest_nmi_window_exiting =
-			_vmx_hasctl_nmi_window_exiting(&ctls);
-		if (!vmcs12_info->guest_virtual_nmis &&
-			vmcs12_info->guest_nmi_window_exiting) {
-			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
-		}
-		/* XMHF needs to activate secondary controls because of EPT */
-		val |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
-		__vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, val);
-	}
-	{
-		u32 val = vmcs12->control_exception_bitmap;
-		// TODO: in the future, need to merge with host's exception bitmap
-		__vmx_vmwrite32(VMCSENC_control_exception_bitmap, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_exit_controls;
-		/* Check the "IA-32e mode guest" bit of the guest hypervisor */
-		if (val & (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE)) {
-			HALT_ON_ERRORCOND(VCPU_g64(vcpu));
-		} else {
-			HALT_ON_ERRORCOND(!VCPU_g64(vcpu));
-		}
-		/*
-		 * The "IA-32e mode guest" bit need to match XMHF. A mismatch can only
-		 * happen when amd64 XMHF runs i386 guest hypervisor.
-		 */
-#ifdef __AMD64__
-		val |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
-#elif !defined(__I386__)
-#error "Unsupported Arch"
-#endif							/* !defined(__I386__) */
-		/* XMHF does not use save / load IA32_PAT / IA32_EFER */
-		val &= ~(1U << VMX_VMEXIT_SAVE_IA32_PAT);
-		val &= ~(1U << VMX_VMEXIT_LOAD_IA32_PAT);
-		val &= ~(1U << VMX_VMEXIT_SAVE_IA32_EFER);
-		val &= ~(1U << VMX_VMEXIT_LOAD_IA32_EFER);
-		__vmx_vmwrite32(VMCSENC_control_VM_exit_controls, val);
-	}
-	{
-		__vmx_vmwrite32(VMCSENC_control_VM_exit_MSR_store_count,
-						vcpu->vmcs.control_VM_exit_MSR_store_count);
-		__vmx_vmwrite64(VMCSENC_control_VM_exit_MSR_store_address,
-						hva2spa(vmcs12_info->vmcs02_vmexit_msr_store_area));
-
-		/* VMX control is not checked here; will check in VMEXIT handler */
-	}
-	{
-		__vmx_vmwrite32(VMCSENC_control_VM_exit_MSR_load_count,
-						vcpu->vmcs.control_VM_exit_MSR_load_count);
-		__vmx_vmwrite64(VMCSENC_control_VM_exit_MSR_load_address,
-						hva2spa(vmcs12_info->vmcs02_vmexit_msr_load_area));
-
-		/* VMX control is not checked here; will check in VMEXIT handler */
-	}
-	{
-		u32 val = vmcs12->control_VM_entry_controls;
-		/* XMHF does not use load IA32_PAT / IA32_EFER */
-		val &= ~(1U << VMX_VMENTRY_LOAD_IA32_PAT);
-		val &= ~(1U << VMX_VMENTRY_LOAD_IA32_EFER);
-		__vmx_vmwrite32(VMCSENC_control_VM_entry_controls, val);
-	}
+	/* Perform MSR load */
 	{
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_entry_MSR_load_address;
 
-		__vmx_vmwrite32(VMCSENC_control_VM_entry_MSR_load_count,
-						vcpu->vmcs.control_VM_entry_MSR_load_count);
-		__vmx_vmwrite64(VMCSENC_control_VM_entry_MSR_load_address,
-						hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area));
-
 		/* Set IA32_PAT and IA32_EFER in VMCS02 guest */
-		msr02[ia32_pat_index].data = guest_ia32_pat;
-		msr02[ia32_efer_index].data = guest_ia32_efer;
+		msr02[ia32_pat_index].data = arg.guest_ia32_pat;
+		msr02[ia32_efer_index].data = arg.guest_ia32_efer;
 
 		/* Write the MSRs requested by guest */
 		for (i = 0; i < vmcs12->control_VM_entry_MSR_load_count; i++) {
@@ -865,67 +1660,63 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 			}
 		}
 	}
-	{
-		u32 val = vmcs12->control_VM_entry_interruption_information;
-		__vmx_vmwrite32(VMCSENC_control_VM_entry_interruption_information, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_entry_exception_errorcode;
-		__vmx_vmwrite32(VMCSENC_control_VM_entry_exception_errorcode, val);
-	}
-	{
-		u32 val = vmcs12->control_VM_entry_instruction_length;
-		__vmx_vmwrite32(VMCSENC_control_VM_entry_instruction_length, val);
-	}
-	{
-		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is enabled above */
-		u32 val = vmcs12->control_VMX_seccpu_based;
-		/* XMHF needs the guest to run in EPT to protect memory */
-		val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
-		__vmx_vmwrite32(VMCSENC_control_VMX_seccpu_based, val);
-	}
-
-	/* 32-Bit Read-Only Data Fields: skipped */
-
-	/* 32-Bit Guest-State Fields */
-	{
-		u32 val = vmcs12->guest_interruptibility;
-		if (vmcs12_info->guest_nmi_exiting) {
-			if (vmcs12_info->guest_virtual_nmis) {
-				/* NMI Exiting = 1, virtual NMIs = 1 */
-				vmcs12_info->guest_block_nmi = false;
-			} else {
-				/* NMI Exiting = 1, virtual NMIs = 0 */
-				vmcs12_info->guest_block_nmi = val & (1U << 3);
-			}
-		} else {
-			/* NMI Exiting = 0, virtual NMIs = 0, guest_block_nmi is ignored */
-		}
-		HALT_ON_ERRORCOND(!vmcs12_info->guest_vmcs_block_nmi_overridden);
-		__vmx_vmwrite32(VMCSENC_guest_interruptibility, val);
-	}
-
-	/* 32-Bit Host-State Field */
-
-	/* Natural-Width Control Fields */
-
-	/* Natural-Width Read-Only Data Fields: skipped */
-
-	/* Natural-Width Guest-State Fields */
-
-	/* Natural-Width Host-State Fields */
-	if (_vmx_hasctl_vmexit_load_cet_state(&ctls)) {
-		/*
-		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
-		 * To implement load CET state correctly, need to modify:
-		 * * encoding 0x6C18: host_IA32_S_CET
-		 * * encoding 0x6C1A: host_SSP
-		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
-		 */
-		HALT_ON_ERRORCOND(0 && "Not implemented");
-	}
 
 	return VM_INST_SUCCESS;
+}
+
+/*
+ * Perform operations in xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02() that depend
+ * on walking EPT01. This is intended to be called when XMHF or hypapp decides
+ * to flush EPT. As a rule of thumb, functions called by
+ * xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02() that uses arg->ctx_pair should
+ * also be called by this function.
+ */
+void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
+										  vmcs12_info_t * vmcs12_info)
+{
+	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
+	vmx_ctls_t ctls;
+	guestmem_hptw_ctx_pair_t ctx_pair;
+	ARG10 arg = {
+		.vcpu = vcpu,
+		.vmcs12_info = vmcs12_info,
+		.vmcs12 = vmcs12,
+		.ctls = &ctls,
+		.ctx_pair = &ctx_pair,
+		/* All fields below are not used */
+		.guest_ia32_pat = 0,
+		.guest_ia32_efer = 0,
+		.ia32_pat_index = 0,
+		.ia32_efer_index = 0,
+		.msr01 = NULL,
+	};
+	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
+	guestmem_init(vcpu, &ctx_pair);
+
+#define FIELD_CTLS_ARG (&ctls)
+#define DECLARE_FIELD_64_RW(encoding, name, prop, ...) \
+	if (prop & FIELD_PROP_GPADDR) { \
+		HALT_ON_ERRORCOND(_vmcs12_to_vmcs02_##name(&arg) == VM_INST_SUCCESS); \
+	}
+#include "nested-x86vmx-vmcs12-fields.h"
+
+	/* Special handling for EPT02 */
+	if (vmcs12_info->guest_ept_enable) {
+		ept02_cache_line_t *cache_line;
+		bool cache_hit;
+		gpa_t ept12 = vmcs12_info->guest_ept_root;
+		spa_t ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_hit,
+														&cache_line);
+		HALT_ON_ERRORCOND(!cache_hit);
+		vmcs12_info->guest_ept_cache_line = cache_line;
+		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
+#ifdef __DEBUG_QEMU__
+		_workaround_kvm_216212(&arg, cache_line);
+#endif							/* !__DEBUG_QEMU__ */
+		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
+	} else {
+		_update_pae_pdpte(&arg);
+	}
 }
 
 /*
@@ -939,303 +1730,45 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	msr_entry_t *msr01 = (msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
 	msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
-	u64 host_ia32_pat;
-	u64 host_ia32_efer;
 	u32 ia32_pat_index;
 	u32 ia32_efer_index;
+	ARG01 arg = {
+		.vcpu = vcpu,
+		.vmcs12_info = vmcs12_info,
+		.vmcs12 = vmcs12,
+		.ctls = &ctls,
+		.host_ia32_pat = 0,
+		.host_ia32_efer = 0,
+		.ia32_pat_index = 0,
+		.ia32_efer_index = 0,
+		.msr02 = msr02,
+	};
 
 	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
 	guestmem_init(vcpu, &ctx_pair);
 	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_IA32_PAT, &ia32_pat_index)) {
 		HALT_ON_ERRORCOND(0 && "MSR_IA32_PAT not found");
 	}
+	arg.ia32_pat_index = ia32_pat_index;
 	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_EFER, &ia32_efer_index)) {
 		HALT_ON_ERRORCOND(0 && "MSR_EFER not found");
 	}
+	arg.ia32_efer_index = ia32_efer_index;
 
 #define FIELD_CTLS_ARG (&ctls)
-#define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if (prop & FIELD_PROP_ID_GUEST) { \
-			if (prop & FIELD_PROP_SWWRONLY) { \
-				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmread16(encoding)); \
-			} else { \
-				vmcs12->name = __vmx_vmread16(encoding); \
-			} \
-		} \
+#define DECLARE_FIELD_16(encoding, name, ...) \
+	{ \
+		_vmcs02_to_vmcs12_##name(&arg); \
 	}
-#define DECLARE_FIELD_64(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if ((prop & FIELD_PROP_ID_GUEST) || (prop & FIELD_PROP_GPADDR)) { \
-			if (prop & FIELD_PROP_SWWRONLY) { \
-				/* Note: currently for FIELD_PROP_GPADDR, assuming spa=gpa */ \
-				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmread64(encoding)); \
-			} else { \
-				vmcs12->name = __vmx_vmread64(encoding); \
-			} \
-		} \
-	}
-#define DECLARE_FIELD_32(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if (prop & FIELD_PROP_ID_GUEST) { \
-			if (prop & FIELD_PROP_SWWRONLY) { \
-				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmread32(encoding)); \
-			} else { \
-				vmcs12->name = __vmx_vmread32(encoding); \
-			} \
-		} \
-	}
-#define DECLARE_FIELD_NW(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if (prop & FIELD_PROP_ID_GUEST) { \
-			if (prop & FIELD_PROP_SWWRONLY) { \
-				HALT_ON_ERRORCOND(vmcs12->name == __vmx_vmreadNW(encoding)); \
-			} else { \
-				vmcs12->name = __vmx_vmreadNW(encoding); \
-			} \
-		} \
-	}
+#define DECLARE_FIELD_64(...) DECLARE_FIELD_16(__VA_ARGS__)
+#define DECLARE_FIELD_32(...) DECLARE_FIELD_16(__VA_ARGS__)
+#define DECLARE_FIELD_NW(...) DECLARE_FIELD_16(__VA_ARGS__)
 #include "nested-x86vmx-vmcs12-fields.h"
 
-#define DECLARE_FIELDPAIR_16(guest_encoding, host_encoding, name) \
-	{ \
-		HALT_ON_ERRORCOND(__vmx_vmread16(host_encoding) == vcpu->vmcs.host_##name); \
-		vcpu->vmcs.guest_##name = vmcs12->host_##name; \
-	}
-#define DECLARE_FIELDPAIR_64(guest_encoding, host_encoding, name) \
-	{ \
-		HALT_ON_ERRORCOND(__vmx_vmread64(host_encoding) == vcpu->vmcs.host_##name); \
-		vcpu->vmcs.guest_##name = vmcs12->host_##name; \
-	}
-#define DECLARE_FIELDPAIR_32(guest_encoding, host_encoding, name) \
-	{ \
-		HALT_ON_ERRORCOND(__vmx_vmread32(host_encoding) == vcpu->vmcs.host_##name); \
-		vcpu->vmcs.guest_##name = vmcs12->host_##name; \
-	}
-#define DECLARE_FIELDPAIR_NW(guest_encoding, host_encoding, name) \
-	{ \
-		HALT_ON_ERRORCOND(__vmx_vmreadNW(host_encoding) == vcpu->vmcs.host_##name); \
-		vcpu->vmcs.guest_##name = vmcs12->host_##name; \
-	}
-#include "nested-x86vmx-vmcs12-guesthost.h"
-
-	/* 16-Bit Control Fields */
-	{
-		u16 vpid02;
-		if (_vmx_hasctl_enable_vpid(&ctls)) {
-			bool cache_hit;
-			u16 vpid12 = vmcs12->control_vpid;
-			HALT_ON_ERRORCOND(vpid12 != 0);
-			vpid02 = xmhf_nested_arch_x86vmx_get_vpid02(vcpu, vpid12,
-														&cache_hit);
-			HALT_ON_ERRORCOND(cache_hit);
-		} else {
-			/*
-			 * When VPID is not enabled, VMENTRY and VMEXIT in L1 should result
-			 * in flushing linear and combination TLB. We simulate this effect
-			 * here by setting VPID of L2 guest to the same as L1 guest
-			 * (VPID = 1) and manually executing INVVPID for every VNENTRY and
-			 * VMEXIT.
-			 */
-			vpid02 = 1;
-			HALT_ON_ERRORCOND(__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0));
-		}
-		HALT_ON_ERRORCOND(__vmx_vmread16(VMCSENC_control_vpid) == vpid02);
-	}
-
-	/* 16-Bit Guest-State Fields */
-
-	/* 16-Bit Host-State Fields */
-
-	/* 16-Bit fields: VMCS12 host -> VMCS01 guest */
-	{
-		/*
-		 * SDM volume 3 26.5.2 "Loading Host Segment and Descriptor-Table
-		 * Registers": "the selector is cleared to 0000H".
-		 */
-		vcpu->vmcs.guest_LDTR_selector = 0x0000U;
-	}
-
-	/* 64-Bit Control Fields */
-	/*
-	 * control_VM_exit_MSR_store_address: see control_VM_exit_MSR_store_count
-	 * control_VM_exit_MSR_load_address: see control_VM_exit_MSR_load_count
-	 * control_VM_entry_MSR_load_address: see control_VM_entry_MSR_load_count
-	 * control_Executive_VMCS_pointer: ignored (0 in VMCS02), because we assume
-	 * XMHF is not in SMM. Also see IA32_VMX_BASIC bit 49.
-	 */
-	if (_vmx_hasctl_process_posted_interrupts(&ctls)) {
-		u16 encoding = VMCSENC_control_posted_interrupt_desc_address;
-		/* Note: currently assuming spa=gpa */
-		HALT_ON_ERRORCOND(vmcs12->control_posted_interrupt_desc_address ==
-						  __vmx_vmread64(encoding));
-	}
-	{
-		/* XMHF always needs EPT, so this block is unconditional */
-		spa_t ept02;
-		u16 encoding = VMCSENC_control_EPT_pointer;
-		HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&vcpu->vmx_caps));
-		if (_vmx_hasctl_enable_ept(&ctls)) {
-			gpa_t ept12 = vmcs12_info->guest_ept_root;
-			ept02_cache_line_t *cache_line;
-			bool cache_hit;
-			ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_hit,
-													  &cache_line);
-			HALT_ON_ERRORCOND(cache_hit);
-		} else {
-			ept02 = vcpu->vmcs.control_EPT_pointer;
-		}
-		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == ept02);
-		/* vmcs12->control_EPT_pointer is ignored here */
-	}
-	if (0) {
-		// Note: EPTP Switching not supported
-		// Note: likely need to sanitize input
-		u16 encoding = VMCSENC_control_EPTP_list_address;
-		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
-		// vmcs12->control_EPTP_list_address = ...
-	}
-	if (_vmx_hasctl_sub_page_write_permissions_for_ept(&ctls)) {
-		// Note: Sub-page write permissions for EPT not supported
-		// Note: likely need to sanitize input
-		u16 encoding = VMCSENC_control_subpage_permission_table_pointer;
-		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
-		// vmcs12->control_subpage_permission_table_pointer = ...
-	}
-	if (_vmx_hasctl_activate_tertiary_controls(&ctls)) {
-		// Note: Activate tertiary controls not supported
-		// Note: likely need to sanitize input
-		u16 encoding = VMCSENC_control_tertiary_proc_based_VMexec_ctls;
-		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
-		// vmcs12->control_tertiary_proc_based_VMexec_ctls = ...
-	}
-
-	/* 64-Bit Read-Only Data Field */
-
-	/* 64-Bit Guest-State Fields */
-	if (_vmx_hasctl_vmexit_save_ia32_pat(&ctls)) {
-		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		vmcs12->guest_IA32_PAT = msr02[ia32_pat_index].data;
-	}
-	if (_vmx_hasctl_vmexit_save_ia32_efer(&ctls)) {
-		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		vmcs12->guest_IA32_EFER = msr02[ia32_efer_index].data;
-	}
-
-	/* 64-Bit Host-State Fields */
-	if (_vmx_hasctl_vmexit_load_ia32_perf_global_ctrl(&ctls)) {
-		u32 eax, ebx, ecx, edx;
-		cpuid(0x0, &eax, &ebx, &ecx, &edx);
-		if (eax >= 0xA) {
-			cpuid(0xA, &eax, &ebx, &ecx, &edx);
-			if (eax & 0xffU) {
-				u16 encoding = VMCSENC_host_IA32_PERF_GLOBAL_CTRL;
-				HALT_ON_ERRORCOND(__vmx_vmread64(encoding) ==
-								  rdmsr64(IA32_PERF_GLOBAL_CTRL));
-			}
-		}
-	}
-	if (_vmx_hasctl_vmexit_load_pkrs(&ctls)) {
-		HALT_ON_ERRORCOND(__vmx_vmread64(VMCSENC_host_IA32_PKRS) ==
-						  rdmsr64(IA32_PKRS));
-	}
-
-	/* 64-Bit fields: VMCS12 host -> VMCS01 guest */
-	{
-		/* The IA32_DEBUGCTL MSR is cleared to 00000000_00000000H */
-		vcpu->vmcs.guest_IA32_DEBUGCTL = 0ULL;
-	}
-	if (_vmx_hasctl_vmexit_load_ia32_pat(&ctls)) {
-		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		host_ia32_pat = vmcs12->host_IA32_PAT;
-	} else {
-		host_ia32_pat = msr02[ia32_pat_index].data;
-	}
-	if (_vmx_hasctl_vmexit_load_ia32_efer(&ctls)) {
-		/* XMHF never uses this feature. Instead, uses MSR load / save area */
-		host_ia32_efer = vmcs12->host_IA32_EFER;
-	} else {
-		/*
-		 * When not loading IA32_EFER, IA32_EFER is changed as following:
-		 * * IA32_EFER.LMA = "host address-space size"
-		 * * IA32_EFER.LME = "host address-space size"
-		 */
-		u64 mask = (1ULL << EFER_LMA) | (1ULL << EFER_LME);
-		if (_vmx_hasctl_vmexit_host_address_space_size(&ctls)) {
-			host_ia32_efer = msr02[ia32_efer_index].data | mask;
-		} else {
-			host_ia32_efer = msr02[ia32_efer_index].data & mask;
-		}
-	}
-	if (_vmx_hasctl_vmexit_load_ia32_perf_global_ctrl(&ctls)) {
-		u32 eax, ebx, ecx, edx;
-		cpuid(0x0, &eax, &ebx, &ecx, &edx);
-		if (eax >= 0xA) {
-			cpuid(0xA, &eax, &ebx, &ecx, &edx);
-			if (eax & 0xffU) {
-				wrmsr64(IA32_PERF_GLOBAL_CTRL,
-						__vmx_vmread64(VMCSENC_host_IA32_PERF_GLOBAL_CTRL));
-			}
-		}
-	}
-	if (_vmx_hasctl_vmexit_load_pkrs(&ctls)) {
-		wrmsr64(IA32_PKRS, __vmx_vmread64(VMCSENC_host_IA32_PKRS));
-	}
-
-	/* 32-Bit Control Fields */
-	{
-		u32 val = vmcs12->control_VMX_pin_based;
-		/* Enable NMI exiting because needed by quiesce */
-		val |= (1U << VMX_PINBASED_NMI_EXITING);
-		val |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
-		HALT_ON_ERRORCOND(val == __vmx_vmread32(VMCSENC_control_VMX_pin_based));
-	}
-	{
-		u32 val12 = vmcs12->control_VMX_cpu_based;
-		u32 val02 = __vmx_vmread32(VMCSENC_control_VMX_cpu_based);
-		/* Secondary controls are always required in VMCS02 for EPT */
-		val12 |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
-		/* NMI window exiting may change due to L0 */
-		val12 &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-		val02 &= ~(1U << VMX_PROCBASED_NMI_WINDOW_EXITING);
-		HALT_ON_ERRORCOND(val12 == val02);
-	}
-	{
-		// TODO: in the future, need to merge with host's exception bitmap
-		u32 val = vmcs12->control_exception_bitmap;
-		u16 encoding = VMCSENC_control_exception_bitmap;
-		HALT_ON_ERRORCOND(val == __vmx_vmread32(encoding));
-	}
-	{
-		u32 val = vmcs12->control_VM_exit_controls;
-		u16 encoding = VMCSENC_control_VM_exit_controls;
-		/*
-		 * The "IA-32e mode guest" bit need to match XMHF. A mismatch can only
-		 * happen when amd64 XMHF runs i386 guest hypervisor.
-		 */
-#ifdef __AMD64__
-		val |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
-#elif !defined(__I386__)
-#error "Unsupported Arch"
-#endif							/* !defined(__I386__) */
-		/* XMHF does not use save / load IA32_PAT / IA32_EFER */
-		val &= ~(1U << VMX_VMEXIT_SAVE_IA32_PAT);
-		val &= ~(1U << VMX_VMEXIT_LOAD_IA32_PAT);
-		val &= ~(1U << VMX_VMEXIT_SAVE_IA32_EFER);
-		val &= ~(1U << VMX_VMEXIT_LOAD_IA32_EFER);
-		HALT_ON_ERRORCOND(val == __vmx_vmread32(encoding));
-	}
+	/* Perform MSR load / store */
 	{
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_exit_MSR_store_address;
-
-		/* VMCS02 needs to always process the same MSRs as VMCS01 */
-		u16 encoding = VMCSENC_control_VM_exit_MSR_store_count;
-		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_exit_MSR_store_count ==
-						  __vmx_vmread32(encoding));
-		encoding = VMCSENC_control_VM_exit_MSR_store_address;
-		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmexit_msr_store_area) ==
-						  __vmx_vmread64(encoding));
 
 		/* Read MSRs and write to guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_store_count; i++) {
@@ -1266,17 +1799,9 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		u32 i;
 		gva_t guest_addr = vmcs12->control_VM_exit_MSR_load_address;
 
-		/* VMCS02 needs to always process the same MSRs as VMCS01 */
-		u16 encoding = VMCSENC_control_VM_exit_MSR_store_count;
-		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_exit_MSR_load_count ==
-						  __vmx_vmread32(encoding));
-		encoding = VMCSENC_control_VM_exit_MSR_load_address;
-		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmexit_msr_load_area) ==
-						  __vmx_vmread64(encoding));
-
 		/* Set IA32_PAT and IA32_EFER in VMCS01 guest */
-		msr01[ia32_pat_index].data = host_ia32_pat;
-		msr01[ia32_efer_index].data = host_ia32_efer;
+		msr01[ia32_pat_index].data = arg.host_ia32_pat;
+		msr01[ia32_efer_index].data = arg.host_ia32_efer;
 
 		/* Write MSRs as requested by guest */
 		for (i = 0; i < vmcs12->control_VM_exit_MSR_load_count; i++) {
@@ -1299,95 +1824,21 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 			}
 		}
 	}
-	{
-		u32 val02 = __vmx_vmread32(VMCSENC_control_VM_entry_controls);
-		u32 val12 = vmcs12->control_VM_entry_controls;
-		u32 mask = ~(1U << VMX_VMENTRY_IA_32E_MODE_GUEST);
-		/* XMHF does not use load IA32_PAT / IA32_EFER */
-		val12 &= ~(1U << VMX_VMENTRY_LOAD_IA32_PAT);
-		val12 &= ~(1U << VMX_VMENTRY_LOAD_IA32_EFER);
-		/* Check that other bits are not changed */
-		HALT_ON_ERRORCOND((val12 & mask) == (val02 & mask));
-		/* Copy "IA-32e mode guest" bit from VMCS02 to VMCS12 */
-		vmcs12->control_VM_entry_controls &= mask;
-		vmcs12->control_VM_entry_controls |= val02 & ~mask;
-	}
-	{
-		/* VMCS02 needs to always process the same MSRs as VMCS01 */
-		u16 encoding = VMCSENC_control_VM_entry_MSR_load_count;
-		HALT_ON_ERRORCOND(vcpu->vmcs.control_VM_entry_MSR_load_count ==
-						  __vmx_vmread32(encoding));
-		encoding = VMCSENC_control_VM_entry_MSR_load_address;
-		HALT_ON_ERRORCOND(hva2spa(vmcs12_info->vmcs02_vmentry_msr_load_area)
-						  == __vmx_vmread64(encoding));
-	}
+
+	/* 16-Bit fields: VMCS12 host -> VMCS01 guest */
 	{
 		/*
-		 * control_VM_entry_interruption_information may be changed in VMCS02
-		 * for nested virtualization operations, so do not copy to VMCS12.
-		 * Just clear bit 31 of VMCS12 as required by SDM.
+		 * SDM volume 3 26.5.2 "Loading Host Segment and Descriptor-Table
+		 * Registers": "the selector is cleared to 0000H".
 		 */
-		vmcs12->control_VM_entry_interruption_information &=
-			~INTR_INFO_VALID_MASK;
+		vcpu->vmcs.guest_LDTR_selector = 0x0000U;
 	}
-	/*
-	 * control_VM_entry_exception_errorcode and
-	 * control_VM_entry_instruction_length may be changed in VMCS02 for nested
-	 * virtualization operations, so do not copy to VMCS12. Just leave the
-	 * values in VMCS12 unchanged.
-	 */
+
+	/* 64-Bit fields: VMCS12 host -> VMCS01 guest */
 	{
-		/* Note: VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS is always enabled */
-		u32 val = vmcs12->control_VMX_seccpu_based;
-		u16 encoding = VMCSENC_control_VMX_seccpu_based;
-		/* XMHF needs the guest to run in EPT to protect memory */
-		val |= (1U << VMX_SECPROCBASED_ENABLE_EPT);
-		HALT_ON_ERRORCOND(val == __vmx_vmread32(encoding));
+		/* The IA32_DEBUGCTL MSR is cleared to 00000000_00000000H */
+		vcpu->vmcs.guest_IA32_DEBUGCTL = 0ULL;
 	}
-
-	/* 32-Bit Read-Only Data Fields */
-
-	/* 32-Bit Guest-State Fields */
-	{
-		/* Handle "Blocking by NMI" */
-		u32 val = __vmx_vmread32(VMCSENC_guest_interruptibility);
-		if (vmcs12_info->guest_vmcs_block_nmi_overridden) {
-			vmcs12_info->guest_vmcs_block_nmi_overridden = false;
-			if (vmcs12_info->guest_vmcs_block_nmi) {
-				val |= (1U << 3);
-			} else {
-				val &= ~(1U << 3);
-			}
-		}
-		if (vmcs12_info->guest_nmi_exiting) {
-			/* Copy guest NMI blocking to host (VMCS01) */
-			if (vmcs12_info->guest_block_nmi) {
-				vcpu->vmcs.guest_interruptibility |= (1U << 3);
-			} else {
-				vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
-			}
-			/* Set guest interruptibility state in VMCS12 */
-			if (!vmcs12_info->guest_virtual_nmis) {
-				if (vmcs12_info->guest_block_nmi) {
-					val |= (1U << 3);
-				} else {
-					val &= ~(1U << 3);
-				}
-			}
-		} else {
-			/* Copy guest NMI blocking to host (VMCS01) */
-			if (val & (1U << 3)) {
-				vcpu->vmcs.guest_interruptibility |= (1U << 3);
-			} else {
-				vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
-			}
-		}
-		vmcs12->guest_interruptibility = val;
-		/* There is no blocking by STI or by MOV SS after a VM exit */
-		vcpu->vmcs.guest_interruptibility &= ~((1U << 0) | (1U << 1));
-	}
-
-	/* 32-Bit Host-State Field */
 
 	/* 32-Bit fields: VMCS12 host -> VMCS01 guest */
 	{
@@ -1499,24 +1950,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 			(vcpu->vmcs.guest_TR_access_rights & ~mask) | val;
 	}
 
-	/* Natural-Width Control Fields */
-
-	/* Natural-Width Read-Only Data Fields */
-
-	/* Natural-Width Guest-State Fields */
-
-	/* Natural-Width Host-State Fields */
-	if (_vmx_hasctl_vmexit_load_cet_state(&ctls)) {
-		/*
-		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
-		 * To implement load CET state correctly, need to modify:
-		 * * encoding 0x6C18: host_IA32_S_CET
-		 * * encoding 0x6C1A: host_SSP
-		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
-		 */
-		HALT_ON_ERRORCOND(0 && "Not implemented");
-	}
-
 	/* Natural-Width fields: VMCS12 host -> VMCS01 guest */
 	{
 		/*
@@ -1557,87 +1990,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	{
 		/* RFLAGS is cleared, except bit 1, which is always set */
 		vcpu->vmcs.guest_RFLAGS = (1UL << 1);
-	}
-	if (_vmx_hasctl_vmexit_load_cet_state(&ctls)) {
-		/*
-		 * Currently VMX_VMEXIT_LOAD_CET_STATE is disabled for the guest.
-		 * To implement load CET state correctly, need to modify:
-		 * * encoding 0x6C18: host_IA32_S_CET
-		 * * encoding 0x6C1A: host_SSP
-		 * * encoding 0x6C1C: host_IA32_INTERRUPT_SSP_TABLE_ADDR
-		 */
-		HALT_ON_ERRORCOND(0 && "Not implemented");
-	}
-}
-
-/*
- * Perform operations in xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02() that depend
- * on walking EPT01. This is intended to be called when XMHF or hypapp decides
- * to flush EPT.
- */
-void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
-										  vmcs12_info_t * vmcs12_info)
-{
-	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
-	vmx_ctls_t ctls;
-	guestmem_hptw_ctx_pair_t ctx_pair;
-	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
-	guestmem_init(vcpu, &ctx_pair);
-
-#define FIELD_CTLS_ARG (&ctls)
-#define DECLARE_FIELD_64_RW(encoding, name, prop, exist, ...) \
-	if (exist) { \
-		if (prop & FIELD_PROP_GPADDR) { \
-			gpa_t addr = vmcs12->name; \
-			__vmx_vmwrite64(encoding, guestmem_gpa2spa_page(&ctx_pair, addr)); \
-		} \
-	}
-#include "nested-x86vmx-vmcs12-fields.h"
-
-	if (vmcs12_info->guest_ept_enable) {
-		ept02_cache_line_t *cache_line;
-		bool cache_hit;
-		gpa_t ept12 = vmcs12_info->guest_ept_root;
-		spa_t ept02 = xmhf_nested_arch_x86vmx_get_ept02(vcpu, ept12, &cache_hit,
-														&cache_line);
-		HALT_ON_ERRORCOND(!cache_hit);
-		vmcs12_info->guest_ept_cache_line = cache_line;
-		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
-#ifdef __DEBUG_QEMU__
-		/*
-		 * Workaround a KVM bug:
-		 * https://bugzilla.kernel.org/show_bug.cgi?id=216212
-		 *
-		 * Looks like KVM has a problem setting CR0.PG when nested guest's
-		 * PDPTEs are not in guest hypervisor's EPT. So we always make sure
-		 * the EPT entry for PDPTEs is available. To achieve this effect,
-		 * simulating a EPT violation by calling
-		 * xmhf_nested_arch_x86vmx_handle_ept02_exit() with guest2_paddr =
-		 * CR3.
-		 */
-		{
-			extern bool is_in_kvm;
-			if (is_in_kvm && vmcs12->guest_CR3 != 0) {
-				xmhf_nested_arch_x86vmx_hardcode_ept(vcpu, cache_line,
-													 vmcs12->guest_CR3);
-			}
-		}
-#endif							/* !__DEBUG_QEMU__ */
-		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
-	}
-	if (0) {
-		// Note: EPTP Switching not supported
-		// Note: likely need to sanitize input
-		u16 encoding = VMCSENC_control_EPTP_list_address;
-		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
-		// vmcs12->control_EPTP_list_address = ...
-	}
-	if (_vmx_hasctl_sub_page_write_permissions_for_ept(&ctls)) {
-		// Note: Sub-page write permissions for EPT not supported
-		// Note: likely need to sanitize input
-		u16 encoding = VMCSENC_control_subpage_permission_table_pointer;
-		HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == 0);
-		// vmcs12->control_subpage_permission_table_pointer = ...
 	}
 }
 
