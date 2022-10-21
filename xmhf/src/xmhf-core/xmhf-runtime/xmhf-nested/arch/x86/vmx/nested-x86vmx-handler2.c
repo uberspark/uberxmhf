@@ -232,7 +232,8 @@ u32 xmhf_nested_arch_x86vmx_handle_vmentry(VCPU * vcpu,
 	}
 
 	/* From now on, cannot fail */
-	vcpu->vmx_nested_is_vmx_root_operation = 0;
+	HALT_ON_ERRORCOND(vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_ROOT);
+	vcpu->vmx_nested_operation_mode = NESTED_VMX_MODE_NONROOT;
 
 	/*
 	 * End blocking EPT02 flush (blocking is needed because VMCS translation
@@ -691,7 +692,9 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	/* Prepare VMRESUME to guest hypervisor */
 	HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
 	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
-	vcpu->vmx_nested_is_vmx_root_operation = 1;
+	HALT_ON_ERRORCOND(vcpu->vmx_nested_operation_mode ==
+					  NESTED_VMX_MODE_NONROOT);
+	vcpu->vmx_nested_operation_mode = NESTED_VMX_MODE_ROOT;
 
 	/*
 	 * End blocking EPT02 flush (blocking is needed because VMCS translation

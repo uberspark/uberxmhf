@@ -50,6 +50,11 @@
 #ifndef __EMHF_NESTED_H__
 #define __EMHF_NESTED_H__
 
+/* Modes for vcpu->vmx_nested_vmx_operation_mode */
+#define NESTED_VMX_MODE_DISABLED	0
+#define NESTED_VMX_MODE_ROOT		1
+#define NESTED_VMX_MODE_NONROOT		2
+
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------

@@ -276,15 +276,15 @@ typedef struct _vcpu {
   struct _vmx_vmcsfields vmcs;   //the VMCS fields
 
 #ifdef __NESTED_VIRTUALIZATION__
-  /* Whether this VCPU is currently inside VMX operation */
-  u32 vmx_nested_is_vmx_operation;
+  /*
+   * Current CPU mode w.r.t. VMX operation.
+   * 0: Not in VMX operation (NESTED_VMX_MODE_DISABLED)
+   * 1: In VMX root operation (NESTED_VMX_MODE_ROOT)
+   * 2: In VMX non-root operation (NESTED_VMX_MODE_NONROOT)
+   */
+  u32 vmx_nested_operation_mode;
   /* If in VMX operation, address of VMXON pointer */
   gpa_t vmx_nested_vmxon_pointer;
-  /*
-   * Whether this VCPU is currently in VMX root operation (not VMX non-root).
-   * Undefined when not in VMX operation.
-   */
-  u32 vmx_nested_is_vmx_root_operation;
   /*
    * If in VMX operation, index of the current VMCS12 in cpu_active_vmcs12.
    * INVALID_VMCS12_INDEX means there is no current VMCS12.

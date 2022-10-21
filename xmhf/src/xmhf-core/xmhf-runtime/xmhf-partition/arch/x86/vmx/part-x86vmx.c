@@ -760,8 +760,7 @@ void __vmx_vmentry_fail_callback(ulong_t is_resume, ulong_t valid)
 		break;
 	case 1:
 #ifdef __NESTED_VIRTUALIZATION__
-		if (vcpu->vmx_nested_is_vmx_operation &&
-			!vcpu->vmx_nested_is_vmx_root_operation) {
+		if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
 			xmhf_nested_arch_x86vmx_handle_vmentry_fail(vcpu, is_resume);
 			HALT_ON_ERRORCOND(0 && "Should not return");
 		}

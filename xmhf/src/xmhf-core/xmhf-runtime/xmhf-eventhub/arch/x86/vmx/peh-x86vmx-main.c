@@ -1164,8 +1164,7 @@ u32 xmhf_parteventhub_arch_x86vmx_print_guest(VCPU *vcpu, struct regs *r)
 //---hvm_intercept_handler------------------------------------------------------
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 #ifdef __NESTED_VIRTUALIZATION__
-	if (vcpu->vmx_nested_is_vmx_operation &&
-		!vcpu->vmx_nested_is_vmx_root_operation) {
+	if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
 		xmhf_nested_arch_x86vmx_handle_vmexit(vcpu, r);
 		return 1;
 	}
