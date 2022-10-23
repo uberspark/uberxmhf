@@ -155,8 +155,6 @@ typedef struct vmcs12_info {
 	 * it when accessing.
 	 */
 	ept02_cache_line_t *guest_ept_cache_line;
-	/* When guest_ept_enable, pointer to EPT12 root */
-	gpa_t guest_ept_root;
 	/* "NMI exiting" in VMCS */
 	bool guest_nmi_exiting;
 	/* "Virtual NMIs" in VMCS */

@@ -346,7 +346,7 @@ static vmcs12_info_t *new_active_vmcs12(VCPU * vcpu, gpa_t vmcs_ptr, u32 rev)
 		   (void *)vcpu->vmx_vaddr_msr_area_guest,
 		   vcpu->vmcs.control_VM_entry_MSR_load_count * sizeof(msr_entry_t));
 	vmcs12_info->guest_ept_enable = 0;
-	vmcs12_info->guest_ept_root = 0;
+	vmcs12_info->guest_ept_cache_line = NULL;
 	vmcs12_info->guest_nmi_exiting = false;
 	vmcs12_info->guest_virtual_nmis = false;
 	vmcs12_info->guest_nmi_window_exiting = false;
