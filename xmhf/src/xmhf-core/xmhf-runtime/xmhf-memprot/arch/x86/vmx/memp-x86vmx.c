@@ -667,4 +667,8 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   vcpu->vmcs.control_EPT_pointer = eptp;
+  // TODO: when nested virtualization is enabled, the CPU need to call
+  // xmhf_nested_arch_x86vmx_flush_ept02() to make sure that EPT02 entries are
+  // updated according to the change in EPT01. Currently this function is
+  // called by TrustVisor, which will flush EPT01 afterwards.
 }
