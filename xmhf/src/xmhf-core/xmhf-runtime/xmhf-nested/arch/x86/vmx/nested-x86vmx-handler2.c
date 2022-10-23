@@ -449,8 +449,7 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 		ept02_cache_line_t *cache_line = vmcs12_info->guest_ept_cache_line;
 		u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
 		ulong_t qualification = __vmx_vmreadNW(VMCSENC_info_exit_qualification);
-		HALT_ON_ERRORCOND(cache_line->key ==
-						  vmcs12_info->vmcs12_value.control_EPT_pointer);
+		HALT_ON_ERRORCOND(cache_line->key == vmcs12_info->guest_ept_root);
 #ifdef __DEBUG_QEMU__
 		/*
 		 * Workaround a KVM bug:

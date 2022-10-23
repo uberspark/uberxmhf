@@ -935,6 +935,7 @@ static u32 _vmcs12_to_vmcs02_control_EPT_pointer(ARG10 * arg)
 		ept02 = xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
 												  &cache_line);
 		arg->vmcs12_info->guest_ept_cache_line = cache_line;
+		arg->vmcs12_info->guest_ept_root = ept12;
 #ifdef __DEBUG_QEMU__
 		_workaround_kvm_216212(arg, cache_line);
 #endif							/* !__DEBUG_QEMU__ */
@@ -955,7 +956,7 @@ static void _vmcs02_to_vmcs12_control_EPT_pointer(ARG01 * arg)
 	u16 encoding = VMCSENC_control_EPT_pointer;
 	HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&arg->vcpu->vmx_caps));
 	if (_vmx_hasctl_enable_ept(arg->ctls)) {
-		gpa_t ept12 = arg->vmcs12->control_EPT_pointer;
+		gpa_t ept12 = arg->vmcs12_info->guest_ept_root;
 		ept02_cache_line_t *cache_line;
 		bool cache_hit;
 		ept02 = xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
