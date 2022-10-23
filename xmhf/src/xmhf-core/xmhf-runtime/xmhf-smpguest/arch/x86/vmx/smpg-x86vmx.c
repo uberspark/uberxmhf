@@ -409,7 +409,8 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   vcpu->vmcs.guest_RFLAGS |= g_vmx_lapic_guest_eflags_tfifmask;
 
   //restore NMI blocking (likely enable NMIs)
-  vcpu->vmcs.guest_interruptibility |= g_vmx_lapic_guest_intr_nmimask;
+  vcpu->vmcs.guest_interruptibility =
+    (vcpu->vmcs.guest_interruptibility & (1U << 3)) | g_vmx_lapic_guest_intr_nmimask;
 
   //restore exception bitmap
   vcpu->vmcs.control_exception_bitmap = g_vmx_lapic_exception_bitmap;
