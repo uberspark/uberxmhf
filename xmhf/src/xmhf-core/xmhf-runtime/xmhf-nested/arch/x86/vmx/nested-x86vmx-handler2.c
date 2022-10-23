@@ -224,6 +224,7 @@ u32 xmhf_nested_arch_x86vmx_handle_vmentry(VCPU * vcpu,
 	/* When a problem happens, translate back to L1 guest */
 	if (result != VM_INST_SUCCESS) {
 		HALT_ON_ERRORCOND(__vmx_vmptrld(hva2spa((void *)vcpu->vmx_vmcs_vaddr)));
+		xmhf_nested_arch_x86vmx_unblock_ept02_flush(vcpu);
 		return result;
 	}
 
