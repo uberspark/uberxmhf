@@ -976,9 +976,13 @@ static void _rewalk_ept01_control_EPT_pointer(ARG10 * arg)
 	if (arg->vmcs12_info->guest_ept_enable) {
 		ept02_cache_line_t *cache_line;
 		bool cache_hit;
-		gpa_t ept12 = arg->vmcs12->control_EPT_pointer;
-		ept02 = xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
-												  &cache_line);
+		u64 eptp12 = arg->vmcs12->control_EPT_pointer;
+		gpa_t ept12;
+		HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_check_ept_lower_bits
+						  (eptp12, &ept12));
+		ept02 =
+			xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
+											  &cache_line);
 		HALT_ON_ERRORCOND(!cache_hit);
 		arg->vmcs12_info->guest_ept_cache_line = cache_line;
 		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
