@@ -176,6 +176,8 @@ typedef struct vmcs12_info {
 	bool guest_vmcs_block_nmi_overridden;
 	/* L2 NMI blocking bit if guest_vmcs_block_nmi_overridden is true */
 	bool guest_vmcs_block_nmi;
+	/* During L2 operation, control information in VMCS12 */
+	vmx_ctls_t ctls12;
 } vmcs12_info_t;
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);

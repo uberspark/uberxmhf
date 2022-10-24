@@ -1606,18 +1606,17 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 											 vmcs12_info_t * vmcs12_info)
 {
 	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
-	vmx_ctls_t ctls;
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	msr_entry_t *msr01 = (msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
 	msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
 	u32 ia32_pat_index;
 	u32 ia32_efer_index;
-	u32 status = _vmcs12_get_ctls(vcpu, vmcs12, &ctls);
+	u32 status = _vmcs12_get_ctls(vcpu, vmcs12, &vmcs12_info->ctls12);
 	ARG10 arg = {
 		.vcpu = vcpu,
 		.vmcs12_info = vmcs12_info,
 		.vmcs12 = vmcs12,
-		.ctls = &ctls,
+		.ctls = &vmcs12_info->ctls12,
 		.ctx_pair = &ctx_pair,
 		.guest_ia32_pat = 0,
 		.guest_ia32_efer = 0,
@@ -1639,7 +1638,6 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 	arg.ia32_efer_index = ia32_efer_index;
 	/* TODO: Check settings of VMX controls and host-state area */
 
-#define FIELD_CTLS_ARG (&ctls)
 #define DECLARE_FIELD_16_RW(encoding, name, ...) \
 	{ \
 		u32 status = _vmcs12_to_vmcs02_##name(&arg); \
@@ -1697,13 +1695,12 @@ void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
 										  vmcs12_info_t * vmcs12_info)
 {
 	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
-	vmx_ctls_t ctls;
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	ARG10 arg = {
 		.vcpu = vcpu,
 		.vmcs12_info = vmcs12_info,
 		.vmcs12 = vmcs12,
-		.ctls = &ctls,
+		.ctls = &vmcs12_info->ctls12,
 		.ctx_pair = &ctx_pair,
 		/* All fields below are not used */
 		.guest_ia32_pat = 0,
@@ -1712,10 +1709,8 @@ void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
 		.ia32_efer_index = 0,
 		.msr01 = NULL,
 	};
-	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
 	guestmem_init(vcpu, &ctx_pair);
 
-#define FIELD_CTLS_ARG (&ctls)
 #define DECLARE_FIELD_64_RW(encoding, name, prop, ...) \
 	if (prop & FIELD_PROP_GPADDR) { \
 		HALT_ON_ERRORCOND(_vmcs12_to_vmcs02_##name(&arg) == VM_INST_SUCCESS); \
@@ -1733,7 +1728,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info)
 {
 	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
-	vmx_ctls_t ctls;
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	msr_entry_t *msr01 = (msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
 	msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
@@ -1743,7 +1737,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		.vcpu = vcpu,
 		.vmcs12_info = vmcs12_info,
 		.vmcs12 = vmcs12,
-		.ctls = &ctls,
+		.ctls = &vmcs12_info->ctls12,
 		.host_ia32_pat = 0,
 		.host_ia32_efer = 0,
 		.ia32_pat_index = 0,
@@ -1751,7 +1745,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		.msr02 = msr02,
 	};
 
-	HALT_ON_ERRORCOND(_vmcs12_get_ctls(vcpu, vmcs12, &ctls) == 0);
 	guestmem_init(vcpu, &ctx_pair);
 	if (!xmhf_partition_arch_x86vmx_get_xmhf_msr(MSR_IA32_PAT, &ia32_pat_index)) {
 		HALT_ON_ERRORCOND(0 && "MSR_IA32_PAT not found");
@@ -1762,7 +1755,6 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 	}
 	arg.ia32_efer_index = ia32_efer_index;
 
-#define FIELD_CTLS_ARG (&ctls)
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	{ \
 		_vmcs02_to_vmcs12_##name(&arg); \
@@ -1904,7 +1896,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		u32 mask = (0xfU << 0) | (1U << 4) | (3U << 5) | (1U << 7) |
 			(1U << 13) | (1U << 14) | (1U << 15);
 		u32 val = (11U << 0) | (1U << 4) | (1U << 7) | (1U << 15);
-		if (_vmx_hasctl_vmexit_host_address_space_size(&ctls)) {
+		if (_vmx_hasctl_vmexit_host_address_space_size(&vmcs12_info->ctls12)) {
 			val |= (1U << 13);
 		} else {
 			val |= (1U << 14);
@@ -1964,7 +1956,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		 * is 1. CR4.PCIDE is set to 0 if the “host address-space size” VM-exit
 		 * control is 0.
 		 */
-		if (_vmx_hasctl_vmexit_host_address_space_size(&ctls)) {
+		if (_vmx_hasctl_vmexit_host_address_space_size(&vmcs12_info->ctls12)) {
 			vcpu->vmcs.guest_CR4 |= CR4_PAE;
 		} else {
 			vcpu->vmcs.guest_CR4 &= ~CR4_PCIDE;
