@@ -429,22 +429,16 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value)
 	switch (index) {
 		case MSR_EFER: /* fallthrough */
 		case MSR_IA32_PAT:
+			/* Should write to MSR load area instead */
 			HALT_ON_ERRORCOND(0 && "Illegal behavior");
 			break;
-		case IA32_SYSENTER_CS_MSR:
-			vcpu->vmcs.guest_SYSENTER_CS = (u32)value;
-			break;
-		case IA32_SYSENTER_EIP_MSR:
-			vcpu->vmcs.guest_SYSENTER_EIP = (u64)value;
-			break;
-		case IA32_SYSENTER_ESP_MSR:
-			vcpu->vmcs.guest_SYSENTER_ESP = (u64)value;
-			break;
-		case IA32_MSR_FS_BASE:
-			vcpu->vmcs.guest_FS_base = (u64)value;
-			break;
+		case IA32_SYSENTER_CS_MSR: /* fallthrough */
+		case IA32_SYSENTER_EIP_MSR: /* fallthrough */
+		case IA32_SYSENTER_ESP_MSR: /* fallthrough */
+		case IA32_MSR_FS_BASE: /* fallthrough */
 		case IA32_MSR_GS_BASE:
-			vcpu->vmcs.guest_GS_base = (u64)value;
+			/* Should write to VMCS instead */
+			HALT_ON_ERRORCOND(0 && "Illegal behavior");
 			break;
 		case IA32_MTRRCAP: /* fallthrough */
 		case IA32_MTRR_DEF_TYPE: /* fallthrough */
@@ -550,15 +544,34 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 
 	//printf("CPU(0x%02x): WRMSR 0x%08x 0x%08x%08x @ %p\n", vcpu->id, r->ecx, r->edx, r->eax, vcpu->vmcs.guest_RIP);
 
-	if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
-		msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
-		HALT_ON_ERRORCOND(entry->index == r->ecx);
-		entry->data = write_data;
-	} else {
-		if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr(vcpu, r->ecx, write_data)) {
-			_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
-			return;
+	switch (r->ecx) {
+	case IA32_SYSENTER_CS_MSR:
+		vcpu->vmcs.guest_SYSENTER_CS = (u32)write_data;
+		break;
+	case IA32_SYSENTER_EIP_MSR:
+		vcpu->vmcs.guest_SYSENTER_EIP = (ulong_t)write_data;
+		break;
+	case IA32_SYSENTER_ESP_MSR:
+		vcpu->vmcs.guest_SYSENTER_ESP = (ulong_t)write_data;
+		break;
+	case IA32_MSR_FS_BASE:
+		vcpu->vmcs.guest_FS_base = (ulong_t)write_data;
+		break;
+	case IA32_MSR_GS_BASE:
+		vcpu->vmcs.guest_GS_base = (ulong_t)write_data;
+		break;
+	default:
+		if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
+			msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
+			HALT_ON_ERRORCOND(entry->index == r->ecx);
+			entry->data = write_data;
+		} else {
+			if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr(vcpu, r->ecx, write_data)) {
+				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+				return;
+			}
 		}
+		break;
 	}
 
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
@@ -579,22 +592,16 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_rdmsr(VCPU *vcpu, u32 index, u64 *value
 	switch (index) {
 		case MSR_EFER: /* fallthrough */
 		case MSR_IA32_PAT:
+			/* Should read from MSR load area instead */
 			HALT_ON_ERRORCOND(0 && "Illegal behavior");
 			break;
-		case IA32_SYSENTER_CS_MSR:
-			*value = (u64)vcpu->vmcs.guest_SYSENTER_CS;
-			break;
-		case IA32_SYSENTER_EIP_MSR:
-			*value = (u64)vcpu->vmcs.guest_SYSENTER_EIP;
-			break;
-		case IA32_SYSENTER_ESP_MSR:
-			*value = (u64)vcpu->vmcs.guest_SYSENTER_ESP;
-			break;
-		case IA32_MSR_FS_BASE:
-			*value = (u64)vcpu->vmcs.guest_FS_base;
-			break;
+		case IA32_SYSENTER_CS_MSR: /* fallthrough */
+		case IA32_SYSENTER_EIP_MSR: /* fallthrough */
+		case IA32_SYSENTER_ESP_MSR: /* fallthrough */
+		case IA32_MSR_FS_BASE: /* fallthrough */
 		case IA32_MSR_GS_BASE:
-			*value = (u64)vcpu->vmcs.guest_GS_base;
+			/* Should read from VMCS instead */
+			HALT_ON_ERRORCOND(0 && "Illegal behavior");
 			break;
 		case IA32_MTRR_DEF_TYPE: /* fallthrough */
 		case IA32_MTRR_FIX64K_00000: /* fallthrough */
@@ -686,15 +693,34 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 
 	//printf("CPU(0x%02x): RDMSR 0x%08x @ %p\n", vcpu->id, r->ecx, vcpu->vmcs.guest_RIP);
 
-	if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
-		msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
-		HALT_ON_ERRORCOND(entry->index == r->ecx);
-		read_result = entry->data;
-	} else {
-		if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr(vcpu, r->ecx, &read_result)) {
-			_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
-			return;
+	switch (r->ecx) {
+	case IA32_SYSENTER_CS_MSR:
+		read_result = (u64)vcpu->vmcs.guest_SYSENTER_CS;
+		break;
+	case IA32_SYSENTER_EIP_MSR:
+		read_result = (u64)vcpu->vmcs.guest_SYSENTER_EIP;
+		break;
+	case IA32_SYSENTER_ESP_MSR:
+		read_result = (u64)vcpu->vmcs.guest_SYSENTER_ESP;
+		break;
+	case IA32_MSR_FS_BASE:
+		read_result = (u64)vcpu->vmcs.guest_FS_base;
+		break;
+	case IA32_MSR_GS_BASE:
+		read_result = (u64)vcpu->vmcs.guest_GS_base;
+		break;
+	default:
+		if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
+			msr_entry_t *entry = &((msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest)[index];
+			HALT_ON_ERRORCOND(entry->index == r->ecx);
+			read_result = entry->data;
+		} else {
+			if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr(vcpu, r->ecx, &read_result)) {
+				_vmx_inject_exception(vcpu, CPU_EXCEPTION_GP, 1, 0);
+				return;
+			}
 		}
+		break;
 	}
 
 	/* Assign read_result to r->eax and r->edx */

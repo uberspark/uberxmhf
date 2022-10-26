@@ -271,9 +271,9 @@ DECLARE_FIELD_64_RW(0x2002, control_IO_BitmapB_address,
 					UNDEFINED)
 /* Address of MSR bitmaps */
 DECLARE_FIELD_64_RW(0x2004, control_MSR_Bitmaps_address,
-					(FIELD_PROP_CTRL | FIELD_PROP_GPADDR | FIELD_PROP_SWWRONLY),
+					(FIELD_PROP_CTRL),
 					(_vmx_hasctl_use_msr_bitmaps(FIELD_CTLS_ARG)),
-					,
+					_unused,
 					UNDEFINED)
 /* VM-exit MSR-store address */
 DECLARE_FIELD_64_RW(0x2006, control_VM_exit_MSR_store_address,

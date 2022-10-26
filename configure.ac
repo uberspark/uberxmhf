@@ -207,6 +207,17 @@ AC_ARG_WITH([vmx_nested_ept02_page_pool_size],
                 , [with_vmx_nested_ept02_page_pool_size=512])
 VMX_NESTED_EPT02_PAGE_POOL_SIZE=$[]with_vmx_nested_ept02_page_pool_size
 
+# When supporting nested virtualization, whether allow MSR bitmap
+# When NESTED_VIRTUALIZATION=n, this configuration is ignored
+AC_SUBST([VMX_NESTED_MSR_BITMAP])
+AC_ARG_ENABLE([vmx_nested_msr_bitmap],
+        AS_HELP_STRING([--enable-vmx-nested-msr-bitmap@<:@=yes|no@:>@],
+                [when nested virtualization, enable support for MSR bitmap]),
+                , [enable_vmx_nested_msr_bitmap=yes])
+AS_IF([test "x${enable_vmx_nested_msr_bitmap}" != "xno"],
+      [VMX_NESTED_MSR_BITMAP=y],
+      [VMX_NESTED_MSR_BITMAP=n])
+
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
 AC_ARG_ENABLE([debug_serial],

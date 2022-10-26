@@ -582,6 +582,198 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 	return ret;
 }
 
+#ifdef __VMX_NESTED_MSR_BITMAP__
+/* Similar to _vmx_inject_exception(), but inject #GP(0) to L2 guest */
+static void _nested_vmx_inject_gp(void)
+{
+	u32 vector = CPU_EXCEPTION_GP;
+	u32 has_ec = 1;
+	u32 errcode = 0;
+	u16 encoding;
+	union {
+		struct _vmx_event_injection st;
+		uint32_t ui;
+	} injection_info;
+	HALT_ON_ERRORCOND(vector < 32);
+	HALT_ON_ERRORCOND(has_ec <= 1);
+	injection_info.ui = 0;
+	injection_info.st.vector = vector;  /* e.g. #UD, #GP */
+	injection_info.st.type = 0x3;       /* Hardware Exception */
+	injection_info.st.errorcode = has_ec;
+	injection_info.st.valid = 1;
+	/* Copy IDT-vectoring information */
+	encoding = VMCSENC_control_VM_entry_interruption_information;
+	__vmx_vmwrite32(encoding, injection_info.ui);
+	/* Copy IDT-vectoring error code */
+	encoding = VMCSENC_control_VM_entry_exception_errorcode;
+	__vmx_vmwrite32(encoding, errcode);
+}
+
+/* Check whether the RDMSR / WRMSR should cause VMEXIT to L1 */
+static bool check_msr_bitmap(vmcs12_info_t * vmcs12_info, u32 msr_val,
+							 bool is_wrmsr, guestmem_hptw_ctx_pair_t * ctx_pair)
+{
+	u32 bit_num = UINT32_MAX;
+	u32 bit_offset;
+	u32 byte_offset;
+	unsigned char val;
+	gpa_t addr;
+	if (!_vmx_hasctl_use_msr_bitmaps(&vmcs12_info->ctls12)) {
+		return true;
+	}
+	if (msr_val < 0x2000U) {
+		if (is_wrmsr) {
+			bit_num = msr_val + 2048 * 8;
+		} else {
+			bit_num = msr_val;
+		}
+	} else if (0xc0000000U <= msr_val && msr_val < 0xc0002000U) {
+		if (is_wrmsr) {
+			bit_num = msr_val - 0xc0000000U + 3072 * 8;
+		} else {
+			bit_num = msr_val - 0xc0000000U + 1024 * 8;
+		}
+	} else {
+		return true;
+	}
+	HALT_ON_ERRORCOND(bit_num < 8 * PAGE_SIZE_4K);
+	byte_offset = bit_num / 8;
+	bit_offset = bit_num % 8;
+	HALT_ON_ERRORCOND(byte_offset < PAGE_SIZE_4K);
+	addr = vmcs12_info->vmcs12_value.control_MSR_Bitmaps_address + byte_offset;
+	guestmem_copy_gp2h(ctx_pair, 0, &val, addr, sizeof(val));
+	if ((1U << bit_offset) & val) {
+		return true;
+	}
+	return false;
+}
+
+/*
+ * Handle L2 guest VMEXIT to L0 due to RDMSR.
+ * This function has 2 possible return values:
+ * * NESTED_VMEXIT_HANDLE_201: L0 should forward the RDMSR VMEXIT to L1.
+ * * NESTED_VMEXIT_HANDLE_202: L0 should handle the RDMSR and return to L2.
+ */
+static u32 handle_vmexit20_rdmsr(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
+								 struct regs *r)
+{
+	guestmem_hptw_ctx_pair_t ctx_pair;
+	guestmem_init(vcpu, &ctx_pair);
+	if (check_msr_bitmap(vmcs12_info, r->ecx, false, &ctx_pair)) {
+		return NESTED_VMEXIT_HANDLE_201;
+	} else {
+		u32 index;
+		u64 read_data;
+		switch (r->ecx) {
+		case IA32_SYSENTER_CS_MSR:
+			read_data = (u64) __vmx_vmread32(VMCSENC_guest_SYSENTER_CS);
+			break;
+		case IA32_SYSENTER_EIP_MSR:
+			read_data = (u64) __vmx_vmreadNW(VMCSENC_guest_SYSENTER_EIP);
+			break;
+		case IA32_SYSENTER_ESP_MSR:
+			read_data = (u64) __vmx_vmreadNW(VMCSENC_guest_SYSENTER_ESP);
+			break;
+		case IA32_MSR_FS_BASE:
+			read_data = (u64) __vmx_vmreadNW(VMCSENC_guest_FS_base);
+			break;
+		case IA32_MSR_GS_BASE:
+			read_data = (u64) __vmx_vmreadNW(VMCSENC_guest_GS_base);
+			break;
+		default:
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
+				msr_entry_t *msr02 = vmcs12_info->vmcs02_vmexit_msr_store_area;
+				HALT_ON_ERRORCOND(msr02[index].index == r->ecx);
+				read_data = msr02[index].data;
+			} else {
+				if (xmhf_parteventhub_arch_x86vmx_handle_rdmsr(vcpu, r->ecx,
+															   &read_data)) {
+					/* RDMSR fail, inject #GP(0) */
+					_nested_vmx_inject_gp();
+					return NESTED_VMEXIT_HANDLE_202;
+				}
+			}
+			break;
+		}
+		/* Assign read_result to r->eax and r->edx */
+		{
+#ifdef __AMD64__
+			r->rax = 0;			/* Clear upper 32-bits of RAX */
+			r->rdx = 0;			/* Clear upper 32-bits of RDX */
+#elif !defined(__I386__)
+#error "Unsupported Arch"
+#endif							/* !defined(__I386__) */
+			r->eax = (u32) (read_data);
+			r->edx = (u32) (read_data >> 32);
+		}
+		/* Increase RIP since instruction is emulated */
+		{
+			ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
+			rip += __vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
+			__vmx_vmwriteNW(VMCSENC_guest_RIP, rip);
+		}
+		return NESTED_VMEXIT_HANDLE_202;
+	}
+}
+
+/*
+ * Handle L2 guest VMEXIT to L0 due to WRMSR.
+ * This function has 2 possible return values:
+ * * NESTED_VMEXIT_HANDLE_201: L0 should forward the WRMSR VMEXIT to L1.
+ * * NESTED_VMEXIT_HANDLE_202: L0 should handle the WRMSR and return to L2.
+ */
+static u32 handle_vmexit20_wrmsr(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
+								 struct regs *r)
+{
+	guestmem_hptw_ctx_pair_t ctx_pair;
+	guestmem_init(vcpu, &ctx_pair);
+	if (check_msr_bitmap(vmcs12_info, r->ecx, true, &ctx_pair)) {
+		return NESTED_VMEXIT_HANDLE_201;
+	} else {
+		msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
+		u32 index;
+		u64 write_data = ((u64) r->edx << 32) | (u64) r->eax;
+		switch (r->ecx) {
+		case IA32_SYSENTER_CS_MSR:
+			__vmx_vmwrite32(VMCSENC_guest_SYSENTER_CS, (u32)write_data);
+			break;
+		case IA32_SYSENTER_EIP_MSR:
+			__vmx_vmwriteNW(VMCSENC_guest_SYSENTER_EIP, (ulong_t)write_data);
+			break;
+		case IA32_SYSENTER_ESP_MSR:
+			__vmx_vmwriteNW(VMCSENC_guest_SYSENTER_ESP, (ulong_t)write_data);
+			break;
+		case IA32_MSR_FS_BASE:
+			__vmx_vmwriteNW(VMCSENC_guest_FS_base, (ulong_t)write_data);
+			break;
+		case IA32_MSR_GS_BASE:
+			__vmx_vmwriteNW(VMCSENC_guest_GS_base, (ulong_t)write_data);
+			break;
+		default:
+			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
+				HALT_ON_ERRORCOND(msr02[index].index == r->ecx);
+				msr02[index].data = write_data;
+			} else {
+				if (xmhf_parteventhub_arch_x86vmx_handle_wrmsr(vcpu, r->ecx,
+															   write_data)) {
+					/* WRMSR fail, inject #GP(0) */
+					_nested_vmx_inject_gp();
+					return NESTED_VMEXIT_HANDLE_202;
+				}
+			}
+			break;
+		}
+		/* Increase RIP since instruction is emulated */
+		{
+			ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
+			rip += __vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
+			__vmx_vmwriteNW(VMCSENC_guest_RIP, rip);
+		}
+		return NESTED_VMEXIT_HANDLE_202;
+	}
+}
+#endif							/* __VMX_NESTED_MSR_BITMAP__ */
+
 /*
  * Forward L2 to L0 VMEXIT to L1.
  * The argument behavior indicates how the VMEXIT should be transformed.
@@ -744,6 +936,14 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 	case VMX_VMEXIT_EPT_MISCONFIGURATION:
 		HALT_ON_ERRORCOND(0 && "XMHF misconfigured EPT");
 		break;
+#ifdef __VMX_NESTED_MSR_BITMAP__
+	case VMX_VMEXIT_RDMSR:
+		handle_behavior = handle_vmexit20_rdmsr(vcpu, vmcs12_info, r);
+		break;
+	case VMX_VMEXIT_WRMSR:
+		handle_behavior = handle_vmexit20_wrmsr(vcpu, vmcs12_info, r);
+		break;
+#endif							/* __VMX_NESTED_MSR_BITMAP__ */
 	default:
 		break;
 	}
