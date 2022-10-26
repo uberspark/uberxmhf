@@ -83,7 +83,7 @@ pipeline {
                 expression { params.TEST_I386_WIN7_I386_XMHF }
             }
             steps {
-                qemu_test "i386", "i386", "win7x86-j.qcow2", "60", "512M"
+                qemu_test "i386", "i386", "win7x86-j.qcow2", "60", "1024M"
             }
         }
         stage('Test i386 Windows 10 on i386 XMHF') {
@@ -107,7 +107,7 @@ pipeline {
                 expression { params.TEST_I386_WIN7_AMD64_XMHF }
             }
             steps {
-                qemu_test "amd64", "i386", "win7x86-j.qcow2", "60", "512M"
+                qemu_test "amd64", "i386", "win7x86-j.qcow2", "60", "1024M"
             }
         }
         stage('Test amd64 Windows 7 on amd64 XMHF') {
@@ -115,7 +115,7 @@ pipeline {
                 expression { params.TEST_AMD64_WIN7_AMD64_XMHF }
             }
             steps {
-                qemu_test "amd64", "amd64", "win7x64-j.qcow2", "120", "512M"
+                qemu_test "amd64", "amd64", "win7x64-j.qcow2", "120", "1024M"
             }
         }
         stage('Test amd64 Windows 8.1 on amd64 XMHF') {
