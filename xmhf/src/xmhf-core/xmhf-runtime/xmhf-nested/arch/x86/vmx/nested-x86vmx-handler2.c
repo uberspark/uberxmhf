@@ -597,8 +597,8 @@ static void _nested_vmx_inject_gp(void)
 	HALT_ON_ERRORCOND(vector < 32);
 	HALT_ON_ERRORCOND(has_ec <= 1);
 	injection_info.ui = 0;
-	injection_info.st.vector = vector;  /* e.g. #UD, #GP */
-	injection_info.st.type = 0x3;       /* Hardware Exception */
+	injection_info.st.vector = vector;	/* e.g. #UD, #GP */
+	injection_info.st.type = 0x3;	/* Hardware Exception */
 	injection_info.st.errorcode = has_ec;
 	injection_info.st.valid = 1;
 	/* Copy IDT-vectoring information */
@@ -735,19 +735,19 @@ static u32 handle_vmexit20_wrmsr(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 		u64 write_data = ((u64) r->edx << 32) | (u64) r->eax;
 		switch (r->ecx) {
 		case IA32_SYSENTER_CS_MSR:
-			__vmx_vmwrite32(VMCSENC_guest_SYSENTER_CS, (u32)write_data);
+			__vmx_vmwrite32(VMCSENC_guest_SYSENTER_CS, (u32) write_data);
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			__vmx_vmwriteNW(VMCSENC_guest_SYSENTER_EIP, (ulong_t)write_data);
+			__vmx_vmwriteNW(VMCSENC_guest_SYSENTER_EIP, (ulong_t) write_data);
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			__vmx_vmwriteNW(VMCSENC_guest_SYSENTER_ESP, (ulong_t)write_data);
+			__vmx_vmwriteNW(VMCSENC_guest_SYSENTER_ESP, (ulong_t) write_data);
 			break;
 		case IA32_MSR_FS_BASE:
-			__vmx_vmwriteNW(VMCSENC_guest_FS_base, (ulong_t)write_data);
+			__vmx_vmwriteNW(VMCSENC_guest_FS_base, (ulong_t) write_data);
 			break;
 		case IA32_MSR_GS_BASE:
-			__vmx_vmwriteNW(VMCSENC_guest_GS_base, (ulong_t)write_data);
+			__vmx_vmwriteNW(VMCSENC_guest_GS_base, (ulong_t) write_data);
 			break;
 		default:
 			if (xmhf_partition_arch_x86vmx_get_xmhf_msr(r->ecx, &index)) {
