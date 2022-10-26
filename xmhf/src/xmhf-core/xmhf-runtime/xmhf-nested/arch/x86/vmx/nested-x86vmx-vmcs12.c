@@ -1718,8 +1718,11 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 				HALT_ON_ERRORCOND(0 && "Not allowed, what should I do?");
 				break;
 			default:
-				if (xmhf_partition_arch_x86vmx_get_xmhf_msr(msr12.index,
-															&index)) {
+				if ((msr12.index & 0xffffff00U) == 0x00000800U) {
+					/* Likely need to fail VMENTRY, but need to double check. */
+					HALT_ON_ERRORCOND(0 && "Not allowed, what should I do?");
+				} else if (xmhf_partition_arch_x86vmx_get_xmhf_msr(msr12.index,
+																   &index)) {
 					HALT_ON_ERRORCOND(msr02[index].index == msr12.index);
 					msr02[index].data = msr12.data;
 				} else {
@@ -1902,8 +1905,11 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 				HALT_ON_ERRORCOND(0 && "Not allowed, what should I do?");
 				break;
 			default:
-				if (xmhf_partition_arch_x86vmx_get_xmhf_msr(msr12.index,
-															&index)) {
+				if ((msr12.index & 0xffffff00U) == 0x00000800U) {
+					/* Likely need to fail VMEXIT, but need to double check. */
+					HALT_ON_ERRORCOND(0 && "Not allowed, what should I do?");
+				} else if (xmhf_partition_arch_x86vmx_get_xmhf_msr(msr12.index,
+																   &index)) {
 					HALT_ON_ERRORCOND(msr01[index].index == msr12.index);
 					msr01[index].data = msr12.data;
 				} else {
