@@ -68,6 +68,14 @@
 #define INTR_TYPE_PRIV_SW_EXCEPTION   (5U << 8)  // privleged software exception (INT1)
 #define INTR_TYPE_SW_EXCEPTION        (6U << 8)  // software exception (INTO, INT3)
 
+/* Used in bitfields (BF) */
+#define INTR_TYPE_BF_HW_INTERRUPT       (0U)  // hardware/external interrupt
+#define INTR_TYPE_BF_NMI                (2U)  // NMI
+#define INTR_TYPE_BF_HW_EXCEPTION       (3U)  // processor exception
+#define INTR_TYPE_BF_SW_INTERRUPT       (4U)  // software interrupt
+#define INTR_TYPE_BF_PRIV_SW_EXCEPTION  (5U)  // privleged software exception (INT1)
+#define INTR_TYPE_BF_SW_EXCEPTION       (6U)  // software exception (INTO, INT3)
+
 //
 #define VMX_EVENT_CANCEL  (0)
 #define VMX_EVENT_INJECT  (1)

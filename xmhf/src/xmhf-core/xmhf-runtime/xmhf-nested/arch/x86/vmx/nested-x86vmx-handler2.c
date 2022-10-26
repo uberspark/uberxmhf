@@ -69,6 +69,22 @@
 #define NESTED_VMEXIT_HANDLE_201_EPT_MISCONFIG	4
 
 /*
+ * Return whether interruption information sets the valid bit.
+ * The input should be one of the following VMCS fields:
+ * * VM-entry interruption-information field
+ * * VM-exit interruption information
+ * * IDT-vectoring information field
+ */
+static bool _nexted_vmx_is_interruption_valid(u32 interruption)
+{
+	union {
+		struct _vmx_event_injection st;
+		uint32_t ui;
+	} injection_info = { .ui = interruption };
+	return injection_info.st.valid;
+}
+
+/*
  * Return whether interruption information corresponds to NMI interrupt.
  * The input should be one of the following VMCS fields:
  * * VM-entry interruption-information field
@@ -77,12 +93,89 @@
  */
 bool xmhf_nested_arch_x86vmx_is_interruption_nmi(u32 interruption)
 {
-	if ((interruption & INTR_INFO_VALID_MASK) &&
-		(interruption & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI) {
-		HALT_ON_ERRORCOND((interruption & INTR_INFO_VECTOR_MASK) == NMI_VECTOR);
+	union {
+		struct _vmx_event_injection st;
+		uint32_t ui;
+	} injection_info = { .ui = interruption };
+	if (injection_info.st.valid && injection_info.st.type == INTR_TYPE_BF_NMI) {
+		HALT_ON_ERRORCOND(injection_info.st.vector == NMI_VECTOR);
 		return true;
 	}
 	return false;
+}
+
+/*
+ * Read L2 guest IDT-vectoring information from the following VMCS fields.
+ * * idt_info: IDT-vectoring information field
+ * * idt_errcode: IDT-vectoring error code
+ * * VM-exit instruction length
+ */
+static void _nexted_vmx_get_idt_vec_info(u32 *idt_info, u32 *idt_errcode,
+										 u32 *inst_len)
+{
+	u16 encoding;
+	union {
+		struct _vmx_event_injection st;
+		uint32_t ui;
+	} injection_info;
+	/* idt_info: IDT-vectoring information field */
+	encoding = VMCSENC_info_IDT_vectoring_information;
+	injection_info.ui = __vmx_vmread32(encoding);
+	*idt_info = injection_info.ui;
+	/* idt_errcode: IDT-vectoring error code */
+	if (injection_info.st.errorcode) {
+		encoding = VMCSENC_info_IDT_vectoring_error_code;
+		*idt_errcode = __vmx_vmread32(encoding);
+	} else {
+		*idt_errcode = 0;
+	}
+	/* VM-exit instruction length */
+	switch (injection_info.st.type) {
+	case INTR_TYPE_BF_SW_INTERRUPT: /* fallthrough */
+	case INTR_TYPE_BF_PRIV_SW_EXCEPTION: /* fallthrough */
+	case INTR_TYPE_BF_SW_EXCEPTION:
+		encoding = VMCSENC_info_vmexit_instruction_length;
+		*inst_len = __vmx_vmread32(encoding);
+		break;
+	default:
+		*inst_len = 0;
+		break;
+	}
+}
+
+/*
+ * Modify the following VMCS fields to inject exception to L2 guest.
+ * * intr_info: VM-entry interruption-information field
+ * * errorcode: VM-entry exception error code
+ * * inst_len: VM-entry instruction length
+ */
+static void _nested_vmx_inject_exception(u32 intr_info, u32 errorcode,
+										 u32 inst_len)
+{
+	u16 encoding;
+	union {
+		struct _vmx_event_injection st;
+		uint32_t ui;
+	} injection_info = { .ui = intr_info };
+	/* intr_info: VM-entry interruption-information field */
+	encoding = VMCSENC_control_VM_entry_interruption_information;
+	__vmx_vmwrite32(encoding, intr_info);
+	/* errorcode: VM-entry exception error code */
+	if (injection_info.st.errorcode) {
+		encoding = VMCSENC_control_VM_entry_exception_errorcode;
+		__vmx_vmwrite32(encoding, errorcode);
+	}
+	/* inst_len: VM-entry instruction length */
+	switch (injection_info.st.type) {
+	case INTR_TYPE_BF_SW_INTERRUPT: /* fallthrough */
+	case INTR_TYPE_BF_PRIV_SW_EXCEPTION: /* fallthrough */
+	case INTR_TYPE_BF_SW_EXCEPTION:
+		encoding = VMCSENC_control_VM_entry_instruction_length;
+		__vmx_vmwrite32(encoding, inst_len);
+		break;
+	default:
+		break;
+	}
 }
 
 /*
@@ -342,10 +435,9 @@ static u32 handle_vmexit20_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 	 * correct thing to do.)
 	 */
 	{
-		u32 idt_info;
-		u16 encoding = VMCSENC_info_IDT_vectoring_information;
-		idt_info = __vmx_vmread32(encoding);
-		HALT_ON_ERRORCOND((idt_info & INTR_INFO_VALID_MASK) == 0);
+		u32 idt_info, idt_errcode, inst_len;
+		_nexted_vmx_get_idt_vec_info(&idt_info, &idt_errcode, &inst_len);
+		HALT_ON_ERRORCOND(!_nexted_vmx_is_interruption_valid(idt_info));
 	}
 	return NESTED_VMEXIT_HANDLE_202;
 }
@@ -398,16 +490,11 @@ static u32 handle_vmexit20_nmi_window(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 		 * injecting to L1 guest when there is no nested virtualization.
 		 */
 		/* Inject NMI to L2 */
-		u16 encoding;
-		u32 idt_info;
-		encoding = VMCSENC_info_IDT_vectoring_information;
-		idt_info = __vmx_vmread32(encoding);
-		HALT_ON_ERRORCOND(!(idt_info & INTR_INFO_VALID_MASK));
+		u32 idt_info, idt_errcode, inst_len;
+		_nexted_vmx_get_idt_vec_info(&idt_info, &idt_errcode, &inst_len);
+		HALT_ON_ERRORCOND(!_nexted_vmx_is_interruption_valid(idt_info));
 		idt_info = NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK;
-		encoding = VMCSENC_control_VM_entry_interruption_information;
-		__vmx_vmwrite32(encoding, idt_info);
-		encoding = VMCSENC_control_VM_entry_exception_errorcode;
-		__vmx_vmwrite32(encoding, 0U);
+		_nested_vmx_inject_exception(idt_info, 0, 0);
 		/* Update NMI windowing */
 		HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);
 		vcpu->vmx_guest_nmi_cfg.guest_nmi_pending--;
@@ -508,23 +595,9 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 		 * lost.
 		 */
 		{
-			u16 encoding;
 			u32 idt_info, idt_errcode, inst_len;
-			/* Copy IDT-vectoring information */
-			encoding = VMCSENC_info_IDT_vectoring_information;
-			idt_info = __vmx_vmread32(encoding);
-			encoding = VMCSENC_control_VM_entry_interruption_information;
-			__vmx_vmwrite32(encoding, idt_info);
-			/* Copy IDT-vectoring error code */
-			encoding = VMCSENC_info_IDT_vectoring_error_code;
-			idt_errcode = __vmx_vmread32(encoding);
-			encoding = VMCSENC_control_VM_entry_exception_errorcode;
-			__vmx_vmwrite32(encoding, idt_errcode);
-			/* Copy VM-exit instruction length */
-			encoding = VMCSENC_info_vmexit_instruction_length;
-			inst_len = __vmx_vmread32(encoding);
-			encoding = VMCSENC_control_VM_entry_instruction_length;
-			__vmx_vmwrite32(encoding, inst_len);
+			_nexted_vmx_get_idt_vec_info(&idt_info, &idt_errcode, &inst_len);
+			_nested_vmx_inject_exception(idt_info, idt_errcode, inst_len);
 			/*
 			 * When this EPT VMEXIT is caused by NMI injection indirectly, the
 			 * hardware will set virtual-NMI blocking. We need to remove this
@@ -588,8 +661,6 @@ static void _nested_vmx_inject_gp(void)
 {
 	u32 vector = CPU_EXCEPTION_GP;
 	u32 has_ec = 1;
-	u32 errcode = 0;
-	u16 encoding;
 	union {
 		struct _vmx_event_injection st;
 		uint32_t ui;
@@ -601,12 +672,7 @@ static void _nested_vmx_inject_gp(void)
 	injection_info.st.type = 0x3;	/* Hardware Exception */
 	injection_info.st.errorcode = has_ec;
 	injection_info.st.valid = 1;
-	/* Copy IDT-vectoring information */
-	encoding = VMCSENC_control_VM_entry_interruption_information;
-	__vmx_vmwrite32(encoding, injection_info.ui);
-	/* Copy IDT-vectoring error code */
-	encoding = VMCSENC_control_VM_entry_exception_errorcode;
-	__vmx_vmwrite32(encoding, errcode);
+	_nested_vmx_inject_exception(injection_info.ui, 0, 0);
 }
 
 /* Check whether the RDMSR / WRMSR should cause VMEXIT to L1 */
