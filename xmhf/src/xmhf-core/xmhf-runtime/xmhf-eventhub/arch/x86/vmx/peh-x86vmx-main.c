@@ -128,7 +128,7 @@ void _vmx_inject_exception(VCPU *vcpu, u32 vector, u32 has_ec, u32 errcode)
 	HALT_ON_ERRORCOND(has_ec <= 1);
 	injection_info.ui = 0;
 	injection_info.st.vector = vector;  /* e.g. #UD, #GP */
-	injection_info.st.type = 0x3;       /* Hardware Exception */
+	injection_info.st.type = INTR_TYPE_BF_HW_EXCEPTION;
 	injection_info.st.errorcode = has_ec;
 	injection_info.st.valid = 1;
 	vcpu->vmcs.control_VM_entry_interruption_information = injection_info.ui;
