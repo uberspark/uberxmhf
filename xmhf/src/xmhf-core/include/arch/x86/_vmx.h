@@ -47,8 +47,12 @@
 //vmx.h - Intel VMX definitions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#define VMXON_SIZE		(4096)
-#define VMCS_SIZE			(8192)
+//Guest Interruptibility state
+#define VMX_GUEST_INTR_BLOCK_STI    (1U << 0)   // Blocking by STI
+#define VMX_GUEST_INTR_BLOCK_MOVSS  (1U << 1)   // Blocking by MOV SS
+#define VMX_GUEST_INTR_BLOCK_SMI    (1U << 2)   // Blocking by SMI
+#define VMX_GUEST_INTR_BLOCK_NMI    (1U << 3)   // Blocking by NMI
+#define VMX_GUEST_INTR_ENCLV_INT    (1U << 4)   // Enclave interruption
 
 //VM Exit Interruption-information format
 #define INTR_INFO_VECTOR_MASK           (0x000000ff)        // 7:0
