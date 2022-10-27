@@ -257,18 +257,19 @@ static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 		u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
 		if (!vmcs12_info->guest_vmcs_block_nmi_overridden) {
 			vmcs12_info->guest_vmcs_block_nmi_overridden = true;
-			vmcs12_info->guest_vmcs_block_nmi = guest_int & (1U << 3);
+			vmcs12_info->guest_vmcs_block_nmi =
+				guest_int & VMX_GUEST_INTR_BLOCK_NMI;
 		}
-		guest_int &= ~(1U << 3);
+		guest_int &= ~VMX_GUEST_INTR_BLOCK_NMI;
 		__vmx_vmwrite32(VMCSENC_guest_interruptibility, guest_int);
 	} else {
 		/* Restore old NMI blocking bit */
 		if (vmcs12_info->guest_vmcs_block_nmi_overridden) {
 			u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
 			if (vmcs12_info->guest_vmcs_block_nmi) {
-				guest_int |= (1U << 3);
+				guest_int |= VMX_GUEST_INTR_BLOCK_NMI;
 			} else {
-				guest_int &= ~(1U << 3);
+				guest_int &= ~VMX_GUEST_INTR_BLOCK_NMI;
 			}
 			__vmx_vmwrite32(VMCSENC_guest_interruptibility, guest_int);
 			vmcs12_info->guest_vmcs_block_nmi_overridden = false;
@@ -378,7 +379,7 @@ void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 			}
 		} else {
 			u32 guest_int = __vmx_vmread32(VMCSENC_guest_interruptibility);
-			if (guest_int & (1U << 3)) {
+			if (guest_int & VMX_GUEST_INTR_BLOCK_NMI) {
 				nmi_pending_limit = 1;
 			}
 		}
@@ -608,8 +609,8 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 				vmcs12_info->guest_virtual_nmis) {
 				u16 encoding = VMCSENC_guest_interruptibility;
 				u32 guest_int = __vmx_vmread32(encoding);
-				HALT_ON_ERRORCOND(guest_int & (1U << 3));
-				guest_int &= ~(1U << 3);
+				HALT_ON_ERRORCOND(guest_int & VMX_GUEST_INTR_BLOCK_NMI);
+				guest_int &= ~VMX_GUEST_INTR_BLOCK_NMI;
 				__vmx_vmwrite32(encoding, guest_int);
 			}
 		}
@@ -898,7 +899,7 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 		}
 
 		/* Update host state: NMI is blocked */
-		vcpu->vmcs.guest_interruptibility |= (1U << 3);
+		vcpu->vmcs.guest_interruptibility |= VMX_GUEST_INTR_BLOCK_NMI;
 
 		/* Consume one pending NMI */
 		HALT_ON_ERRORCOND(vcpu->vmx_guest_nmi_cfg.guest_nmi_pending > 0);

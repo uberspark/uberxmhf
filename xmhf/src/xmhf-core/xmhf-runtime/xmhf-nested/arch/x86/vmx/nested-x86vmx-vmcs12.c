@@ -1561,7 +1561,7 @@ static u32 _vmcs12_to_vmcs02_guest_interruptibility(ARG10 * arg)
 			arg->vmcs12_info->guest_block_nmi = false;
 		} else {
 			/* NMI Exiting = 1, virtual NMIs = 0 */
-			arg->vmcs12_info->guest_block_nmi = val & (1U << 3);
+			arg->vmcs12_info->guest_block_nmi = val & VMX_GUEST_INTR_BLOCK_NMI;
 		}
 	} else {
 		/* NMI Exiting = 0, virtual NMIs = 0, guest_block_nmi is ignored */
@@ -1579,32 +1579,32 @@ static void _vmcs02_to_vmcs12_guest_interruptibility(ARG01 * arg)
 	if (arg->vmcs12_info->guest_vmcs_block_nmi_overridden) {
 		arg->vmcs12_info->guest_vmcs_block_nmi_overridden = false;
 		if (arg->vmcs12_info->guest_vmcs_block_nmi) {
-			val |= (1U << 3);
+			val |= VMX_GUEST_INTR_BLOCK_NMI;
 		} else {
-			val &= ~(1U << 3);
+			val &= ~VMX_GUEST_INTR_BLOCK_NMI;
 		}
 	}
 	if (arg->vmcs12_info->guest_nmi_exiting) {
 		/* Copy guest NMI blocking to host (VMCS01) */
 		if (arg->vmcs12_info->guest_block_nmi) {
-			arg->vcpu->vmcs.guest_interruptibility |= (1U << 3);
+			arg->vcpu->vmcs.guest_interruptibility |= VMX_GUEST_INTR_BLOCK_NMI;
 		} else {
-			arg->vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
+			arg->vcpu->vmcs.guest_interruptibility &= ~VMX_GUEST_INTR_BLOCK_NMI;
 		}
 		/* Set guest interruptibility state in VMCS12 */
 		if (!arg->vmcs12_info->guest_virtual_nmis) {
 			if (arg->vmcs12_info->guest_block_nmi) {
-				val |= (1U << 3);
+				val |= VMX_GUEST_INTR_BLOCK_NMI;
 			} else {
-				val &= ~(1U << 3);
+				val &= ~VMX_GUEST_INTR_BLOCK_NMI;
 			}
 		}
 	} else {
 		/* Copy guest NMI blocking to host (VMCS01) */
-		if (val & (1U << 3)) {
-			arg->vcpu->vmcs.guest_interruptibility |= (1U << 3);
+		if (val & VMX_GUEST_INTR_BLOCK_NMI) {
+			arg->vcpu->vmcs.guest_interruptibility |= VMX_GUEST_INTR_BLOCK_NMI;
 		} else {
-			arg->vcpu->vmcs.guest_interruptibility &= ~(1U << 3);
+			arg->vcpu->vmcs.guest_interruptibility &= ~VMX_GUEST_INTR_BLOCK_NMI;
 		}
 	}
 	arg->vmcs12->guest_interruptibility = val;
