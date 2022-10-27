@@ -80,7 +80,7 @@ static bool _nexted_vmx_is_interruption_valid(u32 interruption)
 	union {
 		struct _vmx_event_injection st;
 		uint32_t ui;
-	} injection_info = { .ui = interruption };
+	} injection_info = {.ui = interruption };
 	return injection_info.st.valid;
 }
 
@@ -96,7 +96,7 @@ bool xmhf_nested_arch_x86vmx_is_interruption_nmi(u32 interruption)
 	union {
 		struct _vmx_event_injection st;
 		uint32_t ui;
-	} injection_info = { .ui = interruption };
+	} injection_info = {.ui = interruption };
 	if (injection_info.st.valid && injection_info.st.type == INTR_TYPE_BF_NMI) {
 		HALT_ON_ERRORCOND(injection_info.st.vector == NMI_VECTOR);
 		return true;
@@ -110,8 +110,8 @@ bool xmhf_nested_arch_x86vmx_is_interruption_nmi(u32 interruption)
  * * idt_errcode: IDT-vectoring error code
  * * VM-exit instruction length
  */
-static void _nexted_vmx_get_idt_vec_info(u32 *idt_info, u32 *idt_errcode,
-										 u32 *inst_len)
+static void _nexted_vmx_get_idt_vec_info(u32 * idt_info, u32 * idt_errcode,
+										 u32 * inst_len)
 {
 	u16 encoding;
 	union {
@@ -131,8 +131,8 @@ static void _nexted_vmx_get_idt_vec_info(u32 *idt_info, u32 *idt_errcode,
 	}
 	/* VM-exit instruction length */
 	switch (injection_info.st.type) {
-	case INTR_TYPE_BF_SW_INTERRUPT: /* fallthrough */
-	case INTR_TYPE_BF_PRIV_SW_EXCEPTION: /* fallthrough */
+	case INTR_TYPE_BF_SW_INTERRUPT:	/* fallthrough */
+	case INTR_TYPE_BF_PRIV_SW_EXCEPTION:	/* fallthrough */
 	case INTR_TYPE_BF_SW_EXCEPTION:
 		encoding = VMCSENC_info_vmexit_instruction_length;
 		*inst_len = __vmx_vmread32(encoding);
@@ -156,7 +156,7 @@ static void _nested_vmx_inject_exception(u32 intr_info, u32 errorcode,
 	union {
 		struct _vmx_event_injection st;
 		uint32_t ui;
-	} injection_info = { .ui = intr_info };
+	} injection_info = {.ui = intr_info };
 	/* intr_info: VM-entry interruption-information field */
 	encoding = VMCSENC_control_VM_entry_interruption_information;
 	__vmx_vmwrite32(encoding, intr_info);
@@ -167,8 +167,8 @@ static void _nested_vmx_inject_exception(u32 intr_info, u32 errorcode,
 	}
 	/* inst_len: VM-entry instruction length */
 	switch (injection_info.st.type) {
-	case INTR_TYPE_BF_SW_INTERRUPT: /* fallthrough */
-	case INTR_TYPE_BF_PRIV_SW_EXCEPTION: /* fallthrough */
+	case INTR_TYPE_BF_SW_INTERRUPT:	/* fallthrough */
+	case INTR_TYPE_BF_PRIV_SW_EXCEPTION:	/* fallthrough */
 	case INTR_TYPE_BF_SW_EXCEPTION:
 		encoding = VMCSENC_control_VM_entry_instruction_length;
 		__vmx_vmwrite32(encoding, inst_len);
