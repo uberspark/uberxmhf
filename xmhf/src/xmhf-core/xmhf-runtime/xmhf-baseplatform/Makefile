@@ -38,6 +38,7 @@ AS_SOURCES_BL =  ./arch/x86/bplt-x86-i386-smplock.S
 
 C_SOURCES_BL =  ./arch/x86/bplt-x86-pci.c
 C_SOURCES_BL += ./arch/x86/bplt-x86-acpi.c
+C_SOURCES_BL += ./arch/x86/bplt-x86-pit.c
 C_SOURCES_BL += ./arch/x86/bplt-x86-addressing.c
 C_SOURCES_BL += ./arch/x86/bplt-x86-cpu.c
 ifeq ($(DRT), y)
