@@ -122,44 +122,6 @@ void dealwithMP(void){
     }
 }
 
-
-//---microsecond delay----------------------------------------------------------
-void udelay(u32 usecs){
-    u8 val;
-    u32 latchregval;
-
-    //enable 8254 ch-2 counter
-    val = inb(0x61);
-    val &= 0x0d; //turn PC speaker off
-    val |= 0x01; //turn on ch-2
-    outb(val, 0x61);
-
-    //program ch-2 as one-shot
-    outb(0xB0, 0x43);
-
-    //compute appropriate latch register value depending on usecs
-    latchregval = ((u64)1193182 * usecs) / 1000000;
-
-    HALT_ON_ERRORCOND(latchregval < (1 << 16));
-
-    //write latch register to ch-2
-    val = (u8)latchregval;
-    outb(val, 0x42);
-    val = (u8)((u32)latchregval >> (u32)8);
-    outb(val , 0x42);
-
-    //wait for countdown
-    while (!(inb(0x61) & 0x20)) {
-        xmhf_cpu_relax();
-    }
-
-    //disable ch-2 counter
-    val = inb(0x61);
-    val &= 0x0c;
-    outb(val, 0x61);
-}
-
-
 //---INIT IPI routine-----------------------------------------------------------
 void send_init_ipi_to_all_APs(void) {
     u32 eax, edx;
@@ -176,7 +138,7 @@ void send_init_ipi_to_all_APs(void) {
     //send INIT
     printf("Sending INIT IPI to all APs...\n");
     *icr = 0x000c4500UL;
-    udelay(10000);
+    xmhf_baseplatform_arch_x86_udelay(10000);
     //wait for command completion
     while (--timeout > 0 && ((*icr) & 0x00001000U)) {
         xmhf_cpu_relax();
@@ -959,7 +921,7 @@ void wakeupAPs(void){
     //send INIT
     printf("Sending INIT IPI to all APs...");
     *icr = 0x000c4500UL;
-    udelay(10000);
+    xmhf_baseplatform_arch_x86_udelay(10000);
     //wait for command completion
     while ((*icr) & 0x1000U) {
         xmhf_cpu_relax();
@@ -972,7 +934,7 @@ void wakeupAPs(void){
         for(i=0; i < 2; i++){
             printf("Sending SIPI-%u...", i);
             *icr = 0x000c4610UL;
-            udelay(200);
+            xmhf_baseplatform_arch_x86_udelay(200);
             //wait for command completion
             while ((*icr) & 0x1000U) {
                 xmhf_cpu_relax();
