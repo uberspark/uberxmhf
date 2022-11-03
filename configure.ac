@@ -344,6 +344,15 @@ AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
 dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
 
+# Choose offset of TrustVisor hypercall number for L2 in nested virtualization
+# When NESTED_VIRTUALIZATION=n, this configuration is ignored
+AC_SUBST([TRUSTVISOR_L2_OFFSET])
+AC_ARG_WITH([trustvisor_l2_offset],
+        AS_HELP_STRING([--with-trustvisor-l2-offset=@<:@TRUSTVISOR_L2_OFFSET@:>@],
+                [offset of TrustVisor hypercall number for L2]),
+                , [with_trustvisor_l2_offset=0x4c415000U])
+TRUSTVISOR_L2_OFFSET=$[]with_trustvisor_l2_offset
+
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],
         AS_HELP_STRING([--with-emhfcore=@<:@path@:>@],
