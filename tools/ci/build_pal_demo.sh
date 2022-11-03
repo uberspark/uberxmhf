@@ -67,7 +67,7 @@ build () {
 			"L1")
 				;;
 			"L2")
-				MAKE_ARGS+=("VMCALL_OFFSET=0x50414c00U")
+				MAKE_ARGS+=("VMCALL_OFFSET=0x4c415000U")
 				;;
 			*)
 				echo "Error: unknown argument $1"; return 1
