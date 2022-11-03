@@ -77,7 +77,7 @@ build () {
 	done
 
 	make clean
-	make "${MAKE_ARGS[@]}"
+	make -j "$(nproc)" "${MAKE_ARGS[@]}"
 }
 
 build_and_move () {

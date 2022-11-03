@@ -20,7 +20,7 @@ jobs:
           - 'O3'
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: apt-get
       run: |
         sudo apt-get update && \
@@ -35,7 +35,7 @@ jobs:
           ${{ matrix.compile_mode }} \
           ${{ matrix.optimize_mode }}
     - name: Release
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: boot-${{ matrix.target_arch }}-${{ matrix.compile_mode }}-${{ matrix.optimize_mode }}
         path: |
