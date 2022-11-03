@@ -21,6 +21,9 @@ ifeq ($(I386), y)
 	CFLAGS += -m32
 	LDFLAGS += -m32
 endif
+ifdef $(VMCALL_OFFSET)
+	CFLAGS += -DVMCALL_OFFSET=$(VMCALL_OFFSET)
+endif
 
 ifeq ($(CC), x86_64-w64-mingw32-gcc)
 PAL_OBJS += translate.o
