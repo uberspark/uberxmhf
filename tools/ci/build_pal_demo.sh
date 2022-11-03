@@ -101,9 +101,10 @@ if [ "$1" == "all" ]; then
 	build_and_move windows i386  L2 32 ".exe"
 	build_and_move windows amd64 L2 64 ".exe"
 	zip pal_demo.zip {main,test,test_args}{32,64}{,L2}{,.exe}
+	echo "$PAL_DEMO_DIR/pal_demo.zip"
 else
 	build "$@"
+	echo "$PAL_DEMO_DIR"
 fi
 
-echo "$PAL_DEMO_DIR/pal_demo.zip"
 

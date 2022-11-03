@@ -13,6 +13,7 @@ CFLAGS := -g -I../src/include -Wall -Werror
 
 BINS = main test test_args
 PAL_OBJS = pal.o caller.o
+VMCALL_OFFSET = 0U
 
 ifeq ($(WINDOWS), y)
 	CFLAGS += -DWINDOWS
@@ -21,9 +22,7 @@ ifeq ($(I386), y)
 	CFLAGS += -m32
 	LDFLAGS += -m32
 endif
-ifdef $(VMCALL_OFFSET)
-	CFLAGS += -DVMCALL_OFFSET=$(VMCALL_OFFSET)
-endif
+CFLAGS += -DVMCALL_OFFSET=$(VMCALL_OFFSET)
 
 ifeq ($(CC), x86_64-w64-mingw32-gcc)
 PAL_OBJS += translate.o
