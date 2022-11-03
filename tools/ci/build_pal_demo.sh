@@ -29,52 +29,81 @@ case "$LINUX_BIT" in
 		;;
 esac
 
-MAKE_ARGS=""
+PAL_DEMO_DIR="hypapps/trustvisor/pal_demo"
+cd "$PAL_DEMO_DIR"
 
-if [ "$1" == "windows" ]; then
-	MAKE_ARGS="${MAKE_ARGS} WINDOWS=y"
-	if [ "$2" == "i386" ]; then
-		MAKE_ARGS="${MAKE_ARGS} CC=i686-w64-mingw32-gcc"
-		MAKE_ARGS="${MAKE_ARGS} LD=i686-w64-mingw32-ld"
-	else if [ "$2" == "amd64" ]; then
-		MAKE_ARGS="${MAKE_ARGS} CC=x86_64-w64-mingw32-gcc"
-		MAKE_ARGS="${MAKE_ARGS} LD=x86_64-w64-mingw32-ld"
-	else
-		echo '$2 incorrect, should be i386 or amd64'; exit 1
-	fi; fi
-else if [ "$1" == "linux" ]; then
-	if [ "$2" == "i386" ]; then
-		if [ "$LINUX_BASE" == "DEB" ]; then
-			MAKE_ARGS="${MAKE_ARGS} CC=i686-linux-gnu-gcc"
-			MAKE_ARGS="${MAKE_ARGS} LD=i686-linux-gnu-ld"
+build () {
+	local MAKE_ARGS=()
+	if [ "$1" == "windows" ]; then
+		MAKE_ARGS+=("WINDOWS=y")
+		if [ "$2" == "i386" ]; then
+			MAKE_ARGS+=("CC=i686-w64-mingw32-gcc" "LD=i686-w64-mingw32-ld")
+		else if [ "$2" == "amd64" ]; then
+			MAKE_ARGS+=("CC=x86_64-w64-mingw32-gcc" "LD=x86_64-w64-mingw32-ld")
 		else
-			MAKE_ARGS="${MAKE_ARGS} I386=y"
-		fi
-	else if [ "$2" == "amd64" ]; then
-		MAKE_ARGS="${MAKE_ARGS}"
+			echo '$2 incorrect, should be i386 or amd64'; return 1
+		fi; fi
+	else if [ "$1" == "linux" ]; then
+		if [ "$2" == "i386" ]; then
+			if [ "$LINUX_BASE" == "DEB" ]; then
+				MAKE_ARGS+=("CC=i686-linux-gnu-gcc" "LD=i686-linux-gnu-ld")
+			else
+				MAKE_ARGS+=("I386=y")
+			fi
+		else if [ "$2" == "amd64" ]; then
+			MAKE_ARGS+=()
+		else
+			echo '$2 incorrect, should be i386 or amd64'; return 1
+		fi; fi
 	else
-		echo '$2 incorrect, should be i386 or amd64'; exit 1
+		echo '$1 incorrect, should be windows or linux or all'; return 1
 	fi; fi
-else if [ "$1" == "all" ]; then
-	build_and_move () {
-		"$1" "$2" "$3"
-		for i in hypapps/trustvisor/pal_demo/{main,test,test_args}; do
-			mv "${i}$5" "${i}$4$5"
-		done
-	}
-	build_and_move "$0" linux   i386  32 ""
-	build_and_move "$0" linux   amd64 64 ""
-	build_and_move "$0" windows i386  32 ".exe"
-	build_and_move "$0" windows amd64 64 ".exe"
-	cd hypapps/trustvisor/pal_demo/
-	rm -f pal_demo.zip
-	zip pal_demo.zip {main,test,test_args}{32,64}{,.exe}
-	exit
-else
-	echo '$1 incorrect, should be windows or linux or all'; exit 1
-fi; fi; fi
+	shift 2
 
-cd hypapps/trustvisor/pal_demo
-make clean
-make ${MAKE_ARGS}
+	while [ "$#" -gt 0 ]; do
+		case "$1" in
+			"")
+				;;
+			"L1")
+				;;
+			"L2")
+				MAKE_ARGS+=("VMCALL_OFFSET=0x50414c00U")
+				;;
+			*)
+				echo "Error: unknown argument $1"; return 1
+				;;
+		esac
+		shift 
+	done
+
+	make clean
+	make "${MAKE_ARGS[@]}"
+}
+
+build_and_move () {
+	build "$1" "$2" "$3"
+	for i in main test test_args; do
+		mv "${i}$5" "${i}$4$3$5"
+	done
+}
+
+if [ "$1" == "all" ]; then
+	for i in {main,test,test_args}{32,64}{,L2}{,.exe}; do
+		rm -f $i
+	done
+	rm -f pal_demo.zip
+	build_and_move linux   i386  "" 32 ""
+	build_and_move linux   amd64 "" 64 ""
+	build_and_move windows i386  "" 32 ".exe"
+	build_and_move windows amd64 "" 64 ".exe"
+	build_and_move linux   i386  L2 32 ""
+	build_and_move linux   amd64 L2 64 ""
+	build_and_move windows i386  L2 32 ".exe"
+	build_and_move windows amd64 L2 64 ".exe"
+	zip pal_demo.zip {main,test,test_args}{32,64}{,L2}{,.exe}
+else
+	build "$@"
+fi
+
+echo "$PAL_DEMO_DIR/pal_demo.zip"
 
