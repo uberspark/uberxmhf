@@ -7,15 +7,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        target_arch:
-          - 'i386'
-          - 'amd64'
-        os:
-          - 'linux'
-          - 'windows'
-
     steps:
     - uses: actions/checkout@v2
     - name: apt-get
@@ -26,16 +17,10 @@ jobs:
                       -y
     - name: Build
       run: |
-        ./tools/ci/build_pal_demo.sh ${{ matrix.os }} ${{ matrix.target_arch }}
+        ./tools/ci/build_pal_demo.sh all
     - name: Release
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: pal_demo-${{ matrix.os }}-${{ matrix.target_arch }}
-        path: |
-          hypapps/trustvisor/pal_demo/main
-          hypapps/trustvisor/pal_demo/test
-          hypapps/trustvisor/pal_demo/test_args
-          hypapps/trustvisor/pal_demo/main.exe
-          hypapps/trustvisor/pal_demo/test.exe
-          hypapps/trustvisor/pal_demo/test_args.exe
+        name: pal_demo.zip
+        path: hypapps/trustvisor/pal_demo/pal_demo.zip
 
