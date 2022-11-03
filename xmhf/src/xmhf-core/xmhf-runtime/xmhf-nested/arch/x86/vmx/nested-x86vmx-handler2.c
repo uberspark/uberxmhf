@@ -883,7 +883,7 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 		{
 			u32 intr_info =
 				vmcs12_info->vmcs12_value.info_vmexit_interrupt_information;
-			HALT_ON_ERRORCOND(!(intr_info & INTR_INFO_VALID_MASK));
+			HALT_ON_ERRORCOND(!_nexted_vmx_is_interruption_valid(intr_info));
 		}
 		vmcs12_info->vmcs12_value.info_vmexit_interrupt_information =
 			NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK;
@@ -895,7 +895,7 @@ static void handle_vmexit20_forward(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 		{
 			u32 idt_vec_info =
 				vmcs12_info->vmcs12_value.info_IDT_vectoring_information;
-			HALT_ON_ERRORCOND(!(idt_vec_info & INTR_INFO_VALID_MASK));
+			HALT_ON_ERRORCOND(!_nexted_vmx_is_interruption_valid(idt_vec_info));
 		}
 
 		/* Update host state: NMI is blocked */
@@ -988,7 +988,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		{
 			u32 intr_info =
 				__vmx_vmread32(VMCSENC_info_vmexit_interrupt_information);
-			HALT_ON_ERRORCOND(intr_info & INTR_INFO_VALID_MASK);
+			HALT_ON_ERRORCOND(_nexted_vmx_is_interruption_valid(intr_info));
 			if (xmhf_nested_arch_x86vmx_is_interruption_nmi(intr_info)) {
 				handle_behavior = handle_vmexit20_nmi(vcpu, vmcs12_info);
 			}
