@@ -1097,27 +1097,27 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_other,
 						   &vcpu->vmcs.info_vmexit_reason);
 #endif /* __DEBUG_EVENT_LOGGER__ */
-		vcpu->vmcs.guest_CS_selector = __vmx_vmread16(VMCSENC_guest_CS_selector);
-		vcpu->vmcs.control_EPT_pointer = __vmx_vmread64(VMCSENC_control_EPT_pointer);
-		vcpu->vmcs.control_VM_entry_controls = __vmx_vmread32(VMCSENC_control_VM_entry_controls);
-		vcpu->vmcs.info_vmexit_instruction_length = __vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
-		vcpu->vmcs.info_vmx_instruction_information = __vmx_vmread32(VMCSENC_info_vmx_instruction_information);
-		vcpu->vmcs.guest_CS_access_rights = __vmx_vmread32(VMCSENC_guest_CS_access_rights);
-		vcpu->vmcs.control_CR0_mask = __vmx_vmreadNW(VMCSENC_control_CR0_mask);
-		vcpu->vmcs.control_CR0_shadow = __vmx_vmreadNW(VMCSENC_control_CR0_shadow);
-		vcpu->vmcs.info_exit_qualification = __vmx_vmreadNW(VMCSENC_info_exit_qualification);
-		vcpu->vmcs.guest_CR0 = __vmx_vmreadNW(VMCSENC_guest_CR0);
-		vcpu->vmcs.guest_CR3 = __vmx_vmreadNW(VMCSENC_guest_CR3);
-		vcpu->vmcs.guest_ES_base = __vmx_vmreadNW(VMCSENC_guest_ES_base);
-		vcpu->vmcs.guest_CS_base = __vmx_vmreadNW(VMCSENC_guest_CS_base);
-		vcpu->vmcs.guest_SS_base = __vmx_vmreadNW(VMCSENC_guest_SS_base);
-		vcpu->vmcs.guest_DS_base = __vmx_vmreadNW(VMCSENC_guest_DS_base);
-		vcpu->vmcs.guest_FS_base = __vmx_vmreadNW(VMCSENC_guest_FS_base);
-		vcpu->vmcs.guest_GS_base = __vmx_vmreadNW(VMCSENC_guest_GS_base);
-		vcpu->vmcs.guest_RSP = __vmx_vmreadNW(VMCSENC_guest_RSP);
-		vcpu->vmcs.guest_RIP = __vmx_vmreadNW(VMCSENC_guest_RIP);
-		vcpu->vmcs.guest_RFLAGS = __vmx_vmreadNW(VMCSENC_guest_RFLAGS);
-		vcpu->vmcs.control_VM_entry_interruption_information = __vmx_vmread32(VMCSENC_control_VM_entry_interruption_information);
+		_OPT_VMREAD(16, guest_CS_selector);
+		_OPT_VMREAD(64, control_EPT_pointer);
+		_OPT_VMREAD(32, control_VM_entry_controls);
+		_OPT_VMREAD(32, info_vmexit_instruction_length);
+		_OPT_VMREAD(32, info_vmx_instruction_information);
+		_OPT_VMREAD(32, guest_CS_access_rights);
+		_OPT_VMREAD(NW, control_CR0_mask);
+		_OPT_VMREAD(NW, control_CR0_shadow);
+		_OPT_VMREAD(NW, info_exit_qualification);
+		_OPT_VMREAD(NW, guest_CR0);
+		_OPT_VMREAD(NW, guest_CR3);
+		_OPT_VMREAD(NW, guest_ES_base);
+		_OPT_VMREAD(NW, guest_CS_base);
+		_OPT_VMREAD(NW, guest_SS_base);
+		_OPT_VMREAD(NW, guest_DS_base);
+		_OPT_VMREAD(NW, guest_FS_base);
+		_OPT_VMREAD(NW, guest_GS_base);
+		_OPT_VMREAD(NW, guest_RSP);
+		_OPT_VMREAD(NW, guest_RIP);
+		_OPT_VMREAD(NW, guest_RFLAGS);
+		_OPT_VMREAD(32, control_VM_entry_interruption_information);
 		switch ((u32)vcpu->vmcs.info_vmexit_reason) {
 		case VMX_VMEXIT_VMREAD:
 			xmhf_nested_arch_x86vmx_handle_vmread(vcpu, r);
@@ -1128,11 +1128,11 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		default:
 			HALT_ON_ERRORCOND(0);
 		}
-		__vmx_vmwrite32(VMCSENC_control_VM_entry_interruption_information, vcpu->vmcs.control_VM_entry_interruption_information);
-		__vmx_vmwrite32(VMCSENC_control_VM_entry_exception_errorcode, vcpu->vmcs.control_VM_entry_exception_errorcode);
-		__vmx_vmwriteNW(VMCSENC_guest_RSP, vcpu->vmcs.guest_RSP);
-		__vmx_vmwriteNW(VMCSENC_guest_RIP, vcpu->vmcs.guest_RIP);
-		__vmx_vmwriteNW(VMCSENC_guest_RFLAGS, vcpu->vmcs.guest_RFLAGS);
+		_OPT_VMWRITE(32, control_VM_entry_interruption_information);
+		_OPT_VMWRITE(32, control_VM_entry_exception_errorcode);
+		_OPT_VMWRITE(NW, guest_RSP);
+		_OPT_VMWRITE(NW, guest_RIP);
+		_OPT_VMWRITE(NW, guest_RFLAGS);
 		return 1;
 #endif /* !__NESTED_VIRTUALIZATION__ */
 	default:
