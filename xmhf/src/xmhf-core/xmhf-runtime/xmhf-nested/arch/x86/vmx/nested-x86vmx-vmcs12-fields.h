@@ -59,6 +59,12 @@
  * * exist: an expression showing whether the field is used, when
  *          the macro FIELD_CTLS_ARG is set to the controls
  * * trans_suf: suffix for function translating between VMCS12 and VMCS02
+ * * ...: reserved for future use
+ *
+ * Note: for changes to the following arguments, also update _vmx_vmcs_fields.h
+ * * encoding
+ * * name
+ * * exist
  */
 
 #ifndef DECLARE_FIELD_16

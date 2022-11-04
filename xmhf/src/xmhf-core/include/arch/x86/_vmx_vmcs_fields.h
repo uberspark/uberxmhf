@@ -58,6 +58,8 @@
  * * exist: an expression showing whether the field exists, when the macro
  *          FIELD_CTLS_ARG is set to the controls
  * * ...: reserved for future use
+ *
+ * Note: for all changes in this file, also update nested-x86vmx-vmcs12-fields.h
  */
 
 #ifndef DECLARE_FIELD_16
