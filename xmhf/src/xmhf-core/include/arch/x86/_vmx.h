@@ -385,7 +385,7 @@ typedef struct msr_entry {
 
 
 //VMX VMCS fields
-enum vmcs_nested_encoding {
+enum _vmcs_encodings {
 #define DECLARE_FIELD_16(encoding, name, ...) \
   VMCSENC_##name = encoding,
 #define DECLARE_FIELD_64(...) DECLARE_FIELD_16(__VA_ARGS__)
