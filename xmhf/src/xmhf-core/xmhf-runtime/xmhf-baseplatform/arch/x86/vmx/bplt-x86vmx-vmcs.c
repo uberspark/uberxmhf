@@ -53,13 +53,13 @@
 #include <xmhf.h>
 
 /* Write 16-bit VMCS field, never fails */
-void __vmx_vmwrite16(unsigned long encoding, u16 value) {
+void __vmx_vmwrite16(u16 encoding, u16 value) {
 	HALT_ON_ERRORCOND((encoding >> 12) == 0UL);
 	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
 }
 
 /* Write 64-bit VMCS field, never fails */
-void __vmx_vmwrite64(unsigned long encoding, u64 value) {
+void __vmx_vmwrite64(u16 encoding, u64 value) {
 	HALT_ON_ERRORCOND((encoding >> 12) == 2UL);
 	HALT_ON_ERRORCOND((encoding & 0x1) == 0x0);
 #ifdef __AMD64__
@@ -73,19 +73,19 @@ void __vmx_vmwrite64(unsigned long encoding, u64 value) {
 }
 
 /* Write 32-bit VMCS field, never fails */
-void __vmx_vmwrite32(unsigned long encoding, u32 value) {
+void __vmx_vmwrite32(u16 encoding, u32 value) {
 	HALT_ON_ERRORCOND((encoding >> 12) == 4UL);
 	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
 }
 
 /* Write natural width (NW) VMCS field, never fails */
-void __vmx_vmwriteNW(unsigned long encoding, ulong_t value) {
+void __vmx_vmwriteNW(u16 encoding, ulong_t value) {
 	HALT_ON_ERRORCOND((encoding >> 12) == 6UL);
 	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
 }
 
 /* Read 16-bit VMCS field, never fails */
-u16 __vmx_vmread16(unsigned long encoding) {
+u16 __vmx_vmread16(u16 encoding) {
 	unsigned long value;
 	HALT_ON_ERRORCOND((encoding >> 12) == 0UL);
 	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
@@ -94,7 +94,7 @@ u16 __vmx_vmread16(unsigned long encoding) {
 }
 
 /* Read 64-bit VMCS field, never fails */
-u64 __vmx_vmread64(unsigned long encoding) {
+u64 __vmx_vmread64(u16 encoding) {
 #ifdef __AMD64__
 	unsigned long value;
 	HALT_ON_ERRORCOND((encoding >> 12) == 2UL);
@@ -119,7 +119,7 @@ u64 __vmx_vmread64(unsigned long encoding) {
 }
 
 /* Read 32-bit VMCS field, never fails */
-u32 __vmx_vmread32(unsigned long encoding) {
+u32 __vmx_vmread32(u16 encoding) {
 	unsigned long value;
 	HALT_ON_ERRORCOND((encoding >> 12) == 4UL);
 	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
@@ -128,7 +128,7 @@ u32 __vmx_vmread32(unsigned long encoding) {
 }
 
 /* Read natural width (NW) VMCS field, never fails */
-ulong_t __vmx_vmreadNW(unsigned long encoding) {
+ulong_t __vmx_vmreadNW(u16 encoding) {
 	unsigned long value;
 	HALT_ON_ERRORCOND((encoding >> 12) == 6UL);
 	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
@@ -136,107 +136,50 @@ ulong_t __vmx_vmreadNW(unsigned long encoding) {
 	return value;
 }
 
-static void xmhf_baseplatform_arch_x86vmx_write_field(u32 encoding, void *addr,
-                                                      u32 size) {
-    switch ((encoding >> 13) & 0x3) {
-    case 0: {
-        /* 16-bit */
-        HALT_ON_ERRORCOND(size == sizeof(u16));
-        __vmx_vmwrite16(encoding, *(u16 *)addr);
-        break;
-    }
-    case 1: {
-        /* 64-bit */
-        HALT_ON_ERRORCOND(size == sizeof(u64));
-        __vmx_vmwrite64(encoding, *(u64 *)addr);
-        break;
-    }
-    case 2: {
-        /* 32-bit */
-        HALT_ON_ERRORCOND(size == sizeof(u32));
-        __vmx_vmwrite32(encoding, *(u32 *)addr);
-        break;
-    }
-    case 3: {
-        /* natural width */
-        HALT_ON_ERRORCOND(size == sizeof(ulong_t));
-        __vmx_vmwriteNW(encoding, *(ulong_t *)addr);
-        break;
-    }
-    default:
-        HALT();
-    }
-}
-
 //---putVMCS--------------------------------------------------------------------
 // routine takes vcpu vmcsfields and stores it in the CPU VMCS
 void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
-    unsigned int i;
-    for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      u32 encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
-      u32 offset = g_vmx_vmcsrwfields_encodings[i].fieldoffset;
-      void *field = (void *)((hva_t)&vcpu->vmcs + offset);
-      u32 size = g_vmx_vmcsrwfields_encodings[i].membersize;
-      if (g_vmx_vmcsrwfields_encodings[i].exist) {
-          xmhf_baseplatform_arch_x86vmx_write_field(encoding, field, size);
-      }
+#define FIELD_CTLS_ARG (&vcpu->vmx_caps)
+#define DECLARE_FIELD_16_RW(encoding, name, exist, ...) \
+    if (exist) { \
+        __vmx_vmwrite16(encoding, vcpu->vmcs.name); \
     }
-}
-
-static void xmhf_baseplatform_arch_x86vmx_read_field(u32 encoding, void *addr,
-                                                    u32 size) {
-    switch ((encoding >> 13) & 0x3) {
-    case 0: {
-        /* 16-bit */
-        HALT_ON_ERRORCOND(size == sizeof(u16));
-        *(u16 *)addr = __vmx_vmread16(encoding);
-        break;
+#define DECLARE_FIELD_64_RW(encoding, name, exist, ...) \
+    if (exist) { \
+        __vmx_vmwrite64(encoding, vcpu->vmcs.name); \
     }
-    case 1: {
-        /* 64-bit */
-        HALT_ON_ERRORCOND(size == sizeof(u64));
-        *(u64 *)addr = __vmx_vmread64(encoding);
-        break;
+#define DECLARE_FIELD_32_RW(encoding, name, exist, ...) \
+    if (exist) { \
+        __vmx_vmwrite32(encoding, vcpu->vmcs.name); \
     }
-    case 2: {
-        /* 32-bit */
-        HALT_ON_ERRORCOND(size == sizeof(u32));
-        *(u32 *)addr = __vmx_vmread32(encoding);
-        break;
+#define DECLARE_FIELD_NW_RW(encoding, name, exist, ...) \
+    if (exist) { \
+        __vmx_vmwriteNW(encoding, vcpu->vmcs.name); \
     }
-    case 3: {
-        /* natural width */
-        HALT_ON_ERRORCOND(size == sizeof(ulong_t));
-        *(ulong_t *)addr = __vmx_vmreadNW(encoding);
-        break;
-    }
-    default:
-        HALT();
-    }
+#include <arch/x86/_vmx_vmcs_fields.h>
 }
 
 //---getVMCS--------------------------------------------------------------------
 // routine takes CPU VMCS and stores it in vcpu vmcsfields
 void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
-    unsigned int i;
-    for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-        u32 encoding = g_vmx_vmcsrwfields_encodings[i].encoding;
-        u32 offset = g_vmx_vmcsrwfields_encodings[i].fieldoffset;
-        void *field = (void *)((hva_t)&vcpu->vmcs + offset);
-        u32 size = g_vmx_vmcsrwfields_encodings[i].membersize;
-        if (g_vmx_vmcsrwfields_encodings[i].exist) {
-            xmhf_baseplatform_arch_x86vmx_read_field(encoding, field, size);
-        }
+#define FIELD_CTLS_ARG (&vcpu->vmx_caps)
+#define DECLARE_FIELD_16(encoding, name, exist, ...) \
+    if (exist) { \
+        vcpu->vmcs.name = __vmx_vmread16(encoding); \
     }
-    for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
-        u32 encoding = g_vmx_vmcsrofields_encodings[i].encoding;
-        u32 offset = g_vmx_vmcsrofields_encodings[i].fieldoffset;
-        void *field = (void *)((hva_t)&vcpu->vmcs + offset);
-        u32 size = g_vmx_vmcsrofields_encodings[i].membersize;
-        if (g_vmx_vmcsrofields_encodings[i].exist) {
-            xmhf_baseplatform_arch_x86vmx_read_field(encoding, field, size);
-        }
+#define DECLARE_FIELD_64(encoding, name, exist, ...) \
+    if (exist) { \
+        vcpu->vmcs.name = __vmx_vmread64(encoding); \
     }
+#define DECLARE_FIELD_32(encoding, name, exist, ...) \
+    if (exist) { \
+        vcpu->vmcs.name = __vmx_vmread32(encoding); \
+    }
+#define DECLARE_FIELD_NW(encoding, name, exist, ...) \
+    if (exist) { \
+        vcpu->vmcs.name = __vmx_vmreadNW(encoding); \
+    }
+#include <arch/x86/_vmx_vmcs_fields.h>
 }
 
 //--debug: dump_vcpu dumps vcpu contents (including VMCS)-----------------------
@@ -313,141 +256,6 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT32(vcpu->vmx_guestmtrrmsrs.var_count);
     // Skip: vcpu->vmx_guestmtrrmsrs.var_mtrrs
     DUMP_VCPU_PRINT_INT32(vcpu->vmx_guest_unrestricted);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.control_vpid);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VMX_pin_based);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VMX_cpu_based);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VMX_seccpu_based);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_exception_bitmap);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_pagefault_errorcode_mask);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_pagefault_errorcode_match);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_CR3_target_count);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_exit_controls);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_exit_MSR_store_count);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_exit_MSR_load_count);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_controls);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_MSR_load_count);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_interruption_information);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_exception_errorcode);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_VM_entry_instruction_length);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.control_Task_PRivilege_Threshold);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR0_mask);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR4_mask);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR0_shadow);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR4_shadow);
-#ifndef __DEBUG_QEMU__
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR3_target0);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR3_target1);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR3_target2);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.control_CR3_target3);
-#endif /* !__DEBUG_QEMU__ */
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_IO_BitmapA_address);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_IO_BitmapB_address);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_MSR_Bitmaps_address);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_VM_exit_MSR_store_address);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_VM_exit_MSR_load_address);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_VM_entry_MSR_load_address);
-#ifndef __DEBUG_QEMU__
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_Executive_VMCS_pointer);
-#endif /* !__DEBUG_QEMU__ */
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_TSC_offset);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_virtual_APIC_page_address);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_EPT_pointer);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.control_XSS_exiting_bitmap);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_CR0);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_CR3);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_CR4);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_FS_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_GS_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_TR_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_GDTR_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_IDTR_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_SYSENTER_ESP);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_SYSENTER_EIP);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_RSP);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.host_RIP);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.host_SYSENTER_CS);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_ES_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_CS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_SS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_DS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_FS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_GS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.host_TR_selector);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_CR0);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_CR3);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_CR4);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_ES_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_CS_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_SS_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_DS_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_FS_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_GS_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_LDTR_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_TR_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_GDTR_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_IDTR_base);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_DR7);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_RSP);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_RIP);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_RFLAGS);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_pending_debug_x);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_SYSENTER_ESP);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.guest_SYSENTER_EIP);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_ES_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_CS_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SS_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_DS_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_FS_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_GS_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_LDTR_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_TR_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_GDTR_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_IDTR_limit);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_ES_access_rights);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_CS_access_rights);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SS_access_rights);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_DS_access_rights);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_FS_access_rights);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_GS_access_rights);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_LDTR_access_rights);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_TR_access_rights);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_interruptibility);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_activity_state);
-#ifndef __DEBUG_QEMU__
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SMBASE);
-#endif /* !__DEBUG_QEMU__ */
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.guest_SYSENTER_CS);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_ES_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_CS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_SS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_DS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_FS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_GS_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_LDTR_selector);
-    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.guest_TR_selector);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_VMCS_link_pointer);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_IA32_DEBUGCTL);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_paddr);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_PDPTE0);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_PDPTE1);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_PDPTE2);
-    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.guest_PDPTE3);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vminstr_error);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmexit_reason);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmexit_interrupt_information);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmexit_interrupt_error_code);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_IDT_vectoring_information);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_IDT_vectoring_error_code);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmexit_instruction_length);
-    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.info_vmx_instruction_information);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_exit_qualification);
-#ifndef __DEBUG_QEMU__
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_IO_RCX);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_IO_RSI);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_IO_RDI);
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_IO_RIP);
-#endif /* !__DEBUG_QEMU__ */
-    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.info_guest_linear_address);
 #ifdef __NESTED_VIRTUALIZATION__
     DUMP_VCPU_PRINT_INT32(vcpu->vmx_nested_operation_mode);
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_nested_vmxon_pointer);
@@ -461,6 +269,15 @@ void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu){
     DUMP_VCPU_PRINT_INT64(vcpu->vmx_nested_entry_ctls);
 
 #endif /* !__NESTED_VIRTUALIZATION__ */
+#define DECLARE_FIELD_16(encoding, name, ...) \
+    DUMP_VCPU_PRINT_INT16(vcpu->vmcs.name);
+#define DECLARE_FIELD_64(encoding, name, ...) \
+    DUMP_VCPU_PRINT_INT64(vcpu->vmcs.name);
+#define DECLARE_FIELD_32(encoding, name, ...) \
+    DUMP_VCPU_PRINT_INT32(vcpu->vmcs.name);
+#define DECLARE_FIELD_NW(encoding, name, ...) \
+    DUMP_VCPU_PRINT_INTNW(vcpu->vmcs.name);
+#include <arch/x86/_vmx_vmcs_fields.h>
 
 #undef DUMP_VCPU_PRINT_INT16
 #undef DUMP_VCPU_PRINT_INT32

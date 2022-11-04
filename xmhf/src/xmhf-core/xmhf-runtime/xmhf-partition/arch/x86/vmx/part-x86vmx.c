@@ -333,16 +333,6 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
-	//set "exist" field of VMCS
-	if (!_vmx_hasctl_enable_xsaves_xrstors(&vcpu->vmx_caps)) {
-		// Set "XSS-exiting bitmap" as not exist
-		u32 i;
-		for (i = 0; i < g_vmx_vmcsrwfields_encodings_count; i++) {
-			if (g_vmx_vmcsrwfields_encodings[i].encoding == 0x202C) {
-				g_vmx_vmcsrwfields_encodings[i].exist = 0;
-			}
-		}
-	}
 	//setup host state
 	vcpu->vmcs.host_CR0 = read_cr0();
 	vcpu->vmcs.host_CR4 = read_cr4();
@@ -767,7 +757,7 @@ void __vmx_vmentry_fail_callback(ulong_t is_resume, ulong_t valid)
 #endif /* !__NESTED_VIRTUALIZATION__ */
 		{
 			unsigned long code;
-			HALT_ON_ERRORCOND(__vmx_vmread(0x4400, &code));
+			HALT_ON_ERRORCOND(__vmx_vmread(VMCSENC_info_vminstr_error, &code));
 			printf("CPU(0x%02x): %s error; code=0x%lx.\n", vcpu->id, inst_name,
 					code);
 		}
