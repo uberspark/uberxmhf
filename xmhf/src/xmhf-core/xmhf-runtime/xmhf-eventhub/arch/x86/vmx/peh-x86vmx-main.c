@@ -1084,9 +1084,9 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			HALT_ON_ERRORCOND((vcpu->vmcs.info_vmexit_interrupt_information &
 							   INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_HW_EXCEPTION);
 			xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
-			_OPT_VMWRITE(32, vcpu->vmcs.control_exception_bitmap);
-			_OPT_VMWRITE(32, vcpu->vmcs.guest_interruptibility);
-			_OPT_VMWRITE(NW, vcpu->vmcs.guest_RFLAGS);
+			_OPT_VMWRITE(32, control_exception_bitmap);
+			_OPT_VMWRITE(32, guest_interruptibility);
+			_OPT_VMWRITE(NW, guest_RFLAGS);
 			return 1;
 		}
 		return 0;
