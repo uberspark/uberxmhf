@@ -94,18 +94,6 @@
  */
 #define VMX_NESTED_MAX_ACTIVE_VMCS 8
 
-struct nested_vmcs12 {
-#define DECLARE_FIELD_16(encoding, name, ...) \
-	u16 name;
-#define DECLARE_FIELD_64(encoding, name, ...) \
-	u64 name;
-#define DECLARE_FIELD_32(encoding, name, ...) \
-	u32 name;
-#define DECLARE_FIELD_NW(encoding, name, ...) \
-	ulong_t name;
-#include "nested-x86vmx-vmcs12-fields.h"
-};
-
 /* Format of an active VMCS12 tracked by a CPU */
 typedef struct vmcs12_info {
 	/* Index of this VMCS12 in the CPU */
@@ -126,7 +114,7 @@ typedef struct vmcs12_info {
 	/* Whether this VMCS has launched */
 	int launched;
 	/* Content of VMCS12, stored in XMHF's format */
-	struct nested_vmcs12 vmcs12_value;
+	struct _vmx_vmcsfields vmcs12_value;
 	/* VMEXIT MSR store area */
 	msr_entry_t vmcs02_vmexit_msr_store_area[VMX_NESTED_MAX_MSR_COUNT]
 		__attribute__((aligned(16)));
@@ -173,17 +161,17 @@ typedef struct vmcs12_info {
 
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);
 int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset);
-ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
+ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct _vmx_vmcsfields *vmcs12,
 										  size_t offset, size_t size);
-void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
+void xmhf_nested_arch_x86vmx_vmcs_write(struct _vmx_vmcsfields *vmcs12,
 										size_t offset, ulong_t value,
 										size_t size);
 void xmhf_nested_arch_x86vmx_vmcs_read_all(VCPU * vcpu,
-										   struct nested_vmcs12 *vmcs12);
+										   struct _vmx_vmcsfields *vmcs12);
 void xmhf_nested_arch_x86vmx_vmcs_write_all(VCPU * vcpu,
-											struct nested_vmcs12 *vmcs12);
+											struct _vmx_vmcsfields *vmcs12);
 void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU * vcpu,
-									   struct nested_vmcs12 *vmcs12,
+									   struct _vmx_vmcsfields *vmcs12,
 									   char *prefix);
 void xmhf_nested_arch_x86vmx_vmread_all(VCPU * vcpu, char *prefix);
 u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,

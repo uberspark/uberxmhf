@@ -55,17 +55,17 @@
 
 /*
  * Given a VMCS field encoding (used in VMREAD and VMWRITE)
- * Return index of the field in struct nested_vmcs12
+ * Return index of the field in struct _vmx_vmcsfields
  * Return (size_t)(-1) when not found
  */
 size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding)
 {
 	switch (encoding) {
 #define DECLARE_FIELD_16(encoding, name, ...) \
-		case encoding: return offsetof(struct nested_vmcs12, name);
+		case encoding: return offsetof(struct _vmx_vmcsfields, name);
 #define DECLARE_FIELD_64(encoding, name, ...) \
-		case encoding: return offsetof(struct nested_vmcs12, name); \
-		case encoding + 1: return offsetof(struct nested_vmcs12, name) + 4;
+		case encoding: return offsetof(struct _vmx_vmcsfields, name); \
+		case encoding + 1: return offsetof(struct _vmx_vmcsfields, name) + 4;
 #define DECLARE_FIELD_32(encoding, name, ...) \
 		DECLARE_FIELD_16(encoding, name)
 #define DECLARE_FIELD_NW(encoding, name, ...) \
@@ -81,19 +81,19 @@ int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset)
 {
 	switch (offset) {
 #define DECLARE_FIELD_16_RO(encoding, name, ...) \
-		case offsetof(struct nested_vmcs12, name): return 0;
+		case offsetof(struct _vmx_vmcsfields, name): return 0;
 #define DECLARE_FIELD_64_RO(encoding, name, ...) \
-		case offsetof(struct nested_vmcs12, name): return 0; \
-		case offsetof(struct nested_vmcs12, name) + 4: return 0;
+		case offsetof(struct _vmx_vmcsfields, name): return 0; \
+		case offsetof(struct _vmx_vmcsfields, name) + 4: return 0;
 #define DECLARE_FIELD_32_RO(encoding, name, ...) \
 		DECLARE_FIELD_16_RO(encoding, name)
 #define DECLARE_FIELD_NW_RO(encoding, name, ...) \
 		DECLARE_FIELD_16_RO(encoding, name)
 #define DECLARE_FIELD_16_RW(encoding, name, ...) \
-		case offsetof(struct nested_vmcs12, name): return 1;
+		case offsetof(struct _vmx_vmcsfields, name): return 1;
 #define DECLARE_FIELD_64_RW(encoding, name, ...) \
-		case offsetof(struct nested_vmcs12, name): return 1; \
-		case offsetof(struct nested_vmcs12, name) + 4: return 1;
+		case offsetof(struct _vmx_vmcsfields, name): return 1; \
+		case offsetof(struct _vmx_vmcsfields, name) + 4: return 1;
 #define DECLARE_FIELD_32_RW(encoding, name, ...) \
 		DECLARE_FIELD_16_RW(encoding, name)
 #define DECLARE_FIELD_NW_RW(encoding, name, ...) \
@@ -105,29 +105,29 @@ int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset)
 	}
 }
 
-ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
+ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct _vmx_vmcsfields *vmcs12,
 										  size_t offset, size_t size)
 {
 	switch (offset) {
 #define DECLARE_FIELD_16(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		return (ulong_t) vmcs12->name;
 #define DECLARE_FIELD_64(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		if (size == sizeof(u64)) { \
 			return (ulong_t) vmcs12->name; \
 		} else { \
 			HALT_ON_ERRORCOND(size == sizeof(u32)); \
 			return (ulong_t) *(u32 *)(void *)&vmcs12->name; \
 		} \
-	case offsetof(struct nested_vmcs12, name) + 4: \
+	case offsetof(struct _vmx_vmcsfields, name) + 4: \
 		HALT_ON_ERRORCOND(size == sizeof(u32)); \
 		return (ulong_t) ((u32 *)(void *)&vmcs12->name)[1];
 #define DECLARE_FIELD_32(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		return (ulong_t) vmcs12->name;
 #define DECLARE_FIELD_NW(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		return (ulong_t) vmcs12->name;
 #include "nested-x86vmx-vmcs12-fields.h"
 	default:
@@ -135,20 +135,20 @@ ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct nested_vmcs12 *vmcs12,
 	}
 }
 
-void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
+void xmhf_nested_arch_x86vmx_vmcs_write(struct _vmx_vmcsfields *vmcs12,
 										size_t offset, ulong_t value,
 										size_t size)
 {
 	switch (offset) {
 #define DECLARE_FIELD_16_RO(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		HALT_ON_ERRORCOND(0 && "Write to read-only VMCS field"); \
 		break;
 #define DECLARE_FIELD_64_RO(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		HALT_ON_ERRORCOND(0 && "Write to read-only VMCS field"); \
 		break; \
-	case offsetof(struct nested_vmcs12, name) + 4: \
+	case offsetof(struct _vmx_vmcsfields, name) + 4: \
 		HALT_ON_ERRORCOND(0 && "Write to read-only VMCS field"); \
 		break;
 #define DECLARE_FIELD_32_RO(encoding, name, ...) \
@@ -156,11 +156,11 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 #define DECLARE_FIELD_NW_RO(encoding, name, ...) \
 		DECLARE_FIELD_16_RO(encoding, name)
 #define DECLARE_FIELD_16_RW(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		vmcs12->name = (u16) value; \
 		break;
 #define DECLARE_FIELD_64_RW(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		if (size == sizeof(u64)) { \
 			vmcs12->name = (u64) value; \
 		} else { \
@@ -168,16 +168,16 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 			*(u32 *)(void *)&vmcs12->name = (u32) value; \
 		} \
 		break; \
-	case offsetof(struct nested_vmcs12, name) + 4: \
+	case offsetof(struct _vmx_vmcsfields, name) + 4: \
 		HALT_ON_ERRORCOND(size == sizeof(u32)); \
 		((u32 *)(void *)&vmcs12->name)[1] = (u32) value; \
 		break;
 #define DECLARE_FIELD_32_RW(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		vmcs12->name = (u32) value; \
 		break;
 #define DECLARE_FIELD_NW_RW(encoding, name, ...) \
-	case offsetof(struct nested_vmcs12, name): \
+	case offsetof(struct _vmx_vmcsfields, name): \
 		vmcs12->name = (ulong_t) value; \
 		break;
 #include "nested-x86vmx-vmcs12-fields.h"
@@ -188,7 +188,7 @@ void xmhf_nested_arch_x86vmx_vmcs_write(struct nested_vmcs12 *vmcs12,
 
 /* VMREAD all fields in current VMCS and put the result to vmcs12 */
 void xmhf_nested_arch_x86vmx_vmcs_read_all(VCPU * vcpu,
-										   struct nested_vmcs12 *vmcs12)
+										   struct _vmx_vmcsfields *vmcs12)
 {
 #define FIELD_CTLS_ARG (&vcpu->vmx_caps)
 #define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
@@ -212,7 +212,7 @@ void xmhf_nested_arch_x86vmx_vmcs_read_all(VCPU * vcpu,
 
 /* VMWRITE all fields of current VMCS using the values from vmcs12 */
 void xmhf_nested_arch_x86vmx_vmcs_write_all(VCPU * vcpu,
-											struct nested_vmcs12 *vmcs12)
+											struct _vmx_vmcsfields *vmcs12)
 {
 #define FIELD_CTLS_ARG (&vcpu->vmx_caps)
 #define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
@@ -236,7 +236,7 @@ void xmhf_nested_arch_x86vmx_vmcs_write_all(VCPU * vcpu,
 
 /* Dump all fields in vmcs12 */
 void xmhf_nested_arch_x86vmx_vmcs_dump(VCPU * vcpu,
-									   struct nested_vmcs12 *vmcs12,
+									   struct _vmx_vmcsfields *vmcs12,
 									   char *prefix)
 {
 #define DECLARE_FIELD_16(encoding, name, ...) \
@@ -399,7 +399,7 @@ static bool _check_ia32_efer(u64 ia32_efer, bool lma, bool cr0_pg)
  * Return an error code following VM instruction error number, or 0 when
  * success.
  */
-static u32 _vmcs12_get_ctls(VCPU * vcpu, struct nested_vmcs12 *vmcs12,
+static u32 _vmcs12_get_ctls(VCPU * vcpu, struct _vmx_vmcsfields *vmcs12,
 							vmx_ctls_t * ctls)
 {
 	{
@@ -458,7 +458,7 @@ static u32 _vmcs12_get_ctls(VCPU * vcpu, struct nested_vmcs12 *vmcs12,
 typedef struct _vmcs12_to_vmcs02_arg {
 	VCPU *vcpu;
 	vmcs12_info_t *vmcs12_info;
-	struct nested_vmcs12 *vmcs12;
+	struct _vmx_vmcsfields *vmcs12;
 	vmx_ctls_t *ctls;
 	guestmem_hptw_ctx_pair_t *ctx_pair;
 	u64 guest_ia32_pat;
@@ -471,7 +471,7 @@ typedef struct _vmcs12_to_vmcs02_arg {
 typedef struct _vmcs02_to_vmcs12_arg {
 	VCPU *vcpu;
 	vmcs12_info_t *vmcs12_info;
-	struct nested_vmcs12 *vmcs12;
+	struct _vmx_vmcsfields *vmcs12;
 	vmx_ctls_t *ctls;
 	u64 host_ia32_pat;
 	u64 host_ia32_efer;
@@ -1641,7 +1641,7 @@ static void _vmcs02_to_vmcs12_guest_interruptibility(ARG01 * arg)
 u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 											 vmcs12_info_t * vmcs12_info)
 {
-	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
+	struct _vmx_vmcsfields *vmcs12 = &vmcs12_info->vmcs12_value;
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	msr_entry_t *msr01 = (msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
 	msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;
@@ -1755,7 +1755,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
 										  vmcs12_info_t * vmcs12_info)
 {
-	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
+	struct _vmx_vmcsfields *vmcs12 = &vmcs12_info->vmcs12_value;
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	ARG10 arg = {
 		.vcpu = vcpu,
@@ -1788,7 +1788,7 @@ void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
 void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 											  vmcs12_info_t * vmcs12_info)
 {
-	struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
+	struct _vmx_vmcsfields *vmcs12 = &vmcs12_info->vmcs12_value;
 	guestmem_hptw_ctx_pair_t ctx_pair;
 	msr_entry_t *msr01 = (msr_entry_t *) vcpu->vmx_vaddr_msr_area_guest;
 	msr_entry_t *msr02 = vmcs12_info->vmcs02_vmentry_msr_load_area;

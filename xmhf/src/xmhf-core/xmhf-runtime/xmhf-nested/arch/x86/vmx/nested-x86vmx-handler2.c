@@ -230,7 +230,7 @@ static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 	 * perfect solution may be using monitor traps or emulating the injection.
 	 */
 	if (override_nmi_blocking) {
-		struct nested_vmcs12 *vmcs12 = &vmcs12_info->vmcs12_value;
+		struct _vmx_vmcsfields *vmcs12 = &vmcs12_info->vmcs12_value;
 		u32 injection = vmcs12->control_VM_entry_interruption_information;
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 		/* If using shadow VMCS, injection is actually in VMCS12 shadow */

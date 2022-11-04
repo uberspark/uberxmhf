@@ -54,7 +54,7 @@
  * writability is RO (read only) or RW (read write).
  * The arguments are:
  * * encoding: field encoding used in VMRAED and VMWRITE instructions
- * * name: name of the field in struct nested_vmcs12
+ * * name: name of the field in struct _vmx_vmcsfields
  * * prop: properties (macros starting with "FIELD_PROP_")
  * * exist: an expression showing whether the field is used, when
  *          the macro FIELD_CTLS_ARG is set to the controls
