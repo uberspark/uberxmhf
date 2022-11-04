@@ -94,15 +94,6 @@
  */
 #define VMX_NESTED_MAX_ACTIVE_VMCS 8
 
-enum vmcs_nested_encoding {
-#define DECLARE_FIELD_16(encoding, name, ...) \
-	VMCSENC_##name = encoding,
-#define DECLARE_FIELD_64(encoding, name, ...) DECLARE_FIELD_16(encoding, name)
-#define DECLARE_FIELD_32(encoding, name, ...) DECLARE_FIELD_16(encoding, name)
-#define DECLARE_FIELD_NW(encoding, name, ...) DECLARE_FIELD_16(encoding, name)
-#include "nested-x86vmx-vmcs12-fields.h"
-};
-
 struct nested_vmcs12 {
 #define DECLARE_FIELD_16(encoding, name, ...) \
 	u16 name;
