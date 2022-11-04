@@ -743,7 +743,7 @@ void __vmx_vmentry_fail_callback(ulong_t is_resume, ulong_t valid)
 	case 1:
 		{
 			unsigned long code;
-			HALT_ON_ERRORCOND(__vmx_vmread(0x4400, &code));
+			HALT_ON_ERRORCOND(__vmx_vmread(VMCSENC_info_vminstr_error, &code));
 			printf("CPU(0x%02x): %s error; code=0x%lx.\n", vcpu->id, inst_name,
 					code);
 		}
