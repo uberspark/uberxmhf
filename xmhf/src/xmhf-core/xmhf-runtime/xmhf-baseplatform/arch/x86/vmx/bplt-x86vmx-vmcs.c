@@ -53,13 +53,13 @@
 #include <xmhf.h>
 
 /* Write 16-bit VMCS field, never fails */
-void __vmx_vmwrite16(unsigned long encoding, u16 value) {
+void __vmx_vmwrite16(u16 encoding, u16 value) {
 	HALT_ON_ERRORCOND((encoding >> 12) == 0UL);
 	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
 }
 
 /* Write 64-bit VMCS field, never fails */
-void __vmx_vmwrite64(unsigned long encoding, u64 value) {
+void __vmx_vmwrite64(u16 encoding, u64 value) {
 	HALT_ON_ERRORCOND((encoding >> 12) == 2UL);
 	HALT_ON_ERRORCOND((encoding & 0x1) == 0x0);
 #ifdef __AMD64__
@@ -73,19 +73,19 @@ void __vmx_vmwrite64(unsigned long encoding, u64 value) {
 }
 
 /* Write 32-bit VMCS field, never fails */
-void __vmx_vmwrite32(unsigned long encoding, u32 value) {
+void __vmx_vmwrite32(u16 encoding, u32 value) {
 	HALT_ON_ERRORCOND((encoding >> 12) == 4UL);
 	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
 }
 
 /* Write natural width (NW) VMCS field, never fails */
-void __vmx_vmwriteNW(unsigned long encoding, ulong_t value) {
+void __vmx_vmwriteNW(u16 encoding, ulong_t value) {
 	HALT_ON_ERRORCOND((encoding >> 12) == 6UL);
 	HALT_ON_ERRORCOND(__vmx_vmwrite(encoding, value));
 }
 
 /* Read 16-bit VMCS field, never fails */
-u16 __vmx_vmread16(unsigned long encoding) {
+u16 __vmx_vmread16(u16 encoding) {
 	unsigned long value;
 	HALT_ON_ERRORCOND((encoding >> 12) == 0UL);
 	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
@@ -94,7 +94,7 @@ u16 __vmx_vmread16(unsigned long encoding) {
 }
 
 /* Read 64-bit VMCS field, never fails */
-u64 __vmx_vmread64(unsigned long encoding) {
+u64 __vmx_vmread64(u16 encoding) {
 #ifdef __AMD64__
 	unsigned long value;
 	HALT_ON_ERRORCOND((encoding >> 12) == 2UL);
@@ -119,7 +119,7 @@ u64 __vmx_vmread64(unsigned long encoding) {
 }
 
 /* Read 32-bit VMCS field, never fails */
-u32 __vmx_vmread32(unsigned long encoding) {
+u32 __vmx_vmread32(u16 encoding) {
 	unsigned long value;
 	HALT_ON_ERRORCOND((encoding >> 12) == 4UL);
 	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
@@ -128,7 +128,7 @@ u32 __vmx_vmread32(unsigned long encoding) {
 }
 
 /* Read natural width (NW) VMCS field, never fails */
-ulong_t __vmx_vmreadNW(unsigned long encoding) {
+ulong_t __vmx_vmreadNW(u16 encoding) {
 	unsigned long value;
 	HALT_ON_ERRORCOND((encoding >> 12) == 6UL);
 	HALT_ON_ERRORCOND(__vmx_vmread(encoding, &value));
