@@ -399,9 +399,9 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_GDTR_base;
+    return vcpu->vmcs.guest_GDTR_base;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->gdtr.base;
+    return vcpu->vmcb_vaddr_ptr->gdtr.base;
   } else {
     HALT_ON_ERRORCOND(false);
     return 0;
@@ -411,9 +411,9 @@ static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 static inline size_t VCPU_gdtr_limit(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_GDTR_limit;
+    return vcpu->vmcs.guest_GDTR_limit;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->gdtr.limit;
+    return vcpu->vmcb_vaddr_ptr->gdtr.limit;
   } else {
     HALT_ON_ERRORCOND(false);
     return 0;
@@ -423,9 +423,9 @@ static inline size_t VCPU_gdtr_limit(VCPU *vcpu)
 static inline u64 VCPU_grflags(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RFLAGS;
+    return vcpu->vmcs.guest_RFLAGS;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rflags;
+    return vcpu->vmcb_vaddr_ptr->rflags;
   } else {
     HALT_ON_ERRORCOND(false);
     return 0;
@@ -435,9 +435,9 @@ static inline u64 VCPU_grflags(VCPU *vcpu)
 static inline void VCPU_grflags_set(VCPU *vcpu, u64 val)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RFLAGS = val;
+    vcpu->vmcs.guest_RFLAGS = val;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rflags = val;
+    vcpu->vmcb_vaddr_ptr->rflags = val;
   } else {
     HALT_ON_ERRORCOND(false);
   }
@@ -446,9 +446,9 @@ static inline void VCPU_grflags_set(VCPU *vcpu, u64 val)
 static inline u64 VCPU_grip(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RIP;
+    return vcpu->vmcs.guest_RIP;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rip;
+    return vcpu->vmcb_vaddr_ptr->rip;
   } else {
     HALT_ON_ERRORCOND(false);
     return 0;
@@ -458,9 +458,9 @@ static inline u64 VCPU_grip(VCPU *vcpu)
 static inline void VCPU_grip_set(VCPU *vcpu, u64 val)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RIP = val;
+    vcpu->vmcs.guest_RIP = val;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rip = val;
+    vcpu->vmcb_vaddr_ptr->rip = val;
   } else {
     HALT_ON_ERRORCOND(false);
   }
@@ -469,9 +469,9 @@ static inline void VCPU_grip_set(VCPU *vcpu, u64 val)
 static inline u64 VCPU_grsp(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RSP;
+    return vcpu->vmcs.guest_RSP;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rsp;
+    return vcpu->vmcb_vaddr_ptr->rsp;
   } else {
     HALT_ON_ERRORCOND(false);
     return 0;
@@ -481,9 +481,9 @@ static inline u64 VCPU_grsp(VCPU *vcpu)
 static inline void VCPU_grsp_set(VCPU *vcpu, u64 val)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RSP = val;
+    vcpu->vmcs.guest_RSP = val;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rsp = val;
+    vcpu->vmcb_vaddr_ptr->rsp = val;
   } else {
     HALT_ON_ERRORCOND(false);
   }
@@ -494,7 +494,7 @@ static inline ulong_t VCPU_gcr0(VCPU *vcpu)
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return vcpu->vmcs.guest_CR0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr0;
+    return vcpu->vmcb_vaddr_ptr->cr0;
   } else {
     HALT_ON_ERRORCOND(false);
     return 0;
@@ -506,7 +506,7 @@ static inline void VCPU_gcr0_set(VCPU *vcpu, ulong_t cr0)
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     vcpu->vmcs.guest_CR0 = cr0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr0 = cr0;
+    vcpu->vmcb_vaddr_ptr->cr0 = cr0;
   } else {
     HALT_ON_ERRORCOND(false);
   }
@@ -517,7 +517,7 @@ static inline u64 VCPU_gcr3(VCPU *vcpu)
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return vcpu->vmcs.guest_CR3;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr3;
+    return vcpu->vmcb_vaddr_ptr->cr3;
   } else {
     HALT_ON_ERRORCOND(false);
     return 0;
@@ -529,7 +529,7 @@ static inline void VCPU_gcr3_set(VCPU *vcpu, u64 cr3)
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     vcpu->vmcs.guest_CR3 = cr3;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr3 = cr3;
+    vcpu->vmcb_vaddr_ptr->cr3 = cr3;
   } else {
     HALT_ON_ERRORCOND(false);
   }
@@ -540,7 +540,7 @@ static inline ulong_t VCPU_gcr4(VCPU *vcpu)
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return vcpu->vmcs.guest_CR4;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr4;
+    return vcpu->vmcb_vaddr_ptr->cr4;
   } else {
     HALT_ON_ERRORCOND(false);
     return 0;
@@ -552,7 +552,7 @@ static inline void VCPU_gcr4_set(VCPU *vcpu, ulong_t cr4)
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     vcpu->vmcs.guest_CR4 = cr4;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr4 = cr4;
+    vcpu->vmcb_vaddr_ptr->cr4 = cr4;
   } else {
     HALT_ON_ERRORCOND(false);
   }
