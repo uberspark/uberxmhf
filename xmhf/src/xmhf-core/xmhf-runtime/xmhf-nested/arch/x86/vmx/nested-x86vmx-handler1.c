@@ -1010,12 +1010,11 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU * vcpu, struct regs *r)
 			int value_mem_reg;
 			size_t size = _vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding,
 													 &pvalue, &value_mem_reg);
-			size_t offset = xmhf_nested_arch_x86vmx_vmcs_field_find(encoding);
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 			/* If using shadow VMCS, there should be no VMREAD exits */
 			HALT_ON_ERRORCOND(!_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps));
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
-			if (offset == (size_t)(-1)) {
+			if (!xmhf_nested_arch_x86vmx_vmcs_readable(encoding)) {
 				_vmx_nested_vm_fail_valid
 					(vcpu, VM_INST_ERRNO_VMRDWR_UNSUPP_VMCS_COMP);
 			} else {
@@ -1024,7 +1023,7 @@ void xmhf_nested_arch_x86vmx_handle_vmread(VCPU * vcpu, struct regs *r)
 				ulong_t value;
 				vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
 				value = xmhf_nested_arch_x86vmx_vmcs_read
-					(&vmcs12_info->vmcs12_value, offset, size);
+					(&vmcs12_info->vmcs12_value, encoding, size);
 				if (value_mem_reg) {
 					memcpy((void *)pvalue, &value, size);
 				} else {
@@ -1064,21 +1063,22 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU * vcpu, struct regs *r)
 			int value_mem_reg;
 			size_t size = _vmx_decode_vmread_vmwrite(vcpu, r, 1, &encoding,
 													 &pvalue, &value_mem_reg);
-			size_t offset = xmhf_nested_arch_x86vmx_vmcs_field_find(encoding);
 #ifdef VMX_NESTED_USE_SHADOW_VMCS
 			/* If using shadow VMCS, there should be no VMWRITE exits */
 			HALT_ON_ERRORCOND(!_vmx_hasctl_vmcs_shadowing(&vcpu->vmx_caps));
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
-			if (offset == (size_t)(-1)) {
-				_vmx_nested_vm_fail_valid
-					(vcpu, VM_INST_ERRNO_VMRDWR_UNSUPP_VMCS_COMP);
-			} else if (!xmhf_nested_arch_x86vmx_vmcs_writable(offset)) {
+			if (!xmhf_nested_arch_x86vmx_vmcs_writable(encoding)) {
 				/*
 				 * Note: currently not supporting writing to VM-exit
 				 * information field
 				 */
-				_vmx_nested_vm_fail_valid
-					(vcpu, VM_INST_ERRNO_VMWRITE_RO_VMCS_COMP);
+				if (!xmhf_nested_arch_x86vmx_vmcs_readable(encoding)) {
+					_vmx_nested_vm_fail_valid
+						(vcpu, VM_INST_ERRNO_VMRDWR_UNSUPP_VMCS_COMP);
+				} else {
+					_vmx_nested_vm_fail_valid
+						(vcpu, VM_INST_ERRNO_VMWRITE_RO_VMCS_COMP);
+				}
 			} else {
 				/* Note: Currently does not support VMCS shadowing */
 				ulong_t value = 0;
@@ -1092,7 +1092,7 @@ void xmhf_nested_arch_x86vmx_handle_vmwrite(VCPU * vcpu, struct regs *r)
 					guestmem_copy_gv2h(&ctx_pair, 0, &value, pvalue, size);
 				}
 				xmhf_nested_arch_x86vmx_vmcs_write(&vmcs12_info->vmcs12_value,
-												   offset, value, size);
+												   encoding, value, size);
 				_vmx_nested_vm_succeed(vcpu);
 			}
 		}

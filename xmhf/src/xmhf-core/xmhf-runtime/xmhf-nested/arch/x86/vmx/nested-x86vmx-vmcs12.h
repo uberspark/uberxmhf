@@ -159,10 +159,10 @@ typedef struct vmcs12_info {
 	vmx_ctls_t ctls12;
 } vmcs12_info_t;
 
-size_t xmhf_nested_arch_x86vmx_vmcs_field_find(ulong_t encoding);
-int xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset);
+bool xmhf_nested_arch_x86vmx_vmcs_readable(ulong_t encoding);
+bool xmhf_nested_arch_x86vmx_vmcs_writable(size_t offset);
 ulong_t xmhf_nested_arch_x86vmx_vmcs_read(struct _vmx_vmcsfields *vmcs12,
-										  size_t offset, size_t size);
+										  ulong_t encoding, size_t size);
 void xmhf_nested_arch_x86vmx_vmcs_write(struct _vmx_vmcsfields *vmcs12,
 										size_t offset, ulong_t value,
 										size_t size);
