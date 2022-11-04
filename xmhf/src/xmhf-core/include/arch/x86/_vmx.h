@@ -385,177 +385,25 @@ typedef struct msr_entry {
 
 
 //VMX VMCS fields
+enum vmcs_nested_encoding {
+#define DECLARE_FIELD_16(encoding, name, ...) \
+  VMCSENC_##name = encoding,
+#define DECLARE_FIELD_64(...) DECLARE_FIELD_16(__VA_ARGS__)
+#define DECLARE_FIELD_32(...) DECLARE_FIELD_16(__VA_ARGS__)
+#define DECLARE_FIELD_NW(...) DECLARE_FIELD_16(__VA_ARGS__)
+#include "_vmx_vmcs_fields.h"
+};
+
 struct _vmx_vmcsfields {
-#if defined(__NESTED_PAGING__)
-  //16-bit control fields
-  u16       control_vpid;
-#endif
-  // Natural 32-bit Control fields
-  u32       control_VMX_pin_based;
-  u32       control_VMX_cpu_based;
-//#if defined(__NESTED_PAGING__)
-  u32       control_VMX_seccpu_based;
-//#endif
-  u32       control_exception_bitmap;
-  u32       control_pagefault_errorcode_mask;
-  u32       control_pagefault_errorcode_match;
-  u32       control_CR3_target_count;
-  u32       control_VM_exit_controls;
-  u32       control_VM_exit_MSR_store_count;
-  u32       control_VM_exit_MSR_load_count;
-  u32       control_VM_entry_controls;
-  u32       control_VM_entry_MSR_load_count;
-  u32       control_VM_entry_interruption_information;
-  u32       control_VM_entry_exception_errorcode;
-  u32       control_VM_entry_instruction_length;
-  u32       control_Task_PRivilege_Threshold;
-  // Natural 64-bit Control fields
-  ulong_t   control_CR0_mask;
-  ulong_t   control_CR4_mask;
-  ulong_t   control_CR0_shadow;
-  ulong_t   control_CR4_shadow;
-#ifndef __DEBUG_QEMU__
-  ulong_t   control_CR3_target0;
-  ulong_t   control_CR3_target1;
-  ulong_t   control_CR3_target2;
-  ulong_t   control_CR3_target3;
-#endif /* !__DEBUG_QEMU__ */
-  // Full 64-bit Control fields
-  u64       control_IO_BitmapA_address;
-  u64       control_IO_BitmapB_address;
-  u64       control_MSR_Bitmaps_address;
-  u64       control_VM_exit_MSR_store_address;
-  u64       control_VM_exit_MSR_load_address;
-  u64       control_VM_entry_MSR_load_address;
-#ifndef __DEBUG_QEMU__
-  u64       control_Executive_VMCS_pointer;
-#endif /* !__DEBUG_QEMU__ */
-  u64       control_TSC_offset;
-  u64       control_virtual_APIC_page_address;
-#if defined(__NESTED_PAGING__)
-  u64       control_EPT_pointer;
-#endif
-  u64       control_XSS_exiting_bitmap;
-  // Natural 64-bit Host-State fields
-  ulong_t   host_CR0;
-  ulong_t   host_CR3;
-  ulong_t   host_CR4;
-  ulong_t   host_FS_base;
-  ulong_t   host_GS_base;
-  ulong_t   host_TR_base;
-  ulong_t   host_GDTR_base;
-  ulong_t   host_IDTR_base;
-  ulong_t   host_SYSENTER_ESP;
-  ulong_t   host_SYSENTER_EIP;
-  ulong_t   host_RSP;
-  ulong_t   host_RIP;
-  // Natural 32-bit Host-State fields
-  u32       host_SYSENTER_CS;
-  // Natural 16-bit Host-State fields
-  u16       host_ES_selector;
-  u16       host_CS_selector;
-  u16       host_SS_selector;
-  u16       host_DS_selector;
-  u16       host_FS_selector;
-  u16       host_GS_selector;
-  u16       host_TR_selector;
-  // Natural 64-bit Guest-State fields
-  ulong_t   guest_CR0;
-  ulong_t   guest_CR3;
-  ulong_t   guest_CR4;
-  ulong_t   guest_ES_base;
-  ulong_t   guest_CS_base;
-  ulong_t   guest_SS_base;
-  ulong_t   guest_DS_base;
-  ulong_t   guest_FS_base;
-  ulong_t   guest_GS_base;
-  ulong_t   guest_LDTR_base;
-  ulong_t   guest_TR_base;
-  ulong_t   guest_GDTR_base;
-  ulong_t   guest_IDTR_base;
-  ulong_t   guest_DR7;
-  ulong_t   guest_RSP;
-  ulong_t   guest_RIP;
-  ulong_t   guest_RFLAGS;
-  ulong_t   guest_pending_debug_x;
-  ulong_t   guest_SYSENTER_ESP;
-  ulong_t   guest_SYSENTER_EIP;
-  // Natural 32-bit Guest-State fields
-  u32       guest_ES_limit;
-  u32       guest_CS_limit;
-  u32       guest_SS_limit;
-  u32       guest_DS_limit;
-  u32       guest_FS_limit;
-  u32       guest_GS_limit;
-  u32       guest_LDTR_limit;
-  u32       guest_TR_limit;
-  u32       guest_GDTR_limit;
-  u32       guest_IDTR_limit;
-  u32       guest_ES_access_rights;
-  u32       guest_CS_access_rights;
-  u32       guest_SS_access_rights;
-  u32       guest_DS_access_rights;
-  u32       guest_FS_access_rights;
-  u32       guest_GS_access_rights;
-  u32       guest_LDTR_access_rights;
-  u32       guest_TR_access_rights;
-  u32       guest_interruptibility;
-  u32       guest_activity_state;
-#ifndef __DEBUG_QEMU__
-  u32       guest_SMBASE;
-#endif /* !__DEBUG_QEMU__ */
-  u32       guest_SYSENTER_CS;
-  // Natural 16-bit Guest-State fields
-  u16       guest_ES_selector;
-  u16       guest_CS_selector;
-  u16       guest_SS_selector;
-  u16       guest_DS_selector;
-  u16       guest_FS_selector;
-  u16       guest_GS_selector;
-  u16       guest_LDTR_selector;
-  u16       guest_TR_selector;
-  // Full 64-bit Guest-State fields
-  u64       guest_VMCS_link_pointer;
-  u64       guest_IA32_DEBUGCTL;
-#if defined(__NESTED_PAGING__)
-  u64       guest_paddr;
-  u64       guest_PDPTE0;
-  u64       guest_PDPTE1;
-  u64       guest_PDPTE2;
-  u64       guest_PDPTE3;
-#endif
-  //Read-Only Fields
-  u32       info_vminstr_error;
-  u32       info_vmexit_reason;
-  u32       info_vmexit_interrupt_information;
-  u32       info_vmexit_interrupt_error_code;
-  u32       info_IDT_vectoring_information;
-  u32       info_IDT_vectoring_error_code;
-  u32       info_vmexit_instruction_length;
-  u32       info_vmx_instruction_information;
-  ulong_t   info_exit_qualification;
-#ifndef __DEBUG_QEMU__
-  ulong_t   info_IO_RCX;
-  ulong_t   info_IO_RSI;
-  ulong_t   info_IO_RDI;
-  ulong_t   info_IO_RIP;
-#endif /* !__DEBUG_QEMU__ */
-  ulong_t   info_guest_linear_address;
-};
-
-
-struct _vmx_vmcsrofields_encodings	{
- unsigned int  encoding;
- unsigned int  fieldoffset;
- unsigned int  membersize;
- unsigned int  exist;
-};
-
-struct _vmx_vmcsrwfields_encodings	{
- unsigned int  encoding;
- unsigned int  fieldoffset;
- unsigned int  membersize;
- unsigned int  exist;
+#define DECLARE_FIELD_16(encoding, name, ...) \
+  u16 name;
+#define DECLARE_FIELD_64(encoding, name, ...) \
+  u64 name;
+#define DECLARE_FIELD_32(encoding, name, ...) \
+  u32 name;
+#define DECLARE_FIELD_NW(encoding, name, ...) \
+  ulong_t name;
+#include "_vmx_vmcs_fields.h"
 };
 
 /* VM-Entry Interruption-Information Field */

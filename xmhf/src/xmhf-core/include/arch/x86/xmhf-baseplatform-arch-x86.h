@@ -750,18 +750,6 @@ static inline void VCPU_reg_set(VCPU *vcpu, struct regs* r,
 extern u32 _mle_join_start[];
 
 
-//VMX VMCS read-only field encodings
-extern struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") ));
-
-//count of VMX VMCS read-only fields
-extern unsigned int g_vmx_vmcsrofields_encodings_count __attribute__(( section(".data") ));
-
-//VMX VMCS read-write field encodings
-extern struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(( section(".data") ));
-
-//count of VMX VMCS read-write fields
-extern unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") ));
-
 //VMX VMXON buffers
 extern u8 g_vmx_vmxon_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 

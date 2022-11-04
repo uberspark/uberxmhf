@@ -329,16 +329,6 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
-	//set "exist" field of VMCS
-	if (!_vmx_hasctl_enable_xsaves_xrstors(&vcpu->vmx_caps)) {
-		// Set "XSS-exiting bitmap" as not exist
-		u32 i;
-		for (i = 0; i < g_vmx_vmcsrwfields_encodings_count; i++) {
-			if (g_vmx_vmcsrwfields_encodings[i].encoding == 0x202C) {
-				g_vmx_vmcsrwfields_encodings[i].exist = 0;
-			}
-		}
-	}
 	//setup host state
 	vcpu->vmcs.host_CR0 = read_cr0();
 	vcpu->vmcs.host_CR4 = read_cr4();
