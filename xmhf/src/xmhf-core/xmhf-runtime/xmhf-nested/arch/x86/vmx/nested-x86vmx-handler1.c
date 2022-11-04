@@ -1198,10 +1198,10 @@ void xmhf_nested_arch_x86vmx_handle_vmxon(VCPU * vcpu, struct regs *r)
 							(1U << VMX_SECPROCBASED_VMCS_SHADOWING);
 
 						/* Write VMREAD / VMWRITE bitmap */
-						__vmx_vmwrite64(VMCSENC_control_VMREAD_bitmap_address,
-										hva2spa(blank_page));
-						__vmx_vmwrite64(VMCSENC_control_VMWRITE_bitmap_address,
-										hva2spa(blank_page));
+						vcpu->vmcs.control_VMREAD_bitmap_address =
+							hva2spa(blank_page);
+						vcpu->vmcs.control_VMWRITE_bitmap_address =
+							hva2spa(blank_page);
 					}
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 					active_vmcs12_array_init(vcpu);
