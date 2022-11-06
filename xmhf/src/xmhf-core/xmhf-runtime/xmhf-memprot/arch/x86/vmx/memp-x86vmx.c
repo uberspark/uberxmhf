@@ -176,12 +176,8 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 
 	//0. sanity check
   	//check MTRR support
-  	eax=0x00000001;
-  	ecx=0x00000000;
 	#ifndef __XMHF_VERIFICATION__
-  	asm volatile ("cpuid\r\n"
-            :"=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
-            :"a"(eax), "c" (ecx));
+	cpuid(1, &eax, &ebx, &ecx, &edx);
   	#endif
 
   	if( !(edx & (u32)(1 << 12)) ){
