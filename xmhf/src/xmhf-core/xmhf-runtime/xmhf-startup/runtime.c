@@ -284,7 +284,7 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
     #endif
 
     //call app main
-    if(xmhf_app_main(vcpu, &appParamBlock)){
+    if(xmhf_app_main(vcpu, &appParamBlock) != APP_INIT_SUCCESS){
         printf("CPU(0x%02x): EMHF app. failed to initialize. HALT!\n", vcpu->id);
         HALT();
     }

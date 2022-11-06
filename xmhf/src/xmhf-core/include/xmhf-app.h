@@ -87,6 +87,9 @@ typedef struct {
 /*
  * Called by all CPUs when XMHF boots.
  *
+ * Hypapp should return APP_INIT_SUCCESS if hypapp initialization is successful.
+ * Otherwise hypapp should return APP_INIT_FAIL (XMHF will halt).
+ *
  * When this function is called, other CPUs are NOT quiesced.
  */
 extern u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
@@ -98,6 +101,10 @@ extern u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
  * portnum: I/O port number accessed (0 - 0xffff inclusive)
  * access_type: IO_TYPE_IN or IO_TYPE_OUT
  * access_size: IO_SIZE_BYTE or IO_SIZE_WORD or IO_SIZE_DWORD
+ *
+ * Hypapp should return APP_IOINTERCEPT_SKIP if the I/O port access is handled.
+ * Otherwise hypapp should return APP_IOINTERCEPT_CHAIN (XMHF will perform the
+ * access in hypervisor mode).
  *
  * When this function is called, other CPUs may or may not be quiesced. This is
  * configured using __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__.

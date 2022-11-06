@@ -727,6 +727,7 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
   }else{
     //skip the IO instruction, app has taken care of it
+    HALT_ON_ERRORCOND(app_ret_status == APP_IOINTERCEPT_SKIP);
   	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
   }
 
