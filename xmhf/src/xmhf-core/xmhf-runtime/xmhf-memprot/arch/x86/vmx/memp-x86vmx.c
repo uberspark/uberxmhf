@@ -441,10 +441,19 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 		printf("CPU(0x%02x): WRMSR (MTRR) 0x%08x 0x%016llx (old = 0x%016llx)\n",
 				vcpu->id, msr, val, oldval);
 	}
-	/* Check whether hypapp allows modifying MTRR */
-	xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+	/*
+	 * Check whether hypapp allows modifying MTRR
+	 *
+	 * TODO: For TrustVisor, there is a corner case race condition:
+	 * 1. CPU X calls xmhf_app_handlemtrr() and returns
+	 * 2. CPU Y starts TrustVisor business, which modifies EPT01
+	 * 3. CPU X calls _vmx_updateEPT_memtype(), which modifies EPT01
+	 *
+	 * A possible workaround is to call xmhf_app_handlemtrr() after
+	 * _vmx_updateEPT_memtype(). However this does not work if the hypapp has
+	 * special MTRR handling code.
+	 */
 	hypapp_status = xmhf_app_handlemtrr(vcpu, msr, val);
-	xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 	if (hypapp_status != APP_SUCCESS) {
 		printf("CPU(0x%02x): Hypapp does not allow changing MTRRs. Halt!\n",
 				vcpu->id);
