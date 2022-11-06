@@ -152,41 +152,52 @@ u64 _vmx_get_guest_efer(VCPU *vcpu)
 static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	//printf("CPU(0x%02x): CPUID\n", vcpu->id);
 	u32 old_eax = r->eax;
-	asm volatile ("cpuid\r\n"
-          :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
-          :"a"(r->eax), "c" (r->ecx));
-	
-	// Use the registers returned by <xmhf_app_handlecpuid>
-	xmhf_app_handlecpuid(vcpu, r, old_eax);
+	u32 app_ret_status = xmhf_app_handlecpuid(vcpu, r);
 
-	if (old_eax == 0x1U) {
-		/* Clear VMX capability */
-		r->ecx &= ~(1U << 5);
+	switch (app_ret_status) {
+	case APP_CPUID_SKIP:
+		break;
+
+	case APP_CPUID_CHAIN:
+		asm volatile ("cpuid\r\n"
+		      :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
+		      :"a"(r->eax), "c" (r->ecx));
+
+		if (old_eax == 0x1U) {
+			/* Clear VMX capability */
+			r->ecx &= ~(1U << 5);
 #ifdef __HIDE_X2APIC__
-		/* Clear x2APIC capability (not stable in Circle CI and HP 840) */
-		r->ecx &= ~(1U << 21);
+			/* Clear x2APIC capability (not stable in Circle CI and HP 840) */
+			r->ecx &= ~(1U << 21);
 #endif /* __HIDE_X2APIC__ */
 #ifndef __UPDATE_INTEL_UCODE__
-		/*
-		 * Set Hypervisor Present bit.
-		 * Fedora 35's AP will retry updating Intel microcode forever if the
-		 * update fails. So we set the hypervisor present bit to work around
-		 * this problem.
-		 */
-		r->ecx |= (1U << 31);
+			/*
+			 * Set Hypervisor Present bit.
+			 * Fedora 35's AP will retry updating Intel microcode forever if
+			 * the update fails. So we set the hypervisor present bit to work
+			 * around this problem.
+			 */
+			r->ecx |= (1U << 31);
 #endif /* !__UPDATE_INTEL_UCODE__ */
-	}
+		}
 #ifdef __I386__
-	/*
-	 * For i386 XMHF running on an AMD64 CPU, make the guest think that the CPU
-	 * is i386 (i.e. 32-bits).
-	 */
-	if (old_eax == 0x80000001U) {
-		r->edx &= ~(1U << 29);
-	}
+		/*
+		 * For i386 XMHF running on an AMD64 CPU, make the guest think that the
+		 * CPU is i386 (i.e. 32-bits).
+		 */
+		if (old_eax == 0x80000001U) {
+			r->edx &= ~(1U << 29);
+		}
 #elif !defined(__AMD64__)
     #error "Unsupported Arch"
 #endif /* !defined(__AMD64__) */
+		break;
+
+	default:
+		HALT_ON_ERRORCOND(0 && "Unknown return code from xmhf_app_handlecpuid()");
+		break;
+	}
+
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
 

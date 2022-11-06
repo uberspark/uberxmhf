@@ -94,9 +94,10 @@ void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 
 //handles CPUID invokation
 //for now allow default behavior
-void xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r, uint32_t fn)
+u32 xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r)
 {
-	(void)vcpu;(void)r;(void)fn;
+	(void)vcpu;(void)r;
+	return APP_CPUID_CHAIN;
 }
 
 //handles h/w pagetable violations

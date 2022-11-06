@@ -65,6 +65,8 @@
 #define APP_IOINTERCEPT_SKIP    0xA1
 #define APP_INIT_SUCCESS        0x0
 #define APP_INIT_FAIL           0xFF
+#define APP_CPUID_CHAIN         0x0F
+#define APP_CPUID_SKIP          0xA2
 
 
 //application parameter block
@@ -168,16 +170,14 @@ extern u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val);
 /*
  * Called when the guest executes CPUID.
  *
- * The intention is to allow the guest to detect presence of the hypapp.
- *
- * Before calling this function, XMHF already performs CPUID and updates r. The
- * old EAX from the guest is in fn.
- *
- * TODO: modify interface to let hypapp return whether CPUID is handled.
+ * The intention of this function is to allow the guest to detect presence of
+ * the hypapp. If the hypapp handles the CPUID instruction, it should return
+ * APP_CPUID_SKIP. Otherwise the hypapp should return APP_CPUID_CHAIN and XMHF
+ * will handle the CPUID instruction.
  *
  * When this function is called, other CPUs are NOT quiesced.
  */
-extern void xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r, uint32_t fn);
+extern u32 xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r);
 
 #endif	//__ASSEMBLY__
 
