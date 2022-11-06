@@ -65,6 +65,8 @@
 #define APP_IOINTERCEPT_SKIP    0xA1
 #define APP_INIT_SUCCESS        0x0
 #define APP_INIT_FAIL           0xFF
+#define APP_CPUID_CHAIN         0x0F
+#define APP_CPUID_SKIP          0xA2
 
 
 //application parameter block
@@ -83,15 +85,99 @@ typedef struct {
 
 
 //EMHF application callbacks
+
+/*
+ * Called by all CPUs when XMHF boots.
+ *
+ * Hypapp should return APP_INIT_SUCCESS if hypapp initialization is successful.
+ * Otherwise hypapp should return APP_INIT_FAIL (XMHF will halt).
+ *
+ * When this function is called, other CPUs are NOT quiesced.
+ */
 extern u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
-extern u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size);
-extern u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
-      struct regs *r,
-      gpa_t gpa, gva_t gva, u64 violationcode);
+
+/*
+ * Called when the guest accesses some I/O port that is configured to be
+ * intercepted using the I/O bitmap.
+ *
+ * portnum: I/O port number accessed (0 - 0xffff inclusive)
+ * access_type: IO_TYPE_IN or IO_TYPE_OUT
+ * access_size: IO_SIZE_BYTE or IO_SIZE_WORD or IO_SIZE_DWORD
+ *
+ * Hypapp should return APP_IOINTERCEPT_SKIP if the I/O port access is handled.
+ * Otherwise hypapp should return APP_IOINTERCEPT_CHAIN (XMHF will perform the
+ * access in hypervisor mode).
+ *
+ * When this function is called, other CPUs may or may not be quiesced. This is
+ * configured using __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__.
+ */
+extern u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
+                                               u32 portnum, u32 access_type,
+                                               u32 access_size);
+
+/*
+ * Called when the guest accesses invalid memory in NPT / EPT.
+ *
+ * In nested virtualization, this function is called when EPT02 violation is
+ * due to EPT01 violation. L1 will handle EPT02 violation due to EPT12
+ * violation.
+ *
+ * gpa: guest physical address accessed
+ * gva: guest virtual address accessed
+ * violationcode: platform specific reasion of NPT / EPT violation
+ *
+ * When this function is called, other CPUs may or may not be quiesced. This is
+ * configured using __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__.
+ */
+extern u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu, struct regs *r,
+                                                     gpa_t gpa, gva_t gva,
+                                                     u64 violationcode);
+
+/*
+ * Called when the guest tries to shutdown / restart.
+ *
+ * Hypapp should call xmhf_baseplatform_reboot() to perform the restart.
+ *
+ * When this function is called, other CPUs are NOT quiesced.
+ * XXX: this is leading to known vulnerabilities of XMHF.
+ */
 extern void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
-extern u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_SUCCESS if handled, else APP_ERROR
-extern u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val);	//returns APP_SUCCESS if allow MTRR change
-extern void xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r, uint32_t fn);
+
+/*
+ * Called when the guest tries to perform VMCALL / VMMCALL.
+ *
+ * In nested virtualization, this function is called when r->eax is within
+ * range [VMX_HYPAPP_L2_VMCALL_MIN, VMX_HYPAPP_L2_VMCALL_MAX] (inclusive).
+ * Otherwise the hyper call is handled by L1.
+ *
+ * Hypapp should return APP_SUCCESS if hyper call is handled. Otherwise hypapp
+ * should return APP_ERROR (XMHF will halt).
+ *
+ * When this function is called, other CPUs are quiesced.
+ */
+extern u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r);
+
+/*
+ * Called when the guest tries to modify MTRR.
+ *
+ * Hypapp should return APP_SUCCESS if MTRR can be modified (for VMX, XMHF will
+ * modify MTRR). Otherwise hypapp should return APP_ERROR (XMHF will halt).
+ *
+ * When this function is called, other CPUs are NOT quiesced.
+ */
+extern u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val);
+
+/*
+ * Called when the guest executes CPUID.
+ *
+ * The intention of this function is to allow the guest to detect presence of
+ * the hypapp. If the hypapp handles the CPUID instruction, it should return
+ * APP_CPUID_SKIP. Otherwise the hypapp should return APP_CPUID_CHAIN and XMHF
+ * will handle the CPUID instruction.
+ *
+ * When this function is called, other CPUs are NOT quiesced.
+ */
+extern u32 xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r);
 
 #endif	//__ASSEMBLY__
 

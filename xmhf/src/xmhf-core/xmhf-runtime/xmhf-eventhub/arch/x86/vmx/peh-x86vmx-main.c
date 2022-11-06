@@ -152,63 +152,74 @@ u64 _vmx_get_guest_efer(VCPU *vcpu)
 static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	//printf("CPU(0x%02x): CPUID\n", vcpu->id);
 	u32 old_eax = r->eax;
-	asm volatile ("cpuid\r\n"
-          :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
-          :"a"(r->eax), "c" (r->ecx));
-	
-	// Use the registers returned by <xmhf_app_handlecpuid>
-	xmhf_app_handlecpuid(vcpu, r, old_eax);
+	u32 app_ret_status = xmhf_app_handlecpuid(vcpu, r);
 
-	if (old_eax == 0x1U) {
+	switch (app_ret_status) {
+	case APP_CPUID_SKIP:
+		break;
+
+	case APP_CPUID_CHAIN:
+		asm volatile ("cpuid\r\n"
+		      :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
+		      :"a"(r->eax), "c" (r->ecx));
+
+		if (old_eax == 0x1U) {
 #ifndef __NESTED_VIRTUALIZATION__
-		/* Clear VMX capability */
-		r->ecx &= ~(1U << 5);
+			/* Clear VMX capability */
+			r->ecx &= ~(1U << 5);
 #endif /* !__NESTED_VIRTUALIZATION__ */
 #ifdef __HIDE_X2APIC__
-		/* Clear x2APIC capability (not stable in Circle CI and HP 840) */
-		r->ecx &= ~(1U << 21);
+			/* Clear x2APIC capability (not stable in Circle CI and HP 840) */
+			r->ecx &= ~(1U << 21);
 #endif /* __HIDE_X2APIC__ */
 #ifndef __UPDATE_INTEL_UCODE__
-		/*
-		 * Set Hypervisor Present bit.
-		 * Fedora 35's AP will retry updating Intel microcode forever if the
-		 * update fails. So we set the hypervisor present bit to work around
-		 * this problem.
-		 */
-		r->ecx |= (1U << 31);
+			/*
+			 * Set Hypervisor Present bit.
+			 * Fedora 35's AP will retry updating Intel microcode forever if
+			 * the update fails. So we set the hypervisor present bit to work
+			 * around this problem.
+			 */
+			r->ecx |= (1U << 31);
 #endif /* !__UPDATE_INTEL_UCODE__ */
-	}
+		}
 #ifdef __I386__
-	/*
-	 * For i386 XMHF running on an AMD64 CPU, make the guest think that the CPU
-	 * is i386 (i.e. 32-bits).
-	 */
-	if (old_eax == 0x80000001U) {
-		r->edx &= ~(1U << 29);
-	}
+		/*
+		 * For i386 XMHF running on an AMD64 CPU, make the guest think that the
+		 * CPU is i386 (i.e. 32-bits).
+		 */
+		if (old_eax == 0x80000001U) {
+			r->edx &= ~(1U << 29);
+		}
 #elif !defined(__AMD64__)
     #error "Unsupported Arch"
 #endif /* !defined(__AMD64__) */
 
 #ifdef __DEBUG_QEMU__
-	/*
-	 * Logic to allow the guest detect the presence of XMHF. We assume other
-	 * software / hardware will not have 0x46484d58U in CPUID, which is "XMHF".
-	 * When only one level of XMHF is present, eax = 0x46484d58U. When two
-	 * levels of XMHF are present, eax = ebx = 0x46484d58U, and so on.
-	 */
-	if (old_eax == 0x46484d58U) {
-		if (r->eax != 0x46484d58U) {
-			r->eax = 0x46484d58U;
-		} else if (r->ebx != 0x46484d58U) {
-			r->ebx = 0x46484d58U;
-		} else if (r->ecx != 0x46484d58U) {
-			r->ecx = 0x46484d58U;
-		} else {
-			r->edx = 0x46484d58U;
+		/*
+		 * Logic to allow the guest detect the presence of XMHF. We assume
+		 * other software / hardware will not have 0x46484d58U in CPUID, which
+		 * is "XMHF". When only one level of XMHF is present,
+		 * eax = 0x46484d58U. When two levels of XMHF are present,
+		 * eax = ebx = 0x46484d58U, and so on.
+		 */
+		if (old_eax == 0x46484d58U) {
+			if (r->eax != 0x46484d58U) {
+				r->eax = 0x46484d58U;
+			} else if (r->ebx != 0x46484d58U) {
+				r->ebx = 0x46484d58U;
+			} else if (r->ecx != 0x46484d58U) {
+				r->ecx = 0x46484d58U;
+			} else {
+				r->edx = 0x46484d58U;
+			}
 		}
-	}
 #endif
+		break;
+
+	default:
+		HALT_ON_ERRORCOND(0 && "Unknown return code from xmhf_app_handlecpuid()");
+		break;
+	}
 
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 }
@@ -822,6 +833,7 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
   }else{
     //skip the IO instruction, app has taken care of it
+    HALT_ON_ERRORCOND(app_ret_status == APP_IOINTERCEPT_SKIP);
   	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
   }
 
