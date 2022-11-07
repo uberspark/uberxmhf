@@ -60,6 +60,12 @@
 /* Maximum number of active VPIDs per CPU */
 #define VMX_NESTED_MAX_ACTIVE_VPID 4
 
+/* Exit codes for xmhf_nested_arch_x86vmx_handle_ept02_exit() */
+#define VMX_NESTED_EPT02_CACHEMISS	1
+#define VMX_NESTED_EPT01_VIOLATION	2
+#define VMX_NESTED_EPT12_VIOLATION	3
+#define VMX_NESTED_EPT12_MISCONFIG	4
+
 /* Format of EPT12 context information */
 typedef struct {
 	/* Context of EPT12 */

@@ -526,7 +526,7 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 	 * By default, if L1 has not enabled EPT, then it is letting L2 access
 	 * illegal memory. XMHF will halt.
 	 */
-	int status = 3;
+	int status = VMX_NESTED_EPT01_VIOLATION;
 
 	/*
 	 * Begin blocking EPT02 flush (blocking is needed because
@@ -589,7 +589,7 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 														   qualification);
 	}
 	switch (status) {
-	case 1:
+	case VMX_NESTED_EPT02_CACHEMISS:
 		/*
 		 * EPT handled by L0, continue running L2.
 		 * First re-inject interruption to make sure interrupts etc. are not
@@ -616,16 +616,7 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 		}
 		ret = NESTED_VMEXIT_HANDLE_202;
 		break;
-	case 2:
-		/*
-		 * Forward EPT violation to L1.
-		 *
-		 * There is no address L0 physical -> L1 physical address translation
-		 * needed, so just continue.
-		 */
-		ret = NESTED_VMEXIT_HANDLE_201;
-		break;
-	case 3:
+	case VMX_NESTED_EPT01_VIOLATION:
 		/* Guest accesses illegal address, halt for safety */
 		printf("CPU(0x%02x): qualification: 0x%08lx\n", vcpu->id,
 			   __vmx_vmreadNW(VMCSENC_info_exit_qualification));
@@ -635,7 +626,16 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 			   __vmx_vmreadNW(VMCSENC_info_guest_linear_address));
 		HALT_ON_ERRORCOND(0 && "Guest accesses illegal memory");
 		break;
-	case 4:
+	case VMX_NESTED_EPT12_VIOLATION:
+		/*
+		 * Forward EPT violation to L1.
+		 *
+		 * There is no address L0 physical -> L1 physical address translation
+		 * needed, so just continue.
+		 */
+		ret = NESTED_VMEXIT_HANDLE_201;
+		break;
+	case VMX_NESTED_EPT12_MISCONFIG:
 		/*
 		 * Guest EPT is misconfigured, change VMEXIT reason from EPT violation
 		 * to EPT misconfiguration.
