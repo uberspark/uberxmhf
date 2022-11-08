@@ -844,7 +844,7 @@ void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU * vcpu, struct regs *r)
 
 void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU * vcpu,
 													  struct regs *r,
-													  int is_vmresume)
+													  bool is_vmresume)
 {
 	if (_vmx_nested_check_ud(vcpu, 0)) {
 		_vmx_inject_exception(vcpu, CPU_EXCEPTION_UD, 0, 0);

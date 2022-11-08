@@ -78,8 +78,8 @@ void xmhf_nested_arch_x86vmx_handle_invept(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_invvpid(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmclear(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(VCPU *vcpu,
-														struct regs *r,
-														int is_vmresume);
+													  struct regs *r,
+													  bool is_vmresume);
 void xmhf_nested_arch_x86vmx_handle_vmptrld(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmptrst(VCPU *vcpu, struct regs *r);
 void xmhf_nested_arch_x86vmx_handle_vmread(VCPU *vcpu, struct regs *r);
