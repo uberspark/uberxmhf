@@ -179,11 +179,13 @@ void scode_return_section( hptw_ctx_t *reg_npm_ctx,
                            hptw_ctx_t *pal_gpm_ctx,
                            const tv_pal_section_int_t *section);
 
+#if 0
 int scode_clone_gdt(VCPU *vcpu,
                     gva_t gdtr_base, size_t gdtr_lim,
                     hptw_ctx_t *pal_gpm_ctx,
                     pagelist_t *pl
                     );
+#endif
 
 #endif /* __SCODE_H_ */
 

@@ -143,6 +143,7 @@ int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, size_t len)
   return rv;
 }
 
+#if 0
 /* clone pal's gdt from 'reg' gdt, and add to pal's guest page tables.
    gdt is allocted using passed-in-pl, whose pages should already be
    accessible to pal's nested page tables. XXX SECURITY need to build
@@ -193,6 +194,7 @@ int scode_clone_gdt(VCPU *vcpu,
  out:
   return err;
 }
+#endif
 
 /* lend a section of memory from a user-space process (on the
    commodity OS) to a pal */
