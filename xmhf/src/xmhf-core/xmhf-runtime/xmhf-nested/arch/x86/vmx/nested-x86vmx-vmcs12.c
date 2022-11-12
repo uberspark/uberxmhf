@@ -958,7 +958,6 @@ static u32 _vmcs12_to_vmcs02_control_EPT_pointer(ARG10 * arg)
 static void _vmcs02_to_vmcs12_control_EPT_pointer(ARG01 * arg)
 {
 	spa_t ept02;
-	u16 encoding = VMCSENC_control_EPT_pointer;
 	HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&arg->vcpu->vmx_caps));
 	if (_vmx_hasctl_enable_ept(arg->ctls)) {
 		gpa_t ept12 = arg->vmcs12_info->guest_ept_root;
@@ -970,7 +969,7 @@ static void _vmcs02_to_vmcs12_control_EPT_pointer(ARG01 * arg)
 	} else {
 		ept02 = arg->vcpu->vmcs.control_EPT_pointer;
 	}
-	HALT_ON_ERRORCOND(__vmx_vmread64(encoding) == ept02);
+	HALT_ON_ERRORCOND(__vmx_vmread64(VMCSENC_control_EPT_pointer) == ept02);
 	/* vmcs12->control_EPT_pointer is ignored here */
 	(void)_vmcs02_to_vmcs12_control_EPT_pointer_unused;
 }
