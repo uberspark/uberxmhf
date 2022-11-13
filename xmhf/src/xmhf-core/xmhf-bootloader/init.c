@@ -979,6 +979,7 @@ bool svm_prepare_tpm(void) {
 void cstartup(multiboot_info_t *mbi){
     module_t *mod_array;
     u32 mods_count;
+    size_t sl_rt_nonzero_size;
 
     /* parse command line */
     memset(g_cmdline, '\0', sizeof(g_cmdline));
@@ -1057,7 +1058,8 @@ void cstartup(multiboot_info_t *mbi){
 
     //find highest 2MB aligned physical memory address that the hypervisor
     //binary must be moved to
-    sl_rt_size = mod_array[0].mod_end - mod_array[0].mod_start;
+    sl_rt_nonzero_size = mod_array[0].mod_end - mod_array[0].mod_start;
+    sl_rt_size = sl_rt_nonzero_size;
 
 #ifdef __SKIP_RUNTIME_BSS__
     {
@@ -1084,7 +1086,8 @@ void cstartup(multiboot_info_t *mbi){
     }
 
     //relocate the hypervisor binary to the above calculated address
-    memmove((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
+    HALT_ON_ERRORCOND(sl_rt_nonzero_size <= sl_rt_size);
+    memmove((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_nonzero_size);
 
     HALT_ON_ERRORCOND(sl_rt_size > 0x200000); /* 2M */
 
