@@ -156,13 +156,16 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 
 	switch (app_ret_status) {
 	case APP_CPUID_SKIP:
+		/* Hypapp has handled the CPUID instruction, XMHF does nothing */
 		break;
 
 	case APP_CPUID_CHAIN:
+		/* Hypapp does not handle this CPUID, XMHF queries the hardware */
 		asm volatile ("cpuid\r\n"
 		      :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
 		      :"a"(r->eax), "c" (r->ecx));
 
+		/* Modify CPUID result according to limits in XMHF */
 		if (old_eax == 0x1U) {
 #ifndef __NESTED_VIRTUALIZATION__
 			/* Clear VMX capability */
