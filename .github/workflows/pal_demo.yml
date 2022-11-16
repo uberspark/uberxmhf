@@ -18,9 +18,14 @@ jobs:
     - name: Build
       run: |
         ./tools/ci/build_pal_demo.sh all
-    - name: Release
+    - name: Release zip
       uses: actions/upload-artifact@v3
       with:
         name: pal_demo.zip
         path: hypapps/trustvisor/pal_demo/pal_demo.zip
+    - name: Release tar.xz
+      uses: actions/upload-artifact@v3
+      with:
+        name: pal_demo.tar.xz
+        path: hypapps/trustvisor/pal_demo/pal_demo.tar.xz
 
