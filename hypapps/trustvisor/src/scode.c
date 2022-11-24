@@ -1282,7 +1282,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 
   if (whitelist[curr].hptw_pal_checked_guest_ctx.super.t == HPT_TYPE_PAE) {
     /* For PAE paging, need to update VMCS PDPTEs manually */
-    hptw_ctx_t *ctx = &whitelist[curr].hptw_pal_host_ctx.super;
+    hptw_ctx_t *ctx = &g_hptw_reg_host_ctx.super;
     size_t avail_sz;
     u64 *pdptes = ctx->pa2ptr(ctx, VCPU_gcr3(vcpu), sizeof(u64) * 4,
                               HPT_PROTS_R, HPTW_CPL3, &avail_sz);
