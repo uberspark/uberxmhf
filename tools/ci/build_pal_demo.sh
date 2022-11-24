@@ -91,7 +91,7 @@ if [ "$1" == "all" ]; then
 	for i in {main,test,test_args}{32,64}{,L2}{,.exe}; do
 		rm -f $i
 	done
-	rm -f pal_demo.zip
+	rm -f pal_demo.zip pal_demo.tar.xz
 	build_and_move linux   i386  "" 32 ""
 	build_and_move linux   amd64 "" 64 ""
 	build_and_move windows i386  "" 32 ".exe"
@@ -101,7 +101,9 @@ if [ "$1" == "all" ]; then
 	build_and_move windows i386  L2 32 ".exe"
 	build_and_move windows amd64 L2 64 ".exe"
 	zip pal_demo.zip {main,test,test_args}{32,64}{,L2}{,.exe}
+	tar Jcf pal_demo.tar.xz {main,test,test_args}{32,64}{,L2}{,.exe}
 	echo "$PAL_DEMO_DIR/pal_demo.zip"
+	echo "$PAL_DEMO_DIR/pal_demo.tar.xz"
 else
 	build "$@"
 	echo "$PAL_DEMO_DIR"

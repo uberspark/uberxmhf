@@ -17,7 +17,8 @@ download () {
 		if ! python3 -c 'import gdown'; then
 			python3 -m pip install gdown
 		fi
-		python3 -m gdown.cli "$1" -O "$TARGET_FILE"
+		URL="https://drive.google.com/uc?id=${1}&confirm=t"
+		python3 -m gdown.cli "$URL" -O "$TARGET_FILE"
 	fi
 }
 

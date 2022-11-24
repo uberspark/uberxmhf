@@ -9,7 +9,8 @@
 # Compile amd64 pal_demo for Windows on Linux:
 #   make CC=x86_64-w64-mingw32-gcc LD=x86_64-w64-mingw32-ld
 
-CFLAGS := -g -I../src/include -Wall -Werror
+# -fno-stack-protector: hint from https://stackoverflow.com/questions/2340259/
+CFLAGS := -g -I../src/include -Wall -Werror -fno-stack-protector
 
 BINS = main test test_args
 PAL_OBJS = pal.o caller.o
