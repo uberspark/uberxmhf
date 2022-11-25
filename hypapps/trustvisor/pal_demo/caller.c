@@ -7,6 +7,7 @@
 #include <errhandlingapi.h>
 #else /* !WINDOWS */
 #include <sys/mman.h>
+#include <signal.h>
 #endif /* WINDOWS */
 
 #include "vmcall.h"
@@ -15,6 +16,8 @@
 #define PAGE_SIZE ((uintptr_t) 4096)
 
 #define MAX_PAL_RECORDS 10
+
+static int pal_count = 0;
 
 /* Record PALs in user level */
 typedef struct pal_record_t {
@@ -130,6 +133,47 @@ static int munmap_wrap(void *addr) {
 #endif /* WINDOWS */
 }
 
+#ifdef WINDOWS
+// TODO
+#else /* !WINDOWS */
+static sigset_t *get_sigint_set(void) {
+	int initialized = 0;
+	static sigset_t set;
+	if (!initialized) {
+		sigemptyset(&set);
+		sigaddset(&set, SIGINT);
+	}
+	return &set;
+}
+#endif /* WINDOWS */
+
+int check_keyboard_interrupt(void) {
+#ifdef WINDOWS
+	// TODO
+	return 0;
+#else /* !WINDOWS */
+	sigset_t set;
+	assert(sigpending(&set) == 0);
+	return sigismember(&set, SIGINT);
+#endif /* WINDOWS */
+}
+
+void disable_keyboard_interrupt(void) {
+#ifdef WINDOWS
+	// TODO
+#else /* !WINDOWS */
+	sigprocmask(SIG_BLOCK, get_sigint_set(), NULL);
+#endif /* WINDOWS */
+}
+
+void enable_keyboard_interrupt(void) {
+#ifdef WINDOWS
+	// TODO
+#else /* !WINDOWS */
+	sigprocmask(SIG_UNBLOCK, get_sigint_set(), NULL);
+#endif /* WINDOWS */
+}
+
 /*
  * Auto-register a PAL
  * params: parameters description for TrustVisor
@@ -218,6 +262,11 @@ void *register_pal(struct tv_pal_params *params, void *entry, void *begin_pal,
 #ifdef TRANSLATE
 	pal_record->mmap_code2 = code2;
 #endif /* TRANSLATE */
+	// Disable keyboard interrupt
+	if (pal_count == 0) {
+		disable_keyboard_interrupt();
+	}
+	pal_count++;
 	// Register scode
 	assert(!vmcall(TV_HC_REG, (uintptr_t)&sections, 0, (uintptr_t)params,
 					pal_entry));
@@ -239,4 +288,9 @@ void unregister_pal(void *user_entry) {
 	assert(!munmap_wrap(pal_record->mmap_code2));
 #endif /* TRANSLATE */
 	pal_record->user_entry = NULL;
+	// Enable keyboard interrupt
+	pal_count--;
+	if (pal_count == 0) {
+		enable_keyboard_interrupt();
+	}
 }
