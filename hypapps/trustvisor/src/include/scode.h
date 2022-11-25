@@ -162,6 +162,7 @@ int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, size_t len);
 u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r);
 u32 hpt_scode_switch_regular(VCPU * vcpu);
 u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode, struct regs *r);
+int hpt_scode_get_scode_id(VCPU * vcpu);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count);
 

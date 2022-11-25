@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#define PAL_FLAG_MASK ((uintptr_t)0x80000000U)
+
 extern void begin_pal_c();
 extern uintptr_t my_pal(uintptr_t arg1, uintptr_t *arg2);
 extern uintptr_t pal_10_int(uintptr_t arg0, uintptr_t arg1, uintptr_t arg2,

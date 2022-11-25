@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "vmcall.h"
 #include "pal.h"
 #include "caller.h"
 #include "trustvisor.h"
@@ -22,7 +23,7 @@ void call_pal(uintptr_t a, uintptr_t b) {
 	printf("With PAL:\n");
 	printf(" %p = *%p\n", (void *)b2, &b2);
 	fflush(stdout);
-	uintptr_t ret = func(a, &b2);
+	uintptr_t ret = func(a | PAL_FLAG_MASK, &b2);
 	printf(" %p = my_pal(%p, %p)\n", (void *)ret, (void *)a, &b2);
 	printf(" %p = *%p\n\n", (void *)b2, &b2);
 	fflush(stdout);
@@ -33,12 +34,17 @@ void call_pal(uintptr_t a, uintptr_t b) {
 int main(int argc, char *argv[]) {
 	uintptr_t a, b, b2;
 	uintptr_t ret;
+	if (!check_cpuid()) {
+		printf("Error: TrustVisor not present according to CPUID\n");
+		return 1;
+	}
 	assert(argc > 2);
 	assert(sscanf(argv[1], "%p", (void **)&a) == 1);
 	assert(sscanf(argv[2], "%p", (void **)&b) == 1);
 	b2 = b;
 	printf("Without PAL:\n");
 	printf(" %p = *%p\n", (void *)b2, &b2);
+	a &= ~PAL_FLAG_MASK;
 	fflush(stdout);
 	ret = my_pal(a, &b2);
 	printf(" %p = my_pal(%p, %p)\n", (void *)ret, (void *)a, &b2);
