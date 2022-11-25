@@ -46,7 +46,9 @@ unsigned int test_10_int(unsigned int iters) {
 		}
 		printf(".");
 		fflush(stdout);
+		args[0] &= ~PAL_FLAG_MASK;
 		uintptr_t expected = pal_10_int(PASS_ARGS(args));
+		args[0] |= PAL_FLAG_MASK;
 		uintptr_t actual = func(PASS_ARGS(args));
 		if (actual != expected) {
 			result++;
@@ -93,7 +95,9 @@ unsigned int test_10_ptr(unsigned int iters) {
 		}
 		printf(".");
 		fflush(stdout);
+		args_expected[0][0] &= ~PAL_FLAG_MASK;
 		uintptr_t expected = pal_10_ptr(PASS_ARGS(args_expected));
+		args_actual[0][0] |= PAL_FLAG_MASK;
 		uintptr_t actual = func(PASS_ARGS(args_actual));
 		if (actual != expected) {
 			result++;
@@ -187,12 +191,16 @@ unsigned int test_5_ptr(unsigned int iters) {
 						(void *)nums_actual[i]);
 			}
 		}
+		// Update size0 with PAL flag
+		assert((args_i[0] & PAL_FLAG_MASK) == 0);
 		// Register scode
 		void *entry = register_pal(&params, pal_5_ptr, begin_pal_c, end_pal_c,
 									0);
 		typeof(pal_5_ptr) *func = (typeof(pal_5_ptr) *)entry;
+		args_i[0] &= ~PAL_FLAG_MASK;
 		uintptr_t expected = pal_5_ptr(PASS_ARGS_5(args_i,
 													args_p_expected));
+		args_i[0] |= PAL_FLAG_MASK;
 		uintptr_t actual = func(PASS_ARGS_5(args_i, args_p_actual));
 		// Unregister scode
 		unregister_pal(entry);

@@ -22,7 +22,7 @@ void call_pal(uintptr_t a, uintptr_t b) {
 	printf("With PAL:\n");
 	printf(" %p = *%p\n", (void *)b2, &b2);
 	fflush(stdout);
-	uintptr_t ret = func(a, &b2);
+	uintptr_t ret = func(a | PAL_FLAG_MASK, &b2);
 	printf(" %p = my_pal(%p, %p)\n", (void *)ret, (void *)a, &b2);
 	printf(" %p = *%p\n\n", (void *)b2, &b2);
 	fflush(stdout);
@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
 	b2 = b;
 	printf("Without PAL:\n");
 	printf(" %p = *%p\n", (void *)b2, &b2);
+	a &= ~PAL_FLAG_MASK;
 	fflush(stdout);
 	ret = my_pal(a, &b2);
 	printf(" %p = my_pal(%p, %p)\n", (void *)ret, (void *)a, &b2);
