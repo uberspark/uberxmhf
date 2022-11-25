@@ -58,6 +58,10 @@ unsigned int test_10_int(unsigned int iters) {
 					(void *)expected, (void *)actual);
 			fflush(stdout);
 		}
+		if (check_keyboard_interrupt()) {
+			unregister_pal(entry);
+			exit(0);
+		}
 	}
 	// Unregister scode
 	unregister_pal(entry);
@@ -116,6 +120,10 @@ unsigned int test_10_ptr(unsigned int iters) {
 				fflush(stdout);
 				break;
 			}
+		}
+		if (check_keyboard_interrupt()) {
+			unregister_pal(entry);
+			exit(0);
 		}
 	}
 	// Unregister scode
