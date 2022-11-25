@@ -999,6 +999,16 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			}
 		}
 		break;
+	case VMX_VMEXIT_TRIPLE_FAULT:
+		/*
+		 * A good hipervisor is unlikely to introduce triple fault. So print
+		 * VMCS dump to enhance debug experience. However, still inject the
+		 * triple fault to the guest hypervisor (VMEXIT201).
+		 */
+		if (1) {
+			xmhf_nested_arch_x86vmx_vmread_all(vcpu, ":TRIPLE_FAULT:");
+		}
+		break;
 	case VMX_VMEXIT_NMI_WINDOW:
 		handle_behavior = handle_vmexit20_nmi_window(vcpu, vmcs12_info);
 		break;
