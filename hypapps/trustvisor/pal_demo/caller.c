@@ -5,6 +5,7 @@
 #ifdef WINDOWS
 #include <memoryapi.h>
 #include <errhandlingapi.h>
+#include <windows.h>
 #else /* !WINDOWS */
 #include <sys/mman.h>
 #include <signal.h>
@@ -134,7 +135,17 @@ static int munmap_wrap(void *addr) {
 }
 
 #ifdef WINDOWS
-// TODO
+static int ctrl_c_received = 0;
+
+// https://learn.microsoft.com/en-us/windows/console/
+//  registering-a-control-handler-function
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType) {
+	if (fdwCtrlType == CTRL_C_EVENT) {
+		ctrl_c_received = 1;
+		return TRUE;
+	}
+	return FALSE;
+}
 #else /* !WINDOWS */
 static sigset_t *get_sigint_set(void) {
 	int initialized = 0;
@@ -149,8 +160,7 @@ static sigset_t *get_sigint_set(void) {
 
 int check_keyboard_interrupt(void) {
 #ifdef WINDOWS
-	// TODO
-	return 0;
+	return ctrl_c_received;
 #else /* !WINDOWS */
 	sigset_t set;
 	assert(sigpending(&set) == 0);
@@ -160,17 +170,20 @@ int check_keyboard_interrupt(void) {
 
 void disable_keyboard_interrupt(void) {
 #ifdef WINDOWS
-	// TODO
+	assert(SetConsoleCtrlHandler(CtrlHandler, TRUE) != 0);
 #else /* !WINDOWS */
-	sigprocmask(SIG_BLOCK, get_sigint_set(), NULL);
+	assert(sigprocmask(SIG_BLOCK, get_sigint_set(), NULL) == 0);
 #endif /* WINDOWS */
 }
 
 void enable_keyboard_interrupt(void) {
 #ifdef WINDOWS
-	// TODO
+	assert(SetConsoleCtrlHandler(CtrlHandler, FALSE) != 0);
+	if (ctrl_c_received) {
+		exit(1);
+	}
 #else /* !WINDOWS */
-	sigprocmask(SIG_UNBLOCK, get_sigint_set(), NULL);
+	assert(sigprocmask(SIG_UNBLOCK, get_sigint_set(), NULL) == 0);
 #endif /* WINDOWS */
 }
 
