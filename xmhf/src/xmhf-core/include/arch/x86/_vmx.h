@@ -137,38 +137,149 @@
 #define INTERCEPT_VMMCALL         0x28
 #define INTERCEPT_EXCEPTIONS      0x29
 
-#define VMX_VMEXIT_EXCEPTION      0
-#define VMX_VMEXIT_INVLPG         14
-#define VMX_VMEXIT_NMI_WINDOW     8
-#define VMX_VMEXIT_MONITOR_TRAP   37
-
-#define VMX_VMEXIT_CRX_ACCESS 0x1C
+/* Exception or non-maskable interrupt (NMI) */
+#define VMX_VMEXIT_EXCEPTION            0
+/* External interrupt */
+#define VMX_VMEXIT_EXT_INTERRUPT        1
+/* Triple fault */
+#define VMX_VMEXIT_TRIPLE_FAULT         2
+/* INIT signal. An INIT signal arrived */
+#define VMX_VMEXIT_INIT                 3
+/* Start-up IPI (SIPI) */
+#define VMX_VMEXIT_SIPI                 4
+/* I/O system-management interrupt (SMI) */
+#define VMX_VMEXIT_IO_SMI               5
+/* Other SMI */
+#define VMX_VMEXIT_OTHER_SMI            6
+/* Interrupt window */
+#define VMX_VMEXIT_INTERRUPT_WINDOW     7
+/* NMI window */
+#define VMX_VMEXIT_NMI_WINDOW           8
+/* Task switch */
+#define VMX_VMEXIT_TASKSWITCH           9
+/* CPUID */
+#define VMX_VMEXIT_CPUID                10
+/* GETSEC */
+#define VMX_VMEXIT_GETSEC               11
+/* HLT */
+#define VMX_VMEXIT_HLT                  12
+/* INVD */
+#define VMX_VMEXIT_INVD                 13
+/* INVLPG */
+#define VMX_VMEXIT_INVLPG               14
+/* RDPMC */
+#define VMX_VMEXIT_RDPMC                15
+/* RDTSC */
+#define VMX_VMEXIT_RDTSC                16
+/* RSM */
+#define VMX_VMEXIT_RSM                  17
+/* VMCALL */
+#define VMX_VMEXIT_VMCALL               18
+/* VMCLEAR */
+#define VMX_VMEXIT_VMCLEAR              19
+/* VMLAUNCH */
+#define VMX_VMEXIT_VMLAUNCH             20
+/* VMPTRLD */
+#define VMX_VMEXIT_VMPTRLD              21
+/* VMPTRST */
+#define VMX_VMEXIT_VMPTRST              22
+/* VMREAD */
+#define VMX_VMEXIT_VMREAD               23
+/* VMRESUME */
+#define VMX_VMEXIT_VMRESUME             24
+/* VMWRITE */
+#define VMX_VMEXIT_VMWRITE              25
+/* VMXOFF */
+#define VMX_VMEXIT_VMXOFF               26
+/* VMXON */
+#define VMX_VMEXIT_VMXON                27
+/* Control-register accesses */
+#define VMX_VMEXIT_CRX_ACCESS           28
+/* MOV DR */
+#define VMX_VMEXIT_MOV_DR               29
+/* I/O instruction */
+#define VMX_VMEXIT_IOIO                 30
+/* RDMSR */
+#define VMX_VMEXIT_RDMSR                31
+/* WRMSR */
+#define VMX_VMEXIT_WRMSR                32
+/* VM-entry failure due to invalid guest state */
+#define VMX_VMEXIT_EMTRY_FAIL_GUEST_ST  33
+/* VM-entry failure due to MSR loading */
+#define VMX_VMEXIT_ENTRY_FAIL_MSR       34
+/* Not defined basic exit reason: 35 */
+#define VMX_VMEXIT_UNDEFINED35          35
+/* MWAIT */
+#define VMX_VMEXIT_MWAIT                36
+/* Monitor trap flag */
+#define VMX_VMEXIT_MONITOR_TRAP         37
+/* Not defined basic exit reason: 38 */
+#define VMX_VMEXIT_UNDEFINED38          38
+/* MONITOR */
+#define VMX_VMEXIT_MONITOR              39
+/* PAUSE */
+#define VMX_VMEXIT_PAUSE                40
+/* VM-entry failure due to machine-check event */
+#define VMX_VMEXIT_ENTRY_FAIL_MC        41
+/* Not defined basic exit reason: 42 */
+#define VMX_VMEXIT_UNDEFINED42          42
+/* TPR below threshold */
+#define VMX_VMEXIT_TPR_BELOW_THRESHOLD  43
+/* APIC access */
+#define VMX_VMEXIT_APIC_ACCESS          44
+/* Virtualized EOI */
+#define VMX_VMEXIT_VIRTUALIZED_EOI      45
+/* Access to GDTR or IDTR */
+#define VMX_VMEXIT_ACCESS_GDTR_IDTR     46
+/* Access to LDTR or TR */
+#define VMX_VMEXIT_ACCESS_LDTR_TR       47
+/* EPT violation */
+#define VMX_VMEXIT_EPT_VIOLATION        48
+/* EPT misconfiguration */
+#define VMX_VMEXIT_EPT_MISCONFIGURATION 49
+/* INVEPT */
+#define VMX_VMEXIT_INVEPT               50
+/* RDTSCP */
+#define VMX_VMEXIT_RDTSCP               51
+/* VMX-preemption timer expired */
+#define VMX_VMEXIT_PREEMPTION_TIMER     52
+/* INVVPID */
+#define VMX_VMEXIT_INVVPID              53
+/* WBINVD or WBNOINVD */
+#define VMX_VMEXIT_WBINVD               54
+/* XSETBV */
+#define VMX_VMEXIT_XSETBV               55
+/* APIC write */
+#define VMX_VMEXIT_APIC_WRITE           56
+/* RDRAND */
+#define VMX_VMEXIT_RDRAND               57
+/* INVPCID */
+#define VMX_VMEXIT_INVPCID              58
+/* VMFUNC */
+#define VMX_VMEXIT_VMFUNC               59
+/* ENCLS */
+#define VMX_VMEXIT_ENCLS                60
+/* RDSEED */
+#define VMX_VMEXIT_RDSEED               61
+/* Page-modification log full */
+#define VMX_VMEXIT_PAGE_MODIF_LOG_FULL  62
+/* XSAVES */
+#define VMX_VMEXIT_XSAVES               63
+/* XRSTORS */
+#define VMX_VMEXIT_XRSTORS              64
+/* Not defined basic exit reason: 65 */
+#define VMX_VMEXIT_UNDEFINED65          65
+/* SPP-related event */
+#define VMX_VMEXIT_SPP                  66
+/* UMWAIT */
+#define VMX_VMEXIT_UMWAIT               67
+/* TPAUSE */
+#define VMX_VMEXIT_TPAUSE               68
+/* LOADIWKEY */
+#define VMX_VMEXIT_LOADIWKEY            69
 
 #define VMX_CRX_ACCESS_FROM	0x1
 #define VMX_CRX_ACCESS_TO		0x0
-
-#define VMX_VMEXIT_CR3_READ 28
-#define VMX_VMEXIT_CR3_WRITE  28
-#define VMX_VMEXIT_CR0_SEL_WRITE 28
-#define VMX_VMEXIT_CR4_WRITE 28
-#define VMX_VMEXIT_CRX_READWRITE 28
-#define VMX_VMEXIT_MSR_READ   31
-#define VMX_VMEXIT_MSR_WRITE 32
-#define VMX_VMEXIT_IOIO 30
-#define VMX_VMEXIT_VMCALL 18
-#define VMX_VMEXIT_HLT 12
-#define VMX_VMEXIT_INVLPG 14
-#define VMX_VMEXIT_RDMSR	0x1f
-#define VMX_VMEXIT_WRMSR	0x20
-#define VMX_VMEXIT_CPUID	0x0a
-#define VMX_VMEXIT_INIT   0x3
-#define VMX_VMEXIT_EPT_VIOLATION  0x30
-#define VMX_VMEXIT_TASKSWITCH	0x9
-#define	VMX_VMEXIT_WBINVD		54
-#define VMX_VMEXIT_XSETBV		55
-
-#define VMX_VMEXIT_EPT_VIOLATON	48
-#define VMX_VMEXIT_EPT_MISCONFIGURATION 49
 
 //VMEXIT_IOIO defines
 #define	IO_SIZE_BYTE	0x0
