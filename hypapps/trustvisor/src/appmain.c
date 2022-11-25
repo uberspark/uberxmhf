@@ -744,7 +744,7 @@ u32 tv_app_handlecpuid(VCPU *vcpu, struct regs *r)
     r->ebx = (u32)hpt_scode_get_scode_id(vcpu);
     r->ecx = 0U;
     if (VCPU_g64(vcpu)) {
-      r->ecx |= (1U << 1);
+      r->ecx |= (1U << 0);
     }
     r->edx = 0U;
     return APP_CPUID_SKIP;
