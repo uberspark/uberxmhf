@@ -82,6 +82,5 @@ void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r)
 // Detect the presence of TrustVisor
 u32 xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r)
 {
-	(void)vcpu;(void)r;
-	return APP_CPUID_CHAIN;
+  return tv_app_handlecpuid(vcpu, r);
 }

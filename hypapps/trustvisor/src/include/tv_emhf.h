@@ -57,5 +57,6 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
                                       u32 portnum, u32 access_type, u32 access_size);
 void tv_app_handleshutdown(VCPU *vcpu, struct regs *r);
+u32 tv_app_handlecpuid(VCPU *vcpu, struct regs *r);
 
 #endif

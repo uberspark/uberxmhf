@@ -1418,6 +1418,12 @@ u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode, struct regs *r)
   return err;
 }
 
+/* Return ID of the scode current CPU is running, or -1 if not running scode */
+int hpt_scode_get_scode_id(VCPU * vcpu)
+{
+  return scode_curr[vcpu->id];
+}
+
 /* caller is responsible for flushing TLB */
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
 {
