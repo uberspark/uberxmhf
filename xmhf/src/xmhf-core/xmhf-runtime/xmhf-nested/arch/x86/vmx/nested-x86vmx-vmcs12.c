@@ -2083,7 +2083,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
  */
 bool xmhf_nested_arch_x86vmx_check_fields_existence(VCPU * vcpu)
 {
-	bool success;
+	bool success = true;
 	printf("CPU(0x%02x): %s() is checking VMCS fields\n", vcpu->id, __func__);
 #define FIELD_CTLS_ARG (&vcpu->vmx_caps)
 #define DECLARE_FIELD_16(encoding, name, prop, exist, ...) \
