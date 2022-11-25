@@ -20,3 +20,13 @@ static inline uintptr_t vmcall(uintptr_t eax, uintptr_t ecx, uintptr_t edx,
 					"D"(edi));
 	return eax;
 }
+
+/* Return whether TrustVisor is present */
+static inline int check_cpuid() {
+	uint32_t eax, ebx, ecx, edx;
+	cpuid(&eax, &ebx, &ecx, &edx);
+	if (eax == 0x7a767274U) {
+		return 1;
+	}
+	return 0;
+}

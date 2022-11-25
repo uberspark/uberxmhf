@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "vmcall.h"
 #include "pal.h"
 #include "caller.h"
 #include "trustvisor.h"
@@ -245,6 +246,10 @@ unsigned int test_5_ptr(unsigned int iters) {
 
 int main(int argc, char *argv[]) {
 	unsigned int funcs, iters, seed;
+	if (!check_cpuid()) {
+		printf("Error: TrustVisor not present according to CPUID\n");
+		return 1;
+	}
 	assert(argc > 3);
 	assert(sscanf(argv[1], "%u", &funcs) == 1);
 	assert(sscanf(argv[2], "%u", &iters) == 1);
