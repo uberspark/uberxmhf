@@ -552,7 +552,7 @@ void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
 
 //flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu){
-  (void)vcpu;
+  vcpu->vmx_ept_changed = true;
   HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_GLOBAL,
                                  (u64)0));
 }

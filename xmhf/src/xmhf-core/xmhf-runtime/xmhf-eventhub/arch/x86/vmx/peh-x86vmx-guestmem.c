@@ -99,6 +99,7 @@ static void* guestmem_ctx_unimplemented(void *vctx, size_t alignment, size_t sz)
 void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair)
 {
 	hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
+	ctx_pair->vmx_ept_changed = &vcpu->vmx_ept_changed;
 	ctx_pair->guest_ctx.ptr2pa = guestmem_guest_ctx_ptr2pa;
 	ctx_pair->guest_ctx.pa2ptr = guestmem_guest_ctx_pa2ptr;
 	ctx_pair->guest_ctx.gzp = guestmem_ctx_unimplemented;
@@ -113,45 +114,76 @@ void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair)
 	ctx_pair->host_ctx.t = HPT_TYPE_EPT;
 }
 
-/* Copy from dst (guest virtual address) to src (hypervisor address) */
+/*
+ * Copy from dst (guest virtual address) to src (hypervisor address).
+ * This function checks vcpu->vmx_ept_changed to prevent race condition.
+ */
 void guestmem_copy_gv2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						void *dst, hpt_va_t src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->guest_ctx;
-	int result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
-	HALT_ON_ERRORCOND(result == 0);
+	do {
+		int result;
+		*(ctx_pair->vmx_ept_changed) = false;
+		result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
+		HALT_ON_ERRORCOND(result == 0);
+	} while (*(ctx_pair->vmx_ept_changed) == false);
 }
 
-/* Copy from dst (guest physical address) to src (hypervisor address) */
+/*
+ * Copy from dst (guest physical address) to src (hypervisor address).
+ * This function checks vcpu->vmx_ept_changed to prevent race condition.
+ */
 void guestmem_copy_gp2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						void *dst, hpt_va_t src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->host_ctx;
-	int result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
-	HALT_ON_ERRORCOND(result == 0);
+	do {
+		int result;
+		*(ctx_pair->vmx_ept_changed) = false;
+		result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
+		HALT_ON_ERRORCOND(result == 0);
+	} while (*(ctx_pair->vmx_ept_changed) == false);
 }
 
-/* Copy from dst (hypervisor address) to src (guest virtual address) */
+/*
+ * Copy from dst (hypervisor address) to src (guest virtual address).
+ * This function checks vcpu->vmx_ept_changed to prevent race condition.
+ */
 void guestmem_copy_h2gv(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						hpt_va_t dst, void *src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->guest_ctx;
-	int result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
-	HALT_ON_ERRORCOND(result == 0);
+	do {
+		int result;
+		*(ctx_pair->vmx_ept_changed) = false;
+		result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
+		HALT_ON_ERRORCOND(result == 0);
+	} while (*(ctx_pair->vmx_ept_changed) == false);
 }
 
-/* Copy from dst (hypervisor address) to src (guest physical address) */
+/*
+ * Copy from dst (hypervisor address) to src (guest physical address).
+ * This function checks vcpu->vmx_ept_changed to prevent race condition.
+ */
 void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						hpt_va_t dst, void *src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->host_ctx;
-	int result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
-	HALT_ON_ERRORCOND(result == 0);
+	do {
+		int result;
+		*(ctx_pair->vmx_ept_changed) = false;
+		result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
+		HALT_ON_ERRORCOND(result == 0);
+	} while (*(ctx_pair->vmx_ept_changed) == false);
 }
 
 /*
  * Test whether guest_addr (4K page aligned) is valid guest physical memory
  * page. If so, return corresponding host physical memory page. Else, halt.
+ *
+ * This function does NOT check vcpu->vmx_ept_changed to prevent race condition.
+ * See definition of vmx_ept_changed in VCPU for details.
  */
 spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
 							gpa_t guest_addr)
@@ -177,6 +209,9 @@ spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
  * Test whether guest_addr is valid continuous guest physical memory of size
  * len in host physical memory. If so, return corresponding host physical
  * memory page. Else, halt.
+ *
+ * This function does NOT check vcpu->vmx_ept_changed to prevent race condition.
+ * See definition of vmx_ept_changed in VCPU for details.
  */
 spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
 							gpa_t guest_addr, size_t len)
