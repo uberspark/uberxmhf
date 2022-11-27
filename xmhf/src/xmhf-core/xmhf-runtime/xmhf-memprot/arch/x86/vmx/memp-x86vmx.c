@@ -581,11 +581,10 @@ void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
 
 //flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu){
+  vcpu->vmx_ept_changed = true;
 #ifdef __NESTED_VIRTUALIZATION__
   /* When nested virtualization, invalidate all EPT02's */
   xmhf_nested_arch_x86vmx_flush_ept02(vcpu);
-#else /* !__NESTED_VIRTUALIZATION__ */
-  (void)vcpu;
 #endif /* __NESTED_VIRTUALIZATION__ */
   HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_GLOBAL,
                                  (u64)0));

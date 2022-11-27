@@ -56,6 +56,8 @@
 #include <hpt_emhf.h>
 
 typedef struct {
+	/* Pointer to vcpu->vmx_ept_changed */
+	volatile bool *vmx_ept_changed;
 	hptw_ctx_t guest_ctx;
 	hptw_ctx_t host_ctx;
 } guestmem_hptw_ctx_pair_t;
