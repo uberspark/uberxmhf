@@ -127,7 +127,7 @@ void guestmem_copy_gv2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 		*(ctx_pair->vmx_ept_changed) = false;
 		result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
 		HALT_ON_ERRORCOND(result == 0);
-	} while (*(ctx_pair->vmx_ept_changed) == false);
+	} while (*(ctx_pair->vmx_ept_changed));
 }
 
 /*
@@ -143,7 +143,7 @@ void guestmem_copy_gp2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 		*(ctx_pair->vmx_ept_changed) = false;
 		result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
 		HALT_ON_ERRORCOND(result == 0);
-	} while (*(ctx_pair->vmx_ept_changed) == false);
+	} while (*(ctx_pair->vmx_ept_changed));
 }
 
 /*
@@ -159,7 +159,7 @@ void guestmem_copy_h2gv(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 		*(ctx_pair->vmx_ept_changed) = false;
 		result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
 		HALT_ON_ERRORCOND(result == 0);
-	} while (*(ctx_pair->vmx_ept_changed) == false);
+	} while (*(ctx_pair->vmx_ept_changed));
 }
 
 /*
@@ -175,7 +175,7 @@ void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 		*(ctx_pair->vmx_ept_changed) = false;
 		result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
 		HALT_ON_ERRORCOND(result == 0);
-	} while (*(ctx_pair->vmx_ept_changed) == false);
+	} while (*(ctx_pair->vmx_ept_changed));
 }
 
 /*
