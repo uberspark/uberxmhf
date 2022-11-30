@@ -49,6 +49,53 @@
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
 
+/*
+ * This library provides functions for the hypervisor to access guest memory
+ * space:
+ * * guestmem_init: initialize structures, call whenever CR3 / EPTP changes
+ * * guestmem_copy_gv2h: copy from guest virtual to hypervisor
+ * * guestmem_copy_gp2h: copy from guest physical to hypervisor
+ * * guestmem_copy_h2gv: copy from hypervisor to guest virtual
+ * * guestmem_copy_h2gp: copy from hypervisor to guest physical
+ * * guestmem_gpa2spa_page: translate gpa to spa for a whole page
+ * * guestmem_gpa2spa_size: translate gpa to spa for some custom size
+ *
+ * When walking page table using software, race conditions between CPUs can
+ * happen when when another CPU is modifying page table entries. For example:
+ *
+ * | CPU 0                              | CPU 1                               |
+ * |------------------------------------|-------------------------------------|
+ * | Get EPTP (from VMCS)               |                                     |
+ * | Get PML4E (EPTP[offset])           |                                     |
+ * | Get PDPTE (PML4E[offset])          |                                     |
+ * | Get PDE (PDPTE[offset])            |                                     |
+ * | Get PTE (PDE[offset])              |                                     |
+ * |                                    | Quiesce all other CPUS              |
+ * |                                    | Modify PTE, mark as not present     |
+ * |                                    | Unquiesce all other CPUS            |
+ * |                                    | Write sensitive data to page of PTE |
+ * | Inspect PTE, looks present         |                                     |
+ * | Access data (*(PTE.addr + offset)) |                                     |
+ *
+ * To fix this race condition,
+ * 1. After CPU 1 ends quiesce, all other CPUs will flush TLB and set
+ *    vcpu->vmx_ept_changed = true.
+ * 2. Before CPU 0 is starts walking EPT, it sets vcpu->vmx_ept_changed = false.
+ * 3. When CPU 0 ends walking EPT, if it sees vcpu->vmx_ept_changed = true, it
+ *    retries walking EPT.
+ *
+ * Currently the following functions have implemented the retry logic:
+ * * guestmem_copy_gv2h: copy from guest virtual to hypervisor
+ * * guestmem_copy_gp2h: copy from guest physical to hypervisor
+ * * guestmem_copy_h2gv: copy from hypervisor to guest virtual
+ * * guestmem_copy_h2gp: copy from hypervisor to guest physical
+ *
+ * Currently the following functions have NOT implemented the retry logic
+ * (their use callers have other ways to prevent this race condition):
+ * * guestmem_gpa2spa_page: translate gpa to spa for a whole page
+ * * guestmem_gpa2spa_size: translate gpa to spa for some custom size
+ */
+
 static hpt_pa_t guestmem_host_ctx_ptr2pa(void *vctx, void *ptr)
 {
 	(void)vctx;

@@ -44,6 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * Note: only use this library directly when other CPUs are quiesced. Otherwise
+ * race condition may happen when one CPU is changing EPT entries and another
+ * is walking EPT entries using this library. Consider using
+ * peh-x86vmx-guestmem.c instead. For details see comments in
+ * peh-x86vmx-guestmem.c.
+ */
+
 #ifndef HPTW_H
 #define HPTW_H
 
