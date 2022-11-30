@@ -282,6 +282,40 @@ typedef struct _vcpu {
   u32 vmx_guest_unrestricted;   //this is 1 if the CPU VMX implementation supports unrestricted guest execution
   struct _vmx_vmcsfields vmcs;   //the VMCS fields
 
+#ifdef __NESTED_VIRTUALIZATION__
+  /*
+   * Current CPU mode w.r.t. VMX operation.
+   * 0: Not in VMX operation (NESTED_VMX_MODE_DISABLED)
+   * 1: In VMX root operation (NESTED_VMX_MODE_ROOT)
+   * 2: In VMX non-root operation (NESTED_VMX_MODE_NONROOT)
+   */
+  u32 vmx_nested_operation_mode;
+  /* If in VMX operation, address of VMXON pointer */
+  gpa_t vmx_nested_vmxon_pointer;
+  /*
+   * If in VMX operation, index of the current VMCS12 in cpu_active_vmcs12.
+   * INVALID_VMCS12_INDEX means there is no current VMCS12.
+   * The current-VMCS pointer is the vmcs12_ptr field in the struct.
+   */
+  u32 vmx_nested_cur_vmcs12;
+  /* VMX MSR values that should be observed by the guest */
+  u64 vmx_nested_msrs[IA32_VMX_MSRCOUNT];
+  /* VMX control register limitations for guest hypervisor */
+  u64 vmx_nested_pinbased_ctls;
+  u64 vmx_nested_procbased_ctls;
+  u64 vmx_nested_exit_ctls;
+  u64 vmx_nested_entry_ctls;
+  /*
+   * Whether the hypervisor is busy so that it cannot handle
+   * xmhf_nested_arch_x86vmx_flush_ept02().
+   */
+  volatile bool vmx_nested_ept02_flush_disable;
+  /*
+   * Whether a call to xmhf_nested_arch_x86vmx_flush_ept02() arrived during
+   * vmx_nested_ept02_flush_disable = true.
+   */
+  volatile bool vmx_nested_ept02_flush_visited;
+#endif /* !__NESTED_VIRTUALIZATION__ */
 } VCPU;
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))

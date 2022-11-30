@@ -125,6 +125,7 @@ extern RPB *rpb;
 #include <xmhf-sl.h>			//XMHF secure loader component
 #include <xmhf-runtime.h>		//XMHF runtime component
 #include <xmhf-app.h>			//XMHF Application callback declarations
+#include <xmhf-nested.h>      	//XMHF nested virtualization component
 
 
 #endif /* __XMHF_H_ */

@@ -67,6 +67,9 @@
 #define IA32_X2APIC_ICR 0x830
 #define IA32_X2APIC_APICID 0x802
 
+#define IA32_PERF_GLOBAL_CTRL 0x38f
+#define IA32_PKRS 0x6e1
+
 // EFER bits
 #define EFER_SCE 0  /* SYSCALL/SYSRET */
 #define EFER_LME 8  /* Long Mode enable */

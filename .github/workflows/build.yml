@@ -18,6 +18,9 @@ jobs:
         optimize_mode:
           - 'O0'
           - 'O3'
+        nested_virt:
+          - 'nv'
+          - 'no_nv'
 
     steps:
     - uses: actions/checkout@v3
@@ -33,11 +36,12 @@ jobs:
         ./tools/ci/build.sh \
           ${{ matrix.target_arch }} \
           ${{ matrix.compile_mode }} \
-          ${{ matrix.optimize_mode }}
+          ${{ matrix.optimize_mode }} \
+          ${{ matrix.nested_virt }}
     - name: Release
       uses: actions/upload-artifact@v3
       with:
-        name: boot-${{ matrix.target_arch }}-${{ matrix.compile_mode }}-${{ matrix.optimize_mode }}
+        name: boot-${{ matrix.target_arch }}-${{ matrix.compile_mode }}-${{ matrix.optimize_mode }}-${{ matrix.nested_virt }}
         path: |
           xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe
           xmhf/src/xmhf-core/xmhf-bootloader/init_syms.exe

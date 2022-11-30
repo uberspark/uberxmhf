@@ -100,6 +100,12 @@ hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo)
   return hpt_pme_getprot(pmeo->t, pmeo->lvl, pmeo->pme);
 }
 
+/* Get the memory type (e.g. uncached, write back) */
+hpt_pmt_t hpt_pmeo_getcache(const hpt_pmeo_t *pmeo)
+{
+  return hpt_pme_get_pmt(pmeo->t, pmeo->lvl, pmeo->pme);
+}
+
 /* Set the memory type (e.g. uncached, write back) */
 void hpt_pmeo_setcache(hpt_pmeo_t *pmeo, hpt_pmt_t pmt)
 {

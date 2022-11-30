@@ -44,39 +44,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// dbg-event-logger.c
-// All types of events in event logger for debugging
-// Author(s): Eric Li (xiaoyili@andrew.cmu.edu)
+// nested-x86vmx-handler1.h
+// Intercept handlers for nested virtualization operations from L1
+// author: Eric Li (xiaoyili@andrew.cmu.edu)
 
-#ifndef DEFINE_EVENT_FIELD
-#error "DEFINE_EVENT_FIELD must be defined"
-#endif
+#ifndef _NESTED_X86VMX_HANDLER1_H_
+#define _NESTED_X86VMX_HANDLER1_H_
 
-/*
- * Arguments of macro DEFINE_EVENT_FIELD:
- * name: Name of the event
- * count_type: type of the cache value (count)
- * count_fmt: format string to print the count
- * lru_size: size of the LRU cache
- * index_type: type of the cache index
- * key_type: type of the cache key
- * key_fmt: format string to print the key
- */
+#include "nested-x86vmx-vmcs12.h"
 
-DEFINE_EVENT_FIELD(vmexit_cpuid, u32, "%d", 4, u16, u32, "0x%08x")
-DEFINE_EVENT_FIELD(vmexit_rdmsr, u32, "%d", 4, u16, u32, "0x%08x")
-DEFINE_EVENT_FIELD(vmexit_wrmsr, u32, "%d", 4, u16, u32, "0x%08x")
-DEFINE_EVENT_FIELD(vmexit_xcph, u32, "%d", 4, u16, u8, "0x%02x")
-DEFINE_EVENT_FIELD(vmexit_other, u32, "%d", 4, u16, u32, "%d")
-DEFINE_EVENT_FIELD(inject_nmi, u32, "%d", 1, u16, u8, "%d")
-DEFINE_EVENT_FIELD(exception, u32, "%d", 1, u16, u8, "%d")
+vmcs12_info_t *xmhf_nested_arch_x86vmx_find_current_vmcs12(VCPU * vcpu);
+void xmhf_nested_arch_x86vmx_clear_all_vmcs12_ept02(VCPU * vcpu);
 
-#ifdef __NESTED_VIRTUALIZATION__
-DEFINE_EVENT_FIELD(vmexit_201, u32, "%d", 8, u16, u32, "%d")
-DEFINE_EVENT_FIELD(vmexit_202, u32, "%d", 4, u16, u32, "%d")
-DEFINE_EVENT_FIELD(ept02_full, u32, "%d", 2, u16, gpa_t, "0x%08llx")
-DEFINE_EVENT_FIELD(ept02_miss, u32, "%d", 2, u16, gpa_t, "0x%08llx")
-#endif /* !__NESTED_VIRTUALIZATION__ */
-
-#undef DEFINE_EVENT_FIELD
-
+#endif							/* _NESTED_X86VMX_HANDLER1_H_ */

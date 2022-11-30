@@ -161,6 +161,15 @@ AS_IF([test "x${enable_skip_runtime_bss}" != "xno"],
       [SKIP_RUNTIME_BSS=y],
       [SKIP_RUNTIME_BSS=n])
 
+AC_SUBST([SKIP_INIT_SMP])
+AC_ARG_ENABLE([skip_init_smp],
+        AS_HELP_STRING([--enable-skip-init-smp@<:@=yes|no@:>@],
+                [do not start APs in bootloader, only when no DRT]),
+                , [enable_skip_init_smp=no])
+AS_IF([test "x${enable_skip_init_smp}" != "xno"],
+      [SKIP_INIT_SMP=y],
+      [SKIP_INIT_SMP=n])
+
 AC_SUBST([SKIP_BOOTLOADER_HASH])
 AC_ARG_ENABLE([skip_bootloader_hash],
         AS_HELP_STRING([--enable-skip-bootloader-hash@<:@=yes|no@:>@],
@@ -170,6 +179,44 @@ AS_IF([test "x${enable_skip_bootloader_hash}" != "xno"],
       [SKIP_BOOTLOADER_HASH=y],
       [SKIP_BOOTLOADER_HASH=n])
 
+# Support for nested virtualization
+AC_SUBST([NESTED_VIRTUALIZATION])
+AC_ARG_ENABLE([nested_virtualization],
+        AS_HELP_STRING([--enable-nested-virtualization@<:@=yes|no@:>@],
+                [enable support for updating Intel microcode]),
+                , [enable_nested_virtualization=no])
+AS_IF([test "x${enable_nested_virtualization}" != "xno"],
+      [NESTED_VIRTUALIZATION=y],
+      [NESTED_VIRTUALIZATION=n])
+
+# When supporting nested virtualization, maximum number of EPTs per CPU
+# When NESTED_VIRTUALIZATION=n, this configuration is ignored
+AC_SUBST([VMX_NESTED_MAX_ACTIVE_EPT])
+AC_ARG_WITH([vmx_nested_max_active_ept],
+        AS_HELP_STRING([--with-vmx-nested-max-active-ept=@<:@VMX_NESTED_MAX_ACTIVE_EPT@:>@],
+                [when nested virtualization, number of active EPTs per CPU]),
+                , [with_vmx_nested_max_active_ept=8])
+VMX_NESTED_MAX_ACTIVE_EPT=$[]with_vmx_nested_max_active_ept
+
+# When supporting nested virtualization, maximum number of EPTs per CPU
+# When NESTED_VIRTUALIZATION=n, this configuration is ignored
+AC_SUBST([VMX_NESTED_EPT02_PAGE_POOL_SIZE])
+AC_ARG_WITH([vmx_nested_ept02_page_pool_size],
+        AS_HELP_STRING([--with-vmx-nested-ept02-page-pool-size=@<:@VMX_NESTED_EPT02_PAGE_POOL_SIZE@:>@],
+                [when nested virtualization, size of each EPT02 page pool]),
+                , [with_vmx_nested_ept02_page_pool_size=512])
+VMX_NESTED_EPT02_PAGE_POOL_SIZE=$[]with_vmx_nested_ept02_page_pool_size
+
+# When supporting nested virtualization, whether allow MSR bitmap
+# When NESTED_VIRTUALIZATION=n, this configuration is ignored
+AC_SUBST([VMX_NESTED_MSR_BITMAP])
+AC_ARG_ENABLE([vmx_nested_msr_bitmap],
+        AS_HELP_STRING([--enable-vmx-nested-msr-bitmap@<:@=yes|no@:>@],
+                [when nested virtualization, enable support for MSR bitmap]),
+                , [enable_vmx_nested_msr_bitmap=yes])
+AS_IF([test "x${enable_vmx_nested_msr_bitmap}" != "xno"],
+      [VMX_NESTED_MSR_BITMAP=y],
+      [VMX_NESTED_MSR_BITMAP=n])
 
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
@@ -296,6 +343,15 @@ AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
 # make absolute
 dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
+
+# Choose offset of TrustVisor hypercall number for L2 in nested virtualization
+# When NESTED_VIRTUALIZATION=n, this configuration is ignored
+AC_SUBST([TRUSTVISOR_L2_OFFSET])
+AC_ARG_WITH([trustvisor_l2_offset],
+        AS_HELP_STRING([--with-trustvisor-l2-offset=@<:@TRUSTVISOR_L2_OFFSET@:>@],
+                [offset of TrustVisor hypercall number for L2]),
+                , [with_trustvisor_l2_offset=0x4c415000U])
+TRUSTVISOR_L2_OFFSET=$[]with_trustvisor_l2_offset
 
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],

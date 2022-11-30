@@ -44,39 +44,58 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// dbg-event-logger.c
-// All types of events in event logger for debugging
-// Author(s): Eric Li (xiaoyili@andrew.cmu.edu)
-
-#ifndef DEFINE_EVENT_FIELD
-#error "DEFINE_EVENT_FIELD must be defined"
-#endif
+// nested-x86vmx-vmcs12-guesthost.h
+// Enumerate through VMCS guest state and host state field pairs
+// author: Eric Li (xiaoyili@andrew.cmu.edu)
 
 /*
- * Arguments of macro DEFINE_EVENT_FIELD:
- * name: Name of the event
- * count_type: type of the cache value (count)
- * count_fmt: format string to print the count
- * lru_size: size of the LRU cache
- * index_type: type of the cache index
- * key_type: type of the cache key
- * key_fmt: format string to print the key
+ * Macros are defined as DECLARE_FIELDPAIR_<size>
+ * size is 16, 64, 32, or NW (natural width).
+ * The arguments are:
+ * * guest_encoding: field encoding used in VMRAED and VMWRITE for guest
+ * * host_encoding: field encoding used in VMRAED and VMWRITE for host
+ * * name: guest_<name> and host_<name> are the name of the field in struct
+ *         nested_vmcs12
  */
 
-DEFINE_EVENT_FIELD(vmexit_cpuid, u32, "%d", 4, u16, u32, "0x%08x")
-DEFINE_EVENT_FIELD(vmexit_rdmsr, u32, "%d", 4, u16, u32, "0x%08x")
-DEFINE_EVENT_FIELD(vmexit_wrmsr, u32, "%d", 4, u16, u32, "0x%08x")
-DEFINE_EVENT_FIELD(vmexit_xcph, u32, "%d", 4, u16, u8, "0x%02x")
-DEFINE_EVENT_FIELD(vmexit_other, u32, "%d", 4, u16, u32, "%d")
-DEFINE_EVENT_FIELD(inject_nmi, u32, "%d", 1, u16, u8, "%d")
-DEFINE_EVENT_FIELD(exception, u32, "%d", 1, u16, u8, "%d")
+#ifndef DECLARE_FIELDPAIR_16
+#define DECLARE_FIELDPAIR_16(...)
+#endif
 
-#ifdef __NESTED_VIRTUALIZATION__
-DEFINE_EVENT_FIELD(vmexit_201, u32, "%d", 8, u16, u32, "%d")
-DEFINE_EVENT_FIELD(vmexit_202, u32, "%d", 4, u16, u32, "%d")
-DEFINE_EVENT_FIELD(ept02_full, u32, "%d", 2, u16, gpa_t, "0x%08llx")
-DEFINE_EVENT_FIELD(ept02_miss, u32, "%d", 2, u16, gpa_t, "0x%08llx")
-#endif /* !__NESTED_VIRTUALIZATION__ */
+#ifndef DECLARE_FIELDPAIR_64
+#define DECLARE_FIELDPAIR_64(...)
+#endif
 
-#undef DEFINE_EVENT_FIELD
+#ifndef DECLARE_FIELDPAIR_32
+#define DECLARE_FIELDPAIR_32(...)
+#endif
 
+#ifndef DECLARE_FIELDPAIR_NW
+#define DECLARE_FIELDPAIR_NW(...)
+#endif
+
+DECLARE_FIELDPAIR_16(0x0800, 0x0C00, ES_selector)
+DECLARE_FIELDPAIR_16(0x0802, 0x0C02, CS_selector)
+DECLARE_FIELDPAIR_16(0x0804, 0x0C04, SS_selector)
+DECLARE_FIELDPAIR_16(0x0806, 0x0C06, DS_selector)
+DECLARE_FIELDPAIR_16(0x0808, 0x0C08, FS_selector)
+DECLARE_FIELDPAIR_16(0x080A, 0x0C0A, GS_selector)
+DECLARE_FIELDPAIR_16(0x080E, 0x0C0C, TR_selector)
+DECLARE_FIELDPAIR_32(0x482A, 0x4C00, SYSENTER_CS)
+DECLARE_FIELDPAIR_NW(0x6800, 0x6C00, CR0)
+DECLARE_FIELDPAIR_NW(0x6802, 0x6C02, CR3)
+DECLARE_FIELDPAIR_NW(0x6804, 0x6C04, CR4)
+DECLARE_FIELDPAIR_NW(0x680E, 0x6C06, FS_base)
+DECLARE_FIELDPAIR_NW(0x6810, 0x6C08, GS_base)
+DECLARE_FIELDPAIR_NW(0x6814, 0x6C0A, TR_base)
+DECLARE_FIELDPAIR_NW(0x6816, 0x6C0C, GDTR_base)
+DECLARE_FIELDPAIR_NW(0x6818, 0x6C0E, IDTR_base)
+DECLARE_FIELDPAIR_NW(0x6824, 0x6C10, SYSENTER_ESP)
+DECLARE_FIELDPAIR_NW(0x6826, 0x6C12, SYSENTER_EIP)
+DECLARE_FIELDPAIR_NW(0x681C, 0x6C14, RSP)
+DECLARE_FIELDPAIR_NW(0x681E, 0x6C16, RIP)
+
+#undef DECLARE_FIELDPAIR_16
+#undef DECLARE_FIELDPAIR_64
+#undef DECLARE_FIELDPAIR_32
+#undef DECLARE_FIELDPAIR_NW

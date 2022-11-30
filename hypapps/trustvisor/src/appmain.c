@@ -211,9 +211,9 @@ static u64 do_TV_HC_TEST(VCPU *vcpu, struct regs *r)
 {
   (void)r;
 #ifdef __XMHF_AMD64__
-  eu_trace("CPU(0x%02x): test hypercall, rcx=0x%016x", vcpu->id, r->rcx);
+  eu_warn("CPU(0x%02x): test hypercall, rcx=0x%016x", vcpu->id, r->rcx);
 #else /* !__XMHF_AMD64__ */
-  eu_trace("CPU(0x%02x): test hypercall, ecx=0x%08x", vcpu->id, r->ecx);
+  eu_warn("CPU(0x%02x): test hypercall, ecx=0x%08x", vcpu->id, r->ecx);
 #endif /* __XMHF_AMD64__ */
   return 0;
 }

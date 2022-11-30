@@ -67,6 +67,7 @@ static void* hptw_emhf_host_ctx_gzp(void *vctx, size_t alignment, size_t sz)
 {
   hptw_emhf_host_ctx_t *ctx = vctx;
   pagelist_t *pl = ctx->pl;
+  HALT_ON_ERRORCOND(pl != NULL);
   HALT_ON_ERRORCOND(PAGE_SIZE_4K % alignment == 0);
   HALT_ON_ERRORCOND(sz <= PAGE_SIZE_4K);
   return pagelist_get_zeroedpage(pl);
@@ -110,6 +111,7 @@ static void* hptw_emhf_checked_guest_ctx_gzp(void *vctx, size_t alignment, size_
 {
   hptw_emhf_checked_guest_ctx_t *ctx = vctx;
   pagelist_t *pl = ctx->pl;
+  HALT_ON_ERRORCOND(pl != NULL);
   HALT_ON_ERRORCOND(PAGE_SIZE_4K % alignment == 0);
   HALT_ON_ERRORCOND(sz <= PAGE_SIZE_4K);
   return pagelist_get_zeroedpage(pl);

@@ -33,6 +33,13 @@ OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-ucode.o
 OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-ucode-data.o
 endif
 
+ifeq ($(NESTED_VIRTUALIZATION), y)
+OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-handler1.o
+OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-handler2.o
+OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-vmcs12.o
+OBJECTS_PRECOMPILED += ./xmhf-nested/arch/x86/vmx/nested-x86vmx-ept12.o
+endif
+
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/smpg-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/smpg-x86.o
 OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/svm/smpg-x86svm.o
@@ -134,6 +141,10 @@ RUNTIME_COMPONENTS += xmhf-debug
 RUNTIME_COMPONENTS += xmhf-xmhfcbackend
 #XMHF startup component
 RUNTIME_COMPONENTS += xmhf-startup
+ifeq ($(NESTED_VIRTUALIZATION), y)
+#XMHF nested virtualization component
+RUNTIME_COMPONENTS += xmhf-nested
+endif
 
 OBJCOPY_FLAGS = --output-format=binary
 ifneq ($(SKIP_RUNTIME_BSS), y)
@@ -190,3 +201,4 @@ clean:
 	cd xmhf-debug && $(MAKE) -w clean
 	cd xmhf-xmhfcbackend && $(MAKE) -w clean
 	cd xmhf-startup && $(MAKE) -w clean
+	cd xmhf-nested && $(MAKE) -w clean

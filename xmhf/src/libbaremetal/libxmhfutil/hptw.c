@@ -128,9 +128,9 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
       hpt_pm_t pm;
       hpt_pmo_t new_pmo;
 
-      EU_CHK( pm = ctx->gzp(ctx,
-                            HPT_PM_SIZE, /*FIXME*/
-                            hpt_pm_size(pmo->t, pmo->lvl-1)));
+      EU_CHK_W( pm = ctx->gzp(ctx,
+                              HPT_PM_SIZE, /*FIXME*/
+                              hpt_pm_size(pmo->t, pmo->lvl-1)));
       new_pmo = (hpt_pmo_t) {
         .pm = pm,
         .lvl = pmo->lvl-1,
@@ -165,7 +165,7 @@ int hptw_insert_pmeo_alloc(hptw_ctx_t *ctx,
   hpt_pmo_t pmo;
   int err=1;
 
-  EU_CHKN( hptw_get_pmo_alloc( &pmo, ctx, pmeo->lvl, va));
+  EU_CHKN_W( hptw_get_pmo_alloc( &pmo, ctx, pmeo->lvl, va));
   EU_CHK( pmo.pm);
   EU_CHK( pmo.lvl == pmeo->lvl);
 
@@ -327,10 +327,10 @@ hpt_pa_t hptw_va_to_pa(hptw_ctx_t *ctx,
 uintptr_t hptw_gpa_to_spa(hptw_ctx_t *ctx,
                        hpt_pa_t gpa)
 {
-	hpt_pa_t result = 0;
+  hpt_pa_t result = 0;
 
-	result = hptw_va_to_pa(ctx, (hpt_va_t) gpa);
-	return (uintptr_t)result;
+  result = hptw_va_to_pa(ctx, (hpt_va_t) gpa);
+  return (uintptr_t)result;
 }
 
 /*
@@ -358,6 +358,52 @@ void* hptw_access_va(hptw_ctx_t *ctx,
 }
 
 /*
+ * Get the page map entry object (pmeo) to context (ctx) at virtual address
+ * (va). Also perform access check using access_type and cpl.
+ * Return 0 if successful, 1 if failed (e.g. invalid permission).
+ * access_type and cpl are used to check permissions when accessing va.
+ * pmeo is undefined when this function returns 1.
+ */
+int hptw_checked_get_pmeo(hpt_pmeo_t *pmeo,
+                          hptw_ctx_t *ctx,
+                          hpt_prot_t access_type,
+                          hptw_cpl_t cpl,
+                          hpt_va_t va)
+{
+  hpt_pmo_t pmo;
+
+  EU_CHKN( hptw_get_root( ctx, &pmo));
+
+  eu_trace("va:0x%llx access_type %lld cpl:%d",
+           va, access_type, cpl);
+
+  do {
+    eu_trace("pmo t:%d pm:%p lvl:%d",
+             pmo.t, pmo.pm, pmo.lvl);
+    hpt_pm_get_pmeo_by_va( pmeo, &pmo, va);
+    EU_CHK_W(((access_type & hpt_pmeo_getprot(pmeo)) == access_type)
+           && (cpl == HPTW_CPL0 || hpt_pmeo_getuser(pmeo)),
+           eu_warn_e("req-priv:%lld req-cpl:%d priv:%lld user-accessible:%d",
+                    access_type, cpl, hpt_pmeo_getprot(pmeo), hpt_pmeo_getuser(pmeo)));
+  } while (hptw_next_lvl(ctx, &pmo, va));
+
+  EU_CHK( pmo.t != HPT_TYPE_INVALID);
+
+  EU_CHK( hpt_pmeo_is_present(pmeo));
+
+  /* exiting loop means hptw_next_lvl failed, which means either the
+   * current pmeo is a page, or the current pmeo is not present.
+   * however, we should have already returned if not present, so pmeo
+   * must be a page */
+  EU_VERIFY(hpt_pmeo_is_page(pmeo));
+
+  return 0;
+
+ out:
+  return 1;
+}
+
+/*
  * Access virtual address (va) in context (ctx) in software. Return NULL when
  * error (e.g. invalid permission).
  * access_type and cpl are used to check permissions when accessing va.
@@ -375,34 +421,10 @@ void* hptw_checked_access_va(hptw_ctx_t *ctx,
 {
   hpt_pmeo_t pmeo;
   hpt_pa_t pa;
-  hpt_pmo_t pmo;
   void *rv=NULL;
   *avail_sz=0;
 
-  EU_CHKN( hptw_get_root( ctx, &pmo));
-
-  eu_trace("va:0x%llx access_type %lld cpl:%d",
-           va, access_type, cpl);
-
-  do {
-    eu_trace("pmo t:%d pm:%p lvl:%d",
-             pmo.t, pmo.pm, pmo.lvl);
-    hpt_pm_get_pmeo_by_va( &pmeo, &pmo, va);
-    EU_CHK_W(((access_type & hpt_pmeo_getprot(&pmeo)) == access_type)
-           && (cpl == HPTW_CPL0 || hpt_pmeo_getuser(&pmeo)),
-           eu_warn_e("req-priv:%lld req-cpl:%d priv:%lld user-accessible:%d",
-                    access_type, cpl, hpt_pmeo_getprot(&pmeo), hpt_pmeo_getuser(&pmeo)));
-  } while (hptw_next_lvl(ctx, &pmo, va));
-
-  EU_CHK( pmo.t != HPT_TYPE_INVALID);
-
-  EU_CHK( hpt_pmeo_is_present(&pmeo));
-
-  /* exiting loop means hptw_next_lvl failed, which means either the
-   * current pmeo is a page, or the current pmeo is not present.
-   * however, we should have already returned if not present, so pmeo
-   * must be a page */
-  EU_VERIFY(hpt_pmeo_is_page(&pmeo));
+  EU_CHKN_W(hptw_checked_get_pmeo(&pmeo, ctx, access_type, cpl, va));
 
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));

@@ -13,8 +13,13 @@
 #   --no-x2apic: hide x2APIC to workaround a bug (--enable-hide-x2apic)
 #   --no-rt-bss: skip runtime bss in image (--enable-skip-runtime-bss)
 #   --no-bl-hash: skip bootloader hashing (--enable-skip-bootloader-hash)
+#   --no-init-smp: disable SMP in bootloader (--enable-skip-init-smp)
 #   --sl-base BASE: set SL+RT base to BASE instead of 256M (--with-sl-base)
 #   fast: equivalent to --no-rt-bss --no-bl-hash (For running XMHF quickly)
+#   nv: enable nested virtualization (--enable-nested-virtualization)
+#   no_nv: disable nested virtualization (--disable-nested-virtualization)
+#   --ept-num EPT_NUM: # max active ept (--with-vmx-nested-max-active-ept)
+#   --ept-pool EPT_POOL: pool for ept (--with-vmx-nested-ept02-page-pool-size)
 #   release: equivalent to --drt --dmap --no-dbg (For GitHub actions)
 #   debug: ignored (For GitHub actions)
 #   O0: ignored (For GitHub actions)
@@ -43,7 +48,11 @@ CIRCLE_CI="n"
 NO_X2APIC="n"
 NO_RT_BSS="n"
 NO_BL_HASH="n"
+NO_INIT_SMP="n"
 SL_BASE="0x10000000"
+NV="y"
+EPT_NUM="8"
+EPT_POOL="512"
 OPT=""
 
 # Determine LINUX_BASE (may not be 100% correct all the time)
@@ -120,6 +129,9 @@ while [ "$#" -gt 0 ]; do
 		--no-bl-hash)
 			NO_BL_HASH="y"
 			;;
+		--no-init-smp)
+			NO_INIT_SMP="y"
+			;;
 		--sl-base)
 			SL_BASE="$2"
 			shift
@@ -127,6 +139,20 @@ while [ "$#" -gt 0 ]; do
 		fast)
 			NO_RT_BSS="y"
 			NO_BL_HASH="y"
+			;;
+		nv)
+			NV="y"
+			;;
+		no_nv)
+			NV="n"
+			;;
+		--ept-num)
+			EPT_NUM="$2"
+			shift
+			;;
+		--ept-pool)
+			EPT_POOL="$2"
+			shift
 			;;
 		release)
 			# For GitHub actions
@@ -224,10 +250,20 @@ if [ "$NO_BL_HASH" == "y" ]; then
 	CONF+=("--enable-skip-bootloader-hash")
 fi
 
+if [ "$NO_INIT_SMP" == "y" ]; then
+	CONF+=("--enable-skip-init-smp")
+fi
+
 CONF+=("--with-sl-base=$SL_BASE")
 
 if [ "$CIRCLE_CI" == "y" ]; then
 	CONF+=("--enable-optimize-nested-virt")
+fi
+
+if [ "$NV" == "y" ]; then
+	CONF+=("--enable-nested-virtualization")
+	CONF+=("--with-vmx-nested-max-active-ept=$EPT_NUM")
+	CONF+=("--with-vmx-nested-ept02-page-pool-size=$EPT_POOL")
 fi
 
 # Output configure arguments, if `-n`
