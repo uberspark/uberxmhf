@@ -134,12 +134,12 @@ static void *ept12_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
 						  size_t *avail_sz)
 {
 	ept12_ctx_t *ctx = vctx;
+	void *ans;
 	do {
-		void *ans;
-		*(ctx_pair->vmx_ept_changed) = false;
+		*(ctx->ctx01.vmx_ept_changed) = false;
 		ans = hptw_checked_access_va(&ctx->ctx01.host_ctx,
 									 access_type, cpl, spa, sz, avail_sz);
-	} while (*(ctx_pair->vmx_ept_changed));
+	} while (*(ctx->ctx01.vmx_ept_changed));
 	return ans;
 }
 
