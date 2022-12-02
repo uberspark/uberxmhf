@@ -125,6 +125,7 @@ static void *ept12_gzp(void *vctx, size_t alignment, size_t sz)
 static hpt_pa_t ept12_ptr2pa(void *vctx, void *ptr)
 {
 	(void)vctx;
+	HALT_ON_ERRORCOND(0 && "EPT12 should not call ptr2pa()");
 	return hva2spa(ptr);
 }
 
@@ -133,8 +134,13 @@ static void *ept12_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
 						  size_t *avail_sz)
 {
 	ept12_ctx_t *ctx = vctx;
-	return hptw_checked_access_va(&ctx->ctx01.host_ctx,
-								  access_type, cpl, spa, sz, avail_sz);
+	do {
+		void *ans;
+		*(ctx_pair->vmx_ept_changed) = false;
+		ans = hptw_checked_access_va(&ctx->ctx01.host_ctx,
+									 access_type, cpl, spa, sz, avail_sz);
+	} while (*(ctx_pair->vmx_ept_changed));
+	return ans;
 }
 
 /*
