@@ -415,7 +415,6 @@ static u32 _vmcs12_get_ctls12(VCPU * vcpu, struct _vmx_vmcsfields *vmcs12,
 		u32 fixed0 = vcpu->vmx_nested_entry_ctls;
 		u32 fixed1 = vcpu->vmx_nested_entry_ctls >> 32;
 		if (!((~val & fixed0) == 0 && (val & ~fixed1) == 0)) {
-HALT_ON_ERRORCOND(0);
 			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
 		}
 		ctls->entry_ctls = val;
@@ -455,6 +454,7 @@ typedef struct _vmcs12_to_vmcs02_arg {
 	vmcs12_info_t *vmcs12_info;
 	struct _vmx_vmcsfields *vmcs12;
 	vmx_ctls_t *ctls;
+	vmx_ctls_t *ctls12;
 	guestmem_hptw_ctx_pair_t *ctx_pair;
 	u64 guest_ia32_pat;
 	u64 guest_ia32_efer;
@@ -468,6 +468,7 @@ typedef struct _vmcs02_to_vmcs12_arg {
 	vmcs12_info_t *vmcs12_info;
 	struct _vmx_vmcsfields *vmcs12;
 	vmx_ctls_t *ctls;
+	vmx_ctls_t *ctls12;
 	u64 host_ia32_pat;
 	u64 host_ia32_efer;
 	u32 ia32_pat_index;
@@ -1043,7 +1044,7 @@ static u32 _vmcs12_to_vmcs02_control_EPT_pointer(ARG10 * arg)
 	/* Note: VMX_SECPROCBASED_ENABLE_EPT is always enabled */
 	spa_t ept02;
 	HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&arg->vcpu->vmx_caps));
-	if (_vmx_hasctl_enable_ept(arg->ctls)) {
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
 		/* Construct shadow EPT */
 		u64 eptp12 = arg->vmcs12->control_EPT_pointer;
 		gpa_t ept12;
@@ -1075,7 +1076,7 @@ static void _vmcs02_to_vmcs12_control_EPT_pointer(ARG01 * arg)
 {
 	spa_t ept02;
 	HALT_ON_ERRORCOND(_vmx_hasctl_enable_ept(&arg->vcpu->vmx_caps));
-	if (_vmx_hasctl_enable_ept(arg->ctls)) {
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
 		gpa_t ept12 = arg->vmcs12_info->guest_ept_root;
 		ept02_cache_line_t *cache_line;
 		bool cache_hit;
@@ -1638,6 +1639,7 @@ u32 xmhf_nested_arch_x86vmx_vmcs12_to_vmcs02(VCPU * vcpu,
 		.vmcs12_info = vmcs12_info,
 		.vmcs12 = vmcs12,
 		.ctls = &ctls02,
+		.ctls12 = &vmcs12_info->ctls12,
 		.ctx_pair = &ctx_pair,
 		.guest_ia32_pat = 0,
 		.guest_ia32_efer = 0,
@@ -1752,6 +1754,7 @@ void xmhf_nested_arch_x86vmx_rewalk_ept01(VCPU * vcpu,
 		.vmcs12_info = vmcs12_info,
 		.vmcs12 = vmcs12,
 		.ctls = &ctls02,
+		.ctls12 = &vmcs12_info->ctls12,
 		.ctx_pair = &ctx_pair,
 		/* All fields below are not used */
 		.guest_ia32_pat = 0,
@@ -1791,6 +1794,7 @@ void xmhf_nested_arch_x86vmx_vmcs02_to_vmcs12(VCPU * vcpu,
 		.vmcs12_info = vmcs12_info,
 		.vmcs12 = vmcs12,
 		.ctls = &ctls02,
+		.ctls12 = &vmcs12_info->ctls12,
 		.host_ia32_pat = 0,
 		.host_ia32_efer = 0,
 		.ia32_pat_index = 0,
