@@ -880,7 +880,7 @@ static void _vmcs02_to_vmcs12_control_vpid(ARG01 * arg)
 
 static u32 _vmcs12_to_vmcs02_control_MSR_Bitmaps_address(ARG10 * arg)
 {
-	if (_vmx_hasctl_use_msr_bitmaps(arg->ctls)) {
+	if (_vmx_hasctl_use_msr_bitmaps(arg->ctls12)) {
 		/* Note: ideally should return VMENTRY error */
 		HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K
 						  (arg->vmcs12->control_MSR_Bitmaps_address));
@@ -1001,7 +1001,7 @@ static void _update_pae_pdpte(ARG10 * arg)
 	bool pae = ((arg->vmcs12->guest_CR0 & CR0_PG) &&
 				(arg->vmcs12->guest_CR4 & CR4_PAE));
 #ifdef __AMD64__
-	if (_vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls)) {
+	if (_vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls12)) {
 		pae = false;
 	}
 #elif !defined(__I386__)
@@ -1129,7 +1129,7 @@ static void _rewalk_ept01_control_EPT_pointer(ARG10 * arg)
 
 static u32 _vmcs12_to_vmcs02_guest_IA32_PAT(ARG10 * arg)
 {
-	if (_vmx_hasctl_vmentry_load_ia32_pat(arg->ctls)) {
+	if (_vmx_hasctl_vmentry_load_ia32_pat(arg->ctls12)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		arg->guest_ia32_pat = arg->vmcs12->guest_IA32_PAT;
 		/* Note: ideally should return VMENTRY error */
@@ -1144,7 +1144,7 @@ static u32 _vmcs12_to_vmcs02_guest_IA32_PAT(ARG10 * arg)
 
 static void _vmcs02_to_vmcs12_guest_IA32_PAT(ARG01 * arg)
 {
-	if (_vmx_hasctl_vmexit_save_ia32_pat(arg->ctls)) {
+	if (_vmx_hasctl_vmexit_save_ia32_pat(arg->ctls12)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		arg->vmcs12->guest_IA32_PAT = arg->msr02[arg->ia32_pat_index].data;
 	}
@@ -1155,13 +1155,13 @@ static void _vmcs02_to_vmcs12_guest_IA32_PAT(ARG01 * arg)
 
 static u32 _vmcs12_to_vmcs02_guest_IA32_EFER(ARG10 * arg)
 {
-	if (_vmx_hasctl_vmentry_load_ia32_efer(arg->ctls)) {
+	if (_vmx_hasctl_vmentry_load_ia32_efer(arg->ctls12)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		arg->guest_ia32_efer = arg->vmcs12->guest_IA32_EFER;
 		/* Note: ideally should return VMENTRY error */
 		HALT_ON_ERRORCOND(_check_ia32_efer
 						  (arg->guest_ia32_efer,
-						   _vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls),
+						   _vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls12),
 						   arg->vmcs12->guest_CR0 & CR0_PG));
 	} else {
 		/*
@@ -1174,7 +1174,7 @@ static u32 _vmcs12_to_vmcs02_guest_IA32_EFER(ARG10 * arg)
 		if (arg->vmcs12->guest_CR0 & CR0_PG) {
 			mask |= (1ULL << EFER_LME);
 		}
-		if (_vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls)) {
+		if (_vmx_hasctl_vmentry_ia_32e_mode_guest(arg->ctls12)) {
 			arg->guest_ia32_efer = val01 | mask;
 		} else {
 			arg->guest_ia32_efer = val01 & ~mask;
@@ -1186,11 +1186,87 @@ static u32 _vmcs12_to_vmcs02_guest_IA32_EFER(ARG10 * arg)
 
 static void _vmcs02_to_vmcs12_guest_IA32_EFER(ARG01 * arg)
 {
-	if (_vmx_hasctl_vmexit_save_ia32_efer(arg->ctls)) {
+	if (_vmx_hasctl_vmexit_save_ia32_efer(arg->ctls12)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		arg->vmcs12->guest_IA32_EFER = arg->msr02[arg->ia32_efer_index].data;
 	}
 	(void)_vmcs02_to_vmcs12_guest_IA32_EFER_unused;
+}
+
+/* Guest PDPTE0 */
+
+static u32 _vmcs12_to_vmcs02_guest_PDPTE0(ARG10 * arg)
+{
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
+		__vmx_vmwrite64(VMCSENC_guest_PDPTE0, arg->vmcs12->guest_PDPTE0);
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_guest_PDPTE0_unused;
+}
+
+static void _vmcs02_to_vmcs12_guest_PDPTE0(ARG01 * arg)
+{
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
+		arg->vmcs12->guest_PDPTE0 = __vmx_vmread64(VMCSENC_guest_PDPTE0);
+	}
+	(void)_vmcs02_to_vmcs12_guest_PDPTE0_unused;
+}
+
+/* Guest PDPTE1 */
+
+static u32 _vmcs12_to_vmcs02_guest_PDPTE1(ARG10 * arg)
+{
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
+		__vmx_vmwrite64(VMCSENC_guest_PDPTE1, arg->vmcs12->guest_PDPTE1);
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_guest_PDPTE1_unused;
+}
+
+static void _vmcs02_to_vmcs12_guest_PDPTE1(ARG01 * arg)
+{
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
+		arg->vmcs12->guest_PDPTE1 = __vmx_vmread64(VMCSENC_guest_PDPTE1);
+	}
+	(void)_vmcs02_to_vmcs12_guest_PDPTE1_unused;
+}
+
+/* Guest PDPTE2 */
+
+static u32 _vmcs12_to_vmcs02_guest_PDPTE2(ARG10 * arg)
+{
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
+		__vmx_vmwrite64(VMCSENC_guest_PDPTE2, arg->vmcs12->guest_PDPTE2);
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_guest_PDPTE2_unused;
+}
+
+static void _vmcs02_to_vmcs12_guest_PDPTE2(ARG01 * arg)
+{
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
+		arg->vmcs12->guest_PDPTE2 = __vmx_vmread64(VMCSENC_guest_PDPTE2);
+	}
+	(void)_vmcs02_to_vmcs12_guest_PDPTE2_unused;
+}
+
+/* Guest PDPTE3 */
+
+static u32 _vmcs12_to_vmcs02_guest_PDPTE3(ARG10 * arg)
+{
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
+		__vmx_vmwrite64(VMCSENC_guest_PDPTE3, arg->vmcs12->guest_PDPTE3);
+	}
+	return VM_INST_SUCCESS;
+	(void)_vmcs12_to_vmcs02_guest_PDPTE3_unused;
+}
+
+static void _vmcs02_to_vmcs12_guest_PDPTE3(ARG01 * arg)
+{
+	if (_vmx_hasctl_enable_ept(arg->ctls12)) {
+		arg->vmcs12->guest_PDPTE3 = __vmx_vmread64(VMCSENC_guest_PDPTE3);
+	}
+	(void)_vmcs02_to_vmcs12_guest_PDPTE3_unused;
 }
 
 /*
@@ -1201,7 +1277,7 @@ static void _vmcs02_to_vmcs12_guest_IA32_EFER(ARG01 * arg)
 
 static u32 _vmcs12_to_vmcs02_host_IA32_PAT(ARG10 * arg)
 {
-	if (_vmx_hasctl_vmexit_load_ia32_pat(arg->ctls)) {
+	if (_vmx_hasctl_vmexit_load_ia32_pat(arg->ctls12)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		/* Note: ideally should return VMENTRY error */
 		HALT_ON_ERRORCOND(_check_ia32_pat(arg->vmcs12->host_IA32_PAT));
@@ -1212,7 +1288,7 @@ static u32 _vmcs12_to_vmcs02_host_IA32_PAT(ARG10 * arg)
 
 static void _vmcs02_to_vmcs12_host_IA32_PAT(ARG01 * arg)
 {
-	if (_vmx_hasctl_vmexit_load_ia32_pat(arg->ctls)) {
+	if (_vmx_hasctl_vmexit_load_ia32_pat(arg->ctls12)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		arg->host_ia32_pat = arg->vmcs12->host_IA32_PAT;
 	} else {
@@ -1225,10 +1301,11 @@ static void _vmcs02_to_vmcs12_host_IA32_PAT(ARG01 * arg)
 
 static u32 _vmcs12_to_vmcs02_host_IA32_EFER(ARG10 * arg)
 {
-	if (_vmx_hasctl_vmexit_load_ia32_efer(arg->ctls)) {
+	if (_vmx_hasctl_vmexit_load_ia32_efer(arg->ctls12)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		/* Note: ideally should return VMENTRY error */
-		bool host_long = _vmx_hasctl_vmexit_host_address_space_size(arg->ctls);
+		bool host_long =
+			_vmx_hasctl_vmexit_host_address_space_size(arg->ctls12);
 		HALT_ON_ERRORCOND(_check_ia32_efer(arg->vmcs12->host_IA32_EFER,
 										   host_long, true));
 	}
@@ -1238,7 +1315,7 @@ static u32 _vmcs12_to_vmcs02_host_IA32_EFER(ARG10 * arg)
 
 static void _vmcs02_to_vmcs12_host_IA32_EFER(ARG01 * arg)
 {
-	if (_vmx_hasctl_vmexit_load_ia32_efer(arg->ctls)) {
+	if (_vmx_hasctl_vmexit_load_ia32_efer(arg->ctls12)) {
 		/* XMHF never uses this feature. Instead, uses MSR load / save area */
 		arg->host_ia32_efer = arg->vmcs12->host_IA32_EFER;
 	} else {
@@ -1248,7 +1325,7 @@ static void _vmcs02_to_vmcs12_host_IA32_EFER(ARG01 * arg)
 		 * * IA32_EFER.LME = "host address-space size"
 		 */
 		u64 mask = (1ULL << EFER_LMA) | (1ULL << EFER_LME);
-		if (_vmx_hasctl_vmexit_host_address_space_size(arg->ctls)) {
+		if (_vmx_hasctl_vmexit_host_address_space_size(arg->ctls12)) {
 			arg->host_ia32_efer = arg->msr02[arg->ia32_efer_index].data | mask;
 		} else {
 			arg->host_ia32_efer = arg->msr02[arg->ia32_efer_index].data & mask;

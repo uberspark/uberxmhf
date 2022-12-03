@@ -479,27 +479,27 @@ DECLARE_FIELD_64_RW(0x2808, guest_IA32_PERF_GLOBAL_CTRL,
 					UNDEFINED)
 /* Guest PDPTE0 */
 DECLARE_FIELD_64_RW(0x280A, guest_PDPTE0,
-					(FIELD_PROP_GUEST | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_GUEST),
 					(_vmx_hasctl_enable_ept(FIELD_CTLS_ARG)),
-					,
+					_unused,
 					UNDEFINED)
 /* Guest PDPTE1 */
 DECLARE_FIELD_64_RW(0x280C, guest_PDPTE1,
-					(FIELD_PROP_GUEST | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_GUEST),
 					(_vmx_hasctl_enable_ept(FIELD_CTLS_ARG)),
-					,
+					_unused,
 					UNDEFINED)
 /* Guest PDPTE2 */
 DECLARE_FIELD_64_RW(0x280E, guest_PDPTE2,
-					(FIELD_PROP_GUEST | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_GUEST),
 					(_vmx_hasctl_enable_ept(FIELD_CTLS_ARG)),
-					,
+					_unused,
 					UNDEFINED)
 /* Guest PDPTE3 */
 DECLARE_FIELD_64_RW(0x2810, guest_PDPTE3,
-					(FIELD_PROP_GUEST | FIELD_PROP_ID_GUEST),
+					(FIELD_PROP_GUEST),
 					(_vmx_hasctl_enable_ept(FIELD_CTLS_ARG)),
-					,
+					_unused,
 					UNDEFINED)
 /* Guest IA32_BNDCFGS */
 DECLARE_FIELD_64_RW(0x2812, guest_IA32_BNDCFGS,
