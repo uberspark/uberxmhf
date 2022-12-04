@@ -243,6 +243,7 @@ static u64 do_TV_HC_UNREG(VCPU *vcpu, struct regs *r)
 {
   u64 scode_gva;
   u64 ret;
+
   /* sensitive code as guest virtual address in ecx */
 #ifdef __XMHF_AMD64__
   scode_gva = r->rcx;
@@ -595,10 +596,16 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
 #else /* !__XMHF_AMD64__ */
     cmd = (u32)r->eax;
 #endif /* __XMHF_AMD64__ */
+    if (VCPU_nested(vcpu)) {
+      cmd -= __VMX_HYPAPP_L2_VMCALL_MIN__;
+    }
     linux_vmcb = 0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     linux_vmcb = (struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr);
     cmd = (u32)linux_vmcb->rax;
+    if (VCPU_nested(vcpu)) {
+      HALT_ON_ERRORCOND(0 && "Not implemented");
+    }
   } else {
     printf("unknown cpu vendor type!\n");
     HALT();
@@ -730,27 +737,66 @@ void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 }
 
 /*
- * Activated when EAX=0x7a567254 (TrVz) and ECX=0.
- * Set EAX=0x7a767274 (TRVZ).
- * Set EBX=UINT_MAX if not in PAL, or whitelist_entry.id if in PAL.
- * Set ECX[0]=0 if calling process is 32-bit, 1 if 64-bit.
- * Set ECX[1-31]=undefined.
- * Set EDX=undefined.
+ * Activated when EAX=0x7a567254 (TrVz) and:
+ * * If not in nested virtualization, ECX=0.
+ * * If in nested virtualization, ECX=__VMX_HYPAPP_L2_VMCALL_MIN__.
+ * If activated:
+ * * Set EAX=0x7a767274 (TRVZ).
+ * * Set EBX=UINT_MAX if not in PAL, or whitelist_entry.id if in PAL.
+ * * Set ECX[0]=0 if calling process is 32-bit, 1 if 64-bit.
+ * * Set ECX[1]=0 if guest EPT12 not in use, 1 if EPT12 in use.
+ * * Set ECX[2-31]=undefined.
+ * * Set EDX=undefined.
  */
 u32 tv_app_handlecpuid(VCPU *vcpu, struct regs *r)
 {
-  if (r->eax == 0x7a567254U && r->ecx == 0) {
-    r->eax = 0x7a767274U;
-    r->ebx = (u32)hpt_scode_get_scode_id(vcpu);
-    r->ecx = 0U;
-    if (VCPU_g64(vcpu)) {
-      r->ecx |= (1U << 0);
+  if (r->eax == 0x7a567254U) {
+    u32 expected_ecx = 0;
+    if (VCPU_nested(vcpu)) {
+      expected_ecx = __VMX_HYPAPP_L2_VMCALL_MIN__;
     }
-    r->edx = 0U;
-    return APP_CPUID_SKIP;
+    if (r->ecx == expected_ecx) {
+      r->eax = 0x7a767274U;
+      r->ebx = (u32)hpt_scode_get_scode_id(vcpu);
+      r->ecx = 0U;
+      if (VCPU_g64(vcpu)) {
+        r->ecx |= (1U << 0);
+      }
+      if (hpt_emhf_get_l1l2_root_pm_pa(vcpu) != HPTW_EMHF_EPT12_INVALID) {
+        r->ecx |= (1U << 1);
+      }
+      r->edx = 0U;
+      return APP_CPUID_SKIP;
+    }
   }
   return APP_CPUID_CHAIN;
 }
+
+#ifdef __NESTED_VIRTUALIZATION__
+u32 tv_app_handle_nest_entry(VCPU *vcpu, struct regs *r)
+{
+  (void)r;
+  if (hpt_scode_is_scode(vcpu)) {
+    eu_err("CPU(0x%02x): tv_app_handle_nest_entry in scode, Halt!", vcpu->id);
+    HALT();
+  }
+  return APP_SUCCESS;
+}
+
+u32 tv_app_handle_nest_exit(VCPU *vcpu, struct regs *r)
+{
+  (void)r;
+  if (hpt_scode_is_scode(vcpu)) {
+#ifdef __NESTED_VIRTUALIZATION__
+    extern void xmhf_nested_arch_x86vmx_vmread_all(VCPU * vcpu, char *prefix);
+    xmhf_nested_arch_x86vmx_vmread_all(vcpu, ":VMCS02:");
+#endif /* __NESTED_VIRTUALIZATION__ */
+    eu_err("CPU(0x%02x): tv_app_handle_nest_exit in scode, Halt!", vcpu->id);
+    HALT();
+  }
+  return APP_SUCCESS;
+}
+#endif /* __NESTED_VIRTUALIZATION__ */
 
 /* Local Variables: */
 /* mode:c           */

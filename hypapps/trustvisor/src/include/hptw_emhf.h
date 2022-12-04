@@ -51,12 +51,15 @@
 #include <xmhf.h>
 #include <pages.h>
 
-typedef struct {
-  hptw_ctx_t super;
+#define HPTW_EMHF_EPT12_INVALID ULLONG_MAX
 
+typedef struct {
+  hptw_ctx_t super; /* When nested virtualization, EPT12. Otherwise, EPT01 */
+  hptw_ctx_t lower; /* When nested virtualization, EPT01. Otherwise, ignored */
   pagelist_t *pl;
 } hptw_emhf_host_ctx_t;
 int hptw_emhf_host_ctx_init(hptw_emhf_host_ctx_t *ctx, hpt_pa_t root_pa, hpt_type_t t, pagelist_t *pl);
+int hptw_emhf_host_l1_ctx_init_of_vcpu(hptw_emhf_host_ctx_t *rv, VCPU *vcpu);
 int hptw_emhf_host_ctx_init_of_vcpu(hptw_emhf_host_ctx_t *rv, VCPU *vcpu);
 
 typedef struct {
@@ -74,5 +77,42 @@ int hptw_emhf_checked_guest_ctx_init(hptw_emhf_checked_guest_ctx_t *ctx,
                                      const hptw_emhf_host_ctx_t *host_ctx,
                                      pagelist_t *pl);
 int hptw_emhf_checked_guest_ctx_init_of_vcpu(hptw_emhf_checked_guest_ctx_t *rv, VCPU *vcpu);
+
+// Access EPT12 / NPT12
+static inline hpt_pa_t hpt_emhf_get_l1l2_root_pm_pa(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+#ifdef __NESTED_VIRTUALIZATION__
+    hpt_pa_t ans;
+    if (xmhf_nested_arch_x86vmx_get_ept12(vcpu, &ans)) {
+      return ans;
+    }
+#endif /* __NESTED_VIRTUALIZATION__ */
+    return HPTW_EMHF_EPT12_INVALID;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    HALT_ON_ERRORCOND(0 && "Not implemented");
+  } else {
+    HALT_ON_ERRORCOND(0);
+  }
+}
+
+static inline void hpt_emhf_set_l1l2_root_pm_pa(VCPU *vcpu, hpt_pa_t val)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+#ifdef __NESTED_VIRTUALIZATION__
+    bool enabled = false;
+    if (val != HPTW_EMHF_EPT12_INVALID) {
+      enabled = true;
+    }
+    xmhf_nested_arch_x86vmx_set_ept12(vcpu, enabled, val);
+#else /* !__NESTED_VIRTUALIZATION__ */
+    (void)val;
+#endif /* __NESTED_VIRTUALIZATION__ */
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    HALT_ON_ERRORCOND(0 && "Not implemented");
+  } else {
+    HALT_ON_ERRORCOND(0);
+  }
+}
 
 #endif

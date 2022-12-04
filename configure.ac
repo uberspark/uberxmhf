@@ -344,14 +344,23 @@ AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
 dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
 
-# Choose offset of TrustVisor hypercall number for L2 in nested virtualization
+# Choose minimum L2 VMCALL EAX number that will be forwarded to hypapp
 # When NESTED_VIRTUALIZATION=n, this configuration is ignored
-AC_SUBST([TRUSTVISOR_L2_OFFSET])
-AC_ARG_WITH([trustvisor_l2_offset],
-        AS_HELP_STRING([--with-trustvisor-l2-offset=@<:@TRUSTVISOR_L2_OFFSET@:>@],
+AC_SUBST([VMX_HYPAPP_L2_VMCALL_MIN])
+AC_ARG_WITH([vmx_hypapp_l2_vmcall_min],
+        AS_HELP_STRING([--with-hypapp-l2-vmcall-min=@<:@VMX_HYPAPP_L2_VMCALL_MIN@:>@],
                 [offset of TrustVisor hypercall number for L2]),
-                , [with_trustvisor_l2_offset=0x4c415000U])
-TRUSTVISOR_L2_OFFSET=$[]with_trustvisor_l2_offset
+                , [with_vmx_hypapp_l2_vmcall_min=0x4c415000U])
+VMX_HYPAPP_L2_VMCALL_MIN=$[]with_vmx_hypapp_l2_vmcall_min
+
+# Choose maximum L2 VMCALL EAX number that will be forwarded to hypapp
+# When NESTED_VIRTUALIZATION=n, this configuration is ignored
+AC_SUBST([VMX_HYPAPP_L2_VMCALL_MAX])
+AC_ARG_WITH([vmx_hypapp_l2_vmcall_max],
+        AS_HELP_STRING([--with-hypapp-l2-vmcall-max=@<:@VMX_HYPAPP_L2_VMCALL_MAX@:>@],
+                [offset of TrustVisor hypercall number for L2]),
+                , [with_vmx_hypapp_l2_vmcall_max=0x4c4150ffU])
+VMX_HYPAPP_L2_VMCALL_MAX=$[]with_vmx_hypapp_l2_vmcall_max
 
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],

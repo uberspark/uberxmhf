@@ -94,6 +94,9 @@
  */
 #define VMX_NESTED_MAX_ACTIVE_VMCS 8
 
+/* Invalid value for guest_ept_root */
+#define GUEST_EPT_ROOT_INVALID ULLONG_MAX
+
 /* Format of an active VMCS12 tracked by a CPU */
 typedef struct vmcs12_info {
 	/* Index of this VMCS12 in the CPU */
@@ -124,18 +127,19 @@ typedef struct vmcs12_info {
 	/* VMENTRY MSR load area */
 	msr_entry_t vmcs02_vmentry_msr_load_area[VMX_NESTED_MAX_MSR_COUNT]
 		__attribute__((aligned(16)));
-	/* Whether using EPT12 */
-	int guest_ept_enable;
 	/*
-	 * When guest_ept_enable, EPT02 cache line.
+	 * If guest is using EPT, pointer to EPT12 root. Otherwise,
+	 * GUEST_EPT_ROOT_INVALID.
+	 */
+	gpa_t guest_ept_root;
+	/*
+	 * When guest_ept_root != GUEST_EPT_ROOT_INVALID, EPT02 cache line.
 	 *
 	 * This variable can be asynchronously invalidated when another CPU's EPT01
 	 * changes. So use xmhf_nested_arch_x86vmx_block_ept02_flush() to protect
 	 * it when accessing.
 	 */
 	ept02_cache_line_t *guest_ept_cache_line;
-	/* When guest_ept_enable, pointer to EPT12 root */
-	gpa_t guest_ept_root;
 	/* "NMI exiting" in VMCS */
 	bool guest_nmi_exiting;
 	/* "Virtual NMIs" in VMCS */

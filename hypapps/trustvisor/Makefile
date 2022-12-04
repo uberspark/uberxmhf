@@ -21,11 +21,6 @@ ifeq ($(LDN_TV_INTEGRATION), y)
   CFLAGS += -D__LDN_TV_INTEGRATION__
 endif
 
-# Set hypercall offset for nested guest
-ifeq ($(NESTED_VIRTUALIZATION), y)
-  CFLAGS += -DTRUSTVISOR_L2_OFFSET=$(TRUSTVISOR_L2_OFFSET)
-endif
-
 export CFLAGS
 export ASFLAGS
 

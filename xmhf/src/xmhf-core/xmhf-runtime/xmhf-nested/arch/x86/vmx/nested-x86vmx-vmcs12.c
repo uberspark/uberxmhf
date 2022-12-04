@@ -1050,20 +1050,19 @@ static u32 _vmcs12_to_vmcs02_control_EPT_pointer(ARG10 * arg)
 		gpa_t ept12;
 		ept02_cache_line_t *cache_line;
 		bool cache_hit;
-		arg->vmcs12_info->guest_ept_enable = 1;
 		if (!xmhf_nested_arch_x86vmx_check_ept_lower_bits(eptp12, &ept12)) {
 			return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
 		}
+		arg->vmcs12_info->guest_ept_root = ept12;
 		ept02 = xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
 												  &cache_line);
 		arg->vmcs12_info->guest_ept_cache_line = cache_line;
-		arg->vmcs12_info->guest_ept_root = ept12;
 #ifdef __DEBUG_QEMU__
 		_workaround_kvm_216212(arg, cache_line);
 #endif							/* !__DEBUG_QEMU__ */
 	} else {
 		/* Guest does not use EPT, just use XMHF's EPT */
-		arg->vmcs12_info->guest_ept_enable = 0;
+		arg->vmcs12_info->guest_ept_root = GUEST_EPT_ROOT_INVALID;
 		ept02 = arg->vcpu->vmcs.control_EPT_pointer;
 		_update_pae_pdpte(arg);
 	}
@@ -1094,27 +1093,35 @@ static void _vmcs02_to_vmcs12_control_EPT_pointer(ARG01 * arg)
 static void _rewalk_ept01_control_EPT_pointer(ARG10 * arg)
 {
 	spa_t ept02;
-	if (arg->vmcs12_info->guest_ept_enable) {
+	gpa_t ept12 = arg->vmcs12_info->guest_ept_root;
+	if (ept12 != GUEST_EPT_ROOT_INVALID) {
 		ept02_cache_line_t *cache_line;
 		bool cache_hit;
-		u64 eptp12 = arg->vmcs12->control_EPT_pointer;
-		gpa_t ept12;
-		HALT_ON_ERRORCOND(xmhf_nested_arch_x86vmx_check_ept_lower_bits
-						  (eptp12, &ept12));
-		ept02 =
-			xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
-											  &cache_line);
-		HALT_ON_ERRORCOND(!cache_hit);
+		ept02 = xmhf_nested_arch_x86vmx_get_ept02(arg->vcpu, ept12, &cache_hit,
+												  &cache_line);
 		arg->vmcs12_info->guest_ept_cache_line = cache_line;
-		__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
-#ifdef __DEBUG_QEMU__
-		_workaround_kvm_216212(arg, cache_line);
-#endif							/* !__DEBUG_QEMU__ */
 	} else {
+		/*
+		 * We treat PDPTEs as cached and do not update them. The nested guest
+		 * should invalidate TLB (e.g. mov CR0 / CR3) to update PDPTEs.
+		 *
+		 * We need to update EPTP becase hyapp like TrustVisor may modify
+		 * EPTP02. TrustVisor performs at the first call to scode_register() to
+		 * set EPT of all CPUs to be the same.
+		 */
 		ept02 = arg->vcpu->vmcs.control_EPT_pointer;
 		_update_pae_pdpte(arg);
 	}
+
+	/* Write updated EPT02 to VMCS */
 	__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
+
+#ifdef __DEBUG_QEMU__
+	/* For QEMU, workaround CR3 PDPTE problem */
+	if (ept12 != GUEST_EPT_ROOT_INVALID) {
+		_workaround_kvm_216212(arg, arg->vmcs12_info->guest_ept_cache_line);
+	}
+#endif							/* !__DEBUG_QEMU__ */
 }
 
 /*

@@ -80,26 +80,24 @@ u64 * xmhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
 	return xmhf_memprot_arch_get_default_root_pagemap_address(vcpu);
 }
 
-
-//flush hardware page table mappings (TLB)
-void xmhf_memprot_flushmappings(VCPU *vcpu){
-	xmhf_memprot_arch_flushmappings(vcpu);
-}
-
 //flush the TLB of all nested page tables in the current core
-void xmhf_memprot_flushmappings_localtlb(VCPU *vcpu){
+void xmhf_memprot_flushmappings_localtlb(VCPU *vcpu, u32 flags){
 	//printf("CPU(0x%02x): <xmhf_memprot_flushmappings_localtlb>\n", vcpu->id);
-	xmhf_memprot_arch_flushmappings_localtlb(vcpu);
+	xmhf_memprot_arch_flushmappings_localtlb(vcpu, flags);
 }
 
 // flush the TLB of all nested page tables in all cores
 // Requirement: Other cores has been quiesced
-void xmhf_memprot_flushmappings_alltlb(VCPU *vcpu)
+void xmhf_memprot_flushmappings_alltlb(VCPU *vcpu, u32 flags)
 {
-    // Notice all cores to flush EPT TLB
-	g_vmx_flush_all_tlb_signal = 1;
+    HALT_ON_ERRORCOND(g_vmx_quiesce);
 
-	xmhf_memprot_flushmappings_localtlb(vcpu);
+    // Notice all cores to flush EPT TLB
+	g_vmx_flush_all_tlb_signal = flags;
+
+	// TODO: can move this call to xmhf_smpguest_arch_x86vmx_endquiesce(), save
+	// a little bit of time.
+	xmhf_memprot_flushmappings_localtlb(vcpu, flags);
 }
 
 //set protection for a given physical memory address

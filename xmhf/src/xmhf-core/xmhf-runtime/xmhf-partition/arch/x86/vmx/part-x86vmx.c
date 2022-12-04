@@ -627,7 +627,10 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif /* !__NESTED_VIRTUALIZATION__ */
 
 	//flush guest TLB to start with
-	xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
+	{
+		u32 flags = MEMP_FLUSHTLB_EPTP | MEMP_FLUSHTLB_ENTRY | MEMP_FLUSHTLB_MT_ENTRY;
+		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu, flags);
+	}
 }
 
 

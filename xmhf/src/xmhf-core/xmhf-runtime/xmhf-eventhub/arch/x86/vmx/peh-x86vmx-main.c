@@ -218,7 +218,7 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 		break;
 
 	default:
-		HALT_ON_ERRORCOND(0 && "Unknown return code from xmhf_app_handlecpuid()");
+		HALT_ON_ERRORCOND(0 && "Bad return code from xmhf_app_handlecpuid()");
 		break;
 	}
 

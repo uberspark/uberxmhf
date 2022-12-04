@@ -58,5 +58,9 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
                                       u32 portnum, u32 access_type, u32 access_size);
 void tv_app_handleshutdown(VCPU *vcpu, struct regs *r);
 u32 tv_app_handlecpuid(VCPU *vcpu, struct regs *r);
+#ifdef __NESTED_VIRTUALIZATION__
+u32 tv_app_handle_nest_entry(VCPU *vcpu, struct regs *r);
+u32 tv_app_handle_nest_exit(VCPU *vcpu, struct regs *r);
+#endif /* __NESTED_VIRTUALIZATION__ */
 
 #endif

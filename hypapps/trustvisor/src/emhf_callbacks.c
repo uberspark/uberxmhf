@@ -84,3 +84,16 @@ u32 xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r)
 {
   return tv_app_handlecpuid(vcpu, r);
 }
+
+#ifdef __NESTED_VIRTUALIZATION__
+u32 xmhf_app_handle_nest_entry(VCPU *vcpu, struct regs *r)
+{
+  return tv_app_handle_nest_entry(vcpu, r);
+}
+
+u32 xmhf_app_handle_nest_exit(VCPU *vcpu, struct regs *r)
+{
+  return tv_app_handle_nest_exit(vcpu, r);
+}
+#endif /* __NESTED_VIRTUALIZATION__ */
+

@@ -89,6 +89,8 @@ static inline hpt_pm_t hpt_emhf_get_default_root_pm(VCPU *vcpu)
   return (hpt_pm_t)xmhf_memprot_get_default_root_pagemap_address(vcpu);
 }
 
+// Access EPT / NPT (still EPT01 when nested virtualization)
+
 static inline hpt_pa_t hpt_emhf_get_root_pm_pa(VCPU *vcpu)
 {
   hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
@@ -129,6 +131,18 @@ static inline void hpt_emhf_set_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
   hpt_emhf_set_root_pm_pa( vcpu, hva2spa(root));
 }
+
+static inline void hpt_emhf_get_root_pmo(VCPU *vcpu, hpt_pmo_t *root)
+{
+  hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
+  *root = (hpt_pmo_t) {
+    .pm = hpt_emhf_get_root_pm(vcpu),
+    .t = t,
+    .lvl = hpt_root_lvl(t),
+  };
+}
+
+// Access guest page table
 
 static inline hpt_type_t hpt_emhf_get_guest_hpt_type(VCPU *vcpu) {
   ulong_t cr4 = VCPU_gcr4(vcpu);
@@ -171,16 +185,6 @@ static inline hpt_pm_t hpt_emhf_get_guest_root_pm(VCPU *vcpu)
 static inline void hpt_emhf_set_guest_root_pm( VCPU *vcpu, hpt_pm_t root)
 {
   hpt_emhf_set_guest_root_pm_pa( vcpu, hva2gpa( root));
-}
-
-static inline void hpt_emhf_get_root_pmo(VCPU *vcpu, hpt_pmo_t *root)
-{
-  hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
-  *root = (hpt_pmo_t) {
-    .pm = hpt_emhf_get_root_pm(vcpu),
-    .t = t,
-    .lvl = hpt_root_lvl(t),
-  };
 }
 
 static inline void hpt_emhf_get_guest_root_pmo(VCPU *vcpu, hpt_pmo_t *root)

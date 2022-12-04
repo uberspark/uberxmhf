@@ -110,25 +110,15 @@ u64 * xmhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu){
 }
 
 
-//flush hardware page table mappings (TLB)
-void xmhf_memprot_arch_flushmappings(VCPU *vcpu){
-	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		xmhf_memprot_arch_x86svm_flushmappings(vcpu);
-	else //CPU_VENDOR_INTEL
-		xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
-
-}
-
 //flush the TLB of all nested page tables in the current core
-void xmhf_memprot_arch_flushmappings_localtlb(VCPU *vcpu){
+void xmhf_memprot_arch_flushmappings_localtlb(VCPU *vcpu, u32 flags){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		xmhf_memprot_arch_x86svm_flushmappings(vcpu);
+		//xmhf_memprot_arch_x86svm_flushmappings(vcpu);
+		HALT_ON_ERRORCOND(0 && "flags not implemented");
 	else //CPU_VENDOR_INTEL
-		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
+		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu, flags);
 }
 
 //set protection for a given physical memory address

@@ -443,22 +443,27 @@ u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12, bool *cache_hit)
 }
 
 /*
- * Handle an EPT exit received by L0 when running L2. There are 4 cases,
- * represented by 4 different return values.
- * * VMX_NESTED_EPT02_CACHEMISS: L2 accesses legitimate memory, but L0 has not
- *   processed the EPT entry in L1 yet. XMHF should add EPT entry to EPT02 and
- *   continue running L2.
- * * VMX_NESTED_EPT12_VIOLATION: L2 accesses memory not in EPT12. XMHF should
- *   forward EPT violation to L1.
- * * VMX_NESTED_EPT01_VIOLATION: L2 accesses memory not valid in EPT01 (L1 sets
- *   up EPT that accesses illegal memory). XMHF should halt for security.
- * * VMX_NESTED_EPT12_MISCONFIG: The EPT12 for L2's memory access is
- *   misconfigured. XMHF should return EPT misconfiguration exit to L1.
+ * Walk EPT12 and EPT01 to simulate access of EPT02. Update entry in EPT02.
+ *
+ * guest2_paddr: L2 address accessed
+ * pxmhf_paddr: when access is successful, written with L0 address
+ * access_type: defined by HPT, such as HPT_PROTS_RW
+ * return one of the following:
+ * * VMX_NESTED_EPT02_CACHEMISS
+ * * VMX_NESTED_EPT12_VIOLATION
+ * * VMX_NESTED_EPT01_VIOLATION
+ * * VMX_NESTED_EPT12_MISCONFIG
+ *
+ * For VMX_NESTED_EPT02_CACHEMISS and VMX_NESTED_EPT01_VIOLATION, the L1
+ * physical address is written to pguest1_paddr. For VMX_NESTED_EPT02_CACHEMISS,
+ * the L0 physical address is written to pxmhf_paddr.
  */
-int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
+static int xmhf_nested_arch_x86vmx_walk_ept02(VCPU * vcpu,
 											  ept02_cache_line_t * cache_line,
 											  u64 guest2_paddr,
-											  ulong_t qualification)
+											  u64 * pguest1_paddr,
+											  u64 * pxmhf_paddr,
+											  hpt_prot_t access_type)
 {
 	ept12_ctx_t *ept12_ctx;
 	ept02_ctx_t *ept02_ctx;
@@ -467,22 +472,10 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	hpt_pmeo_t pmeo12;
 	hpt_pmeo_t pmeo01;
 	hpt_pmeo_t pmeo02;
-	hpt_prot_t access_type;
 
 	HALT_ON_ERRORCOND(cache_line->valid);
 	ept12_ctx = &cache_line->value.ept12_ctx;
 	ept02_ctx = &cache_line->value.ept02_ctx;
-	access_type = 0;
-	if (qualification & (1UL << 0)) {
-		access_type |= HPT_PROT_READ_MASK;
-	}
-	if (qualification & (1UL << 1)) {
-		access_type |= HPT_PROT_WRITE_MASK;
-	}
-	if (qualification & (1UL << 2)) {
-		access_type |= HPT_PROT_EXEC_MASK;
-	}
-	HALT_ON_ERRORCOND(access_type);
 
 	/* Get the entry in EPT12 and the L1 paddr that is to be accessed */
 	if (hptw_checked_get_pmeo(&pmeo12, &ept12_ctx->ctx, access_type, 0,
@@ -490,6 +483,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 		return VMX_NESTED_EPT12_VIOLATION;
 	}
 	guest1_paddr = hpt_pmeo_va_to_pa(&pmeo12, guest2_paddr);
+	*pguest1_paddr = guest1_paddr;
 
 	/*
 	 * Check for EPT misconfiguration. TODO: only R=0 && W=1 is checked here,
@@ -510,6 +504,7 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 		return VMX_NESTED_EPT01_VIOLATION;
 	}
 	xmhf_paddr = hpt_pmeo_va_to_pa(&pmeo01, guest1_paddr);
+	*pxmhf_paddr = xmhf_paddr;
 
 	/* Construct page map entry for EPT02 */
 	pmeo02.pme = 0;
@@ -558,74 +553,86 @@ int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 	return VMX_NESTED_EPT02_CACHEMISS;
 }
 
-/*
- * This function is what xmhf_nested_arch_x86vmx_flush_ept02() does when no
- * blocking occurs.
- */
-static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU * vcpu)
+/* Handle L2 memory access (translation with EPT02), using HPTW interface. */
+void *xmhf_nested_arch_x86vmx_access_ept02(VCPU * vcpu, void *cache_line,
+										   hpt_prot_t access_type,
+										   hpt_va_t va, size_t requested_sz,
+										   size_t *avail_sz)
 {
-	LRU_SET_INVALIDATE_ALL(&ept02_cache[vcpu->id]);
-	xmhf_nested_arch_x86vmx_clear_all_vmcs12_ept02(vcpu);
-
-	/*
-	 * If L2 (nested guest) is running, the VMCS02 fields that depend on EPT01
-	 * need to be recomputed (e.g. fields with flag FIELD_PROP_GPADDR).
-	 *
-	 * If the guest is using EPT02, the flushing above would make
-	 * vmcs12_info->guest_ept_cache_line invalid. We need to create new EPT02
-	 * to make it valid. This also applies to the EPT pointer in VMCS02.
-	 */
-	if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-		vmcs12_info_t *vmcs12_info;
-		vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
-		/* Re-compute VMCS fields that depend on EPT01 */
-		xmhf_nested_arch_x86vmx_rewalk_ept01(vcpu, vmcs12_info);
+	ept02_cache_line_t *line = (ept02_cache_line_t *) cache_line;
+	ept02_ctx_t *ept02_ctx = &line->value.ept02_ctx;
+	/* Try to walk EPT02 directly, fast if EPT02 hit */
+	void *ans = hptw_checked_access_va(&ept02_ctx->ctx, access_type, 0, va,
+									   requested_sz, avail_sz);
+	if (ans == NULL) {
+		/* Walk EPT12 and EPT01, and then update EPT02 entry */
+		u64 pa1, pa0;
+		switch (xmhf_nested_arch_x86vmx_walk_ept02(vcpu, line, va, &pa1, &pa0,
+												   access_type)) {
+		case VMX_NESTED_EPT02_CACHEMISS:
+			/* Now EPT02 must hit (other CPUs should be quiesced) */
+			// TODO: use pa0 to calculate address, save 1 page walk
+			ans = hptw_checked_access_va(&ept02_ctx->ctx, access_type, 0, va,
+										 requested_sz, avail_sz);
+			HALT_ON_ERRORCOND(ans != NULL);
+			break;
+		default:
+			/* Access fails due to EPT01 or EPT12 violation / misconfig */
+			break;
+		}
 	}
+	return ans;
 }
 
 /*
- * Invalidate all EPT02 on the current CPU (e.g. due to change in EPT01).
- * This function is designed to be called in NMI handlers. Its effect will be
- * delayed until call to xmhf_nested_arch_x86vmx_unblock_ept02_flush() if
- * xmhf_nested_arch_x86vmx_block_ept02_flush() has been called.
+ * Handle an EPT exit received by L0 when running L2. There are 4 cases,
+ * represented by 4 different return values.
+ * * VMX_NESTED_EPT02_CACHEMISS: L2 accesses legitimate memory, but L0 has not
+ *   processed the EPT entry in L1 yet. XMHF should add EPT entry to EPT02 and
+ *   continue running L2.
+ * * VMX_NESTED_EPT12_VIOLATION: L2 accesses memory not in EPT12. XMHF should
+ *   forward EPT violation to L1.
+ * * VMX_NESTED_EPT01_VIOLATION: L2 accesses memory not valid in EPT01 (L1 sets
+ *   up EPT that accesses illegal memory). XMHF should halt for security.
+ * * VMX_NESTED_EPT12_MISCONFIG: The EPT12 for L2's memory access is
+ *   misconfigured. XMHF should return EPT misconfiguration exit to L1.
+ *
+ * For VMX_NESTED_EPT02_CACHEMISS and VMX_NESTED_EPT01_VIOLATION, the L1
+ * physical address is written to guest1_paddr. For VMX_NESTED_EPT02_CACHEMISS,
+ * the L0 physical address is written to xmhf_paddr.
  */
-void xmhf_nested_arch_x86vmx_flush_ept02(VCPU * vcpu)
+int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
+											  ept02_cache_line_t * cache_line,
+											  u64 guest2_paddr,
+											  u64 * pguest1_paddr,
+											  u64 * pxmhf_paddr,
+											  ulong_t qualification)
 {
-	if (vcpu->vmx_nested_ept02_flush_disable) {
-		vcpu->vmx_nested_ept02_flush_visited = true;
-	} else {
-		xmhf_nested_arch_x86vmx_flush_ept02_effect(vcpu);
+	hpt_prot_t access_type = 0;
+	if (qualification & (1UL << 0)) {
+		access_type |= HPT_PROT_READ_MASK;
 	}
-}
-
-/* Block the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
-void xmhf_nested_arch_x86vmx_block_ept02_flush(VCPU * vcpu)
-{
-	HALT_ON_ERRORCOND(!vcpu->vmx_nested_ept02_flush_disable);
-	vcpu->vmx_nested_ept02_flush_disable = true;
-}
-
-/* Unblock the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
-void xmhf_nested_arch_x86vmx_unblock_ept02_flush(VCPU * vcpu)
-{
-	HALT_ON_ERRORCOND(vcpu->vmx_nested_ept02_flush_disable);
-	vcpu->vmx_nested_ept02_flush_disable = false;
-	while (vcpu->vmx_nested_ept02_flush_visited) {
-		vcpu->vmx_nested_ept02_flush_visited = false;
-		vcpu->vmx_nested_ept02_flush_disable = true;
-		xmhf_nested_arch_x86vmx_flush_ept02_effect(vcpu);
-		vcpu->vmx_nested_ept02_flush_disable = false;
+	if (qualification & (1UL << 1)) {
+		access_type |= HPT_PROT_WRITE_MASK;
 	}
+	if (qualification & (1UL << 2)) {
+		access_type |= HPT_PROT_EXEC_MASK;
+	}
+	HALT_ON_ERRORCOND(access_type);
+	return xmhf_nested_arch_x86vmx_walk_ept02(vcpu, cache_line, guest2_paddr,
+											  pguest1_paddr, pxmhf_paddr,
+											  access_type);
 }
 
 #ifdef __DEBUG_QEMU__
+/* Pretend EPT exit happens on guest2_paddr because of bug in QEMU */
 void xmhf_nested_arch_x86vmx_hardcode_ept(VCPU * vcpu,
 										  ept02_cache_line_t * cache_line,
 										  u64 guest2_paddr)
 {
-	switch (xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, cache_line,
-													  guest2_paddr,
-													  HPT_PROTS_RW)) {
+	u64 pa1, pa0;
+	switch (xmhf_nested_arch_x86vmx_walk_ept02(vcpu, cache_line, guest2_paddr,
+											   &pa1, &pa0, HPT_PROTS_RW)) {
 	case VMX_NESTED_EPT02_CACHEMISS:
 		/* Everything is well */
 		break;
@@ -655,3 +662,109 @@ void xmhf_nested_arch_x86vmx_hardcode_ept(VCPU * vcpu,
 	}
 }
 #endif							/* !__DEBUG_QEMU__ */
+
+/*
+ * Get EPT12 pointer. When L1 (not in nested virtualization), return false.
+ * When guest is not using EPT, return false. Otherwise, return true and set
+ * ept12 to EPT12.
+ */
+bool xmhf_nested_arch_x86vmx_get_ept12(VCPU * vcpu, gpa_t * ept12)
+{
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
+		vmcs12_info_t *vmcs12_info;
+		vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
+		if (vmcs12_info->guest_ept_root != GUEST_EPT_ROOT_INVALID) {
+			*ept12 = vmcs12_info->guest_ept_root;
+			return true;
+		}
+	}
+	return false;
+}
+
+/*
+ * Set EPT12 pointer. When L1 (not in nested virtualization), enable must be
+ * false. Otherwise, enable controls whether EPT12 is active. If enable = true,
+ * ept12 becomes EPT12 pointer of the guest.
+ */
+void xmhf_nested_arch_x86vmx_set_ept12(VCPU * vcpu, bool enable, gpa_t ept12)
+{
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
+		vmcs12_info_t *vmcs12_info;
+		vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
+		if (enable) {
+			vmcs12_info->guest_ept_root = ept12;
+		} else {
+			vmcs12_info->guest_ept_root = GUEST_EPT_ROOT_INVALID;
+		}
+	} else {
+		HALT_ON_ERRORCOND(!enable);
+	}
+}
+
+/*
+ * This function is what xmhf_nested_arch_x86vmx_flush_ept02() does when no
+ * blocking occurs.
+ */
+static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU * vcpu, u32 flags)
+{
+	if ((flags & MEMP_FLUSHTLB_ENTRY) != 0) {
+		LRU_SET_INVALIDATE_ALL(&ept02_cache[vcpu->id]);
+		xmhf_nested_arch_x86vmx_clear_all_vmcs12_ept02(vcpu);
+	}
+
+	/*
+	 * If L2 (nested guest) is running, the VMCS02 fields that depend on EPT01
+	 * need to be recomputed (e.g. fields with flag FIELD_PROP_GPADDR).
+	 *
+	 * If the guest is using EPT02, the flushing above would make
+	 * vmcs12_info->guest_ept_cache_line invalid. We need to create new EPT02
+	 * to make it valid. This also applies to the EPT pointer in VMCS02.
+	 */
+	if ((vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) &&
+		((flags & (MEMP_FLUSHTLB_EPTP | MEMP_FLUSHTLB_ENTRY)) != 0)) {
+		vmcs12_info_t *vmcs12_info;
+		vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
+		/* Re-compute VMCS fields that depend on EPT01 */
+		xmhf_nested_arch_x86vmx_rewalk_ept01(vcpu, vmcs12_info);
+	}
+}
+
+/*
+ * Invalidate all EPT02 on the current CPU (e.g. due to change in EPT01).
+ * This function is designed to be called in NMI handlers. Its effect will be
+ * delayed until call to xmhf_nested_arch_x86vmx_unblock_ept02_flush() if
+ * xmhf_nested_arch_x86vmx_block_ept02_flush() has been called.
+ *
+ * Flags is same as the value passed to xmhf_memprot_flushmappings_*().
+ */
+void xmhf_nested_arch_x86vmx_flush_ept02(VCPU * vcpu, u32 flags)
+{
+	if (vcpu->vmx_nested_ept02_flush_disable) {
+		vcpu->vmx_nested_ept02_flush_visited |= flags;
+	} else {
+		xmhf_nested_arch_x86vmx_flush_ept02_effect(vcpu, flags);
+	}
+}
+
+/* Block the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
+void xmhf_nested_arch_x86vmx_block_ept02_flush(VCPU * vcpu)
+{
+	HALT_ON_ERRORCOND(!vcpu->vmx_nested_ept02_flush_disable);
+	vcpu->vmx_nested_ept02_flush_disable = true;
+}
+
+/* Unblock the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
+void xmhf_nested_arch_x86vmx_unblock_ept02_flush(VCPU * vcpu)
+{
+	HALT_ON_ERRORCOND(vcpu->vmx_nested_ept02_flush_disable);
+	vcpu->vmx_nested_ept02_flush_disable = false;
+	while (vcpu->vmx_nested_ept02_flush_visited) {
+		u32 flags = vcpu->vmx_nested_ept02_flush_visited;
+		vcpu->vmx_nested_ept02_flush_visited = 0;
+		vcpu->vmx_nested_ept02_flush_disable = true;
+		xmhf_nested_arch_x86vmx_flush_ept02_effect(vcpu, flags);
+		vcpu->vmx_nested_ept02_flush_disable = false;
+	}
+}

@@ -125,6 +125,8 @@ u16 xmhf_nested_arch_x86vmx_get_vpid02(VCPU * vcpu, u16 vpid12,
 int xmhf_nested_arch_x86vmx_handle_ept02_exit(VCPU * vcpu,
 											  ept02_cache_line_t * cache_line,
 											  u64 guest2_paddr,
+											  u64 * pguest1_paddr,
+											  u64 * pxmhf_paddr,
 											  ulong_t qualification);
 void xmhf_nested_arch_x86vmx_block_ept02_flush(VCPU * vcpu);
 void xmhf_nested_arch_x86vmx_unblock_ept02_flush(VCPU * vcpu);

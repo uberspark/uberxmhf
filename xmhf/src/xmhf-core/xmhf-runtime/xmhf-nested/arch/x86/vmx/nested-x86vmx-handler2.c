@@ -277,6 +277,14 @@ static void _update_nested_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 	}
 }
 
+/* Call _update_nested_nmi() from where vmcs12_info is unknown. */
+void xmhf_nested_arch_x86vmx_update_nested_nmi(VCPU * vcpu)
+{
+	vmcs12_info_t *vmcs12_info;
+	vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
+	_update_nested_nmi(vcpu, vmcs12_info);
+}
+
 /*
  * Perform VMENTRY. Never returns if succeed. If controls / host state check
  * fails, return error code for _vmx_nested_vm_fail().
@@ -286,6 +294,9 @@ u32 xmhf_nested_arch_x86vmx_handle_vmentry(VCPU * vcpu,
 										   struct regs *r)
 {
 	u32 result;
+
+	u32 app_ret_status = xmhf_app_handle_nest_entry(vcpu, r);
+	HALT_ON_ERRORCOND(app_ret_status == APP_SUCCESS);
 
 	/*
 	   Features notes
@@ -564,14 +575,19 @@ static void _workaround_kvm_216234(ept02_cache_line_t * cache_line,
  *   L1.
  */
 static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
-										 vmcs12_info_t * vmcs12_info)
+										 vmcs12_info_t * vmcs12_info,
+										 struct regs *r)
 {
 	u32 ret;
 	/*
 	 * By default, if L1 has not enabled EPT, then it is letting L2 access
-	 * illegal memory. XMHF will halt.
+	 * illegal memory. XMHF will invoke hypapp and halt (if required).
 	 */
 	int status = VMX_NESTED_EPT01_VIOLATION;
+	ulong_t qualification = __vmx_vmreadNW(VMCSENC_info_exit_qualification);
+	u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
+	u64 guest1_paddr = guest2_paddr;
+	u64 xmhf_paddr = 0;
 
 	/*
 	 * Begin blocking EPT02 flush (blocking is needed because
@@ -579,10 +595,8 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 	 */
 	xmhf_nested_arch_x86vmx_block_ept02_flush(vcpu);
 
-	if (vmcs12_info->guest_ept_enable) {
+	if (vmcs12_info->guest_ept_root != GUEST_EPT_ROOT_INVALID) {
 		ept02_cache_line_t *cache_line = vmcs12_info->guest_ept_cache_line;
-		u64 guest2_paddr = __vmx_vmread64(VMCSENC_guest_paddr);
-		ulong_t qualification = __vmx_vmreadNW(VMCSENC_info_exit_qualification);
 		HALT_ON_ERRORCOND(cache_line->key == vmcs12_info->guest_ept_root);
 #ifdef __DEBUG_QEMU__
 		if (0) {
@@ -591,6 +605,8 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 #endif							/* !__DEBUG_QEMU__ */
 		status = xmhf_nested_arch_x86vmx_handle_ept02_exit(vcpu, cache_line,
 														   guest2_paddr,
+														   &guest1_paddr,
+														   &xmhf_paddr,
 														   qualification);
 	}
 	switch (status) {
@@ -622,14 +638,23 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 		ret = NESTED_VMEXIT_HANDLE_202;
 		break;
 	case VMX_NESTED_EPT01_VIOLATION:
-		/* Guest accesses illegal address, halt for safety */
-		printf("CPU(0x%02x): qualification: 0x%08lx\n", vcpu->id,
-			   __vmx_vmreadNW(VMCSENC_info_exit_qualification));
-		printf("CPU(0x%02x): paddr: 0x%016llx\n", vcpu->id,
-			   __vmx_vmread64(VMCSENC_guest_paddr));
-		printf("CPU(0x%02x): linear addr:   0x%08lx\n", vcpu->id,
-			   __vmx_vmreadNW(VMCSENC_info_guest_linear_address));
-		HALT_ON_ERRORCOND(0 && "Guest accesses illegal memory");
+		{
+			/* Guest accesses illegal address, first invoke hypapp */
+			gva_t gva = __vmx_vmreadNW(VMCSENC_info_guest_linear_address);
+#ifdef __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
+			xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+#endif
+			xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, guest1_paddr,
+													  gva, (qualification & 7));
+#ifdef __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
+			xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+#endif
+		}
+		/*
+		 * Hypapp will halt if memory access is illegal. Since hypapp has
+		 * returned, we can simply continue back to L2 guest.
+		 */
+		ret = NESTED_VMEXIT_HANDLE_202;
 		break;
 	case VMX_NESTED_EPT12_VIOLATION:
 		/*
@@ -724,7 +749,7 @@ static bool check_msr_bitmap(vmcs12_info_t * vmcs12_info, u32 msr_val,
  * Handle L2 guest VMEXIT to L0 due to RDMSR.
  * This function has 2 possible return values:
  * * NESTED_VMEXIT_HANDLE_201: L0 should forward the RDMSR VMEXIT to L1.
- * * NESTED_VMEXIT_HANDLE_202: L0 should handle the RDMSR and return to L2.
+ * * NESTED_VMEXIT_HANDLE_202: VMCALL handled, L0 should return to L2.
  */
 static u32 handle_vmexit20_rdmsr(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 								 struct regs *r)
@@ -792,7 +817,7 @@ static u32 handle_vmexit20_rdmsr(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
  * Handle L2 guest VMEXIT to L0 due to WRMSR.
  * This function has 2 possible return values:
  * * NESTED_VMEXIT_HANDLE_201: L0 should forward the WRMSR VMEXIT to L1.
- * * NESTED_VMEXIT_HANDLE_202: L0 should handle the WRMSR and return to L2.
+ * * NESTED_VMEXIT_HANDLE_202: VMCALL handled, L0 should return to L2.
  */
 static u32 handle_vmexit20_wrmsr(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 								 struct regs *r)
@@ -845,6 +870,61 @@ static u32 handle_vmexit20_wrmsr(VCPU * vcpu, vmcs12_info_t * vmcs12_info,
 	}
 }
 #endif							/* __VMX_NESTED_MSR_BITMAP__ */
+
+/*
+ * Handle L2 guest VMEXIT to L0 due to VMCALL.
+ * This function has 2 possible return values:
+ * * NESTED_VMEXIT_HANDLE_201: L0 should forward the VMCALL VMEXIT to L1.
+ * * NESTED_VMEXIT_HANDLE_202: VMCALL handled, L0 should return to L2.
+ */
+static u32 handle_vmexit20_vmcall(VCPU * vcpu, struct regs *r)
+{
+	if (r->eax < __VMX_HYPAPP_L2_VMCALL_MIN__ ||
+		r->eax > __VMX_HYPAPP_L2_VMCALL_MAX__) {
+		return NESTED_VMEXIT_HANDLE_201;
+	}
+	/* Quiesce, invoke hypapp */
+	xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+	if (xmhf_app_handlehypercall(vcpu, r) != APP_SUCCESS) {
+		printf("CPU(0x%02x): error(halt), unhandled L2 hypercall 0x%08x!\n",
+			   vcpu->id, r->eax);
+		HALT();
+	}
+	xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+	/* Increase RIP since instruction is emulated */
+	{
+		ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
+		rip += __vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
+		__vmx_vmwriteNW(VMCSENC_guest_RIP, rip);
+	}
+	return NESTED_VMEXIT_HANDLE_202;
+}
+
+/*
+ * Handle L2 guest VMEXIT to L0 due to CPUID.
+ * This function has 2 possible return values:
+ * * NESTED_VMEXIT_HANDLE_201: L0 should forward the VMCALL VMEXIT to L1.
+ * * NESTED_VMEXIT_HANDLE_202: VMCALL handled, L0 should return to L2.
+ */
+static u32 handle_vmexit20_cpuid(VCPU * vcpu, struct regs *r)
+{
+	u32 app_ret_status = xmhf_app_handlecpuid(vcpu, r);
+	switch (app_ret_status) {
+	case APP_CPUID_SKIP:
+		/* Increase RIP since instruction is emulated */
+		{
+			ulong_t rip = __vmx_vmreadNW(VMCSENC_guest_RIP);
+			rip += __vmx_vmread32(VMCSENC_info_vmexit_instruction_length);
+			__vmx_vmwriteNW(VMCSENC_guest_RIP, rip);
+		}
+		return NESTED_VMEXIT_HANDLE_202;
+	case APP_CPUID_CHAIN:
+		return NESTED_VMEXIT_HANDLE_201;
+	default:
+		HALT_ON_ERRORCOND(0 && "Bad return code from xmhf_app_handlecpuid()");
+		break;
+	}
+}
 
 /*
  * Forward L2 to L0 VMEXIT to L1.
@@ -1013,7 +1093,7 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		handle_behavior = handle_vmexit20_nmi_window(vcpu, vmcs12_info);
 		break;
 	case VMX_VMEXIT_EPT_VIOLATION:
-		handle_behavior = handle_vmexit20_ept_violation(vcpu, vmcs12_info);
+		handle_behavior = handle_vmexit20_ept_violation(vcpu, vmcs12_info, r);
 		break;
 	case VMX_VMEXIT_EPT_MISCONFIGURATION:
 		HALT_ON_ERRORCOND(0 && "XMHF misconfigured EPT");
@@ -1026,6 +1106,12 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 		handle_behavior = handle_vmexit20_wrmsr(vcpu, vmcs12_info, r);
 		break;
 #endif							/* __VMX_NESTED_MSR_BITMAP__ */
+	case VMX_VMEXIT_VMCALL:
+		handle_behavior = handle_vmexit20_vmcall(vcpu, r);
+		break;
+	case VMX_VMEXIT_CPUID:
+		handle_behavior = handle_vmexit20_cpuid(vcpu, r);
+		break;
 	default:
 		break;
 	}
@@ -1039,6 +1125,8 @@ void xmhf_nested_arch_x86vmx_handle_vmexit(VCPU * vcpu, struct regs *r)
 			printf("CPU(0x%02x): 202 vmexit %d\n", vcpu->id, vmexit_reason);
 		}
 	} else {
+		u32 app_ret_status = xmhf_app_handle_nest_exit(vcpu, r);
+		HALT_ON_ERRORCOND(app_ret_status == APP_SUCCESS);
 		handle_vmexit20_forward(vcpu, vmcs12_info, handle_behavior);
 	}
 

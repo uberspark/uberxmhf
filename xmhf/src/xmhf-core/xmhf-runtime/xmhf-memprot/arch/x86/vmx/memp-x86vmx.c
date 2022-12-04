@@ -76,9 +76,6 @@ struct _fixed_mtrr_prop_t {
 static void _vmx_gathermemorytypes(VCPU *vcpu);
 static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr);
 static void _vmx_setupEPT(VCPU *vcpu);
-#ifdef __NESTED_VIRTUALIZATION__
-static void xmhf_memprot_arch_x86vmx_flushmappings_localtlb_mt_only(VCPU *vcpu);
-#endif /* __NESTED_VIRTUALIZATION__ */
 
 //======================================================================
 // global interfaces (functions) exported by this component
@@ -542,52 +539,29 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 		 */
 		printf("CPU(0x%02x): Update EPT memory types due to MTRR\n", vcpu->id);
 		_vmx_updateEPT_memtype(vcpu, 0, MAX_PHYS_ADDR);
-#ifdef __NESTED_VIRTUALIZATION__
-		xmhf_memprot_arch_x86vmx_flushmappings_localtlb_mt_only(vcpu);
-#else /* !__NESTED_VIRTUALIZATION__ */
-		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
-#endif /* __NESTED_VIRTUALIZATION__ */
+		xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu, MEMP_FLUSHTLB_MT_ENTRY);
 	}
 	return 0;
 }
 
-#ifdef __NESTED_VIRTUALIZATION__
-/*
- * Flush all EPT01s due to change in memory type. The difference between this
- * function and xmhf_memprot_arch_x86vmx_flushmappings_localtlb() is that
- * EPT02s are not flushed, because memory type of EPT01 do not affect EPT02.
- */
-static void xmhf_memprot_arch_x86vmx_flushmappings_localtlb_mt_only(VCPU *vcpu)
-{
-	(void)vcpu;
-	HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_GLOBAL, 0));
-}
-#endif /* __NESTED_VIRTUALIZATION__ */
-
 //flush hardware page table mappings (TLB)
-void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
-#ifdef __NESTED_VIRTUALIZATION__
+void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu, u32 flags){
+  if ((flags & MEMP_FLUSHTLB_ENTRY) != 0) {
+    vcpu->vmx_ept_changed = true;
+  }
+  
   /*
-   * When nested virtualization, entries EPT01 may be copied to EPT02. So we
-   * also need to invalidate all EPT02's. For simplicity just invalidate all
-   * EPTs.
+   * Note: when only EPTP changes, there is no need to call INVEPT.
+   * Note: currently the API does not specify which EPT's entries are changed.
    */
-  xmhf_memprot_arch_x86vmx_flushmappings_localtlb(vcpu);
-#else /* !__NESTED_VIRTUALIZATION__ */
-  HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_SINGLECONTEXT,
-                                 (u64)vcpu->vmcs.control_EPT_pointer));
-#endif /* __NESTED_VIRTUALIZATION__ */
-}
+  if ((flags & (MEMP_FLUSHTLB_ENTRY | MEMP_FLUSHTLB_MT_ENTRY)) != 0) {
+    HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_GLOBAL, 0ULL));
+  }
 
-//flush hardware page table mappings (TLB)
-void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu){
-  vcpu->vmx_ept_changed = true;
 #ifdef __NESTED_VIRTUALIZATION__
   /* When nested virtualization, invalidate all EPT02's */
-  xmhf_nested_arch_x86vmx_flush_ept02(vcpu);
+  xmhf_nested_arch_x86vmx_flush_ept02(vcpu, flags);
 #endif /* __NESTED_VIRTUALIZATION__ */
-  HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_GLOBAL,
-                                 (u64)0));
 }
 
 //set protection for a given physical memory address
@@ -662,17 +636,24 @@ u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
   return prottype;
 }
 
+/* Get EPT pointer. When nested virtualization, get EPT01. */
 u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   return vcpu->vmcs.control_EPT_pointer;
 }
+
+/*
+ * Set EPT pointer. When nested virtualization, set EPT01.
+ *
+ * Note: when nested virtualization is enabled, the CPU needs to call
+ * xmhf_nested_arch_x86vmx_flush_ept02() to make sure that EPT02 settings are
+ * updated according to the change in EPT01. Currently in TrustVisor this EPT02
+ * flushing function is called later during flushing EPT01 TLB.
+ */
 void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   vcpu->vmcs.control_EPT_pointer = eptp;
-  // TODO: when nested virtualization is enabled, the CPU need to call
-  // xmhf_nested_arch_x86vmx_flush_ept02() to make sure that EPT02 entries are
-  // updated according to the change in EPT01. Currently this function is
-  // called by TrustVisor, which will flush EPT01 afterwards.
 }
+

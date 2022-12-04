@@ -104,7 +104,10 @@ typedef struct {
 typedef struct whitelist_entry{
   u64       gcr3;
   u32       id;
-  u32       g64;        /* whether running in 64-bit mode */
+  bool      g64;        /* whether running in 64-bit mode */
+  gpa_t     ept12;      /* NULL when L1, EPT12 when L2 */
+  /* The fields above need to match when searching for a PAL */
+
   uintptr_t grsp;       /* guest reguar stack */
   uintptr_t gssp;       /* guest sensitive code stack */
   uintptr_t gss_size;   /* guest sensitive code stack page number */
@@ -116,7 +119,13 @@ typedef struct whitelist_entry{
   uintptr_t gpm_size; /* guest parameter page number */
   u64       gpm_num;  /* guest parameter number */
 
+  hpt_pa_t  saved_pt_root_pa; /* regular EPT / NPT root (EPT02 when L2 guest) */
+  hpt_pa_t  saved_pt_l1l2_root_pa; /* When nested virtualization, EPT12 */
+  hptw_emhf_host_ctx_t saved_hptw_reg_host_ctx; /* ctx to walk EPT / NPT */
   u32 saved_exception_intercepts;
+  bool saved_nested_intr_exit; /* Save VCPU_disable_nested_interrupt_exit() */
+  u32 saved_nested_timer; /* Save VCPU_disable_nested_timer_exit() */
+  u32 saved_nested_mem_bitmap; /* Save VCPU_disable_memory_bitmap() */
 
   tv_pal_section_int_t sections[TV_MAX_SECTIONS];
   size_t sections_num;
@@ -162,6 +171,7 @@ int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, size_t len);
 u32 hpt_scode_switch_scode(VCPU * vcpu, struct regs *r);
 u32 hpt_scode_switch_regular(VCPU * vcpu);
 u32 hpt_scode_npf(VCPU * vcpu, uintptr_t gpaddr, u64 errorcode, struct regs *r);
+bool hpt_scode_is_scode(VCPU * vcpu);
 int hpt_scode_get_scode_id(VCPU * vcpu);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count);
@@ -170,7 +180,9 @@ u64 scode_register(VCPU * vcpu, u64 scode_info, u64 scode_pm, u64 gventry);
 u64 scode_unregister(VCPU * vcpu, u64 gvaddr);
 void init_scode(VCPU * vcpu);
 
-void scode_lend_section( hptw_ctx_t *reg_npm_ctx,
+void scode_lend_section( hptw_ctx_t *reg_npm02_ctx,
+                         hptw_ctx_t *reg_npm01_ctx,
+                         bool is_nested_ept,
                          hptw_ctx_t *reg_gpm_ctx,
                          hptw_ctx_t *pal_npm_ctx,
                          hptw_ctx_t *pal_gpm_ctx,
