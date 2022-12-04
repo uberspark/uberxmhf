@@ -479,7 +479,7 @@ typedef struct _vmcs02_to_vmcs12_arg {
 /*
  * Logic of flipping the bits in _vmcs12_to_vmcs02_ctls()
  */
-static void _vmcs12_to_vmcs02_flip_bits(vmx_ctls_t *ctls02)
+static void _vmcs12_to_vmcs02_flip_bits(vmx_ctls_t * ctls02)
 {
 	/* Enable NMI exiting because needed by quiesce */
 	_vmx_setctl_nmi_exiting(ctls02);
@@ -513,7 +513,7 @@ static void _vmcs12_to_vmcs02_flip_bits(vmx_ctls_t *ctls02)
 /*
  * Convert control bits from VMCS12 (ctls12) to VMCS02 (ctls02)
  */
-static u32 _vmcs12_to_vmcs02_ctls(ARG10 * arg, vmx_ctls_t *ctls12)
+static u32 _vmcs12_to_vmcs02_ctls(ARG10 * arg, vmx_ctls_t * ctls12)
 {
 	/*
 	 * Check relationship between "NMI exiting" and "virtual NMIs" and
@@ -559,7 +559,7 @@ static u32 _vmcs12_to_vmcs02_ctls(ARG10 * arg, vmx_ctls_t *ctls12)
  * Convert control bits from VMCS02 (ctls02) to VMCS12 (ctls12).
  * Actually this function checks that read only control bits do not change.
  */
-static void _vmcs02_to_vmcs12_ctls(ARG01 * arg, vmx_ctls_t *ctls12)
+static void _vmcs02_to_vmcs12_ctls(ARG01 * arg, vmx_ctls_t * ctls12)
 {
 	vmx_ctls_t *ctls02 = arg->ctls;
 	vmx_ctls_t _ctls02;
