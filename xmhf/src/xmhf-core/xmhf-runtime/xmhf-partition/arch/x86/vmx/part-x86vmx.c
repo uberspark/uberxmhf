@@ -333,6 +333,15 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
+	//setup default VMX controls
+	vmx_ctls_t vmx_ctls = {
+		.pinbased_ctls = (u32)vcpu->vmx_pinbased_ctls,
+		.procbased_ctls = (u32)vcpu->vmx_procbased_ctls,
+		.procbased_ctls2 = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR],
+		.exit_ctls = (u32)vcpu->vmx_exit_ctls,
+		.entry_ctls = (u32)vcpu->vmx_entry_ctls,
+	};
+
 	//setup host state
 	vcpu->vmcs.host_CR0 = read_cr0();
 	vcpu->vmcs.host_CR4 = read_cr4();
@@ -388,12 +397,6 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_GS_base = rdmsr64(IA32_MSR_GS_BASE);
 #endif
 
-	//setup default VMX controls
-	vcpu->vmcs.control_VMX_pin_based = vcpu->vmx_pinbased_ctls;
-	vcpu->vmcs.control_VMX_cpu_based = vcpu->vmx_procbased_ctls;
-	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_exit_ctls;
-	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_entry_ctls;
-
 #ifdef __AMD64__
 	/*
 	 * For amd64, set the Host address-space size (bit 9) in
@@ -401,7 +404,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	 * allowed.
 	 */
 	HALT_ON_ERRORCOND(_vmx_hasctl_vmexit_host_address_space_size(&vcpu->vmx_caps));
-	vcpu->vmcs.control_VM_exit_controls |= (1U << VMX_VMEXIT_HOST_ADDRESS_SPACE_SIZE);
+	_vmx_setctl_vmexit_host_address_space_size(&vmx_ctls);
 #elif !defined(__I386__)
     #error "Unsupported Arch"
 #endif /* !defined(__I386__) */
@@ -415,7 +418,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
         u64 addr = hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
 	    vcpu->vmcs.control_IO_BitmapB_address = addr;
     }
-	vcpu->vmcs.control_VMX_cpu_based |= (1U << VMX_PROCBASED_USE_IO_BITMAPS);
+    _vmx_setctl_use_io_bitmaps(&vmx_ctls);
 
 	//Critical MSR load/store
 	{
@@ -564,25 +567,24 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_SS_access_rights = 0x93; //present, system, read-write accessed
 
 	//activate secondary processor controls
-	vcpu->vmcs.control_VMX_seccpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
-	vcpu->vmcs.control_VMX_cpu_based |= (1U << VMX_PROCBASED_ACTIVATE_SECONDARY_CONTROLS);
+	_vmx_setctl_activate_secondary_controls(&vmx_ctls);
 
 	//setup unrestricted guest
-	vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_UNRESTRICTED_GUEST);
+	_vmx_setctl_unrestricted_guest(&vmx_ctls);
 
 	//allow INVPCID (used by Debian 11)
 	if (_vmx_hasctl_enable_invpcid(&vcpu->vmx_caps)) {
-		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_INVPCID);
+		_vmx_setctl_enable_invpcid(&vmx_ctls);
 	}
 
 	//allow RDTSCP (used by Debian 11)
 	if (_vmx_hasctl_enable_rdtscp(&vcpu->vmx_caps)) {
-		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_RDTSCP);
+		_vmx_setctl_enable_rdtscp(&vmx_ctls);
 	}
 
 	//allow XSAVES/XRSTORS (provided by Dell OptiPlex 7050, used by Debian 11)
 	if (_vmx_hasctl_enable_xsaves_xrstors(&vcpu->vmx_caps)) {
-		vcpu->vmcs.control_VMX_seccpu_based |= (1U << VMX_SECPROCBASED_ENABLE_XSAVES_XRSTORS);
+		_vmx_setctl_enable_xsaves_xrstors(&vmx_ctls);
 		// Set the "XSS-exiting bitmap" to 0 to prevent VMEXIT
 		vcpu->vmcs.control_XSS_exiting_bitmap = 0ULL;
 	}
@@ -591,8 +593,8 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_VMCS_link_pointer = (u64)0xFFFFFFFFFFFFFFFFULL;
 
 	//setup NMI intercept for core-quiescing
-	vcpu->vmcs.control_VMX_pin_based |= (1U << VMX_PINBASED_NMI_EXITING);
-	vcpu->vmcs.control_VMX_pin_based |= (1U << VMX_PINBASED_VIRTUAL_NMIS);
+	_vmx_setctl_nmi_exiting(&vmx_ctls);
+	_vmx_setctl_virtual_nmis(&vmx_ctls);
 	vcpu->vmx_mhv_nmi_enable = true;
 	vcpu->vmx_mhv_nmi_visited = 0;
 	vcpu->vmx_mhv_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
@@ -621,6 +623,13 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	// control_CR4_mask.
 	vcpu->vmcs.control_CR4_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];
 	vcpu->vmcs.control_CR4_shadow = 0;
+
+	//write VMX controls to VMCS
+	vcpu->vmcs.control_VMX_pin_based = vmx_ctls.pinbased_ctls;
+	vcpu->vmcs.control_VMX_cpu_based = vmx_ctls.procbased_ctls;
+	vcpu->vmcs.control_VMX_seccpu_based = vmx_ctls.procbased_ctls2;
+	vcpu->vmcs.control_VM_exit_controls = vmx_ctls.exit_ctls;
+	vcpu->vmcs.control_VM_entry_controls = vmx_ctls.entry_ctls;
 
 #ifdef __NESTED_VIRTUALIZATION__
 	xmhf_nested_arch_x86vmx_vcpu_init(vcpu);
