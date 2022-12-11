@@ -1019,7 +1019,11 @@ static void _update_pae_pdpte(ARG10 * arg)
 	if (pae) {
 		/* Walk EPT and retrieve values for guest_PDPTE* */
 		u64 pdptes[4];
-		u64 addr = arg->vmcs12->guest_CR3 & ~0x1FUL;
+		/*
+		 * Do not use VMCS12 guest_CR3, because VCPU_gcr3_set() changes only
+		 * VMCS02 guest_CR3 (e.g. used by TrustVisor).
+		 */
+		u64 addr = __vmx_vmreadNW(VMCSENC_guest_CR3) & ~0x1FUL;
 		guestmem_copy_gp2h(arg->ctx_pair, 0, pdptes, addr, sizeof(pdptes));
 		__vmx_vmwrite64(VMCSENC_guest_PDPTE0, pdptes[0]);
 		__vmx_vmwrite64(VMCSENC_guest_PDPTE1, pdptes[1]);
@@ -1041,9 +1045,12 @@ static void _workaround_kvm_216212(ARG10 * arg, ept02_cache_line_t * cache_line)
 	 * guest2_paddr = CR3.
 	 */
 	extern bool is_in_kvm;
-	if (is_in_kvm && arg->vmcs12->guest_CR3 != 0) {
-		xmhf_nested_arch_x86vmx_hardcode_ept(arg->vcpu, cache_line,
-											 arg->vmcs12->guest_CR3);
+	if (is_in_kvm) {
+		uintptr_t guest_CR3 = __vmx_vmreadNW(VMCSENC_guest_CR3);
+		if (guest_CR3 != 0) {
+			xmhf_nested_arch_x86vmx_hardcode_ept(arg->vcpu, cache_line,
+												 guest_CR3);
+		}
 	}
 }
 #endif							/* !__DEBUG_QEMU__ */
@@ -1111,9 +1118,6 @@ static void _rewalk_ept01_control_EPT_pointer(ARG10 * arg)
 		arg->vmcs12_info->guest_ept_cache_line = cache_line;
 	} else {
 		/*
-		 * We treat PDPTEs as cached and do not update them. The nested guest
-		 * should invalidate TLB (e.g. mov CR0 / CR3) to update PDPTEs.
-		 *
 		 * We need to update EPTP becase hyapp like TrustVisor may modify
 		 * EPTP02. TrustVisor performs at the first call to scode_register() to
 		 * set EPT of all CPUs to be the same.
