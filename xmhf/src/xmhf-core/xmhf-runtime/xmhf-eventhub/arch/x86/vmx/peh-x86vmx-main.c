@@ -434,6 +434,8 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
  * The MSRs that will be changed by VMENTRY/VMEXIT MSR load/store are not
  * supported: MSR_EFER, MSR_IA32_PAT
  *
+ * When this function changes, also update vmx_prepare_msr_bitmap().
+ *
  * Return 0 if success, 1 if failure (should inject #GP to guest)
  */
 u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value)
@@ -596,6 +598,8 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
  *
  * The MSRs that will be changed by VMENTRY/VMEXIT MSR load/store are not
  * supported: MSR_EFER, MSR_IA32_PAT
+ *
+ * When this function changes, also update vmx_prepare_msr_bitmap().
  *
  * Return 0 if success, 1 if failure (should inject #GP to guest)
  */

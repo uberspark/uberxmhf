@@ -72,6 +72,9 @@ static const u32 vmx_msr_area_msrs[] = {
 //count of critical MSRs that need to be saved/restored across VM switches
 static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));
 
+/* MSR bitmap for each CPU if supported by VMX */
+static u8 vmx_msr_bitmaps[MAX_VCPU_ENTRIES][PAGE_SIZE_4K] __attribute__((aligned(PAGE_SIZE_4K)));
+
 /*
  * Check whether msr is XMHF-managed (in VMCS MSR load / store area).
  * If yes, the MSR's index is written to index and true is returned.
@@ -331,6 +334,89 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 	}
 }
 
+// Set msr to cause VMEXIT when read or write in bitmap
+static void set_msrbitmap(u8 *bitmap, u32 msr) {
+	u32 bit_num;
+	u32 bit_offset;
+	u32 byte_offset;
+	if (msr < 0x2000U) {
+		bit_num = msr;
+	} else if (0xc0000000U <= msr && msr < 0xc0002000U) {
+		bit_num = msr - 0xc0000000U;
+	} else {
+		return;
+	}
+	byte_offset = bit_num / 8;
+	bit_offset = bit_num % 8;
+	/* Set read bit */
+	bitmap[byte_offset] |= (1U << bit_offset);
+	/* Set write bit */
+	bitmap[byte_offset + 2048] |= (1U << bit_offset);
+}
+
+// Initialize vmx_msr_bitmaps for the current VCPU
+// Based on xmhf_parteventhub_arch_x86vmx_handle_wrmsr() and
+// xmhf_parteventhub_arch_x86vmx_handle_rdmsr()
+static void vmx_prepare_msr_bitmap(VCPU *vcpu) {
+	u8 *bitmap = vmx_msr_bitmaps[vcpu->idx];
+	set_msrbitmap(bitmap, IA32_MTRR_DEF_TYPE);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX64K_00000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX16K_80000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX16K_A0000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX4K_C0000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX4K_C8000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX4K_D0000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX4K_D8000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX4K_E0000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX4K_E8000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX4K_F0000);
+	set_msrbitmap(bitmap, IA32_MTRR_FIX4K_F8000);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE0);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK0);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE1);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK1);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE2);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK2);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE3);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK3);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE4);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK4);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE5);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK5);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE6);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK6);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE7);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK7);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE8);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK8);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSBASE9);
+	set_msrbitmap(bitmap, IA32_MTRR_PHYSMASK9);
+	set_msrbitmap(bitmap, IA32_BIOS_UPDT_TRIG);
+	set_msrbitmap(bitmap, IA32_X2APIC_ICR);
+#ifdef __NESTED_VIRTUALIZATION__
+	set_msrbitmap(bitmap, IA32_VMX_BASIC_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_PINBASED_CTLS_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_PROCBASED_CTLS_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_EXIT_CTLS_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_ENTRY_CTLS_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_MISC_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_CR0_FIXED0_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_CR0_FIXED1_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_CR4_FIXED0_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_CR4_FIXED1_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_VMCS_ENUM_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_PROCBASED_CTLS2_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_EPT_VPID_CAP_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_TRUE_PINBASED_CTLS_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_TRUE_PROCBASED_CTLS_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_TRUE_EXIT_CTLS_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_TRUE_ENTRY_CTLS_MSR);
+	set_msrbitmap(bitmap, IA32_VMX_VMFUNC_MSR);
+	// Note: IA32_VMX_VMFUNC_MSR temporarily not supported
+	//set_msrbitmap(bitmap, IA32_VMX_VMFUNC_MSR);
+#endif /* !__NESTED_VIRTUALIZATION__ */
+}
+
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//setup default VMX controls
@@ -457,12 +543,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 
 		//guest MSR load on entry, store on exit
 		{
-		    u64 addr = (u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
 		    vcpu->vmcs.control_VM_entry_MSR_load_address=addr;
 		}
 		vcpu->vmcs.control_VM_entry_MSR_load_count=vmx_msr_area_msrs_count;
 		{
-		    u64 addr = (u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		    u64 addr = hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
 		    vcpu->vmcs.control_VM_exit_MSR_store_address=addr;
 		}
 		vcpu->vmcs.control_VM_exit_MSR_store_count=vmx_msr_area_msrs_count;
@@ -587,6 +673,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		_vmx_setctl_enable_xsaves_xrstors(&vmx_ctls);
 		// Set the "XSS-exiting bitmap" to 0 to prevent VMEXIT
 		vcpu->vmcs.control_XSS_exiting_bitmap = 0ULL;
+	}
+
+	if (_vmx_hasctl_use_msr_bitmaps(&vcpu->vmx_caps)) {
+		_vmx_setctl_use_msr_bitmaps(&vmx_ctls);
+		vmx_prepare_msr_bitmap(vcpu);
+		vcpu->vmcs.control_MSR_Bitmaps_address = hva2spa(vmx_msr_bitmaps[vcpu->idx]);
 	}
 
 	//setup VMCS link pointer

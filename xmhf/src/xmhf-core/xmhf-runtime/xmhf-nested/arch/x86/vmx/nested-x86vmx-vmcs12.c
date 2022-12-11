@@ -487,7 +487,10 @@ static void _vmcs12_to_vmcs02_flip_bits(vmx_ctls_t * ctls02)
 	/* XMHF needs to activate secondary controls because of EPT */
 	_vmx_setctl_activate_secondary_controls(ctls02);
 #ifdef __VMX_NESTED_MSR_BITMAP__
-	/* XMHF does not use MSR bitmaps, but nested hypervisor may use them. */
+	/*
+	 * Nested hypervisor may use MSR bitmaps (VMCS12 = 1), but XMHF does not
+	 * use them during nested virtualization (VMCS02 = 0).
+	 */
 	_vmx_clearctl_use_msr_bitmaps(ctls02);
 #endif							/* __VMX_NESTED_MSR_BITMAP__ */
 	/*
@@ -885,7 +888,13 @@ static u32 _vmcs12_to_vmcs02_control_MSR_Bitmaps_address(ARG10 * arg)
 		HALT_ON_ERRORCOND(PA_PAGE_ALIGNED_4K
 						  (arg->vmcs12->control_MSR_Bitmaps_address));
 	}
-	/* XMHF never uses MSR bitmaps, so set VMCS02 to invalid value */
+	/*
+	 * XMHF does not use MSR bitmaps in VMCS02, so set to invalid value.
+	 *
+	 * Note: use MSR bitmaps in VMCS02, XMHF needs to merge VMCS01 and VMCS12.
+	 * It also needs to set MSR bitmaps in VMCS12 as read-only, so it can pick
+	 * up changes when the guest updates MSR bitmaps in VMCS12.
+	 */
 	__vmx_vmwrite64(VMCSENC_control_MSR_Bitmaps_address, UINT64_MAX);
 	return VM_INST_SUCCESS;
 	(void)arg;
