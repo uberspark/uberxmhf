@@ -122,6 +122,8 @@ void xmhf_partition_arch_legacyIO_setprot_bitmap(hva_t iobitmap, u32 port, u32 s
 
 bool xmhf_partition_arch_x86vmx_get_xmhf_msr(u32 msr, u32 *index);
 
+void xmhf_partition_arch_x86vmx_clear_msrbitmap_x2apic_icr(VCPU *vcpu);
+
 //initialize partition monitor for a given CPU
 void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu);
 

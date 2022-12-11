@@ -354,6 +354,26 @@ static void set_msrbitmap(u8 *bitmap, u32 msr) {
 	bitmap[byte_offset + 2048] |= (1U << bit_offset);
 }
 
+// Set msr to not cause VMEXIT when read or write in bitmap
+static void clear_msrbitmap(u8 *bitmap, u32 msr) {
+	u32 bit_num;
+	u32 bit_offset;
+	u32 byte_offset;
+	if (msr < 0x2000U) {
+		bit_num = msr;
+	} else if (0xc0000000U <= msr && msr < 0xc0002000U) {
+		bit_num = msr - 0xc0000000U;
+	} else {
+		return;
+	}
+	byte_offset = bit_num / 8;
+	bit_offset = bit_num % 8;
+	/* Clear read bit */
+	bitmap[byte_offset] &= ~(1U << bit_offset);
+	/* Clear write bit */
+	bitmap[byte_offset + 2048] &= ~(1U << bit_offset);
+}
+
 // Initialize vmx_msr_bitmaps for the current VCPU
 // Based on xmhf_parteventhub_arch_x86vmx_handle_wrmsr() and
 // xmhf_parteventhub_arch_x86vmx_handle_rdmsr()
@@ -415,6 +435,13 @@ static void vmx_prepare_msr_bitmap(VCPU *vcpu) {
 	// Note: IA32_VMX_VMFUNC_MSR temporarily not supported
 	//set_msrbitmap(bitmap, IA32_VMX_VMFUNC_MSR);
 #endif /* !__NESTED_VIRTUALIZATION__ */
+}
+
+// Remove IA32_X2APIC_ICR from vmx_msr_bitmaps for the current VCPU. This
+// function is intended to be called after SMP guest bootup completes.
+void xmhf_partition_arch_x86vmx_clear_msrbitmap_x2apic_icr(VCPU *vcpu) {
+	u8 *bitmap = vmx_msr_bitmaps[vcpu->idx];
+	clear_msrbitmap(bitmap, IA32_X2APIC_ICR);
 }
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
