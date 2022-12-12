@@ -241,7 +241,7 @@ static u32 vmx_eap_initialize(
     uintptr_t status;
     bool status2 = false;
     VTD_DMAR dmar;
-    u32 i, dmarfound;
+    u32 i, dmarfound = 0;
     spa_t dmaraddrphys, remappingstructuresaddrphys;
     spa_t rsdt_xsdt_spaddr = INVALID_SPADDR;
     hva_t rsdt_xsdt_vaddr = INVALID_VADDR;
