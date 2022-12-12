@@ -1000,7 +1000,7 @@ static void _vmcs02_to_vmcs12_control_posted_interrupt_desc_address(ARG01 * arg)
 
 /* EPT pointer */
 
-static void _update_pae_pdpte(ARG10 * arg)
+static void _update_pae_pdpte(ARG10 * arg, uintptr_t guest_CR3)
 {
 	/*
 	 * Assume guest does not enable EPT. Check whether guest is in PAE. If so,
@@ -1019,11 +1019,7 @@ static void _update_pae_pdpte(ARG10 * arg)
 	if (pae) {
 		/* Walk EPT and retrieve values for guest_PDPTE* */
 		u64 pdptes[4];
-		/*
-		 * Do not use VMCS12 guest_CR3, because VCPU_gcr3_set() changes only
-		 * VMCS02 guest_CR3 (e.g. used by TrustVisor).
-		 */
-		u64 addr = __vmx_vmreadNW(VMCSENC_guest_CR3) & ~0x1FUL;
+		u64 addr = guest_CR3 & ~0x1FUL;
 		guestmem_copy_gp2h(arg->ctx_pair, 0, pdptes, addr, sizeof(pdptes));
 		__vmx_vmwrite64(VMCSENC_guest_PDPTE0, pdptes[0]);
 		__vmx_vmwrite64(VMCSENC_guest_PDPTE1, pdptes[1]);
@@ -1080,7 +1076,7 @@ static u32 _vmcs12_to_vmcs02_control_EPT_pointer(ARG10 * arg)
 		/* Guest does not use EPT, just use XMHF's EPT */
 		arg->vmcs12_info->guest_ept_root = GUEST_EPT_ROOT_INVALID;
 		ept02 = arg->vcpu->vmcs.control_EPT_pointer;
-		_update_pae_pdpte(arg);
+		_update_pae_pdpte(arg, arg->vmcs12->guest_CR3);
 	}
 	__vmx_vmwrite64(VMCSENC_control_EPT_pointer, ept02);
 	return VM_INST_SUCCESS;
@@ -1123,7 +1119,11 @@ static void _rewalk_ept01_control_EPT_pointer(ARG10 * arg)
 		 * set EPT of all CPUs to be the same.
 		 */
 		ept02 = arg->vcpu->vmcs.control_EPT_pointer;
-		_update_pae_pdpte(arg);
+		/*
+		 * Do not use VMCS12 guest_CR3, because VCPU_gcr3_set() changes only
+		 * VMCS02 guest_CR3 (e.g. used by TrustVisor).
+		 */
+		_update_pae_pdpte(arg, __vmx_vmreadNW(VMCSENC_guest_CR3));
 	}
 
 	/* Write updated EPT02 to VMCS */
