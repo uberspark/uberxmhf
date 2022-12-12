@@ -237,7 +237,7 @@ static u32 vmx_eap_initialize(
     ACPI_RSDP rsdp;
     ACPI_RSDT rsdt;
     u32 num_rsdtentries;
-    uintptr_t rsdtentries[ACPI_MAX_RSDT_ENTRIES];
+    u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
     uintptr_t status;
     bool status2 = false;
     VTD_DMAR dmar;
@@ -294,7 +294,7 @@ static u32 vmx_eap_initialize(
     // find the VT-d DMAR table in the list (if any)
     for (i = 0; i < num_rsdtentries; i++)
     {
-        xmhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));
+        xmhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)(uintptr_t)rsdtentries[i], sizeof(VTD_DMAR));
         if (dmar.signature == VTD_DMAR_SIGNATURE)
         {
             dmarfound = 1;
