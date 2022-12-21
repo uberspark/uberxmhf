@@ -419,7 +419,7 @@ static u32 vmx_eap_initialize(
     // zap VT-d presence in ACPI table...
     // DRHD pages are protected from guest memory access in
     // xmhf_dmaprot_arch_x86_vmx_protect_drhd().
-    xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);
+    vmx_dmar_zap(dmaraddrphys);
 
     // Flush CPU cache
     wbinvd();

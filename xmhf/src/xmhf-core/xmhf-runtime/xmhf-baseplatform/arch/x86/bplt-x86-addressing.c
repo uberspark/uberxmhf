@@ -121,6 +121,20 @@ u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
 }
 
 //write 32-bits to absolute physical address
+void xmhf_baseplatform_arch_flat_writeu8(u32 addr, u8 val) {
+#ifdef __AMD64__
+    *(u8*)(xmhf_baseplatform_arch_flat_pa2va(addr)) = val;
+#elif defined(__I386__)
+    __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
+                         :
+                         : "b"(addr), "a"((u32)val)
+                         );
+#else /* !defined(__I386__) && !defined(__AMD64__) */
+    #error "Unsupported Arch"
+#endif /* !defined(__I386__) && !defined(__AMD64__) */
+}
+
+//write 32-bits to absolute physical address
 void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val) {
 #ifdef __AMD64__
     *(u32*)(xmhf_baseplatform_arch_flat_pa2va(addr)) = val;

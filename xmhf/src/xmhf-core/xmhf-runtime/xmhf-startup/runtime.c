@@ -50,6 +50,40 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf.h>
 
+#if defined(__DRT__) || defined(__DMAP__)
+
+/* Size of ACPI DESCRIPTION_HEADER Fields */
+#define ACPI_DESC_HEADER_SIZE 36
+
+/* Offset of interesting DESCRIPTION_HEADER fields */
+#define ACPI_DESC_SIGNATURE_OFF 0
+#define ACPI_DESC_LENGTH_OFF 4
+#define ACPI_DESC_CHECKSUM_OFF 9
+
+/*
+ * Given the address of ACPI DMAR table, change it to something else so that
+ * the red OS thinks there is no DMAR table present. Currently changing to a
+ * table with signature "XMHF".
+ */
+void vmx_dmar_zap(spa_t dmaraddrphys)
+{
+	u8 buffer[ACPI_DESC_HEADER_SIZE];
+	u8 checksum = 0;
+	/* Signature: "XMHF" */
+	xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys + ACPI_DESC_SIGNATURE_OFF, 0x46484d58UL);
+	/* Length: 36 */
+	xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys + ACPI_DESC_LENGTH_OFF, 36UL);
+	/* Compute checksum */
+	xmhf_baseplatform_arch_flat_copy(buffer, (u8 *)dmaraddrphys, ACPI_DESC_HEADER_SIZE);
+	buffer[ACPI_DESC_CHECKSUM_OFF] = 0;
+	for (size_t i = 0; i < ACPI_DESC_HEADER_SIZE; i++) {
+		checksum -= buffer[i];
+	}
+	xmhf_baseplatform_arch_flat_writeu8(dmaraddrphys + ACPI_DESC_CHECKSUM_OFF, checksum);
+}
+
+#endif /* defined(__DRT__) || defined(__DMAP__) */
+
 #if defined(__DRT__) && !defined(__DMAP__)
 
 // This macro is defined in xmhf-dmaprot.h. However when !__DMAP__ this header
@@ -74,7 +108,6 @@ static void vmx_eap_zap(void)
     memset(&rsdt, 0, sizeof(ACPI_RSDT));
 
     // get ACPI RSDP
-    // [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
     printf("%s: RSDP at %08x\n", __FUNCTION__, status);
@@ -137,7 +170,7 @@ static void vmx_eap_zap(void)
     // zap VT-d presence in ACPI table...
     // TODO: we need to be a little elegant here. eventually need to setup
     // EPT/NPTs such that the DMAR pages are unmapped for the guest
-    xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);
+    vmx_dmar_zap(dmaraddrphys);
 
     // success
     printf("%s: success, leaving...\n", __FUNCTION__);
@@ -193,7 +226,6 @@ void xmhf_runtime_entry(void){
 	#endif
 
 #if defined (__DMAP__)
-		// TODO: DMAP code not ported to amd64 yet
 		{
 			#define ADDR_512GB  (PAGE_SIZE_512G)
 				u64 protectedbuffer_paddr;

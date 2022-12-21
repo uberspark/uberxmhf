@@ -88,6 +88,8 @@ extern volatile u32 g_lock_appmain_success_counter __attribute__(( section(".dat
 //exported FUNCTIONS
 //----------------------------------------------------------------------
 
+void vmx_dmar_zap(spa_t dmaraddrphys);
+
 //entry point of EMHF runtime; this is where we get control from the SL
 void xmhf_runtime_entry(void);
 

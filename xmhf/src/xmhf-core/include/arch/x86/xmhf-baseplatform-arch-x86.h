@@ -346,6 +346,9 @@ u32 xmhf_baseplatform_arch_flat_readu32(u32 addr);
 //read 64-bits from absolute physical address
 u64 xmhf_baseplatform_arch_flat_readu64(u32 addr);
 
+//write 8-bits to absolute physical address
+void xmhf_baseplatform_arch_flat_writeu8(u32 addr, u8 val);
+
 //write 32-bits to absolute physical address
 void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val);
 
