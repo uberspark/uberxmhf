@@ -54,9 +54,7 @@
 
 #if defined(__DRT__) || defined(__DMAP__)
 
-// TODO: this macro is deprecated
-// This macro is defined in xmhf-dmaprot.h. However when !__DMAP__ this header
-// is not included. So define it here.
+/* Maximum number of RSDT entries we support */
 #define ACPI_MAX_RSDT_ENTRIES (256)
 
 /* Size of ACPI DESCRIPTION_HEADER Fields */
