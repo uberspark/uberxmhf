@@ -98,6 +98,7 @@ void xmhf_runtime_shutdown(VCPU *vcpu, struct regs *r);
 
 //DMAP related functions
 void vmx_dmar_zap(spa_t dmaraddrphys);
+spa_t vmx_find_dmar_paddr(VTD_DMAR *dmar);
 void vmx_eap_zap(void);
 
 //----------------------------------------------------------------------

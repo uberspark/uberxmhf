@@ -234,79 +234,16 @@ static u32 vmx_eap_initialize(
     spa_t vtd_ret_paddr, hva_t vtd_ret_vaddr,
     spa_t vtd_cet_paddr, hva_t vtd_cet_vaddr)
 {
-    ACPI_RSDP rsdp;
-    ACPI_RSDT rsdt;
-    u32 num_rsdtentries;
-    u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
-    uintptr_t status;
     bool status2 = false;
     VTD_DMAR dmar;
-    u32 i, dmarfound = 0;
+    u32 i;
     spa_t dmaraddrphys, remappingstructuresaddrphys;
-    spa_t rsdt_xsdt_spaddr = INVALID_SPADDR;
-    hva_t rsdt_xsdt_vaddr = INVALID_VADDR;
 
 #ifndef __XMHF_VERIFICATION__
     // zero out rsdp and rsdt structures
-    memset(&rsdp, 0, sizeof(ACPI_RSDP));
-    memset(&rsdt, 0, sizeof(ACPI_RSDT));
     memset(&g_vtd_cap_sagaw_mgaw_nd, 0, sizeof(struct dmap_vmx_cap));
 
-    // get ACPI RSDP
-    status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-    HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
-    printf("%s: RSDP at %lx\n", __FUNCTION__, status);
-
-    // Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
-    if (rsdp.revision == 0) // ACPI v1
-    {
-        printf("%s: ACPI v1\n", __FUNCTION__);
-        rsdt_xsdt_spaddr = rsdp.rsdtaddress;
-    }
-    else if (rsdp.revision == 0x2) // ACPI v2
-    {
-        printf("%s: ACPI v2\n", __FUNCTION__);
-        rsdt_xsdt_spaddr = (spa_t)rsdp.xsdtaddress;
-    }
-    else // Unrecognized ACPI version
-    {
-        printf("%s: ACPI unsupported version!\n", __FUNCTION__);
-        return 0;
-    }
-
-    // grab ACPI RSDT
-    // Note: in i386, <rsdt_xsdt_spaddr> should be in lower 4GB. So the conversion to vaddr is fine.
-    rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
-
-    xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
-    printf("%s: RSDT at %lx, len=%u bytes, hdrlen=%u bytes\n",
-           __FUNCTION__, rsdt_xsdt_vaddr, rsdt.length, sizeof(ACPI_RSDT));
-
-    // get the RSDT entry list
-    num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT)) / sizeof(u32);
-    HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
-    xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)),
-                                     sizeof(rsdtentries[0]) * num_rsdtentries);
-    printf("%s: RSDT entry list at %lx, len=%u\n", __FUNCTION__,
-           (rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)), num_rsdtentries);
-
-    // find the VT-d DMAR table in the list (if any)
-    for (i = 0; i < num_rsdtentries; i++)
-    {
-        xmhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)(uintptr_t)rsdtentries[i], sizeof(VTD_DMAR));
-        if (dmar.signature == VTD_DMAR_SIGNATURE)
-        {
-            dmarfound = 1;
-            break;
-        }
-    }
-
-    // if no DMAR table, bail out
-    if (!dmarfound)
-        return 0;
-
-    dmaraddrphys = rsdtentries[i]; // DMAR table physical memory address;
-    printf("%s: DMAR at %llx\n", __FUNCTION__, dmaraddrphys);
+    dmaraddrphys = vmx_find_dmar_paddr(&dmar);
 
     i = 0;
     remappingstructuresaddrphys = dmaraddrphys + sizeof(VTD_DMAR);

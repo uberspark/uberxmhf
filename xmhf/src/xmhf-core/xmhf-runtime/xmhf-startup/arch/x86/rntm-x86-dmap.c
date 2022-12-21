@@ -54,6 +54,11 @@
 
 #if defined(__DRT__) || defined(__DMAP__)
 
+// TODO: this macro is deprecated
+// This macro is defined in xmhf-dmaprot.h. However when !__DMAP__ this header
+// is not included. So define it here.
+#define ACPI_MAX_RSDT_ENTRIES (256)
+
 /* Size of ACPI DESCRIPTION_HEADER Fields */
 #define ACPI_DESC_HEADER_SIZE 36
 
@@ -84,24 +89,18 @@ void vmx_dmar_zap(spa_t dmaraddrphys)
 	xmhf_baseplatform_arch_flat_writeu8(dmaraddrphys + ACPI_DESC_CHECKSUM_OFF, checksum);
 }
 
-#endif /* defined(__DRT__) || defined(__DMAP__) */
-
-#if defined(__DRT__) && !defined(__DMAP__)
-
-// This macro is defined in xmhf-dmaprot.h. However when !__DMAP__ this header
-// is not included. So define it here.
-#define ACPI_MAX_RSDT_ENTRIES (256)
-
-void vmx_eap_zap(void)
+/*
+ * Return the physical address of ACPI DMAR table. Return 0 if not found.
+ */
+spa_t vmx_find_dmar_paddr(VTD_DMAR *dmar)
 {
     ACPI_RSDP rsdp;
     ACPI_RSDT rsdt;
     u32 num_rsdtentries;
     u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
     uintptr_t status;
-    VTD_DMAR dmar;
     u32 i, dmarfound = 0;
-    spa_t dmaraddrphys, remappingstructuresaddrphys;
+    spa_t dmaraddrphys;
     spa_t rsdt_xsdt_spaddr = INVALID_SPADDR;
     hva_t rsdt_xsdt_vaddr = INVALID_VADDR;
 
@@ -128,7 +127,7 @@ void vmx_eap_zap(void)
     else // Unrecognized ACPI version
     {
         printf("%s: ACPI unsupported version!\n", __FUNCTION__);
-        return;
+        return 0;
     }
 
     // grab ACPI RSDT
@@ -150,9 +149,10 @@ void vmx_eap_zap(void)
     // find the VT-d DMAR table in the list (if any)
     for (i = 0; i < num_rsdtentries; i++)
     {
-        xmhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)(uintptr_t)rsdtentries[i], sizeof(VTD_DMAR));
-        if (dmar.signature == VTD_DMAR_SIGNATURE)
+        xmhf_baseplatform_arch_flat_copy((u8 *)dmar, (u8 *)(uintptr_t)rsdtentries[i], sizeof(VTD_DMAR));
+        if (dmar->signature == VTD_DMAR_SIGNATURE)
         {
+            HALT_ON_ERRORCOND(dmar->length >= ACPI_DESC_HEADER_SIZE);
             dmarfound = 1;
             break;
         }
@@ -160,14 +160,22 @@ void vmx_eap_zap(void)
 
     // if no DMAR table, bail out
     if (!dmarfound)
-        return;
+        return 0;
 
     dmaraddrphys = rsdtentries[i]; // DMAR table physical memory address;
     printf("%s: DMAR at %08x\n", __FUNCTION__, dmaraddrphys);
 
-    i = 0;
-    remappingstructuresaddrphys = dmaraddrphys + sizeof(VTD_DMAR);
-    printf("%s: remapping structures at %08x\n", __FUNCTION__, remappingstructuresaddrphys);
+    return dmaraddrphys;
+}
+
+#endif /* defined(__DRT__) || defined(__DMAP__) */
+
+#if defined(__DRT__) && !defined(__DMAP__)
+
+void vmx_eap_zap(void)
+{
+    VTD_DMAR dmar;
+    spa_t dmaraddrphys = vmx_find_dmar_paddr(&dmar);
 
     // zap VT-d presence in ACPI table...
     // TODO: we need to be a little elegant here. eventually need to setup
