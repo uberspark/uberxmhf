@@ -253,12 +253,11 @@ static u32 vmx_eap_initialize(
     memset(&g_vtd_cap_sagaw_mgaw_nd, 0, sizeof(struct dmap_vmx_cap));
 
     // get ACPI RSDP
-    //  [TODO] Unify the name of <xmhf_baseplatform_arch_x86_acpi_getRSDP> and <xmhf_baseplatform_arch_x86_acpi_getRSDP>, and then remove the following #ifdef
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
     printf("%s: RSDP at %lx\n", __FUNCTION__, status);
 
-    // [Superymk] Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
+    // Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
     if (rsdp.revision == 0) // ACPI v1
     {
         printf("%s: ACPI v1\n", __FUNCTION__);

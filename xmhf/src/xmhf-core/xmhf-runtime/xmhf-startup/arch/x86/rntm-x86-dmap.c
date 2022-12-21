@@ -112,7 +112,7 @@ void vmx_eap_zap(void)
     // get ACPI RSDP
     status = xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
     HALT_ON_ERRORCOND(status != 0); // we need a valid RSDP to proceed
-    printf("%s: RSDP at %08x\n", __FUNCTION__, status);
+    printf("%s: RSDP at %lx\n", __FUNCTION__, status);
 
     // Use RSDT if it is ACPI v1, or use XSDT addr if it is ACPI v2
     if (rsdp.revision == 0) // ACPI v1
@@ -136,15 +136,15 @@ void vmx_eap_zap(void)
     rsdt_xsdt_vaddr = (hva_t)rsdt_xsdt_spaddr;
 
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdt_xsdt_vaddr, sizeof(ACPI_RSDT));
-    printf("%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
+    printf("%s: RSDT at %lx, len=%u bytes, hdrlen=%u bytes\n",
            __FUNCTION__, rsdt_xsdt_vaddr, rsdt.length, sizeof(ACPI_RSDT));
 
     // get the RSDT entry list
     num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT)) / sizeof(u32);
     HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
     xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)),
-                                     sizeof(u32) * num_rsdtentries);
-    printf("%s: RSDT entry list at %08x, len=%u\n", __FUNCTION__,
+                                     sizeof(rsdtentries[0]) * num_rsdtentries);
+    printf("%s: RSDT entry list at %lx, len=%u\n", __FUNCTION__,
            (rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)), num_rsdtentries);
 
     // find the VT-d DMAR table in the list (if any)
