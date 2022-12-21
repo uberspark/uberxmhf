@@ -176,6 +176,9 @@ void vmx_eap_zap(void)
 {
     VTD_DMAR dmar;
     spa_t dmaraddrphys = vmx_find_dmar_paddr(&dmar);
+    if (dmaraddrphys == 0) {
+        return;
+    }
 
     // zap VT-d presence in ACPI table...
     // TODO: we need to be a little elegant here. eventually need to setup

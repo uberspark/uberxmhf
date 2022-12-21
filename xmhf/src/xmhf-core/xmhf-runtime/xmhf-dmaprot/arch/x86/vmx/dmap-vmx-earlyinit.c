@@ -103,6 +103,9 @@ static u32 vmx_eap_initialize_early(
     memset(&g_vtd_cap_sagaw_mgaw_nd, 0, sizeof(struct dmap_vmx_cap));
 
     dmaraddrphys = vmx_find_dmar_paddr(&dmar);
+    if (dmaraddrphys == 0) {
+        return 0;
+    }
 
     i = 0;
     remappingstructuresaddrphys = dmaraddrphys + sizeof(VTD_DMAR);
