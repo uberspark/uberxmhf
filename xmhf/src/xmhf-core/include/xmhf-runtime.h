@@ -97,9 +97,13 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit);
 void xmhf_runtime_shutdown(VCPU *vcpu, struct regs *r);
 
 //DMAP related functions
+#if defined(__DRT__) || defined(__DMAP__)
 void vmx_dmar_zap(spa_t dmaraddrphys);
 spa_t vmx_find_dmar_paddr(VTD_DMAR *dmar);
+#endif /* defined(__DRT__) || defined(__DMAP__) */
+#if defined(__DRT__) && !defined(__DMAP__)
 void vmx_eap_zap(void);
+#endif /* defined(__DRT__) && !defined(__DMAP__) */
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
