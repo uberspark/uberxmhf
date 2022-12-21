@@ -91,18 +91,19 @@ void vmx_dmar_zap(spa_t dmaraddrphys)
 
 /*
  * Return the physical address of ACPI DMAR table. Return 0 if not found.
+ * If found, the beginning of the DMAR table is written to dmar.
  */
 spa_t vmx_find_dmar_paddr(VTD_DMAR *dmar)
 {
     ACPI_RSDP rsdp;
     ACPI_RSDT rsdt;
     u32 num_rsdtentries;
-    u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
     uintptr_t status;
     u32 i, dmarfound = 0;
     spa_t dmaraddrphys;
     spa_t rsdt_xsdt_spaddr = INVALID_SPADDR;
     hva_t rsdt_xsdt_vaddr = INVALID_VADDR;
+    u32 rsdt_xsdt_entry_size = 0;
 
     // zero out rsdp and rsdt structures
     memset(&rsdp, 0, sizeof(ACPI_RSDP));
@@ -118,11 +119,13 @@ spa_t vmx_find_dmar_paddr(VTD_DMAR *dmar)
     {
         printf("%s: ACPI v1\n", __FUNCTION__);
         rsdt_xsdt_spaddr = rsdp.rsdtaddress;
+        rsdt_xsdt_entry_size = 4;
     }
     else if (rsdp.revision == 0x2) // ACPI v2
     {
         printf("%s: ACPI v2\n", __FUNCTION__);
         rsdt_xsdt_spaddr = (spa_t)rsdp.xsdtaddress;
+        rsdt_xsdt_entry_size = 8;
     }
     else // Unrecognized ACPI version
     {
@@ -139,20 +142,30 @@ spa_t vmx_find_dmar_paddr(VTD_DMAR *dmar)
            __FUNCTION__, rsdt_xsdt_vaddr, rsdt.length, sizeof(ACPI_RSDT));
 
     // get the RSDT entry list
-    num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT)) / sizeof(u32);
+    num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT)) / rsdt_xsdt_entry_size;
     HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
-    xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)),
-                                     sizeof(rsdtentries[0]) * num_rsdtentries);
     printf("%s: RSDT entry list at %lx, len=%u\n", __FUNCTION__,
            (rsdt_xsdt_vaddr + sizeof(ACPI_RSDT)), num_rsdtentries);
 
     // find the VT-d DMAR table in the list (if any)
     for (i = 0; i < num_rsdtentries; i++)
     {
-        xmhf_baseplatform_arch_flat_copy((u8 *)dmar, (u8 *)(uintptr_t)rsdtentries[i], sizeof(VTD_DMAR));
-        if (dmar->signature == VTD_DMAR_SIGNATURE)
+        u32 signature;
+        // Read RSDT / XSDT entry
+        // dmaraddrphys must be initialized to 0 because sizeof(spa_t) = 8 and
+        // it is possible that rsdt_xsdt_entry_size = 4.
+        dmaraddrphys = 0;
+        xmhf_baseplatform_arch_flat_copy((u8 *)&dmaraddrphys,
+                                         (u8 *)(rsdt_xsdt_vaddr +
+                                                sizeof(ACPI_RSDT) +
+                                                i * rsdt_xsdt_entry_size),
+                                         rsdt_xsdt_entry_size);
+        // Read first 4 bytes of the table (signature)
+        xmhf_baseplatform_arch_flat_copy((u8 *)&signature,
+                                         (u8 *)(uintptr_t)dmaraddrphys,
+                                         sizeof(signature));
+        if (signature == VTD_DMAR_SIGNATURE)
         {
-            HALT_ON_ERRORCOND(dmar->length >= ACPI_DESC_HEADER_SIZE);
             dmarfound = 1;
             break;
         }
@@ -162,8 +175,12 @@ spa_t vmx_find_dmar_paddr(VTD_DMAR *dmar)
     if (!dmarfound)
         return 0;
 
-    dmaraddrphys = rsdtentries[i]; // DMAR table physical memory address;
     printf("%s: DMAR at %08x\n", __FUNCTION__, dmaraddrphys);
+
+    // Read DMAR out, check length
+    xmhf_baseplatform_arch_flat_copy((u8 *)dmar, (u8 *)(uintptr_t)dmaraddrphys,
+                                     sizeof(VTD_DMAR));
+    HALT_ON_ERRORCOND(dmar->length >= ACPI_DESC_HEADER_SIZE);
 
     return dmaraddrphys;
 }
