@@ -74,7 +74,7 @@ void vmx_dmar_zap(spa_t dmaraddrphys)
 	/* Length: 36 */
 	xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys + ACPI_DESC_LENGTH_OFF, 36UL);
 	/* Compute checksum */
-	xmhf_baseplatform_arch_flat_copy(buffer, (u8 *)dmaraddrphys, ACPI_DESC_HEADER_SIZE);
+	xmhf_baseplatform_arch_flat_copy(buffer, (u8 *)(uintptr_t)dmaraddrphys, ACPI_DESC_HEADER_SIZE);
 	buffer[ACPI_DESC_CHECKSUM_OFF] = 0;
 	for (size_t i = 0; i < ACPI_DESC_HEADER_SIZE; i++) {
 		checksum -= buffer[i];
