@@ -235,6 +235,20 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
 void xmhf_runtime_shutdown(VCPU *vcpu, struct regs *r)
 {
+  /* Barrier to make sure all CPUs execute xmhf_app_handleshutdown() closely */
+  {
+    static u32 lock = 1;
+    static u32 count = 0;
+
+    spin_lock(&lock);
+    count++;
+    spin_unlock(&lock);
+
+    while (count < g_midtable_numentries) {
+      xmhf_cpu_relax();
+    }
+  }
+
   xmhf_app_handleshutdown(vcpu, r);
 
   // Finalize sub-systems

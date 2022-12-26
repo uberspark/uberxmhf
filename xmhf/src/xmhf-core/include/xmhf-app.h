@@ -138,7 +138,8 @@ extern u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu, struct regs *r,
  *
  * Hypapp should call xmhf_baseplatform_reboot() to perform the restart.
  *
- * When this function is called, other CPUs are NOT quiesced.
+ * When this function is called, other CPUs are NOT quiesced. However, all
+ * CPUs are going to call xmhf_app_handleshutdown() concurrently.
  * XXX: this is leading to known vulnerabilities of XMHF.
  */
 extern void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
