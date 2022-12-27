@@ -1491,6 +1491,51 @@ int hpt_scode_get_scode_id(VCPU * vcpu)
   return scode_curr[vcpu->id];
 }
 
+/*
+ * Destroy all registered scode, used during shutdown.
+ * After this function is called, all scode's must not be resumed.
+ */
+void hpt_scode_destroy_all(void)
+{
+  static u32 destroy_lock = 1;
+  spin_lock(&destroy_lock);
+
+  for (size_t i = 0; i < whitelist_max; i ++) {
+    if (whitelist[i].gcr3 != 0) {
+      eu_warn("whitelist[%d] is still registered when shutdown", i);
+
+      /* restore permissions for remapped sections */
+      for (size_t j = 0; j < whitelist[i].sections_num; j++) {
+        /*
+         * zero the contents of any sections that are writable by the PAL, and
+         * not readable by the reg guest
+         */
+        if ((whitelist[i].sections[j].pal_prot & HPT_PROTS_W)
+            && !(whitelist[i].sections[j].reg_prot & HPT_PROTS_R)) {
+          int err;
+          eu_trace("zeroing section %d", j);
+          err = hptw_checked_memset_va( &whitelist[i].hptw_pal_checked_guest_ctx.super,
+                                        HPTW_CPL3,
+                                        whitelist[i].sections[j].pal_gva, 0,
+                                        whitelist[i].sections[j].size);
+          /* should only fail if insufficient permissions in the guest
+             page tables, which TV constructed and the PAL should not have
+             been able to modify */
+          HALT_ON_ERRORCOND(!err);
+        }
+        /*
+         * In scode_unregister(), scode_return_section() is called. However we
+         * skip it here since we are shutting down.
+         */
+      }
+
+      whitelist[i].gcr3 = 0;
+    }
+  }
+
+  spin_unlock(&destroy_lock);
+}
+
 /* caller is responsible for flushing TLB */
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
 {
