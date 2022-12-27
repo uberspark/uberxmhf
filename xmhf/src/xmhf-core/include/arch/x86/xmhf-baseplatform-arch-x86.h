@@ -359,7 +359,10 @@ void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val);
 //data segment relative address (dest)
 void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
 
-//reboot platform
+// reboot platform
+//
+// This function must be called when all CPUs are running hypervisor code
+// forever. See "xmhf-baseplatform.h" for detailed analysis.
 void xmhf_baseplatform_arch_reboot(VCPU *vcpu);
 
 //returns true if CPU has support for XSAVE/XRSTOR
@@ -556,7 +559,10 @@ void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
 //--debug: dump_vcpu dumps vcpu contents (including VMCS)
 void xmhf_baseplatform_arch_x86vmx_dump_vcpu(VCPU *vcpu);
 
-//VMX specific platform reboot
+// VMX specific platform reboot
+//
+// This function must be called when all CPUs are running hypervisor code
+// forever. See "xmhf-baseplatform.h" for detailed analysis.
 void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 
 //----------------------------------------------------------------------

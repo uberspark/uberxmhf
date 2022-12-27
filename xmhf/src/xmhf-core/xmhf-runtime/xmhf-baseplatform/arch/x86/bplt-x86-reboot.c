@@ -74,7 +74,10 @@ void xmhf_baseplatform_arch_x86_reboot(void){
 }
 
 
-//reboot platform
+// reboot platform
+//
+// This function must be called when all CPUs are running hypervisor code
+// forever. See "xmhf-baseplatform.h" for detailed analysis.
 void xmhf_baseplatform_arch_reboot(VCPU *vcpu){
 	HALT_ON_ERRORCOND (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 

@@ -52,7 +52,11 @@
 #include <xmhf.h>
 
 
-//VMX specific platform reboot
+// VMX specific platform reboot
+//
+// This function must be called when all CPUs are running hypervisor code
+// forever. Usually this function is called in xmhf_app_handleshutdown(), which
+// satisifes this requirement. See "xmhf-baseplatform.h" for detailed analysis.
 void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu){
 	(void)vcpu;
 

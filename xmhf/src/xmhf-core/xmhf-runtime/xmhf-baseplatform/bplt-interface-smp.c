@@ -56,7 +56,11 @@ void xmhf_baseplatform_smpinitialize(void){
 	xmhf_baseplatform_arch_smpinitialize();
 }
 
-//reboot platform
+// reboot platform
+//
+// This function must be called when all CPUs are running hypervisor code
+// forever. Usually this function is called in xmhf_app_handleshutdown(), which
+// satisifes this requirement. See "xmhf-baseplatform.h" for detailed analysis.
 void xmhf_baseplatform_reboot(VCPU *vcpu){
 	xmhf_baseplatform_arch_reboot(vcpu);
 }

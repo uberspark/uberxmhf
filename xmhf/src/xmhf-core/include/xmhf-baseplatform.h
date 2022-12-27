@@ -151,7 +151,23 @@ void xmhf_baseplatform_smpinitialize(void);
 //initialize basic platform elements
 void xmhf_baseplatform_initialize(void);
 
-//reboot platform
+// reboot platform
+//
+// This function must be called when all CPUs are running hypervisor code
+// forever. Usually this function is called in xmhf_app_handleshutdown(), which
+// satisifes this requirement.
+//
+// If this requirement is not satisfied, an attack using INIT and SIPI may
+// happen. Suppose on Intel platform, CPU 3 calls this function and CPU 4 runs
+// (malicious) guest code. CPU 4 sends INIT IPI to CPU 3. CPU 3 at first blocks
+// the IPI because XMHF runs in VMX root mode. However, this function will
+// execute VMXOFF. At this time CPU 3 receives INIT IPI and falls into
+// wait-for-SIPI state. Then CPU 4 can send SIPI to CPU 3, which allows CPU 3
+// to execute malicious code.
+//
+// When this requirement is satisfied, it is still possible for the attacker to
+// bring CPU 3 into wait-for-SIPI state. However, there is no one to send SIPI
+// to CPU 3 and let it execute malicious code.
 void xmhf_baseplatform_reboot(VCPU *vcpu);
 
 // Traverse the E820 map and return the base and limit of used system physical address (i.e., used by main memory and MMIO).
