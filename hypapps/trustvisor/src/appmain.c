@@ -787,10 +787,8 @@ u32 tv_app_handle_nest_exit(VCPU *vcpu, struct regs *r)
 {
   (void)r;
   if (hpt_scode_is_scode(vcpu)) {
-#ifdef __NESTED_VIRTUALIZATION__
     extern void xmhf_nested_arch_x86vmx_vmread_all(VCPU * vcpu, char *prefix);
     xmhf_nested_arch_x86vmx_vmread_all(vcpu, ":VMCS02:");
-#endif /* __NESTED_VIRTUALIZATION__ */
     eu_err("CPU(0x%02x): tv_app_handle_nest_exit in scode, Halt!", vcpu->id);
     HALT();
   }
