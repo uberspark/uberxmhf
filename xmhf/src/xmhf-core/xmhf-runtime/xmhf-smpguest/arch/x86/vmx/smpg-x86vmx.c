@@ -204,7 +204,7 @@ void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu, u32 unmaplapic){
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC should be below 4G
 
-  g_vmx_lapic_base = eax & 0xFFFFF000UL;
+  g_vmx_lapic_base = eax & 0xFFFFF000U;
   //printf("BSP(0x%02x): LAPIC base=0x%08x\n", vcpu->id, g_vmx_lapic_base);
 
   if (unmaplapic) {
@@ -480,20 +480,20 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
 
   if (eax & (1U << 10)) {
     /* x2APIC enabled, use it */
-    u32 eax = 0x000C0400UL;
-    u32 edx = 0xFFFFFFFFUL;
+    u32 eax = 0x000C0400U;
+    u32 edx = 0xFFFFFFFFU;
     wrmsr(IA32_X2APIC_ICR, eax, edx);
   } else {
     /* use LAPIC */
     volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
     volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
-    u32 icr_high_value= 0xFFUL << 24;
+    u32 icr_high_value= 0xFFU << 24;
     u32 prev_icr_high_value;
 
     prev_icr_high_value = *icr_high;
 
     *icr_high = icr_high_value;    //send to all but self
-    *icr_low = 0x000C0400UL;      //send NMI
+    *icr_low = 0x000C0400U;      //send NMI
 
     //check if IPI has been delivered successfully
     //printf("%s: CPU(0x%02x): firing NMIs...\n", __FUNCTION__, vcpu->id);
@@ -820,7 +820,7 @@ void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
 	//setup guest CS and EIP as specified by the SIPI vector
 	vcpu->vmcs.guest_CS_selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4);
 	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
-	vcpu->vmcs.guest_RIP = 0x0ULL;
+	vcpu->vmcs.guest_RIP = 0x0UL;
 }
 
 //walk guest page tables; returns pointer to corresponding guest physical address
