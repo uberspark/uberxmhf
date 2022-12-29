@@ -135,11 +135,10 @@ static void *ept12_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz,
 {
 	ept12_ctx_t *ctx = vctx;
 	void *ans;
-	do {
-		*(ctx->ctx01.vmx_ept_changed) = false;
-		ans = hptw_checked_access_va(&ctx->ctx01.host_ctx,
-									 access_type, cpl, spa, sz, avail_sz);
-	} while (*(ctx->ctx01.vmx_ept_changed));
+	memprot_x86vmx_eptlock_read_lock(ctx->ctx01.vcpu);
+	ans = hptw_checked_access_va(&ctx->ctx01.host_ctx, access_type, cpl, spa,
+								 sz, avail_sz);
+	memprot_x86vmx_eptlock_read_unlock(ctx->ctx01.vcpu);
 	return ans;
 }
 

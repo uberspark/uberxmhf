@@ -546,10 +546,8 @@ u32 xmhf_memprot_arch_x86vmx_mtrr_write(VCPU *vcpu, u32 msr, u64 val) {
 
 //flush hardware page table mappings (TLB)
 void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu, u32 flags){
-  if ((flags & MEMP_FLUSHTLB_ENTRY) != 0) {
-    vcpu->vmx_ept_changed = true;
-  }
-  
+  (void)vcpu;
+
   /*
    * Note: when only EPTP changes, there is no need to call INVEPT.
    * Note: currently the API does not specify which EPT's entries are changed.

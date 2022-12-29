@@ -719,7 +719,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmx_mhv_nmi_handler_arg = SMPG_VMX_NMI_INJECT;
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = false;
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_pending = 0;
-	vcpu->vmx_ept_changed = false;
+	vcpu->vmx_eptlock_reading = false;
 
 	//trap access to CR0 fixed 1-bits
 	// Make sure to change vmx_handle_intercept_cr0access_ug() if changing

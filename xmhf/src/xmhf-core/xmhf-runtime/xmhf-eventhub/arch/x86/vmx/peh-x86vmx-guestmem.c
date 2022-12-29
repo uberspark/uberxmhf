@@ -60,40 +60,20 @@
  * * guestmem_gpa2spa_page: translate gpa to spa for a whole page
  * * guestmem_gpa2spa_size: translate gpa to spa for some custom size
  *
- * When walking page table using software, race conditions between CPUs can
- * happen when when another CPU is modifying page table entries. For example:
- *
- * | CPU 0                              | CPU 1                               |
- * |------------------------------------|-------------------------------------|
- * | Get EPTP (from VMCS)               |                                     |
- * | Get PML4E (EPTP[offset])           |                                     |
- * | Get PDPTE (PML4E[offset])          |                                     |
- * | Get PDE (PDPTE[offset])            |                                     |
- * | Get PTE (PDE[offset])              |                                     |
- * |                                    | Quiesce all other CPUS              |
- * |                                    | Modify PTE, mark as not present     |
- * |                                    | Unquiesce all other CPUS            |
- * |                                    | Write sensitive data to page of PTE |
- * | Inspect PTE, looks present         |                                     |
- * | Access data (*(PTE.addr + offset)) |                                     |
- *
- * To fix this race condition,
- * 1. After CPU 1 ends quiesce, all other CPUs will flush TLB and set
- *    vcpu->vmx_ept_changed = true.
- * 2. Before CPU 0 is starts walking EPT, it sets vcpu->vmx_ept_changed = false.
- * 3. When CPU 0 ends walking EPT, if it sees vcpu->vmx_ept_changed = true, it
- *    retries walking EPT.
- *
- * Currently the following functions have implemented the retry logic:
+ * Accessing EPT in hypervisor code may create race conditions. Currently the
+ * following functions use memprot_x86vmx_eptlock_read_lock() and
+ * memprot_x86vmx_eptlock_read_unlock() to avoid the race condition:
  * * guestmem_copy_gv2h: copy from guest virtual to hypervisor
  * * guestmem_copy_gp2h: copy from guest physical to hypervisor
  * * guestmem_copy_h2gv: copy from hypervisor to guest virtual
  * * guestmem_copy_h2gp: copy from hypervisor to guest physical
  *
- * Currently the following functions have NOT implemented the retry logic
+ * Currently the following functions have NOT implemented the locking logic
  * (their use callers have other ways to prevent this race condition):
  * * guestmem_gpa2spa_page: translate gpa to spa for a whole page
  * * guestmem_gpa2spa_size: translate gpa to spa for some custom size
+ *
+ * See memp-x86vmx-eptlock.c for details about the race condition.
  */
 
 static hpt_pa_t guestmem_host_ctx_ptr2pa(void *vctx, void *ptr)
@@ -146,7 +126,6 @@ static void* guestmem_ctx_unimplemented(void *vctx, size_t alignment, size_t sz)
 void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair)
 {
 	hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
-	ctx_pair->vmx_ept_changed = &vcpu->vmx_ept_changed;
 	ctx_pair->guest_ctx.ptr2pa = guestmem_guest_ctx_ptr2pa;
 	ctx_pair->guest_ctx.pa2ptr = guestmem_guest_ctx_pa2ptr;
 	ctx_pair->guest_ctx.gzp = guestmem_ctx_unimplemented;
@@ -159,78 +138,71 @@ void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair)
 	ctx_pair->host_ctx.root_pa =
 		hpt_eptp_get_address(HPT_TYPE_EPT, vcpu->vmcs.control_EPT_pointer);
 	ctx_pair->host_ctx.t = HPT_TYPE_EPT;
+	ctx_pair->vcpu = vcpu;
 }
 
 /*
  * Copy from dst (guest virtual address) to src (hypervisor address).
- * This function checks vcpu->vmx_ept_changed to prevent race condition.
+ * This function uses memprot_x86vmx_eptlock_read_lock() to prevent race
+ * condition.
  */
 void guestmem_copy_gv2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						void *dst, hpt_va_t src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->guest_ctx;
-	do {
-		int result;
-		*(ctx_pair->vmx_ept_changed) = false;
-		result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
-		HALT_ON_ERRORCOND(result == 0);
-	} while (*(ctx_pair->vmx_ept_changed));
+	memprot_x86vmx_eptlock_read_lock(ctx_pair->vcpu);
+	HALT_ON_ERRORCOND(hptw_checked_copy_from_va(ctx, cpl, dst, src, len) == 0);
+	memprot_x86vmx_eptlock_read_unlock(ctx_pair->vcpu);
 }
 
 /*
  * Copy from dst (guest physical address) to src (hypervisor address).
- * This function checks vcpu->vmx_ept_changed to prevent race condition.
+ * This function uses memprot_x86vmx_eptlock_read_lock() to prevent race
+ * condition.
  */
 void guestmem_copy_gp2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						void *dst, hpt_va_t src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->host_ctx;
-	do {
-		int result;
-		*(ctx_pair->vmx_ept_changed) = false;
-		result = hptw_checked_copy_from_va(ctx, cpl, dst, src, len);
-		HALT_ON_ERRORCOND(result == 0);
-	} while (*(ctx_pair->vmx_ept_changed));
+	memprot_x86vmx_eptlock_read_lock(ctx_pair->vcpu);
+	HALT_ON_ERRORCOND(hptw_checked_copy_from_va(ctx, cpl, dst, src, len) == 0);
+	memprot_x86vmx_eptlock_read_unlock(ctx_pair->vcpu);
 }
 
 /*
  * Copy from dst (hypervisor address) to src (guest virtual address).
- * This function checks vcpu->vmx_ept_changed to prevent race condition.
+ * This function uses memprot_x86vmx_eptlock_read_lock() to prevent race
+ * condition.
  */
 void guestmem_copy_h2gv(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						hpt_va_t dst, void *src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->guest_ctx;
-	do {
-		int result;
-		*(ctx_pair->vmx_ept_changed) = false;
-		result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
-		HALT_ON_ERRORCOND(result == 0);
-	} while (*(ctx_pair->vmx_ept_changed));
+	memprot_x86vmx_eptlock_read_lock(ctx_pair->vcpu);
+	HALT_ON_ERRORCOND(hptw_checked_copy_to_va(ctx, cpl, dst, src, len) == 0);
+	memprot_x86vmx_eptlock_read_unlock(ctx_pair->vcpu);
 }
 
 /*
  * Copy from dst (hypervisor address) to src (guest physical address).
- * This function checks vcpu->vmx_ept_changed to prevent race condition.
+ * This function uses memprot_x86vmx_eptlock_read_lock() to prevent race
+ * condition.
  */
 void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
 						hpt_va_t dst, void *src, size_t len)
 {
 	hptw_ctx_t *ctx = &ctx_pair->host_ctx;
-	do {
-		int result;
-		*(ctx_pair->vmx_ept_changed) = false;
-		result = hptw_checked_copy_to_va(ctx, cpl, dst, src, len);
-		HALT_ON_ERRORCOND(result == 0);
-	} while (*(ctx_pair->vmx_ept_changed));
+	memprot_x86vmx_eptlock_read_lock(ctx_pair->vcpu);
+	HALT_ON_ERRORCOND(hptw_checked_copy_to_va(ctx, cpl, dst, src, len) == 0);
+	memprot_x86vmx_eptlock_read_unlock(ctx_pair->vcpu);
 }
 
 /*
  * Test whether guest_addr (4K page aligned) is valid guest physical memory
  * page. If so, return corresponding host physical memory page. Else, halt.
  *
- * This function does NOT check vcpu->vmx_ept_changed to prevent race condition.
- * See definition of vmx_ept_changed in VCPU for details.
+ * This function does NOT use memprot_x86vmx_eptlock_read_lock() to prevent
+ * race condition.
  */
 spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
 							gpa_t guest_addr)
@@ -257,8 +229,8 @@ spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
  * len in host physical memory. If so, return corresponding host physical
  * memory page. Else, halt.
  *
- * This function does NOT check vcpu->vmx_ept_changed to prevent race condition.
- * See definition of vmx_ept_changed in VCPU for details.
+ * This function does NOT use memprot_x86vmx_eptlock_read_lock() to prevent
+ * race condition.
  */
 spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
 							gpa_t guest_addr, size_t len)

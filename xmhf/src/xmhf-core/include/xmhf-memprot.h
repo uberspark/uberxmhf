@@ -178,6 +178,11 @@ u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //get protection for 
 u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu); // get or set EPTP01 (only valid on Intel)
 void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
 
+void memprot_x86vmx_eptlock_write_lock(VCPU *vcpu);
+void memprot_x86vmx_eptlock_write_unlock(VCPU *vcpu);
+void memprot_x86vmx_eptlock_read_lock(VCPU *vcpu);
+void memprot_x86vmx_eptlock_read_unlock(VCPU *vcpu);
+
 //VMX EPT PML4 table buffers
 extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 

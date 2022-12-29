@@ -558,6 +558,9 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         spin_lock(&g_vmx_lock_quiesce);
         //printf("CPU(0x%02x): grabbed quiesce lock.\n", vcpu->id);
 
+        /* Acquire memprot_x86vmx_eptlock_write_lock() to prevent deadlock */
+        memprot_x86vmx_eptlock_write_lock(vcpu);
+
         /* Acquire the printf lock to prevent deadlock */
         emhfc_putchar_linelock(emhfc_putchar_linelock_arg);
 
@@ -596,6 +599,8 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
          */
         emhfc_putchar_lineunlock(emhfc_putchar_linelock_arg);
 
+        /* Release memprot_x86vmx_eptlock_write_lock() */
+        memprot_x86vmx_eptlock_write_unlock(vcpu);
 }
 
 void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){

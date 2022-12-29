@@ -272,11 +272,11 @@ typedef struct _vcpu {
   guest_nmi_t vmx_guest_nmi_cfg;
 
   /*
-   * Quiesce handler sets this flag to true to indicate change in EPT entries.
-   * When XMHF is walking EPT with software, it should retry the EPT walk if
-   * this flag is true to prevent race condition.
+   * When this flag is set, the CPU is walking EPT using software. Change to
+   * EPT and quiesce are temporarily disabled. See memp-x86vmx-eptlock.c for
+   * details.
    */
-  volatile bool vmx_ept_changed;
+  volatile bool vmx_eptlock_reading;
 
   //guest state fields
   u32 vmx_guest_unrestricted;   //this is 1 if the CPU VMX implementation supports unrestricted guest execution

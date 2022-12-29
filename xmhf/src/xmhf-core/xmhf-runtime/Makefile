@@ -19,6 +19,7 @@ OBJECTS_PRECOMPILED += ./xmhf-memprot/memp-interface.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/memp-x86.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/vmx/memp-x86vmx.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/vmx/memp-x86vmx-data.o
+OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/vmx/memp-x86vmx-eptlock.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/svm/memp-x86svm.o
 OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/svm/memp-x86svm-data.o
 
