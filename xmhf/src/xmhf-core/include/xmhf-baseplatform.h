@@ -60,8 +60,9 @@
 //----------------------------------------------------------------------
 //the master-id table, which is used by the AP bootstrap code
 //to locate its own vcpu structure
-//NOTE: The size of this structure _MUST_ be _EXACTLY_EQUAL_ to 8 bytes
-//as it is made use of in low-level assembly language stubs
+//NOTE: The size of this structure _MUST_ be _EXACTLY_EQUAL_ to 8 bytes in i386
+//and 16 bytes in amd64, as it is made use of in low-level assembly language
+//stubs, like bplt-x86-i386-smptrampoline.S and bplt-x86-amd64-smptrampoline.S
 typedef struct _midtab {
     union {
         u32 cpu_lapic_id;       // CPU LAPIC id (unique)
