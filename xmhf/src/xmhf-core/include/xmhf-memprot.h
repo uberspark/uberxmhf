@@ -54,6 +54,8 @@
 
 #ifndef __ASSEMBLY__
 
+#include <hptw.h>
+
 // memory protection types
 #define MEMP_PROT_NOTPRESENT	(1)	// page not present
 #define	MEMP_PROT_PRESENT		(2)	// page present
@@ -70,6 +72,15 @@
 #define MEMP_FLUSHTLB_EPTP		1	// EPTP changed
 #define MEMP_FLUSHTLB_ENTRY		2	// Entries in EPT changed
 #define MEMP_FLUSHTLB_MT_ENTRY	4	// Entries changed, but only EPT MT bits
+
+// Structure for guestmem
+typedef struct {
+	/* guest_ctx must be the first member, see guestmem_guest_ctx_pa2ptr() */
+	hptw_ctx_t guest_ctx;
+	hptw_ctx_t host_ctx;
+	/* Pointer to vcpu */
+	VCPU *vcpu;
+} guestmem_hptw_ctx_pair_t;
 
 //----------------------------------------------------------------------
 //exported DATA

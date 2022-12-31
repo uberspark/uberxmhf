@@ -52,16 +52,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <hptw.h>
-
-typedef struct {
-	/* guest_ctx must be the first member, see guestmem_guest_ctx_pa2ptr() */
-	hptw_ctx_t guest_ctx;
-	hptw_ctx_t host_ctx;
-	/* Pointer to vcpu */
-	VCPU *vcpu;
-} guestmem_hptw_ctx_pair_t;
-
 //XXX: FIX this
 //extern u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
