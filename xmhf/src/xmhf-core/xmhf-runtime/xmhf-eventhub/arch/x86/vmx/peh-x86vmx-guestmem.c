@@ -48,6 +48,7 @@
 // Function for accessing guest memeory
 // author: Eric Li (xiaoyili@andrew.cmu.edu)
 #include <xmhf.h>
+#include <hpt_emhf.h>
 
 /*
  * This library provides functions for the hypervisor to access guest memory

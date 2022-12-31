@@ -53,7 +53,6 @@
 #ifndef __ASSEMBLY__
 
 #include <hptw.h>
-#include <hpt_emhf.h>
 
 typedef struct {
 	/* guest_ctx must be the first member, see guestmem_guest_ctx_pa2ptr() */
