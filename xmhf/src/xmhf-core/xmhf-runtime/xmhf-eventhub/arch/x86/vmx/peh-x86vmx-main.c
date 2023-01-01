@@ -1131,6 +1131,18 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		_OPT_VMREAD(NW, guest_DS_base);
 		_OPT_VMREAD(NW, guest_FS_base);
 		_OPT_VMREAD(NW, guest_GS_base);
+		_OPT_VMREAD(NW, guest_ES_limit);
+		_OPT_VMREAD(NW, guest_CS_limit);
+		_OPT_VMREAD(NW, guest_SS_limit);
+		_OPT_VMREAD(NW, guest_DS_limit);
+		_OPT_VMREAD(NW, guest_FS_limit);
+		_OPT_VMREAD(NW, guest_GS_limit);
+		_OPT_VMREAD(NW, guest_ES_access_rights);
+		_OPT_VMREAD(NW, guest_CS_access_rights);
+		_OPT_VMREAD(NW, guest_SS_access_rights);
+		_OPT_VMREAD(NW, guest_DS_access_rights);
+		_OPT_VMREAD(NW, guest_FS_access_rights);
+		_OPT_VMREAD(NW, guest_GS_access_rights);
 		_OPT_VMREAD(NW, guest_RSP);
 		_OPT_VMREAD(NW, guest_RIP);
 		_OPT_VMREAD(NW, guest_RFLAGS);
