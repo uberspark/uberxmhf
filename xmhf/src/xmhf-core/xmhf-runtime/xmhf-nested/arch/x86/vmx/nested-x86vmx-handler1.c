@@ -199,6 +199,10 @@ static gva_t _vmx_decode_seg(VCPU * vcpu, u32 seg, gva_t addr, size_t size,
 					/* type = 2/3/6/7, has write */
 					supported_modes |= HPT_PROT_WRITE_MASK;
 				}
+				if (access_rights & (1U << 2)) {
+					/* type = 4 - 7, expand-down data segment not implemented */
+					HALT_ON_ERRORCOND(0 && "Not implemented: expand-down");
+				}
 			} else {
 				/* type = 8 - 15, always has execute */
 				supported_modes |= HPT_PROT_EXEC_MASK;
