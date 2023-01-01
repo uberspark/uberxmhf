@@ -193,14 +193,14 @@ static gva_t _vmx_decode_seg(VCPU * vcpu, u32 seg, gva_t addr, size_t size,
 		if ((access_rights & (1U << 3)) == 0) {
 			/* type = 0 - 7, always has read */
 			supported_modes |= HPT_PROT_READ_MASK;
-			if ((access_rights & (1U << 1)) == 0) {
+			if (access_rights & (1U << 1)) {
 				/* type = 2/3/6/7, has write */
 				supported_modes |= HPT_PROT_WRITE_MASK;
 			}
 		} else {
 			/* type = 8 - 15, always has execute */
 			supported_modes |= HPT_PROT_EXEC_MASK;
-			if ((access_rights & (1U << 1)) == 0) {
+			if (access_rights & (1U << 1)) {
 				/* type = 10/11/14/15, has read */
 				supported_modes |= HPT_PROT_READ_MASK;
 			}
