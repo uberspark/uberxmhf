@@ -134,6 +134,7 @@ static gva_t _vmx_decode_seg(VCPU * vcpu, u32 seg, gva_t addr, size_t size,
 	ulong_t base;
 	u32 access_rights;
 	u32 limit;
+	bool g64 = VCPU_g64(vcpu);
 	switch (seg) {
 	case 0:
 		base = vcpu->vmcs.guest_ES_base;
@@ -169,10 +170,10 @@ static gva_t _vmx_decode_seg(VCPU * vcpu, u32 seg, gva_t addr, size_t size,
 		HALT_ON_ERRORCOND(0 && "Unexpected segment");
 	}
 	/*
-	 * For 32-bit guest, check segment limit and set add base to addr.
-	 * For 64-bit, base is always 0, and no limit check is performed.
+	 * For 32-bit guest, check segment limit.
+	 * For 64-bit guest, no limit check is performed (can even wrap around).
 	 */
-	if (!VCPU_g64(vcpu)) {
+	if (!g64) {
 		gva_t addr_max;
 		HALT_ON_ERRORCOND(addr <= UINT_MAX);
 		if (addr > UINT_MAX - size) {
@@ -185,42 +186,44 @@ static gva_t _vmx_decode_seg(VCPU * vcpu, u32 seg, gva_t addr, size_t size,
 		if (base > UINT_MAX - addr_max) {
 			HALT_ON_ERRORCOND(0 && "Not implemented: linear address overflow");
 		}
-		addr += base;
 	}
-	/* Check Segment type */
-	{
-		hpt_prot_t supported_modes = HPT_PROTS_NONE;
-		if ((access_rights & (1U << 3)) == 0) {
-			/* type = 0 - 7, always has read */
-			supported_modes |= HPT_PROT_READ_MASK;
-			if (access_rights & (1U << 1)) {
-				/* type = 2/3/6/7, has write */
-				supported_modes |= HPT_PROT_WRITE_MASK;
-			}
-		} else {
-			/* type = 8 - 15, always has execute */
-			supported_modes |= HPT_PROT_EXEC_MASK;
-			if (access_rights & (1U << 1)) {
-				/* type = 10/11/14/15, has read */
+	/* Check access rights. Skip checking if amd64 SS/DS/ES/FS/GS. */
+	if (seg == 1 || !g64) {
+		/* Check Segment type */
+		{
+			hpt_prot_t supported_modes = HPT_PROTS_NONE;
+			if ((access_rights & (1U << 3)) == 0) {
+				/* type = 0 - 7, always has read */
 				supported_modes |= HPT_PROT_READ_MASK;
+				if (access_rights & (1U << 1)) {
+					/* type = 2/3/6/7, has write */
+					supported_modes |= HPT_PROT_WRITE_MASK;
+				}
+			} else {
+				/* type = 8 - 15, always has execute */
+				supported_modes |= HPT_PROT_EXEC_MASK;
+				if (access_rights & (1U << 1)) {
+					/* type = 10/11/14/15, has read */
+					supported_modes |= HPT_PROT_READ_MASK;
+				}
+			}
+			if ((supported_modes & mode) != mode) {
+				HALT_ON_ERRORCOND(0 && "Invalid access: segment type");
 			}
 		}
-		if ((supported_modes & mode) != mode) {
-			HALT_ON_ERRORCOND(0 && "Invalid access: segment type");
+		/* Check S - Descriptor type (0 = system; 1 = code or data) */
+		HALT_ON_ERRORCOND((access_rights & (1U << 4)));
+		/* Check DPL - Descriptor privilege level */
+		{
+			u32 dpl = (access_rights >> 5) & 0x3;
+			if (dpl < (u32) cpl) {
+				HALT_ON_ERRORCOND(0 && "Invalid access: DPL");
+			}
 		}
+		/* Check P - Segment present */
+		HALT_ON_ERRORCOND((access_rights & (1U << 7)));
 	}
-	/* Check S - Descriptor type (0 = system; 1 = code or data) */
-	HALT_ON_ERRORCOND((access_rights & (1U << 4)));
-	/* Check DPL - Descriptor privilege level */
-	{
-		u32 dpl = (access_rights >> 5) & 0x3;
-		if (dpl < (u32) cpl) {
-			HALT_ON_ERRORCOND(0 && "Invalid access: DPL");
-		}
-	}
-	/* Check P - Segment present */
-	HALT_ON_ERRORCOND((access_rights & (1U << 7)));
-	return addr;
+	return addr + base;
 }
 
 /*
