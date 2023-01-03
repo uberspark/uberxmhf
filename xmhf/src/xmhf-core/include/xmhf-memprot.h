@@ -194,6 +194,20 @@ void memprot_x86vmx_eptlock_write_unlock(VCPU *vcpu);
 void memprot_x86vmx_eptlock_read_lock(VCPU *vcpu);
 void memprot_x86vmx_eptlock_read_unlock(VCPU *vcpu);
 
+void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair);
+void guestmem_copy_gv2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+						void *dst, hpt_va_t src, size_t len);
+void guestmem_copy_gp2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+						void *dst, hpt_va_t src, size_t len);
+void guestmem_copy_h2gv(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+						hpt_va_t dst, void *src, size_t len);
+void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
+						hpt_va_t dst, void *src, size_t len);
+spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
+							gpa_t guest_addr);
+spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
+							gpa_t guest_addr, size_t size);
+
 //VMX EPT PML4 table buffers
 extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));
 

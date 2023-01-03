@@ -98,19 +98,7 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value)
 u32 xmhf_parteventhub_arch_x86vmx_handle_rdmsr(VCPU *vcpu, u32 index, u64 *value);
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
-void guestmem_init(VCPU *vcpu, guestmem_hptw_ctx_pair_t *ctx_pair);
-void guestmem_copy_gv2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
-						void *dst, hpt_va_t src, size_t len);
-void guestmem_copy_gp2h(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
-						void *dst, hpt_va_t src, size_t len);
-void guestmem_copy_h2gv(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
-						hpt_va_t dst, void *src, size_t len);
-void guestmem_copy_h2gp(guestmem_hptw_ctx_pair_t *ctx_pair, hptw_cpl_t cpl,
-						hpt_va_t dst, void *src, size_t len);
-spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
-							gpa_t guest_addr);
-spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
-							gpa_t guest_addr, size_t size);
+
 #ifdef __UPDATE_INTEL_UCODE__
 void handle_intel_ucode_update(VCPU *vcpu, u64 update_data);
 #endif /* __UPDATE_INTEL_UCODE__ */
