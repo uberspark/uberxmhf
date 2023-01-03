@@ -60,6 +60,7 @@
  * * guestmem_copy_h2gp: copy from hypervisor to guest physical
  * * guestmem_gpa2spa_page: translate gpa to spa for a whole page
  * * guestmem_gpa2spa_size: translate gpa to spa for some custom size
+ * * guestmem_desegment: convert logical address to linear address
  *
  * Accessing EPT in hypervisor code may create race conditions. Currently the
  * following functions use memprot_x86vmx_eptlock_read_lock() and
@@ -262,4 +263,118 @@ spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
 	}
 	HALT_ON_ERRORCOND(ans_assigned);
 	return hva2spa(ans);
+}
+
+/*
+ * Given a segment index, translate logical address to linear address.
+ * seg: index of segment used by hardware.
+ * addr: logical address as input, modified to linear address as output.
+ * size: size of access.
+ * mode: access mode (read / write / execute). Use HPT_PROT_*_MASK macros.
+ * cpl: permission of access.
+ *
+ * Note: currently XMHF halts when guest makes an invalid access. Ideally XMHF
+ * should inject corresponding exceptions like #GP(0).
+ */
+gva_t guestmem_desegment(VCPU * vcpu, cpu_segment_t seg, gva_t addr,
+						 size_t size, hpt_prot_t mode, hptw_cpl_t cpl)
+{
+	/* Get segment fields from VMCS */
+	ulong_t base;
+	u32 access_rights;
+	u32 limit;
+	bool g64 = VCPU_g64(vcpu);
+	switch (seg) {
+	case CPU_SEG_ES:
+		base = vcpu->vmcs.guest_ES_base;
+		access_rights = vcpu->vmcs.guest_ES_access_rights;
+		limit = vcpu->vmcs.guest_ES_limit;
+		break;
+	case CPU_SEG_CS:
+		base = vcpu->vmcs.guest_CS_base;
+		access_rights = vcpu->vmcs.guest_CS_access_rights;
+		limit = vcpu->vmcs.guest_CS_limit;
+		break;
+	case CPU_SEG_SS:
+		base = vcpu->vmcs.guest_SS_base;
+		access_rights = vcpu->vmcs.guest_SS_access_rights;
+		limit = vcpu->vmcs.guest_SS_limit;
+		break;
+	case CPU_SEG_DS:
+		base = vcpu->vmcs.guest_DS_base;
+		access_rights = vcpu->vmcs.guest_DS_access_rights;
+		limit = vcpu->vmcs.guest_DS_limit;
+		break;
+	case CPU_SEG_FS:
+		base = vcpu->vmcs.guest_FS_base;
+		access_rights = vcpu->vmcs.guest_FS_access_rights;
+		limit = vcpu->vmcs.guest_FS_limit;
+		break;
+	case CPU_SEG_GS:
+		base = vcpu->vmcs.guest_GS_base;
+		access_rights = vcpu->vmcs.guest_GS_access_rights;
+		limit = vcpu->vmcs.guest_GS_limit;
+		break;
+	default:
+		HALT_ON_ERRORCOND(0 && "Unexpected segment");
+	}
+	/*
+	 * For 32-bit guest, check segment limit.
+	 * For 64-bit guest, no limit check is performed (can even wrap around).
+	 */
+	if (!g64) {
+		gva_t addr_max;
+		HALT_ON_ERRORCOND(addr <= UINT_MAX);
+		if (addr > UINT_MAX - size) {
+			HALT_ON_ERRORCOND(0 && "Invalid access: logical address overflow");
+		}
+		addr_max = addr + size;
+		if (addr_max >= limit) {
+			HALT_ON_ERRORCOND(0 && "Invalid access: segment limit exceed");
+		}
+		if (base > UINT_MAX - addr_max) {
+			HALT_ON_ERRORCOND(0 && "Not implemented: linear address overflow");
+		}
+	}
+	/* Check access rights. Skip checking if amd64 SS/DS/ES/FS/GS. */
+	if (seg == 1 || !g64) {
+		/* Check Segment type */
+		{
+			hpt_prot_t supported_modes = HPT_PROTS_NONE;
+			if ((access_rights & (1U << 3)) == 0) {
+				/* type = 0 - 7, always has read */
+				supported_modes |= HPT_PROT_READ_MASK;
+				if (access_rights & (1U << 1)) {
+					/* type = 2/3/6/7, has write */
+					supported_modes |= HPT_PROT_WRITE_MASK;
+				}
+				if (access_rights & (1U << 2)) {
+					/* type = 4 - 7, expand-down data segment not implemented */
+					HALT_ON_ERRORCOND(0 && "Not implemented: expand-down");
+				}
+			} else {
+				/* type = 8 - 15, always has execute */
+				supported_modes |= HPT_PROT_EXEC_MASK;
+				if (access_rights & (1U << 1)) {
+					/* type = 10/11/14/15, has read */
+					supported_modes |= HPT_PROT_READ_MASK;
+				}
+			}
+			if ((supported_modes & mode) != mode) {
+				HALT_ON_ERRORCOND(0 && "Invalid access: segment type");
+			}
+		}
+		/* Check S - Descriptor type (0 = system; 1 = code or data) */
+		HALT_ON_ERRORCOND((access_rights & (1U << 4)));
+		/* Check DPL - Descriptor privilege level */
+		{
+			u32 dpl = (access_rights >> 5) & 0x3;
+			if (dpl < (u32) cpl) {
+				HALT_ON_ERRORCOND(0 && "Invalid access: DPL");
+			}
+		}
+		/* Check P - Segment present */
+		HALT_ON_ERRORCOND((access_rights & (1U << 7)));
+	}
+	return addr + base;
 }

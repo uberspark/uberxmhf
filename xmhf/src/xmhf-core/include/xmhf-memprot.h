@@ -73,7 +73,7 @@
 #define MEMP_FLUSHTLB_ENTRY		2	// Entries in EPT changed
 #define MEMP_FLUSHTLB_MT_ENTRY	4	// Entries changed, but only EPT MT bits
 
-// Structure for guestmem
+// Structures for guestmem
 typedef struct {
 	/* guest_ctx must be the first member, see guestmem_guest_ctx_pa2ptr() */
 	hptw_ctx_t guest_ctx;
@@ -81,6 +81,16 @@ typedef struct {
 	/* Pointer to vcpu */
 	VCPU *vcpu;
 } guestmem_hptw_ctx_pair_t;
+
+typedef enum cpu_segment_t {
+	CPU_SEG_ES,
+	CPU_SEG_CS,
+	CPU_SEG_SS,
+	CPU_SEG_DS,
+	CPU_SEG_FS,
+	CPU_SEG_GS,
+	CPU_SEG_UNKNOWN,
+} cpu_segment_t;
 
 //----------------------------------------------------------------------
 //exported DATA
@@ -207,6 +217,8 @@ spa_t guestmem_gpa2spa_page(guestmem_hptw_ctx_pair_t *ctx_pair,
 							gpa_t guest_addr);
 spa_t guestmem_gpa2spa_size(guestmem_hptw_ctx_pair_t *ctx_pair,
 							gpa_t guest_addr, size_t size);
+gva_t guestmem_desegment(VCPU * vcpu, cpu_segment_t seg, gva_t addr,
+						 size_t size, hpt_prot_t mode, hptw_cpl_t cpl);
 
 //VMX EPT PML4 table buffers
 extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__((aligned(PAGE_SIZE_4K)));

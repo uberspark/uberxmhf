@@ -117,120 +117,6 @@ static u8 cpu_shadow_vmcs12[MAX_VCPU_ENTRIES][VMX_NESTED_MAX_ACTIVE_VMCS]
 #endif							/* VMX_NESTED_USE_SHADOW_VMCS */
 
 /*
- * Given a segment index, translate logical address to linear address.
- * seg: index of segment used by hardware.
- * addr: logical address as input, modified to linear address as output.
- * size: size of access.
- * mode: access mode (read / write / execute). Use HPT_PROT_*_MASK macros.
- * cpl: permission of access.
- *
- * Note: currently XMHF halts when guest makes an invalid access. Ideally XMHF
- * should inject corresponding exceptions like #GP(0).
- */
-static gva_t _vmx_decode_seg(VCPU * vcpu, u32 seg, gva_t addr, size_t size,
-							 hpt_prot_t mode, hptw_cpl_t cpl)
-{
-	/* Get segment fields from VMCS */
-	ulong_t base;
-	u32 access_rights;
-	u32 limit;
-	bool g64 = VCPU_g64(vcpu);
-	switch (seg) {
-	case 0:
-		base = vcpu->vmcs.guest_ES_base;
-		access_rights = vcpu->vmcs.guest_ES_access_rights;
-		limit = vcpu->vmcs.guest_ES_limit;
-		break;
-	case 1:
-		base = vcpu->vmcs.guest_CS_base;
-		access_rights = vcpu->vmcs.guest_CS_access_rights;
-		limit = vcpu->vmcs.guest_CS_limit;
-		break;
-	case 2:
-		base = vcpu->vmcs.guest_SS_base;
-		access_rights = vcpu->vmcs.guest_SS_access_rights;
-		limit = vcpu->vmcs.guest_SS_limit;
-		break;
-	case 3:
-		base = vcpu->vmcs.guest_DS_base;
-		access_rights = vcpu->vmcs.guest_DS_access_rights;
-		limit = vcpu->vmcs.guest_DS_limit;
-		break;
-	case 4:
-		base = vcpu->vmcs.guest_FS_base;
-		access_rights = vcpu->vmcs.guest_FS_access_rights;
-		limit = vcpu->vmcs.guest_FS_limit;
-		break;
-	case 5:
-		base = vcpu->vmcs.guest_GS_base;
-		access_rights = vcpu->vmcs.guest_GS_access_rights;
-		limit = vcpu->vmcs.guest_GS_limit;
-		break;
-	default:
-		HALT_ON_ERRORCOND(0 && "Unexpected segment");
-	}
-	/*
-	 * For 32-bit guest, check segment limit.
-	 * For 64-bit guest, no limit check is performed (can even wrap around).
-	 */
-	if (!g64) {
-		gva_t addr_max;
-		HALT_ON_ERRORCOND(addr <= UINT_MAX);
-		if (addr > UINT_MAX - size) {
-			HALT_ON_ERRORCOND(0 && "Invalid access: logical address overflow");
-		}
-		addr_max = addr + size;
-		if (addr_max >= limit) {
-			HALT_ON_ERRORCOND(0 && "Invalid access: segment limit exceed");
-		}
-		if (base > UINT_MAX - addr_max) {
-			HALT_ON_ERRORCOND(0 && "Not implemented: linear address overflow");
-		}
-	}
-	/* Check access rights. Skip checking if amd64 SS/DS/ES/FS/GS. */
-	if (seg == 1 || !g64) {
-		/* Check Segment type */
-		{
-			hpt_prot_t supported_modes = HPT_PROTS_NONE;
-			if ((access_rights & (1U << 3)) == 0) {
-				/* type = 0 - 7, always has read */
-				supported_modes |= HPT_PROT_READ_MASK;
-				if (access_rights & (1U << 1)) {
-					/* type = 2/3/6/7, has write */
-					supported_modes |= HPT_PROT_WRITE_MASK;
-				}
-				if (access_rights & (1U << 2)) {
-					/* type = 4 - 7, expand-down data segment not implemented */
-					HALT_ON_ERRORCOND(0 && "Not implemented: expand-down");
-				}
-			} else {
-				/* type = 8 - 15, always has execute */
-				supported_modes |= HPT_PROT_EXEC_MASK;
-				if (access_rights & (1U << 1)) {
-					/* type = 10/11/14/15, has read */
-					supported_modes |= HPT_PROT_READ_MASK;
-				}
-			}
-			if ((supported_modes & mode) != mode) {
-				HALT_ON_ERRORCOND(0 && "Invalid access: segment type");
-			}
-		}
-		/* Check S - Descriptor type (0 = system; 1 = code or data) */
-		HALT_ON_ERRORCOND((access_rights & (1U << 4)));
-		/* Check DPL - Descriptor privilege level */
-		{
-			u32 dpl = (access_rights >> 5) & 0x3;
-			if (dpl < (u32) cpl) {
-				HALT_ON_ERRORCOND(0 && "Invalid access: DPL");
-			}
-		}
-		/* Check P - Segment present */
-		HALT_ON_ERRORCOND((access_rights & (1U << 7)));
-	}
-	return addr + base;
-}
-
-/*
  * Get the linear address (after segmentation) of memory operand of the
  * instruction. The access size and mode are passed in size and mode.
  */
@@ -269,8 +155,8 @@ static gva_t _vmx_decode_mem_operand(VCPU * vcpu, struct regs *r, size_t size,
 		break;
 	}
 	/* Return linear address (after segmentation) */
-	return _vmx_decode_seg(vcpu, inst_info.segment_register, addr, size, mode,
-						   cpl);
+	return guestmem_desegment(vcpu, inst_info.segment_register, addr, size,
+							  mode, cpl);
 }
 
 /*
