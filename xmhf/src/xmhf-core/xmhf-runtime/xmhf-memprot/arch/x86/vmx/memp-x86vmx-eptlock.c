@@ -83,10 +83,10 @@
  * We want to impose minimum overhead on readers when there are no writers.
  *
  * Global variable g_eptlock_write_lock to make sure there are only 1 writer at
- * a time. The writer uses g_eptlock_write_pending to signal to readers to stop
- * reading, so the waiting time of a writer is bounded. Each reader uses
- * vcpu->vmx_eptlock_reading to let the writer know the reader is in critical
- * section.
+ * a time. The writer uses g_eptlock_write_pending to signal to other CPUs to
+ * stop starting new reads. This way the waiting time of a writer is bounded.
+ * Each reader uses vcpu->vmx_eptlock_reading to let the writer know the reader
+ * is in critical section.
  *
  * Critical section analysis:
  * * Mutual exclusion: writer sets g_eptlock_write_pending when locking. If
@@ -99,6 +99,11 @@
  *   However this problem also exists if the writer quiesces the readers.
  */
 
+/*
+ * TODO: Does VT-d modification need similar locking? Maybe we can use
+ * memprot_x86vmx_eptlock_write_lock() for both EPT and VT-d locking.
+ */
+
 /* Spin lock to make sure there are only 1 writer */
 static volatile u32 g_eptlock_write_lock = 1;
 
@@ -109,10 +114,16 @@ static volatile bool g_eptlock_write_pending = false;
 void memprot_x86vmx_eptlock_write_lock(VCPU *vcpu)
 {
 	(void)vcpu;
+
+	/* Acquire spin lock to make sure there is only 1 writer */
 	spin_lock(&g_eptlock_write_lock);
+
+	/* Stop new readers from reading */
 	HALT_ON_ERRORCOND(!g_eptlock_write_pending);
 	g_eptlock_write_pending = true;
 	mb();
+
+	/* Wait for existing readers to complete */
 	for (u32 i = 0; i < g_midtable_numentries; i++) {
 		VCPU *other_vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
 		while (other_vcpu->vmx_eptlock_reading) {
@@ -127,8 +138,11 @@ void memprot_x86vmx_eptlock_write_unlock(VCPU *vcpu)
 {
 	(void)vcpu;
 	mb();
+
+	/* Allow new readers to start reading */
 	HALT_ON_ERRORCOND(g_eptlock_write_pending);
 	g_eptlock_write_pending = false;
+
 	spin_unlock(&g_eptlock_write_lock);
 }
 
@@ -138,16 +152,28 @@ void memprot_x86vmx_eptlock_read_lock(VCPU *vcpu)
 	mb();
 	HALT_ON_ERRORCOND(!vcpu->vmx_eptlock_reading);
 	while (1) {
+		/*
+		 * When write in progress, wait and do not set
+		 * vcpu->vmx_eptlock_reading (otherwise may livelock).
+		 */
 		while (g_eptlock_write_pending) {
 			xmhf_cpu_relax();
 		}
 		mb();
+
+		/*
+		 * Set the current CPU as reading, then acquire lock if
+		 * g_eptlock_write_pending. This order makes sure that when the lock is
+		 * acquired, vcpu->vmx_eptlock_reading is always true.
+		 */
 		vcpu->vmx_eptlock_reading = true;
 		mb();
 		if (!g_eptlock_write_pending) {
 			break;
 		}
 		mb();
+
+		/* Set the current CPU as not reading and retry */
 		vcpu->vmx_eptlock_reading = false;
 		mb();
 	}
