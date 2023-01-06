@@ -702,7 +702,7 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 //  xmhf_smpguest_endquiesce(vcpu);
 //#endif
 
-  return ret;
+  return ret == 0 ? APP_SUCCESS : APP_ERROR;
 }
 
 u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r,

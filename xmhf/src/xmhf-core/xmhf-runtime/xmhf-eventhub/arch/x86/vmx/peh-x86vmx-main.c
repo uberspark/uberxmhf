@@ -771,18 +771,20 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
 		xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, (u32)gpa, errorcode);
 	}else{ //no, pass it to hypapp
+		u32 app_ret_status;
 #ifdef __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
 		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
-		xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
+		app_ret_status = xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
 				(errorcode & 7));
 		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 #else
 		// [Superymk] Some hypapps cannot use CPU quiescing when handling trapped PIO and memory accesses. For example, some
 		// hypapps must call another core to emulate the trapped CPU instructions. These hypapps cannot do so if CPU 
 		// quiescing is used.
-		xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
+		app_ret_status = xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
 				(errorcode & 7));
 #endif // __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
+		HALT_ON_ERRORCOND(app_ret_status == APP_SUCCESS);
 	}
 }
 

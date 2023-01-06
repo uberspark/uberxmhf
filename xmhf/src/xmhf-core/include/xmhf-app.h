@@ -124,7 +124,9 @@ extern u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
  *
  * gpa: guest physical address accessed
  * gva: guest virtual address accessed
- * violationcode: platform specific reasion of NPT / EPT violation
+ * violationcode: platform specific reason of NPT / EPT violation
+ *
+ * Hypapp should return APP_SUCCESS.
  *
  * When this function is called, other CPUs may or may not be quiesced. This is
  * configured using __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__.
@@ -137,6 +139,7 @@ extern u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu, struct regs *r,
  * Called when the guest tries to shutdown / restart.
  *
  * Hypapp should call xmhf_baseplatform_reboot() to perform the restart.
+ * xmhf_baseplatform_reboot() will never return.
  *
  * When this function is called, other CPUs are NOT quiesced. However, all
  * CPUs are going to call xmhf_app_handleshutdown() concurrently.

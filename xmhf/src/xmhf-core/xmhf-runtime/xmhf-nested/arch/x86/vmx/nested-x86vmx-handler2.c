@@ -641,14 +641,18 @@ static u32 handle_vmexit20_ept_violation(VCPU * vcpu,
 		{
 			/* Guest accesses illegal address, first invoke hypapp */
 			gva_t gva = __vmx_vmreadNW(VMCSENC_info_guest_linear_address);
+			u32 app_ret_status;
 #ifdef __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
 			xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
 #endif
-			xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, guest1_paddr,
-													  gva, (qualification & 7));
+			app_ret_status =
+				xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, guest1_paddr,
+														  gva,
+														  (qualification & 7));
 #ifdef __XMHF_QUIESCE_CPU_IN_GUEST_MEM_PIO_TRAPS__
 			xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 #endif
+			HALT_ON_ERRORCOND(app_ret_status == APP_SUCCESS);
 		}
 		/*
 		 * Hypapp will halt if memory access is illegal. Since hypapp has
