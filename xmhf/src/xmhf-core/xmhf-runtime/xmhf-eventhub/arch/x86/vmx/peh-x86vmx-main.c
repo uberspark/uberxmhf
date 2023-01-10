@@ -1428,6 +1428,28 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
+		case VMX_VMEXIT_EXT_INTERRUPT: {
+			/*
+			 * XMHF does not perform interrupt virtualization. If hypapp
+			 * performs interrupt virtualization, the interrupt is handled by
+			 * the hypapp.
+			 */
+			u32 app_ret_status = xmhf_app_handle_external_interrupt(vcpu, r);
+			HALT_ON_ERRORCOND(app_ret_status == APP_SUCCESS);
+		}
+		break;
+
+		case VMX_VMEXIT_INTERRUPT_WINDOW: {
+			/*
+			 * XMHF does not perform interrupt virtualization. If hypapp
+			 * performs interrupt virtualization, the interrupt window is
+			 * handled by the hypapp.
+			 */
+			u32 app_ret_status = xmhf_app_handle_interrupt_window(vcpu, r);
+			HALT_ON_ERRORCOND(app_ret_status == APP_SUCCESS);
+		}
+		break;
+
 		case VMX_VMEXIT_NMI_WINDOW: {
 			/* Inject NMI to guest */
 			vcpu->vmcs.control_VM_entry_exception_errorcode = 0;

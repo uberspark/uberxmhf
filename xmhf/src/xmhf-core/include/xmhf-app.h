@@ -189,6 +189,40 @@ extern u32 xmhf_app_handlemtrr(VCPU *vcpu, u32 msr, u64 val);
  */
 extern u32 xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r);
 
+/*
+ * Called when the CPU receives an interrupt from hardware during guest mode.
+ *
+ * In VMX, this function is only called when "External-interrupt exiting" VMCS
+ * control bit is set to 1 by the hypapp.
+ *
+ * Currently call to this function is NOT implemented in nested virtualization.
+ * All such events from nested virtualization are sent to the guest hypervisor.
+ *
+ * Hypapp should return APP_SUCCESS.
+ *
+ * When this function is called, other CPUs are NOT quiesced. For formal
+ * verification purpose, XMHF assumes that the hypapp does not access XMHF's
+ * global variables.
+ */
+extern u32 xmhf_app_handle_external_interrupt(VCPU *vcpu, struct regs *r);
+
+/*
+ * Called when the guest is able to receive an interrupt (EFLAGS.IF = 1).
+ *
+ * In VMX, this function is only called when "Interrupt-window exiting" VMCS
+ * control bit is set to 1 by the hypapp.
+ *
+ * Currently call to this function is NOT implemented in nested virtualization.
+ * All such events from nested virtualization are sent to the guest hypervisor.
+ *
+ * Hypapp should return APP_SUCCESS.
+ *
+ * When this function is called, other CPUs are NOT quiesced. For formal
+ * verification purpose, XMHF assumes that the hypapp does not access XMHF's
+ * global variables.
+ */
+extern u32 xmhf_app_handle_interrupt_window(VCPU *vcpu, struct regs *r);
+
 #ifdef __NESTED_VIRTUALIZATION__
 /*
  * Called when the guest enters to L2 from L1 (VMENTRY in VMX).

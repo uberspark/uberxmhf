@@ -152,6 +152,40 @@ u32 xmhf_app_handlecpuid(VCPU *vcpu, struct regs *r)
 	return APP_CPUID_CHAIN;
 }
 
+u32 xmhf_app_handle_external_interrupt(VCPU *vcpu, struct regs *r)
+{
+  // XMHF should not call this function because this hypapp does not set
+  // "External-interrupt exiting"
+  (void)vcpu;
+  (void)r;
+  HALT_ON_ERRORCOND(0 && "XMHF should not call this function");
+}
+
+u32 xmhf_app_handle_interrupt_window(VCPU *vcpu, struct regs *r)
+{
+  // XMHF should not call this function because this hypapp does not set
+  // "Interrupt-window exiting"
+  (void)vcpu;
+  (void)r;
+  HALT_ON_ERRORCOND(0 && "XMHF should not call this function");
+}
+
+#ifdef __NESTED_VIRTUALIZATION__
+u32 xmhf_app_handle_nest_entry(VCPU *vcpu, struct regs *r)
+{
+  (void)vcpu;
+  (void)r;
+  return APP_SUCCESS;
+}
+
+u32 xmhf_app_handle_nest_exit(VCPU *vcpu, struct regs *r)
+{
+  (void)vcpu;
+  (void)r;
+  return APP_SUCCESS;
+}
+#endif /* __NESTED_VIRTUALIZATION__ */
+
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
 u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,

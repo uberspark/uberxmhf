@@ -535,6 +535,23 @@ static u32 _vmcs12_to_vmcs02_ctls(ARG10 * arg, vmx_ctls_t * ctls12)
 		return VM_INST_ERRNO_VMENTRY_INVALID_CTRL;
 	}
 	/*
+	 * Interrupt virtualization is not implemented in nested virtualization
+	 * yet. XMHF does not use interrupt virtualization. An hypapp may implement
+	 * interrupt virtualization by setting the "External-interrupt exiting" bit
+	 * in VMCS01. However, current XMHF logic ignores this bit. So if the
+	 * following check is removed, interrupts that arrive at L2 will not be
+	 * intercepted by L0. The same reasoning applies to the "Interrupt-window
+	 * exiting" bit.
+	 */
+	if (arg->vcpu->vmcs.control_VMX_pin_based &
+		(1U << VMX_PINBASED_EXTERNAL_INTERRUPT_EXITING)) {
+		HALT_ON_ERRORCOND(0 && "Not implemented in nested virtualization");
+	}
+	if (arg->vcpu->vmcs.control_VMX_cpu_based &
+		(1U << VMX_PROCBASED_INTERRUPT_WINDOW_EXITING)) {
+		HALT_ON_ERRORCOND(0 && "Not implemented in nested virtualization");
+	}
+	/*
 	 * Disallow NMI injection if NMI exiting = 0.
 	 * This is a limitation of XMHF. The correct behavior is to make NMI
 	 * not blocked after injecting NMI. However, this requires non-trivial
