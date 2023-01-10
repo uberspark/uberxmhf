@@ -680,6 +680,7 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 		//printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
 
 		// Flush EPT TLB, if instructed so
+    // [TODO][Issue 95] Move EPT TLB flush out of <g_vmx_quiesce>. Otherwise, TLB flushing incorrectly depends on CPU quiescing.
 		if(g_vmx_flush_all_tlb_signal) {
 			xmhf_memprot_flushmappings_localtlb(vcpu, g_vmx_flush_all_tlb_signal);
 		}
