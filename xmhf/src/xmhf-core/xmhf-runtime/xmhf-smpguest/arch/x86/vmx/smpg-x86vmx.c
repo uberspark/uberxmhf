@@ -788,8 +788,8 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 	vcpu->vmx_mhv_nmi_enable = true;
 	mb();
 	while (vcpu->vmx_mhv_nmi_visited) {
-		/* Effectively vcpu->vmx_mhv_nmi_visited--, lock to be safe */
 		mb();
+		/* Effectively vcpu->vmx_mhv_nmi_visited--, lock to be safe */
 		atomic_dec(&vcpu->vmx_mhv_nmi_visited);
 		mb();
 		vcpu->vmx_mhv_nmi_enable = false;
