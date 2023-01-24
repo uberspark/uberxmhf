@@ -819,10 +819,13 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 * logic. See xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
 		 */
 		if (!vcpu->vmx_mhv_nmi_enable) {
+			mb();
 			/* Effectively vcpu->vmx_mhv_nmi_visited++, lock to be safe */
 			atomic_inc(&vcpu->vmx_mhv_nmi_visited);
+			mb();
 			/* Make sure that there is no overflow on this counter */
 			HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_visited);
+			mb();
 		} else {
 			/*
 			 * xmhf_smpguest_arch_x86vmx_mhv_nmi_handle() has a sanity check
