@@ -366,14 +366,19 @@ u32 xmhf_nested_arch_x86vmx_handle_vmentry(VCPU * vcpu,
 	return 0;
 }
 
-/* Handle NMI interrupt when XMHF is interacting with nested guest */
+/*
+ * Handle NMI interrupt when XMHF is interacting with nested guest.
+ *
+ * This function is not reentrant. Caller needs to either block NMI using
+ * hardware (when caller is NMI handler) or delay NMI using software using
+ * xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+ */
 void xmhf_nested_arch_x86vmx_handle_nmi(VCPU * vcpu)
 {
 	vmcs12_info_t *vmcs12_info;
 	u32 nmi_pending_limit;
 
 	vmcs12_info = xmhf_nested_arch_x86vmx_find_current_vmcs12(vcpu);
-	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
 
 	/* Calculate the maximum value of guest_nmi_pending */
 	nmi_pending_limit = 2;
@@ -435,12 +440,11 @@ static u32 handle_vmexit20_nmi(VCPU * vcpu, vmcs12_info_t * vmcs12_info)
 	/* NMI received by L2 guest */
 	if (xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(vcpu)) {
 		/* NMI is consumed by L0 (XMHF), nothing to do with L1 / L2 */
-		xmhf_smpguest_arch_x86vmx_unblock_nmi();
 	} else {
 		/* Send NMI to L1 / L2 in the future */
-		xmhf_smpguest_arch_x86vmx_unblock_nmi();
 		xmhf_nested_arch_x86vmx_handle_nmi(vcpu);
 	}
+	xmhf_smpguest_arch_x86vmx_unblock_nmi();
 	/*
 	 * Make sure that there is no interruption. (Currently not implemented if
 	 * there is one. If there is one, re-injecting the event is likely the

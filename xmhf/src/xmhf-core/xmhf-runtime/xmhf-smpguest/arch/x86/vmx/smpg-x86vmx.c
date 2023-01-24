@@ -713,11 +713,15 @@ bool xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(VCPU *vcpu)
 	return !vcpu->vmx_mhv_nmi_enable;
 }
 
-/* Handle NMI for the guest received in XMHF's NMI interrupt handler */
+/*
+ * Handle NMI for the guest received in XMHF's NMI interrupt handler.
+ *
+ * This function is not reentrant. Caller needs to either block NMI using
+ * hardware (when caller is NMI handler) or delay NMI using software using
+ * xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+ */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
 {
-	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
-
 	switch (vcpu->vmx_mhv_nmi_handler_arg) {
 	case SMPG_VMX_NMI_INJECT:
 		xmhf_smpguest_arch_x86vmx_inject_nmi(vcpu);
@@ -749,11 +753,9 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  *  critical_section();
  *  vmx_mhv_nmi_enable = 1;
  *  while (vmx_mhv_nmi_visited) {
+ *      vmx_mhv_nmi_visited--;
  *      vmx_mhv_nmi_enable = 0;
- *      if (vmx_mhv_nmi_visited) {
- *          vmx_mhv_nmi_visited--;
- *          handle_nmi();
- *      }
+ *      handle_nmi();
  *      vmx_mhv_nmi_enable = 1;
  *  }
  *
@@ -786,15 +788,13 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 	vcpu->vmx_mhv_nmi_enable = true;
 	mb();
 	while (vcpu->vmx_mhv_nmi_visited) {
+		/* Effectively vcpu->vmx_mhv_nmi_visited--, lock to be safe */
+		mb();
+		atomic_dec(&vcpu->vmx_mhv_nmi_visited);
 		mb();
 		vcpu->vmx_mhv_nmi_enable = false;
 		mb();
-		if (vcpu->vmx_mhv_nmi_visited) {
-			mb();
-			vcpu->vmx_mhv_nmi_visited--;
-			mb();
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
-		}
+		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
 		mb();
 		vcpu->vmx_mhv_nmi_enable = true;
 		mb();
@@ -825,21 +825,14 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 */
 		if (!vcpu->vmx_mhv_nmi_enable) {
 			mb();
-			vcpu->vmx_mhv_nmi_visited++;
+			/* Effectively vcpu->vmx_mhv_nmi_visited++, lock to be safe */
+			atomic_inc(&vcpu->vmx_mhv_nmi_visited);
 			mb();
 			/* Make sure that there is no overflow on this counter */
 			HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_visited);
 			mb();
 		} else {
-			/*
-			 * xmhf_smpguest_arch_x86vmx_mhv_nmi_handle() has a sanity check
-			 * that NMIs to XMHF are disabled. We disable NMI to make the
-			 * sanity check happy. Note that since we are already in NMI
-			 * handler, NMIs are blocked by hardware.
-			 */
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(vcpu);
 			xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
-			xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(vcpu);
 		}
 	}
 
@@ -966,28 +959,31 @@ void xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(VCPU *vcpu,
 }
 
 
-// Inject NMI to the guest when the guest is ready to receive it (i.e. when the
-// guest is not running NMI handler)
-// The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
-//
-// This function should be called in intercept handlers (a.k.a. VMEXIT
-// handlers). Otherwise, the caller needs to make sure that this function is
-// called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
-//
-// We cannot directly inject the NMI to the guest using
-// vcpu->vmcs.control_VM_entry_interruption_information. If the guest is
-// running NMI handler and has not executed the IRET instruction, injecting NMI
-// to the guest will corrupt the guest. Instead, the hypervisor should use the
-// "NMI-window exiting" VM-execution control to be notified when the guest is
-// able to handle NMI interrupts. When the guest can handle NMI interrupts, an
-// VMEXIT will occur with reason "NMI window". This requires "NMI exiting" and
-// "virtual NMIs" bits to be set in Pin-Based VM-Execution Controls.
-//
+/*
+ * Inject NMI to the guest when the guest is ready to receive it (i.e. when the
+ * guest is not running NMI handler)
+ * The NMI window VMEXIT is used to make sure the guest is able to receive NMIs
+ *
+ * This function should be called in intercept handlers (a.k.a. VMEXIT
+ * handlers). Otherwise, the caller needs to make sure that this function is
+ * called after xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+ *
+ * We cannot directly inject the NMI to the guest using
+ * vcpu->vmcs.control_VM_entry_interruption_information. If the guest is
+ * running NMI handler and has not executed the IRET instruction, injecting NMI
+ * to the guest will corrupt the guest. Instead, the hypervisor should use the
+ * "NMI-window exiting" VM-execution control to be notified when the guest is
+ * able to handle NMI interrupts. When the guest can handle NMI interrupts, an
+ * VMEXIT will occur with reason "NMI window". This requires "NMI exiting" and
+ * "virtual NMIs" bits to be set in Pin-Based VM-Execution Controls.
+ *
+ * This function is not reentrant. Caller needs to either block NMI using
+ * hardware (when caller is NMI handler) or delay NMI using software using
+ * xmhf_smpguest_arch_x86vmx_mhv_nmi_disable().
+ */
 void xmhf_smpguest_arch_x86vmx_inject_nmi(VCPU *vcpu)
 {
 	u32 nmi_pending_limit;
-
-	HALT_ON_ERRORCOND(xmhf_smpguest_arch_x86vmx_mhv_nmi_disabled(vcpu));
 
 	/* Calculate the maximum value of guest_nmi_pending */
 	nmi_pending_limit = 2;
