@@ -738,9 +738,9 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  *
  * This function and xmhf_smpguest_arch_x86vmx_mhv_nmi_enable() mark critical
  * section of code that cannot be interrupted by NMI interrupts. The CPU-local
- * variable vmx_mhv_nmi_enable is used to indicate that interrupted code is
- * running the critical section. When the NMI interrupt handler sees so, it
- * marks vmx_mhv_nmi_visited. The NMI is effectively delayed until
+ * variable vmx_mhv_nmi_enable is false when the CPU is running critical
+ * section. When the NMI interrupt handler sees so, it increases
+ * vmx_mhv_nmi_visited. The NMI is effectively delayed until
  * xmhf_smpguest_arch_x86vmx_mhv_nmi_enable() exits the critical section and
  * checks whether NMIs have visited.
  *
@@ -749,9 +749,11 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  *  critical_section();
  *  vmx_mhv_nmi_enable = 1;
  *  while (vmx_mhv_nmi_visited) {
- *      vmx_mhv_nmi_visited--;
  *      vmx_mhv_nmi_enable = 0;
- *      handle_nmi();
+ *      if (vmx_mhv_nmi_visited) {
+ *          vmx_mhv_nmi_visited--;
+ *          handle_nmi();
+ *      }
  *      vmx_mhv_nmi_enable = 1;
  *  }
  *
@@ -762,8 +764,9 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  *      handle_nmi();
  *  }
  *
- * We do not consider problems with cache coherence and memory consistency
- * problems, because the global variables are CPU-local and volatile.
+ * We add memory fences between instructions to prevent compiler instruction
+ * reordering. There should be no problem with cache coherence and memory
+ * consistency, because the variables are CPU-local and volatile.
  */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu)
 {
@@ -783,13 +786,15 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 	vcpu->vmx_mhv_nmi_enable = true;
 	mb();
 	while (vcpu->vmx_mhv_nmi_visited) {
-		/* Effectively vcpu->vmx_mhv_nmi_visited--, lock to be safe */
-		mb();
-		atomic_dec(&vcpu->vmx_mhv_nmi_visited);
 		mb();
 		vcpu->vmx_mhv_nmi_enable = false;
 		mb();
-		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
+		if (vcpu->vmx_mhv_nmi_visited) {
+			mb();
+			vcpu->vmx_mhv_nmi_visited--;
+			mb();
+			xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
+		}
 		mb();
 		vcpu->vmx_mhv_nmi_enable = true;
 		mb();
@@ -820,8 +825,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		 */
 		if (!vcpu->vmx_mhv_nmi_enable) {
 			mb();
-			/* Effectively vcpu->vmx_mhv_nmi_visited++, lock to be safe */
-			atomic_inc(&vcpu->vmx_mhv_nmi_visited);
+			vcpu->vmx_mhv_nmi_visited++;
 			mb();
 			/* Make sure that there is no overflow on this counter */
 			HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_visited);
