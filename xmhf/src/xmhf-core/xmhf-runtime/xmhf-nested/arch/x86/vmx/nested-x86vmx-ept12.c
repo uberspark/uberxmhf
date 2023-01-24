@@ -740,30 +740,48 @@ static void xmhf_nested_arch_x86vmx_flush_ept02_effect(VCPU * vcpu, u32 flags)
  */
 void xmhf_nested_arch_x86vmx_flush_ept02(VCPU * vcpu, u32 flags)
 {
+	mb();
 	if (vcpu->vmx_nested_ept02_flush_disable) {
+		mb();
 		vcpu->vmx_nested_ept02_flush_visited |= flags;
 	} else {
+		mb();
 		xmhf_nested_arch_x86vmx_flush_ept02_effect(vcpu, flags);
 	}
+	mb();
 }
 
 /* Block the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
 void xmhf_nested_arch_x86vmx_block_ept02_flush(VCPU * vcpu)
 {
+	mb();
 	HALT_ON_ERRORCOND(!vcpu->vmx_nested_ept02_flush_disable);
+	mb();
 	vcpu->vmx_nested_ept02_flush_disable = true;
+	mb();
 }
 
 /* Unblock the effect of xmhf_nested_arch_x86vmx_flush_ept02() */
 void xmhf_nested_arch_x86vmx_unblock_ept02_flush(VCPU * vcpu)
 {
+	mb();
 	HALT_ON_ERRORCOND(vcpu->vmx_nested_ept02_flush_disable);
+	mb();
 	vcpu->vmx_nested_ept02_flush_disable = false;
+	mb();
 	while (vcpu->vmx_nested_ept02_flush_visited) {
-		u32 flags = vcpu->vmx_nested_ept02_flush_visited;
+		u32 flags;
+		mb();
+		flags = vcpu->vmx_nested_ept02_flush_visited;
+		mb();
 		vcpu->vmx_nested_ept02_flush_visited = 0;
+		mb();
 		vcpu->vmx_nested_ept02_flush_disable = true;
+		mb();
 		xmhf_nested_arch_x86vmx_flush_ept02_effect(vcpu, flags);
+		mb();
 		vcpu->vmx_nested_ept02_flush_disable = false;
+		mb();
 	}
+	mb();
 }

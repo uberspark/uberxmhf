@@ -756,23 +756,36 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
  */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_disable(VCPU *vcpu)
 {
+	mb();
 	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_enable);
+	mb();
 	vcpu->vmx_mhv_nmi_enable = false;
+	mb();
 }
 
 /* Unblock NMI in XMHF's intercept handler */
 void xmhf_smpguest_arch_x86vmx_mhv_nmi_enable(VCPU *vcpu)
 {
+	mb();
 	HALT_ON_ERRORCOND(!vcpu->vmx_mhv_nmi_enable);
+	mb();
 	vcpu->vmx_mhv_nmi_enable = true;
+	mb();
 	while (vcpu->vmx_mhv_nmi_visited) {
 		/* Effectively vcpu->vmx_mhv_nmi_visited--, lock to be safe */
+		mb();
 		atomic_dec(&vcpu->vmx_mhv_nmi_visited);
+		mb();
 		vcpu->vmx_mhv_nmi_enable = false;
+		mb();
 		xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(vcpu);
+		mb();
 		vcpu->vmx_mhv_nmi_enable = true;
+		mb();
 	}
+	mb();
 	HALT_ON_ERRORCOND(vcpu->vmx_mhv_nmi_enable);
+	mb();
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
