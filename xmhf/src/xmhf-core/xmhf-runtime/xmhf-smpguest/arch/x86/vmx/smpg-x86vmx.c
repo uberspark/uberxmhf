@@ -572,6 +572,7 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
         //send all the other CPUs the quiesce signal
         g_vmx_quiesce=1;  //we are now processing quiesce
+		mb();
         _vmx_send_quiesce_signal(vcpu);
 
         //wait for all the remaining CPUs to quiesce
@@ -604,6 +605,7 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 }
 
 void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
+		mb();
 
         /*
          * g_vmx_quiesce=0 must be before g_vmx_quiesce_resume_signal=1,
@@ -612,17 +614,21 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
          */
         g_vmx_quiesce=0;  // we are out of quiesce at this point
 
+		mb();
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
         g_vmx_quiesce_resume_counter=0;
+		mb();
         //printf("CPU(0x%02x): waiting for other CPUs to resume...\n", vcpu->id);
         g_vmx_quiesce_resume_signal=1;
 
+		mb();
         while (g_vmx_quiesce_resume_counter < (g_midtable_numentries-1)) {
             xmhf_cpu_relax();
         }
 
+		mb();
         vcpu->quiesced=0;
 
         //printf("CPU(0x%02x): all CPUs resumed successfully.\n", vcpu->id);
@@ -664,7 +670,9 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
  *     it should be injected to the trapped guest.
  */
 u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
+	mb();
 	if(g_vmx_quiesce && !vcpu->quiesced){
+		mb();
 		vcpu->quiesced=1;
 
 		//increment quiesce counter
@@ -679,6 +687,8 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 		}
 		//printf("CPU(0x%02x): EOQ received, resuming...\n", vcpu->id);
 
+		mb();
+
 		// Flush EPT TLB, if instructed so
     // [TODO][Issue 95] Move EPT TLB flush out of <g_vmx_quiesce>. Otherwise, TLB flushing incorrectly depends on CPU quiescing.
 		if(g_vmx_flush_all_tlb_signal) {
@@ -690,6 +700,7 @@ u32 xmhf_smpguest_arch_x86vmx_nmi_check_quiesce(VCPU *vcpu) {
 		spin_unlock(&g_vmx_lock_quiesce_resume_counter);
 
 		vcpu->quiesced=0;
+		mb();
 		return 1;
 	} else {
 		return 0;
