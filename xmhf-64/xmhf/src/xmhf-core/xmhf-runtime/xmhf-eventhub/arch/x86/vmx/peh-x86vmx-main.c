@@ -165,10 +165,6 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 
 		/* Modify CPUID result according to limits in XMHF */
 		if (old_eax == 0x1U) {
-#ifndef __NESTED_VIRTUALIZATION__
-			/* Clear VMX capability */
-			r->ecx &= ~(1U << 5);
-#endif /* !__NESTED_VIRTUALIZATION__ */
 #ifdef __HIDE_X2APIC__
 			/* Clear x2APIC capability (not stable in Circle CI and HP 840) */
 			r->ecx &= ~(1U << 21);
@@ -518,29 +514,6 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_wrmsr(VCPU *vcpu, u32 index, u64 value)
 				wrmsr64(index, value);
 			}
 			break;
-#ifdef __NESTED_VIRTUALIZATION__
-		case IA32_VMX_BASIC_MSR: /* fallthrough */
-		case IA32_VMX_PINBASED_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_PROCBASED_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_EXIT_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_ENTRY_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_MISC_MSR: /* fallthrough */
-		case IA32_VMX_CR0_FIXED0_MSR: /* fallthrough */
-		case IA32_VMX_CR0_FIXED1_MSR: /* fallthrough */
-		case IA32_VMX_CR4_FIXED0_MSR: /* fallthrough */
-		case IA32_VMX_CR4_FIXED1_MSR: /* fallthrough */
-		case IA32_VMX_VMCS_ENUM_MSR: /* fallthrough */
-		case IA32_VMX_PROCBASED_CTLS2_MSR: /* fallthrough */
-		case IA32_VMX_EPT_VPID_CAP_MSR: /* fallthrough */
-		case IA32_VMX_TRUE_PINBASED_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_TRUE_PROCBASED_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_TRUE_EXIT_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_TRUE_ENTRY_CTLS_MSR: /* fallthrough */
-		// Note: IA32_VMX_VMFUNC_MSR temporarily not supported
-		// case IA32_VMX_VMFUNC_MSR:
-			HALT_ON_ERRORCOND(0 && "Writing to VMX MSRs (read-only)");
-			break;
-#endif /* !__NESTED_VIRTUALIZATION__ */
 		default:{
 			if (wrmsr_safe(index, value) != 0) {
 				return 1;
@@ -668,29 +641,6 @@ u32 xmhf_parteventhub_arch_x86vmx_handle_rdmsr(VCPU *vcpu, u32 index, u64 *value
 			// TODO: we can probably just forward it to hardware x2APIC
 			HALT_ON_ERRORCOND(0 && "TODO: x2APIC ICR read not implemented");
 			break;
-#ifdef __NESTED_VIRTUALIZATION__
-		case IA32_VMX_BASIC_MSR: /* fallthrough */
-		case IA32_VMX_PINBASED_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_PROCBASED_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_EXIT_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_ENTRY_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_MISC_MSR: /* fallthrough */
-		case IA32_VMX_CR0_FIXED0_MSR: /* fallthrough */
-		case IA32_VMX_CR0_FIXED1_MSR: /* fallthrough */
-		case IA32_VMX_CR4_FIXED0_MSR: /* fallthrough */
-		case IA32_VMX_CR4_FIXED1_MSR: /* fallthrough */
-		case IA32_VMX_VMCS_ENUM_MSR: /* fallthrough */
-		case IA32_VMX_PROCBASED_CTLS2_MSR: /* fallthrough */
-		case IA32_VMX_EPT_VPID_CAP_MSR: /* fallthrough */
-		case IA32_VMX_TRUE_PINBASED_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_TRUE_PROCBASED_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_TRUE_EXIT_CTLS_MSR: /* fallthrough */
-		case IA32_VMX_TRUE_ENTRY_CTLS_MSR: /* fallthrough */
-		// Note: IA32_VMX_VMFUNC_MSR temporarily not supported
-		// case IA32_VMX_VMFUNC_MSR:
-			*value = vcpu->vmx_nested_msrs[index - IA32_VMX_BASIC_MSR];
-			break;
-#endif /* !__NESTED_VIRTUALIZATION__ */
 		default:{
 			if (rdmsr_safe(index, value) != 0) {
 				return 1;
@@ -1109,63 +1059,6 @@ static u32 _optimize_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			return 1;
 		}
 		return 0;
-#ifdef __NESTED_VIRTUALIZATION__
-	case VMX_VMEXIT_VMREAD:	/* fallthrough */
-	case VMX_VMEXIT_VMWRITE:
-#ifdef __DEBUG_EVENT_LOGGER__
-		xmhf_dbg_log_event(vcpu, 1, XMHF_DBG_EVENTLOG_vmexit_other,
-						   &vcpu->vmcs.info_vmexit_reason);
-#endif /* __DEBUG_EVENT_LOGGER__ */
-		_OPT_VMREAD(16, guest_CS_selector);
-		_OPT_VMREAD(64, control_EPT_pointer);
-		_OPT_VMREAD(32, control_VM_entry_controls);
-		_OPT_VMREAD(32, info_vmexit_instruction_length);
-		_OPT_VMREAD(32, info_vmx_instruction_information);
-		_OPT_VMREAD(32, guest_CS_access_rights);
-		_OPT_VMREAD(NW, control_CR0_mask);
-		_OPT_VMREAD(NW, control_CR0_shadow);
-		_OPT_VMREAD(NW, info_exit_qualification);
-		_OPT_VMREAD(NW, guest_CR0);
-		_OPT_VMREAD(NW, guest_CR3);
-		_OPT_VMREAD(NW, guest_ES_base);
-		_OPT_VMREAD(NW, guest_CS_base);
-		_OPT_VMREAD(NW, guest_SS_base);
-		_OPT_VMREAD(NW, guest_DS_base);
-		_OPT_VMREAD(NW, guest_FS_base);
-		_OPT_VMREAD(NW, guest_GS_base);
-		_OPT_VMREAD(32, guest_ES_limit);
-		_OPT_VMREAD(32, guest_CS_limit);
-		_OPT_VMREAD(32, guest_SS_limit);
-		_OPT_VMREAD(32, guest_DS_limit);
-		_OPT_VMREAD(32, guest_FS_limit);
-		_OPT_VMREAD(32, guest_GS_limit);
-		_OPT_VMREAD(32, guest_ES_access_rights);
-		_OPT_VMREAD(32, guest_CS_access_rights);
-		_OPT_VMREAD(32, guest_SS_access_rights);
-		_OPT_VMREAD(32, guest_DS_access_rights);
-		_OPT_VMREAD(32, guest_FS_access_rights);
-		_OPT_VMREAD(32, guest_GS_access_rights);
-		_OPT_VMREAD(NW, guest_RSP);
-		_OPT_VMREAD(NW, guest_RIP);
-		_OPT_VMREAD(NW, guest_RFLAGS);
-		_OPT_VMREAD(32, control_VM_entry_interruption_information);
-		switch ((u32)vcpu->vmcs.info_vmexit_reason) {
-		case VMX_VMEXIT_VMREAD:
-			xmhf_nested_arch_x86vmx_handle_vmread(vcpu, r);
-			break;
-		case VMX_VMEXIT_VMWRITE:
-			xmhf_nested_arch_x86vmx_handle_vmwrite(vcpu, r);
-			break;
-		default:
-			HALT_ON_ERRORCOND(0);
-		}
-		_OPT_VMWRITE(32, control_VM_entry_interruption_information);
-		_OPT_VMWRITE(32, control_VM_entry_exception_errorcode);
-		_OPT_VMWRITE(NW, guest_RSP);
-		_OPT_VMWRITE(NW, guest_RIP);
-		_OPT_VMWRITE(NW, guest_RFLAGS);
-		return 1;
-#endif /* !__NESTED_VIRTUALIZATION__ */
 	default:
 		return 0;
 	}
@@ -1233,12 +1126,6 @@ u32 xmhf_parteventhub_arch_x86vmx_print_guest(VCPU *vcpu, struct regs *r)
 
 //---hvm_intercept_handler------------------------------------------------------
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
-#ifdef __NESTED_VIRTUALIZATION__
-	if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-		xmhf_nested_arch_x86vmx_handle_vmexit(vcpu, r);
-		return 1;
-	}
-#endif /* !__NESTED_VIRTUALIZATION__ */
 	/*
 	 * The intercept handler access VMCS fields using vcpu->vmcs, but the NMI
 	 * exception handler relies on the hardware VMCS (i.e. use __vmx_vmread()).
@@ -1317,52 +1204,6 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			}
 		}
 		break;
-
-#ifdef __NESTED_VIRTUALIZATION__
-		case VMX_VMEXIT_INVEPT:
-			xmhf_nested_arch_x86vmx_handle_invept(vcpu, r);
-			break;
-
-		case VMX_VMEXIT_INVVPID:
-			xmhf_nested_arch_x86vmx_handle_invvpid(vcpu, r);
-			break;
-		
-		case VMX_VMEXIT_VMCLEAR:
-			xmhf_nested_arch_x86vmx_handle_vmclear(vcpu, r);
-			break;
-
-		case VMX_VMEXIT_VMLAUNCH:
-			xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(vcpu, r, false);
-			break;
-
-		case VMX_VMEXIT_VMPTRLD:
-			xmhf_nested_arch_x86vmx_handle_vmptrld(vcpu, r);
-			break;
-
-		case VMX_VMEXIT_VMPTRST:
-			xmhf_nested_arch_x86vmx_handle_vmptrst(vcpu, r);
-			break;
-
-		case VMX_VMEXIT_VMREAD:
-			xmhf_nested_arch_x86vmx_handle_vmread(vcpu, r);
-			break;
-
-		case VMX_VMEXIT_VMRESUME:
-			xmhf_nested_arch_x86vmx_handle_vmlaunch_vmresume(vcpu, r, true);
-			break;
-
-		case VMX_VMEXIT_VMWRITE:
-			xmhf_nested_arch_x86vmx_handle_vmwrite(vcpu, r);
-			break;
-
-		case VMX_VMEXIT_VMXOFF:
-			xmhf_nested_arch_x86vmx_handle_vmxoff(vcpu, r);
-			break;
-
-		case VMX_VMEXIT_VMXON:
-			xmhf_nested_arch_x86vmx_handle_vmxon(vcpu, r);
-			break;
-#endif /* !__NESTED_VIRTUALIZATION__ */
 
 		case VMX_VMEXIT_IOIO:{
 			_vmx_handle_intercept_ioportaccess(vcpu, r);

@@ -223,36 +223,6 @@ extern u32 xmhf_app_handle_external_interrupt(VCPU *vcpu, struct regs *r);
  */
 extern u32 xmhf_app_handle_interrupt_window(VCPU *vcpu, struct regs *r);
 
-#ifdef __NESTED_VIRTUALIZATION__
-/*
- * Called when the guest enters to L2 from L1 (VMENTRY in VMX).
- *
- * This function, together with xmhf_app_handle_nest_exit(), allows the hypapp
- * to track which virtual machine is currently running.
- *
- * Hypapp should return APP_SUCCESS.
- *
- * When this function is called, other CPUs are NOT quiesced. For formal
- * verification purpose, XMHF assumes that the hypapp does not access XMHF's
- * global variables.
- */
-extern u32 xmhf_app_handle_nest_entry(VCPU *vcpu, struct regs *r);
-
-/*
- * Called when the guest exits to L1 from L2 (VMEXIT in VMX).
- *
- * This function, together with xmhf_app_handle_nest_entry(), allows the hypapp
- * to track which virtual machine is currently running.
- *
- * Hypapp should return APP_SUCCESS.
- *
- * When this function is called, other CPUs are NOT quiesced. For formal
- * verification purpose, XMHF assumes that the hypapp does not access XMHF's
- * global variables.
- */
-extern u32 xmhf_app_handle_nest_exit(VCPU *vcpu, struct regs *r);
-#endif /* __NESTED_VIRTUALIZATION__ */
-
 #endif	//__ASSEMBLY__
 
 #endif	// __EMHF_APP_H__

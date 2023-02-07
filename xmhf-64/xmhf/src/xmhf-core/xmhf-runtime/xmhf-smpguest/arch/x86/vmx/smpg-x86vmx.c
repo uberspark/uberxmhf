@@ -726,11 +726,6 @@ void xmhf_smpguest_arch_x86vmx_mhv_nmi_handle(VCPU *vcpu)
 	case SMPG_VMX_NMI_INJECT:
 		xmhf_smpguest_arch_x86vmx_inject_nmi(vcpu);
 		break;
-#ifdef __NESTED_VIRTUALIZATION__
-	case SMPG_VMX_NMI_NESTED:
-		xmhf_nested_arch_x86vmx_handle_nmi(vcpu);
-		break;
-#endif /* __NESTED_VIRTUALIZATION__ */
 	default:
 		HALT_ON_ERRORCOND(0 && "Unexpected vcpu->vmx_mhv_nmi_handler_arg");
 		break;
@@ -1037,13 +1032,6 @@ void xmhf_smpguest_arch_x86vmx_nmi_block(VCPU *vcpu)
 	/* Set NMI block bit in VCPU */
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = true;
 
-#ifdef __NESTED_VIRTUALIZATION__
-	if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-		xmhf_nested_arch_x86vmx_update_nested_nmi(vcpu);
-		return;
-	}
-#endif /* __NESTED_VIRTUALIZATION__ */
-
 	/* Remove NMI windowing bit in VMCS as needed */
 	xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(
 		vcpu, &vcpu->vmcs.control_VMX_cpu_based);
@@ -1059,13 +1047,6 @@ void xmhf_smpguest_arch_x86vmx_nmi_unblock(VCPU *vcpu)
 
 	/* Clear NMI block bit in VCPU */
 	vcpu->vmx_guest_nmi_cfg.guest_nmi_block = false;
-
-#ifdef __NESTED_VIRTUALIZATION__
-	if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-		xmhf_nested_arch_x86vmx_update_nested_nmi(vcpu);
-		return;
-	}
-#endif /* __NESTED_VIRTUALIZATION__ */
 
 	/* Set NMI windowing bit in VMCS as needed */
 	xmhf_smpguest_arch_x86vmx_update_nmi_window_exiting(

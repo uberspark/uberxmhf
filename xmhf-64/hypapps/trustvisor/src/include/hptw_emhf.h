@@ -82,12 +82,6 @@ int hptw_emhf_checked_guest_ctx_init_of_vcpu(hptw_emhf_checked_guest_ctx_t *rv, 
 static inline hpt_pa_t hpt_emhf_get_l1l2_root_pm_pa(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    hpt_pa_t ans;
-    if (xmhf_nested_arch_x86vmx_get_ept12(vcpu, &ans)) {
-      return ans;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return HPTW_EMHF_EPT12_INVALID;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     HALT_ON_ERRORCOND(0 && "Not implemented");
@@ -99,15 +93,7 @@ static inline hpt_pa_t hpt_emhf_get_l1l2_root_pm_pa(VCPU *vcpu)
 static inline void hpt_emhf_set_l1l2_root_pm_pa(VCPU *vcpu, hpt_pa_t val)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    bool enabled = false;
-    if (val != HPTW_EMHF_EPT12_INVALID) {
-      enabled = true;
-    }
-    xmhf_nested_arch_x86vmx_set_ept12(vcpu, enabled, val);
-#else /* !__NESTED_VIRTUALIZATION__ */
     (void)val;
-#endif /* __NESTED_VIRTUALIZATION__ */
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     HALT_ON_ERRORCOND(0 && "Not implemented");
   } else {

@@ -556,10 +556,6 @@ void xmhf_memprot_arch_x86vmx_flushmappings_localtlb(VCPU *vcpu, u32 flags){
     HALT_ON_ERRORCOND(__vmx_invept(VMX_INVEPT_GLOBAL, 0ULL));
   }
 
-#ifdef __NESTED_VIRTUALIZATION__
-  /* When nested virtualization, invalidate all EPT02's */
-  xmhf_nested_arch_x86vmx_flush_ept02(vcpu, flags);
-#endif /* __NESTED_VIRTUALIZATION__ */
 }
 
 //set protection for a given physical memory address

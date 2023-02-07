@@ -120,11 +120,6 @@ void xmhf_baseplatform_arch_cpuinitialize(void){
 u64 VCPU_gdtr_base(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmreadNW(VMCSENC_guest_GDTR_base);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.guest_GDTR_base;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->gdtr.base;
@@ -137,11 +132,6 @@ u64 VCPU_gdtr_base(VCPU *vcpu)
 size_t VCPU_gdtr_limit(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmread32(VMCSENC_guest_GDTR_limit);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.guest_GDTR_limit;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->gdtr.limit;
@@ -154,11 +144,6 @@ size_t VCPU_gdtr_limit(VCPU *vcpu)
 u64 VCPU_grflags(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmreadNW(VMCSENC_guest_RFLAGS);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.guest_RFLAGS;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->rflags;
@@ -171,12 +156,6 @@ u64 VCPU_grflags(VCPU *vcpu)
 void VCPU_grflags_set(VCPU *vcpu, u64 val)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      __vmx_vmwriteNW(VMCSENC_guest_RFLAGS, val);
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     vcpu->vmcs.guest_RFLAGS = val;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     vcpu->vmcb_vaddr_ptr->rflags = val;
@@ -188,11 +167,6 @@ void VCPU_grflags_set(VCPU *vcpu, u64 val)
 u64 VCPU_grip(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmreadNW(VMCSENC_guest_RIP);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.guest_RIP;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->rip;
@@ -205,12 +179,6 @@ u64 VCPU_grip(VCPU *vcpu)
 void VCPU_grip_set(VCPU *vcpu, u64 val)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      __vmx_vmwriteNW(VMCSENC_guest_RIP, val);
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     vcpu->vmcs.guest_RIP = val;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     vcpu->vmcb_vaddr_ptr->rip = val;
@@ -222,11 +190,6 @@ void VCPU_grip_set(VCPU *vcpu, u64 val)
 u64 VCPU_grsp(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmreadNW(VMCSENC_guest_RSP);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.guest_RSP;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->rsp;
@@ -239,12 +202,6 @@ u64 VCPU_grsp(VCPU *vcpu)
 void VCPU_grsp_set(VCPU *vcpu, u64 val)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      __vmx_vmwriteNW(VMCSENC_guest_RSP, val);
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     vcpu->vmcs.guest_RSP = val;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     vcpu->vmcb_vaddr_ptr->rsp = val;
@@ -256,11 +213,6 @@ void VCPU_grsp_set(VCPU *vcpu, u64 val)
 ulong_t VCPU_gcr0(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmreadNW(VMCSENC_guest_CR0);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.guest_CR0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->cr0;
@@ -273,12 +225,6 @@ ulong_t VCPU_gcr0(VCPU *vcpu)
 void VCPU_gcr0_set(VCPU *vcpu, ulong_t cr0)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      __vmx_vmwriteNW(VMCSENC_guest_CR0, cr0);
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     vcpu->vmcs.guest_CR0 = cr0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     vcpu->vmcb_vaddr_ptr->cr0 = cr0;
@@ -290,11 +236,6 @@ void VCPU_gcr0_set(VCPU *vcpu, ulong_t cr0)
 u64 VCPU_gcr3(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmreadNW(VMCSENC_guest_CR3);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.guest_CR3;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->cr3;
@@ -307,12 +248,6 @@ u64 VCPU_gcr3(VCPU *vcpu)
 void VCPU_gcr3_set(VCPU *vcpu, u64 cr3)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      __vmx_vmwriteNW(VMCSENC_guest_CR3, cr3);
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     vcpu->vmcs.guest_CR3 = cr3;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     vcpu->vmcb_vaddr_ptr->cr3 = cr3;
@@ -324,11 +259,6 @@ void VCPU_gcr3_set(VCPU *vcpu, u64 cr3)
 ulong_t VCPU_gcr4(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmreadNW(VMCSENC_guest_CR4);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.guest_CR4;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->cr4;
@@ -341,12 +271,6 @@ ulong_t VCPU_gcr4(VCPU *vcpu)
 void VCPU_gcr4_set(VCPU *vcpu, ulong_t cr4)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      __vmx_vmwriteNW(VMCSENC_guest_CR4, cr4);
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     vcpu->vmcs.guest_CR4 = cr4;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     vcpu->vmcb_vaddr_ptr->cr4 = cr4;
@@ -358,12 +282,6 @@ void VCPU_gcr4_set(VCPU *vcpu, ulong_t cr4)
 /* Return whether guest OS is in long mode (return 1 or 0) */
 bool VCPU_glm(VCPU *vcpu) {
     if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-        if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-            return (__vmx_vmread32(VMCSENC_control_VM_entry_controls) >>
-                    VMX_VMENTRY_IA_32E_MODE_GUEST) & 1U;
-        }
-#endif /* __NESTED_VIRTUALIZATION__ */
         return (vcpu->vmcs.control_VM_entry_controls >>
                 VMX_VMENTRY_IA_32E_MODE_GUEST) & 1U;
     } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
@@ -383,11 +301,6 @@ bool VCPU_glm(VCPU *vcpu) {
  */
 bool VCPU_g64(VCPU *vcpu) {
     if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-        if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-            return (__vmx_vmread32(VMCSENC_guest_CS_access_rights) >> 13) & 1U;
-        }
-#endif /* __NESTED_VIRTUALIZATION__ */
         return (vcpu->vmcs.guest_CS_access_rights >> 13) & 1U;
     } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
         /* Not implemented */
@@ -405,15 +318,6 @@ bool VCPU_g64(VCPU *vcpu) {
  */
 void VCPU_gpdpte_set(VCPU *vcpu, u64 pdptes[4]) {
     if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-        if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-            __vmx_vmwrite64(VMCSENC_guest_PDPTE0, pdptes[0]);
-            __vmx_vmwrite64(VMCSENC_guest_PDPTE1, pdptes[1]);
-            __vmx_vmwrite64(VMCSENC_guest_PDPTE2, pdptes[2]);
-            __vmx_vmwrite64(VMCSENC_guest_PDPTE3, pdptes[3]);
-            return;
-        }
-#endif /* __NESTED_VIRTUALIZATION__ */
         vcpu->vmcs.guest_PDPTE0 = pdptes[0];
         vcpu->vmcs.guest_PDPTE1 = pdptes[1];
         vcpu->vmcs.guest_PDPTE2 = pdptes[2];
@@ -429,11 +333,6 @@ void VCPU_gpdpte_set(VCPU *vcpu, u64 pdptes[4]) {
 /* Return Exception bitmap */
 u32 VCPU_exception_bitmap(VCPU *vcpu) {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      return __vmx_vmread32(VMCSENC_control_exception_bitmap);
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return vcpu->vmcs.control_exception_bitmap;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return vcpu->vmcb_vaddr_ptr->exception_intercepts_bitmask;
@@ -446,12 +345,6 @@ u32 VCPU_exception_bitmap(VCPU *vcpu) {
 /* Set Exception bitmap */
 void VCPU_exception_bitmap_set(VCPU *vcpu, u32 val) {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      __vmx_vmwrite32(VMCSENC_control_exception_bitmap, val);
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     vcpu->vmcs.control_exception_bitmap = val;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     vcpu->vmcb_vaddr_ptr->exception_intercepts_bitmask = val;
@@ -466,11 +359,6 @@ void VCPU_exception_bitmap_set(VCPU *vcpu, u32 val) {
  */
 bool VCPU_nested(VCPU *vcpu) {
     if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-        if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-            return true;
-        }
-#endif /* __NESTED_VIRTUALIZATION__ */
         return false;
     } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
         /* Not implemented */
@@ -490,16 +378,6 @@ bool VCPU_nested(VCPU *vcpu) {
 bool VCPU_disable_nested_interrupt_exit(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      u32 val = __vmx_vmread32(VMCSENC_control_VMX_pin_based);
-      if (val & (1U << VMX_PINBASED_EXTERNAL_INTERRUPT_EXITING)) {
-        val &= ~(1U << VMX_PINBASED_EXTERNAL_INTERRUPT_EXITING);
-        __vmx_vmwrite32(VMCSENC_control_VMX_pin_based, val);
-        return true;
-      }
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return false;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     /* Not implemented */
@@ -519,18 +397,6 @@ bool VCPU_disable_nested_interrupt_exit(VCPU *vcpu)
 void VCPU_enable_nested_interrupt_exit(VCPU *vcpu, bool old_state)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      if (old_state) {
-        const u32 mask = (1U << VMX_PINBASED_EXTERNAL_INTERRUPT_EXITING);
-        u32 val = __vmx_vmread32(VMCSENC_control_VMX_pin_based);
-        HALT_ON_ERRORCOND(!(val & mask));
-        val |= mask;
-        __vmx_vmwrite32(VMCSENC_control_VMX_pin_based, val);
-      }
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     HALT_ON_ERRORCOND(old_state == false);
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     /* Not implemented */
@@ -548,24 +414,6 @@ void VCPU_enable_nested_interrupt_exit(VCPU *vcpu, bool old_state)
 u32 VCPU_disable_nested_timer_exit(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      u32 val = __vmx_vmread32(VMCSENC_control_VMX_pin_based);
-      if (val & (1U << VMX_PINBASED_ACTIVATE_VMX_PREEMPTION_TIMER)) {
-        val &= ~(1U << VMX_PINBASED_ACTIVATE_VMX_PREEMPTION_TIMER);
-        __vmx_vmwrite32(VMCSENC_control_VMX_pin_based, val);
-        {
-          u32 val = __vmx_vmread32(VMCSENC_control_VM_exit_controls);
-          if (val & (1U << VMX_VMEXIT_SAVE_VMX_PREEMPTION_TIMER_VALUE)) {
-            val &= ~(1U << VMX_VMEXIT_SAVE_VMX_PREEMPTION_TIMER_VALUE);
-            __vmx_vmwrite32(VMCSENC_control_VM_exit_controls, val);
-            return 3;
-          }
-        }
-        return 1;
-      }
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return 0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     /* Not implemented */
@@ -585,25 +433,6 @@ u32 VCPU_disable_nested_timer_exit(VCPU *vcpu)
 void VCPU_enable_nested_timer_exit(VCPU *vcpu, u32 old_state)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      if (old_state & 1) {
-        const u32 mask = (1U << VMX_PINBASED_ACTIVATE_VMX_PREEMPTION_TIMER);
-        u32 val = __vmx_vmread32(VMCSENC_control_VMX_pin_based);
-        HALT_ON_ERRORCOND(!(val & mask));
-        val |= mask;
-        __vmx_vmwrite32(VMCSENC_control_VMX_pin_based, val);
-      }
-      if (old_state & 2) {
-        const u32 mask = (1U << VMX_VMEXIT_SAVE_VMX_PREEMPTION_TIMER_VALUE);
-        u32 val = __vmx_vmread32(VMCSENC_control_VM_exit_controls);
-        HALT_ON_ERRORCOND(!(val & mask));
-        val |= mask;
-        __vmx_vmwrite32(VMCSENC_control_VM_exit_controls, val);
-      }
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     HALT_ON_ERRORCOND(old_state == 0);
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     /* Not implemented */
@@ -653,19 +482,6 @@ _Static_assert((_MASK_PROC & _MASK_SECP) == 0, "Bit conflict");
 u32 VCPU_disable_memory_bitmap(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      u32 val_proc = __vmx_vmread32(VMCSENC_control_VMX_cpu_based);
-      u32 val_secp = __vmx_vmread32(VMCSENC_control_VMX_seccpu_based);
-      u32 ans = (val_proc & _MASK_PROC) | (val_secp & _MASK_SECP);
-      val_proc &= ~_MASK_PROC;
-      val_proc |= (1 << VMX_PROCBASED_UNCONDITIONAL_IO_EXITING);
-      val_secp &= ~_MASK_SECP;
-      __vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, val_proc);
-      __vmx_vmwrite32(VMCSENC_control_VMX_seccpu_based, val_secp);
-      return ans;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     return 0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     /* Not implemented */
@@ -685,20 +501,6 @@ u32 VCPU_disable_memory_bitmap(VCPU *vcpu)
 void VCPU_enable_memory_bitmap(VCPU *vcpu, u32 old_state)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-#ifdef __NESTED_VIRTUALIZATION__
-    if (vcpu->vmx_nested_operation_mode == NESTED_VMX_MODE_NONROOT) {
-      u32 val_proc = __vmx_vmread32(VMCSENC_control_VMX_cpu_based);
-      u32 val_secp = __vmx_vmread32(VMCSENC_control_VMX_seccpu_based);
-      val_proc &= ~(1 << VMX_PROCBASED_UNCONDITIONAL_IO_EXITING);
-      HALT_ON_ERRORCOND((val_proc & _MASK_PROC) == 0);
-      HALT_ON_ERRORCOND((val_secp & _MASK_SECP) == 0);
-      val_proc |= (old_state & _MASK_PROC);
-      val_secp |= (old_state & _MASK_SECP);
-      __vmx_vmwrite32(VMCSENC_control_VMX_cpu_based, val_proc);
-      __vmx_vmwrite32(VMCSENC_control_VMX_seccpu_based, val_secp);
-      return;
-    }
-#endif /* __NESTED_VIRTUALIZATION__ */
     HALT_ON_ERRORCOND(old_state == 0);
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     /* Not implemented */

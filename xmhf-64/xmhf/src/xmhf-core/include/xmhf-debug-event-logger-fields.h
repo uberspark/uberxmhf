@@ -71,12 +71,5 @@ DEFINE_EVENT_FIELD(vmexit_other, u32, "%d", 4, u16, u32, "%d")
 DEFINE_EVENT_FIELD(inject_nmi, u32, "%d", 1, u16, u8, "%d")
 DEFINE_EVENT_FIELD(exception, u32, "%d", 1, u16, u8, "%d")
 
-#ifdef __NESTED_VIRTUALIZATION__
-DEFINE_EVENT_FIELD(vmexit_201, u32, "%d", 8, u16, u32, "%d")
-DEFINE_EVENT_FIELD(vmexit_202, u32, "%d", 4, u16, u32, "%d")
-DEFINE_EVENT_FIELD(ept02_full, u32, "%d", 2, u16, gpa_t, "0x%08llx")
-DEFINE_EVENT_FIELD(ept02_miss, u32, "%d", 2, u16, gpa_t, "0x%08llx")
-#endif /* !__NESTED_VIRTUALIZATION__ */
-
 #undef DEFINE_EVENT_FIELD
 

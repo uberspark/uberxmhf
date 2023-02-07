@@ -772,30 +772,6 @@ u32 tv_app_handlecpuid(VCPU *vcpu, struct regs *r)
   return APP_CPUID_CHAIN;
 }
 
-#ifdef __NESTED_VIRTUALIZATION__
-u32 tv_app_handle_nest_entry(VCPU *vcpu, struct regs *r)
-{
-  (void)r;
-  if (hpt_scode_is_scode(vcpu)) {
-    eu_err("CPU(0x%02x): tv_app_handle_nest_entry in scode, Halt!", vcpu->id);
-    HALT();
-  }
-  return APP_SUCCESS;
-}
-
-u32 tv_app_handle_nest_exit(VCPU *vcpu, struct regs *r)
-{
-  (void)r;
-  if (hpt_scode_is_scode(vcpu)) {
-    extern void xmhf_nested_arch_x86vmx_vmread_all(VCPU * vcpu, char *prefix);
-    xmhf_nested_arch_x86vmx_vmread_all(vcpu, ":VMCS02:");
-    eu_err("CPU(0x%02x): tv_app_handle_nest_exit in scode, Halt!", vcpu->id);
-    HALT();
-  }
-  return APP_SUCCESS;
-}
-#endif /* __NESTED_VIRTUALIZATION__ */
-
 /* Local Variables: */
 /* mode:c           */
 /* indent-tabs-mode:nil */
