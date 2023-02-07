@@ -443,7 +443,7 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
-        vcpu->quiesced=0;
+		vcpu->quiesced=0;
         g_vmx_quiesce=0;  // we are out of quiesce at this point
 
         //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);

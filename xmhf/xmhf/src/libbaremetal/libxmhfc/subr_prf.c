@@ -629,30 +629,14 @@ reswitch:	switch (ch = (u_char)*fmt++) {
 				padc = '0';
 				goto reswitch;
 			}
-			/* fallthrough */
-		case '1':
-			/* fallthrough */
-		case '2':
-			/* fallthrough */
-		case '3':
-			/* fallthrough */
-		case '4':
-			/* fallthrough */
-		case '5':
-			/* fallthrough */
-		case '6':
-			/* fallthrough */
-		case '7':
-			/* fallthrough */
-		case '8':
-			/* fallthrough */
-		case '9':
-			for (n = 0;; ++fmt) {
-				n = n * 10 + ch - '0';
-				ch = *fmt;
-				if (ch < '0' || ch > '9')
-					break;
-			}
+		case '1': case '2': case '3': case '4':
+		case '5': case '6': case '7': case '8': case '9':
+				for (n = 0;; ++fmt) {
+					n = n * 10 + ch - '0';
+					ch = *fmt;
+					if (ch < '0' || ch > '9')
+						break;
+				}
 			if (dot)
 				dwidth = n;
 			else
@@ -782,7 +766,6 @@ reswitch:	switch (ch = (u_char)*fmt++) {
 			goto handle_nosign;
 		case 'X':
 			upper = 1;
-			/* fallthrough */
 		case 'x':
 			base = 16;
 			goto handle_nosign;

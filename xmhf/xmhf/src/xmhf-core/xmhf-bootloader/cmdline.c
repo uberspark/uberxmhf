@@ -112,11 +112,11 @@ static const cmdline_option_t g_tboot_cmdline_options[] = {
     { NULL, NULL }
 };
 
-/* static const cmdline_option_t g_linux_cmdline_options[] = { */
-/*     { "vga", "" }, */
-/*     { "mem", "" }, */
-/*     { NULL, NULL } */
-/* }; */
+static const cmdline_option_t g_linux_cmdline_options[] = {
+    { "vga", "" },
+    { "mem", "" },
+    { NULL, NULL }
+};
 /* static char g_linux_param_values[ARRAY_SIZE(g_linux_cmdline_options)][MAX_VALUE_LEN]; */
 static char g_tboot_param_values[ARRAY_SIZE(g_tboot_cmdline_options)][MAX_VALUE_LEN];
 

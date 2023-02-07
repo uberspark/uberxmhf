@@ -458,7 +458,7 @@ void xmhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
         
         while(g_svm_quiesce_resume_counter < (g_midtable_numentries-1) );
 
-        vcpu->quiesced = 0;
+		vcpu->quiesced = 0;
         g_svm_quiesce=0;  // we are out of quiesce at this point
 
 

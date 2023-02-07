@@ -415,7 +415,7 @@ tb_error_t txt_verify_platform(void)
     
     /* check TXT supported */
     if(!txt_supports_txt()) {
-        printf("FATAL ERROR: TXT not supported\n");
+        printf("FATAL ERROR: TXT not suppported\n");
         HALT();
     }    
 

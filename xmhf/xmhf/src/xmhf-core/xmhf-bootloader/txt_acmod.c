@@ -536,7 +536,7 @@ acm_hdr_t *copy_sinit(acm_hdr_t *sinit)
  */
 bool verify_acmod(acm_hdr_t *acm_hdr)
 {
-/*     getsec_parameters_t params; */
+    getsec_parameters_t params;
     uint32_t size;
     acm_info_table_t *info_table;
     txt_caps_t caps_mask = { 0 };
@@ -572,11 +572,11 @@ bool verify_acmod(acm_hdr_t *acm_hdr)
 /*         return false; */
 /*     } */
 
-/*     if ( size > params.acm_max_size ) { */
-/*         printf("AC mod size too large: %x (max=%x)\n", size, */
-/*                params.acm_max_size); */
-/*         return false; */
-/*     } */
+    if ( size > params.acm_max_size ) {
+        printf("AC mod size too large: %x (max=%x)\n", size,
+               params.acm_max_size);
+        return false;
+    }
 
     printf("AC mod size OK\n");
 
