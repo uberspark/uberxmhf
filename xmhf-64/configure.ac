@@ -179,45 +179,6 @@ AS_IF([test "x${enable_skip_bootloader_hash}" != "xno"],
       [SKIP_BOOTLOADER_HASH=y],
       [SKIP_BOOTLOADER_HASH=n])
 
-# Support for nested virtualization
-AC_SUBST([NESTED_VIRTUALIZATION])
-AC_ARG_ENABLE([nested_virtualization],
-        AS_HELP_STRING([--enable-nested-virtualization@<:@=yes|no@:>@],
-                [enable support for updating Intel microcode]),
-                , [enable_nested_virtualization=no])
-AS_IF([test "x${enable_nested_virtualization}" != "xno"],
-      [NESTED_VIRTUALIZATION=y],
-      [NESTED_VIRTUALIZATION=n])
-
-# When supporting nested virtualization, maximum number of EPTs per CPU
-# When NESTED_VIRTUALIZATION=n, this configuration is ignored
-AC_SUBST([VMX_NESTED_MAX_ACTIVE_EPT])
-AC_ARG_WITH([vmx_nested_max_active_ept],
-        AS_HELP_STRING([--with-vmx-nested-max-active-ept=@<:@VMX_NESTED_MAX_ACTIVE_EPT@:>@],
-                [when nested virtualization, number of active EPTs per CPU]),
-                , [with_vmx_nested_max_active_ept=8])
-VMX_NESTED_MAX_ACTIVE_EPT=$[]with_vmx_nested_max_active_ept
-
-# When supporting nested virtualization, maximum number of EPTs per CPU
-# When NESTED_VIRTUALIZATION=n, this configuration is ignored
-AC_SUBST([VMX_NESTED_EPT02_PAGE_POOL_SIZE])
-AC_ARG_WITH([vmx_nested_ept02_page_pool_size],
-        AS_HELP_STRING([--with-vmx-nested-ept02-page-pool-size=@<:@VMX_NESTED_EPT02_PAGE_POOL_SIZE@:>@],
-                [when nested virtualization, size of each EPT02 page pool]),
-                , [with_vmx_nested_ept02_page_pool_size=512])
-VMX_NESTED_EPT02_PAGE_POOL_SIZE=$[]with_vmx_nested_ept02_page_pool_size
-
-# When supporting nested virtualization, whether allow MSR bitmap
-# When NESTED_VIRTUALIZATION=n, this configuration is ignored
-AC_SUBST([VMX_NESTED_MSR_BITMAP])
-AC_ARG_ENABLE([vmx_nested_msr_bitmap],
-        AS_HELP_STRING([--enable-vmx-nested-msr-bitmap@<:@=yes|no@:>@],
-                [when nested virtualization, enable support for MSR bitmap]),
-                , [enable_vmx_nested_msr_bitmap=yes])
-AS_IF([test "x${enable_vmx_nested_msr_bitmap}" != "xno"],
-      [VMX_NESTED_MSR_BITMAP=y],
-      [VMX_NESTED_MSR_BITMAP=n])
-
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
 AC_ARG_ENABLE([debug_serial],
@@ -343,24 +304,6 @@ AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
 # make absolute
 dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
-
-# Choose minimum L2 VMCALL EAX number that will be forwarded to hypapp
-# When NESTED_VIRTUALIZATION=n, this configuration is ignored
-AC_SUBST([VMX_HYPAPP_L2_VMCALL_MIN])
-AC_ARG_WITH([vmx_hypapp_l2_vmcall_min],
-        AS_HELP_STRING([--with-hypapp-l2-vmcall-min=@<:@VMX_HYPAPP_L2_VMCALL_MIN@:>@],
-                [offset of TrustVisor hypercall number for L2]),
-                , [with_vmx_hypapp_l2_vmcall_min=0x4c415000U])
-VMX_HYPAPP_L2_VMCALL_MIN=$[]with_vmx_hypapp_l2_vmcall_min
-
-# Choose maximum L2 VMCALL EAX number that will be forwarded to hypapp
-# When NESTED_VIRTUALIZATION=n, this configuration is ignored
-AC_SUBST([VMX_HYPAPP_L2_VMCALL_MAX])
-AC_ARG_WITH([vmx_hypapp_l2_vmcall_max],
-        AS_HELP_STRING([--with-hypapp-l2-vmcall-max=@<:@VMX_HYPAPP_L2_VMCALL_MAX@:>@],
-                [offset of TrustVisor hypercall number for L2]),
-                , [with_vmx_hypapp_l2_vmcall_max=0x4c4150ffU])
-VMX_HYPAPP_L2_VMCALL_MAX=$[]with_vmx_hypapp_l2_vmcall_max
 
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],
