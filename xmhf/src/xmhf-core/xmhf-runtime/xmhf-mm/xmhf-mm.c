@@ -72,7 +72,7 @@ void* xmhf_mm_alloc_align_with_record(XMHFList* mm_alloc_infolist, uint32_t alig
 	record->hva = p;
 	record->alignment = alignment;
 	record->size = size;
-	xmhfstl_list_enqueue(mm_alloc_infolist, record);
+	xmhfstl_list_enqueue(mm_alloc_infolist, record, sizeof(struct xmhf_mm_alloc_info), LIST_ELEM_PTR);
 
 	return p;
 }
@@ -110,6 +110,7 @@ void xmhf_mm_free_from_record(XMHFList* mm_alloc_infolist, void* ptr)
 				break;
 			}
 		}
+		END_XMHFLIST_FOREACH(mm_alloc_infolist);
 	}
 
 	xmhfstl_list_remove(mm_alloc_infolist, node);
@@ -133,6 +134,7 @@ void xmhf_mm_free_all_records(XMHFList* mm_alloc_infolist)
 
 			xmhf_mm_free(record->hva);
 		}
+		END_XMHFLIST_FOREACH(mm_alloc_infolist);
 	}
 
 	xmhfstl_list_clear_destroy(mm_alloc_infolist);
