@@ -1,0 +1,22 @@
+########################################################################
+#
+# options that each slab will customize
+# author: amit vasudevan (amitvasudevan@acm.org)
+#
+########################################################################
+
+export XMHF_SLAB_NAME := uapi_slabmempgtbl
+export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+
+
+########################################################################
+
+.PHONY: verify
+verify: verifybase
+	@echo Proceeding to verify $(XMHF_SLAB_NAME)...
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main _slabmempgtbl_flushtlb -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugmpgtbl_data.c.v.c ugmpgtbl_flushtlb.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main _slabmempgtbl_getentryforpaddr -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugmpgtbl_data.c.v.c ugmpgtbl_getentry.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main _slabmempgtbl_initmempgtbl -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugmpgtbl_data.c.v.c ugmpgtbl_inittable.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main _slabmempgtbl_setentryforpaddr -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugmpgtbl_data.c.v.c ugmpgtbl_setentry.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main slab_main -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugmpgtbl_data.c.v.c ugmpgtbl_main.c.v.c
+

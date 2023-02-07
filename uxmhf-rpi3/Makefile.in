@@ -1,0 +1,166 @@
+#
+# uxmhf-rpi3 top-level Makefile
+# 
+# author: amit vasudevan (amitvasudevan@acm.org)
+#
+#
+
+
+check_defined = \
+    $(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+        $(error Error: Set $1$(if $2, ($2))$(if $(value @), \
+                to OS kernel image file [required by target `$@'])))
+
+
+export UXMHFRPI3_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+TOOLPREFIX ?= arm-linux-gnueabihf-
+
+
+######
+# autoconf controlled variables
+######
+
+export MAKE = @MAKE@
+export CCERT = @CCERT@
+export CC = @CC@
+export AS = @AS@
+export AR = @AR@
+export RM = @RM@
+export CP = @CP@				
+export MKDIR = @MKDIR@
+export LD = @LD@
+export OBJCOPY = @OBJCOPY@
+export CAT = @CAT@
+
+export prefix=@prefix@
+
+export SECBOOT := @SECBOOT@
+export DMAPROT := @DMAPROT@
+
+export ENABLE_UAPP_UHSIGN := @ENABLE_UAPP_UHSIGN@
+export ENABLE_UAPP_UAGENT := @ENABLE_UAPP_UAGENT@
+export ENABLE_UAPP_PVDRIVER_UART := @ENABLE_UAPP_PVDRIVER_UART@
+
+export ENABLE_DEBUG_UART := @ENABLE_DEBUG_UART@
+export ENABLE_UART_MINI := @ENABLE_UART_MINI@
+export ENABLE_UART_PL011 := @ENABLE_UART_PL011@
+export ENABLE_UART_PL011_CTSRTS := @ENABLE_UART_PL011_CTSRTS@
+
+
+INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
+INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
+INCS += -I$(UXMHFRPI3_DIR)/libs/libutpm/include
+
+CFLAGS_DEFS =  $(INCS) -I./include -I../include  
+
+######
+# refine CFLAG definitions based on uxmhf rpi3 configure options
+######
+
+ifeq ($(SECBOOT), y)
+	CFLAGS_DEFS += -D__SECBOOT__
+endif
+
+ifeq ($(DMAPROT), y)
+	CFLAGS_DEFS += -D__DMAPROT__
+endif
+
+ifeq ($(INTPROT), y)
+	CFLAGS_DEFS += -D__INTPROT__
+endif
+
+ifeq ($(FIQREFLECTION), y)
+	CFLAGS_DEFS += -D__FIQREFLECTION__
+endif
+
+ifeq ($(ENABLE_UAPP_UHSIGN),y)
+	CFLAGS_DEFS += -D__ENABLE_UAPP_UHSIGN__
+endif
+
+ifeq ($(ENABLE_UAPP_UAGENT),y)
+	CFLAGS_DEFS += -D__ENABLE_UAPP_UAGENT__
+endif
+
+ifeq ($(ENABLE_UAPP_PVDRIVER_UART),y)
+	CFLAGS_DEFS += -D__ENABLE_UAPP_PVDRIVER_UART__
+endif
+
+
+ifeq ($(ENABLE_DEBUG_UART),y)
+	CFLAGS_DEFS += -D__DEBUG_UART__
+endif
+
+
+ifeq ($(ENABLE_UART_MINI),y)
+	CFLAGS_DEFS += -D__ENABLE_UART_MINI__
+endif
+
+ifeq ($(ENABLE_UART_PL011),y)
+	CFLAGS_DEFS += -D__ENABLE_UART_PL011__
+endif
+
+ifeq ($(ENABLE_UART_PL011_CTSRTS),y)
+	CFLAGS_DEFS += -D__ENABLE_UART_PL011_CTSRTS__
+endif
+
+CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
+CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
+
+LIBS = $(UXMHFRPI3_DIR)/libs/libutpm/libutpm.a
+LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
+LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
+
+
+
+
+
+export CCERT_FLAGS=$(CFLAGS)
+export TOOLPREFIX
+export CFLAGS_DEFS
+export CFLAGS
+export CCLIB
+export LIBS
+
+.PHONY: all
+all: checkoskrnlimg 
+	cd libs/libxmhfc && make -w all
+	cd libs/libxmhfcrypto && make -w all
+	cd libs/libutpm && make -w all
+	cd core && make -w all
+	cd bootstrap && make -w all
+	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin > uxmhf-rpi3.img
+
+.PHONY: checkoskrnlimg
+checkoskrnlimg:
+	@:$(call check_defined, OSKRNLIMG)
+	$(eval OSKRNLIMG_SIZE := $(shell stat -L -c %s $(OSKRNLIMG)))
+	@echo OSKRNLIMG_SIZE=$(OSKRNLIMG_SIZE)
+	$(eval OSKRNLIMG_ENDADDR := $(shell echo "$(OSKRNLIMG_SIZE) + 32768" | bc))
+	@echo OSKRNLIMG_ENDADDR=$(OSKRNLIMG_ENDADDR)
+	$(eval OSKRNLIMG_PADSIZE := $(shell echo "16777216 -( $(OSKRNLIMG_ENDADDR) % 16777216)" | bc))
+	@echo OSKRNLIMG_PADSIZE=$(OSKRNLIMG_PADSIZE)
+	$(eval OSKRNLIMG_FINALSIZE := $(shell echo "$(OSKRNLIMG_SIZE) + $(OSKRNLIMG_PADSIZE) " | bc))
+	@echo OSKRNLIMG_FINALSIZE=$(OSKRNLIMG_FINALSIZE)
+	#$(eval CORE_STARTADDR := $(shell echo "$(OSKRNLIMG_FINALSIZE)" | bc))
+	#$(eval CORE_STARTADDR_HEX=$(shell printf "0x%08x" $(CORE_STARTADDR)))
+	#@echo $(CORE_STARTADDR)
+	#@echo $(CORE_STARTADDR_HEX)
+	cp $(OSKRNLIMG) ./oskrnlimg.tmp
+	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
+	#./configure --with-core-startaddr=$(CORE_STARTADDR_HEX) --with-core-size=0xC00000
+	#./configure --with-core-startaddr=0x1000000 --with-core-size=0xC00000
+
+
+.PHONY: clean
+clean:
+	cd core && make -w clean
+	cd bootstrap && make -w clean
+	rm -f *.o
+	rm -f *.img 
+	rm -f *.elf
+	rm -f *.tmp
+	rm -f *.bin

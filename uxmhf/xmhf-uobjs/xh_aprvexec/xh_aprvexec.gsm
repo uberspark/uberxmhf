@@ -1,0 +1,23 @@
+//slab manifest
+#include <uapi_gcpustate.h>
+#include <uapi_slabmempgtbl.h>
+#include <xh_aprvexec.h>
+
+//slab memory sections
+MS:CODE:0x200000:void:void
+MS:DATA:0x200000:void:void
+MS:STACK:0x600000:void:void
+MS:DMADATA:0x200000:void:void
+
+
+S:uapi_gcpustate:void:void:void
+S:uapi_slabmempgtbl:void:void:void
+
+
+U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB:(void)0;:(1)
+U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR:(void)0;:(1)
+U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:{ setentryforpaddrp->entry=setentryforpaddrp->entry & 7; setentryforpaddrp->entry &= ~0x2; setentryforpaddrp->entry |= 0x1; setentryforpaddrp->entry |= 0x4;}:(!(setentryforpaddrp->entry & 0x2) && (setentryforpaddrp->entry & 0x1) && (setentryforpaddrp->entry & 0x4))
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:(void)0;:(1)
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:(void)0;:(1)
+
+

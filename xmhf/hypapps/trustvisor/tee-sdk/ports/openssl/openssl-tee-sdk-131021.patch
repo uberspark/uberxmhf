@@ -1,0 +1,346 @@
+diff -Naur openssl-1.0.0d/Configure openssl-1.0.0d-tee-sdk/Configure
+--- openssl-1.0.0d/Configure	2010-11-30 17:19:26.000000000 -0500
++++ openssl-1.0.0d-tee-sdk/Configure	2013-10-21 16:16:49.000000000 -0400
+@@ -331,6 +331,9 @@
+ "osf1-alpha-cc",  "cc:-std1 -tune host -O4 -readonly_strings::(unknown):::SIXTY_FOUR_BIT_LONG RC4_CHUNK:${alpha_asm}:dlfcn:alpha-osf1-shared:::.so",
+ "tru64-alpha-cc", "cc:-std1 -tune host -fast -readonly_strings::-pthread:::SIXTY_FOUR_BIT_LONG RC4_CHUNK:${alpha_asm}:dlfcn:alpha-osf1-shared::-msym:.so",
+ 
++# i586-tsvc-elf
++"tsvc-elf",	"gcc:-DL_ENDIAN -DTERMIO -O3 -fomit-frame-pointer -Wall::-D_REENTRANT:::BN_LLONG ${x86_gcc_des} ${x86_gcc_opts}:${x86_elf_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
++
+ ####
+ #### Variety of LINUX:-)
+ ####
+diff -Naur openssl-1.0.0d/crypto/asn1/bio_ndef.c openssl-1.0.0d-tee-sdk/crypto/asn1/bio_ndef.c
+--- openssl-1.0.0d/crypto/asn1/bio_ndef.c	2008-12-26 10:32:59.000000000 -0500
++++ openssl-1.0.0d-tee-sdk/crypto/asn1/bio_ndef.c	2013-10-21 16:16:49.000000000 -0400
+@@ -58,7 +58,7 @@
+ #include <openssl/err.h>
+ 
+ #ifndef OPENSSL_SYSNAME_NETWARE
+-#include <memory.h>
++/* #include <memory.h> */
+ #endif
+ #include <stdio.h>
+ 
+diff -Naur openssl-1.0.0d/crypto/bio/bss_dgram.c openssl-1.0.0d-tee-sdk/crypto/bio/bss_dgram.c
+--- openssl-1.0.0d/crypto/bio/bss_dgram.c	2011-01-02 20:07:03.000000000 -0500
++++ openssl-1.0.0d-tee-sdk/crypto/bio/bss_dgram.c	2013-10-21 16:16:49.000000000 -0400
+@@ -810,7 +810,6 @@
+ 		}
+ 	return(0);
+ 	}
+-#endif
+ 
+ static void get_current_time(struct timeval *t)
+ 	{
+@@ -828,3 +827,5 @@
+ 	gettimeofday(t, NULL);
+ #endif
+ 	}
++
++#endif
+diff -Naur openssl-1.0.0d/crypto/opensslconf.h openssl-1.0.0d-tee-sdk/crypto/opensslconf.h
+--- openssl-1.0.0d/crypto/opensslconf.h	2011-02-08 12:13:20.000000000 -0500
++++ openssl-1.0.0d-tee-sdk/crypto/opensslconf.h	2013-10-21 16:16:49.000000000 -0400
+@@ -29,6 +29,12 @@
+ 
+ #endif /* OPENSSL_DOING_MAKEDEPEND */
+ 
++#ifndef OPENSSL_NO_ASM
++# define OPENSSL_NO_ASM
++#endif
++#ifndef OPENSSL_NO_HW
++# define OPENSSL_NO_HW
++#endif
+ #ifndef OPENSSL_NO_DYNAMIC_ENGINE
+ # define OPENSSL_NO_DYNAMIC_ENGINE
+ #endif
+@@ -68,8 +74,8 @@
+ 
+ #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
+ #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
+-#define ENGINESDIR "/usr/local/ssl/lib/engines"
+-#define OPENSSLDIR "/usr/local/ssl"
++#define ENGINESDIR "/user/local/i586-tsvc/usr/lib/engines"
++#define OPENSSLDIR "/user/local/i586-tsvc/usr/ssl"
+ #endif
+ #endif
+ 
+@@ -121,7 +127,7 @@
+ 
+ #if defined(HEADER_BN_H) && !defined(CONFIG_HEADER_BN_H)
+ #define CONFIG_HEADER_BN_H
+-#undef BN_LLONG
++#define BN_LLONG
+ 
+ /* Should we define BN_DIV2W here? */
+ 
+@@ -135,7 +141,7 @@
+ #define CONFIG_HEADER_RC4_LOCL_H
+ /* if this is defined data[i] is used instead of *data, this is a %20
+  * speedup on x86 */
+-#undef RC4_INDEX
++#define RC4_INDEX
+ #endif
+ 
+ #if defined(HEADER_BF_LOCL_H) && !defined(CONFIG_HEADER_BF_LOCL_H)
+@@ -149,14 +155,14 @@
+ /* the following is tweaked from a config script, that is why it is a
+  * protected undef/define */
+ #ifndef DES_PTR
+-#undef DES_PTR
++#define DES_PTR
+ #endif
+ 
+ /* This helps C compiler generate the correct code for multiple functional
+  * units.  It reduces register dependancies at the expense of 2 more
+  * registers */
+ #ifndef DES_RISC1
+-#undef DES_RISC1
++#define DES_RISC1
+ #endif
+ 
+ #ifndef DES_RISC2
+@@ -170,7 +176,7 @@
+ /* Unroll the inner loop, this sometimes helps, sometimes hinders.
+  * Very mucy CPU dependant */
+ #ifndef DES_UNROLL
+-#undef DES_UNROLL
++#define DES_UNROLL
+ #endif
+ 
+ /* These default values were supplied by
+diff -Naur openssl-1.0.0d/crypto/pkcs7/bio_pk7.c openssl-1.0.0d-tee-sdk/crypto/pkcs7/bio_pk7.c
+--- openssl-1.0.0d/crypto/pkcs7/bio_pk7.c	2008-03-12 17:14:25.000000000 -0400
++++ openssl-1.0.0d-tee-sdk/crypto/pkcs7/bio_pk7.c	2013-10-21 16:16:49.000000000 -0400
+@@ -57,7 +57,7 @@
+ #include <openssl/bio.h>
+ 
+ #ifndef OPENSSL_SYSNAME_NETWARE
+-#include <memory.h>
++/* #include <memory.h> */
+ #endif
+ #include <stdio.h>
+ 
+diff -Naur openssl-1.0.0d/crypto/ui/ui_openssl.c openssl-1.0.0d-tee-sdk/crypto/ui/ui_openssl.c
+--- openssl-1.0.0d/crypto/ui/ui_openssl.c	2009-10-04 12:43:21.000000000 -0400
++++ openssl-1.0.0d-tee-sdk/crypto/ui/ui_openssl.c	2013-10-21 16:16:49.000000000 -0400
+@@ -184,9 +184,9 @@
+ # undef  SGTTY
+ #endif
+ 
+-#if defined(linux) && !defined(TERMIO)
+-# undef  TERMIOS
+-# define TERMIO
++#if defined(linux) && !defined(TERMIOS)
++# define TERMIOS
++# undef  TERMIO
+ # undef  SGTTY
+ #endif
+ 
+@@ -214,6 +214,9 @@
+ #undef SGTTY
+ #endif
+ 
++#undef TERMIO
++#define TERMIOS
++
+ #ifdef TERMIOS
+ # include <termios.h>
+ # define TTY_STRUCT		struct termios
+diff -Naur openssl-1.0.0d/include/openssl/opensslconf.h openssl-1.0.0d-tee-sdk/include/openssl/opensslconf.h
+--- openssl-1.0.0d/include/openssl/opensslconf.h	2011-02-08 12:13:20.000000000 -0500
++++ openssl-1.0.0d-tee-sdk/include/openssl/opensslconf.h	2013-10-21 16:16:49.000000000 -0400
+@@ -29,6 +29,12 @@
+ 
+ #endif /* OPENSSL_DOING_MAKEDEPEND */
+ 
++#ifndef OPENSSL_NO_ASM
++# define OPENSSL_NO_ASM
++#endif
++#ifndef OPENSSL_NO_HW
++# define OPENSSL_NO_HW
++#endif
+ #ifndef OPENSSL_NO_DYNAMIC_ENGINE
+ # define OPENSSL_NO_DYNAMIC_ENGINE
+ #endif
+@@ -68,8 +74,8 @@
+ 
+ #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
+ #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
+-#define ENGINESDIR "/usr/local/ssl/lib/engines"
+-#define OPENSSLDIR "/usr/local/ssl"
++#define ENGINESDIR "/user/local/i586-tsvc/usr/lib/engines"
++#define OPENSSLDIR "/user/local/i586-tsvc/usr/ssl"
+ #endif
+ #endif
+ 
+@@ -121,7 +127,7 @@
+ 
+ #if defined(HEADER_BN_H) && !defined(CONFIG_HEADER_BN_H)
+ #define CONFIG_HEADER_BN_H
+-#undef BN_LLONG
++#define BN_LLONG
+ 
+ /* Should we define BN_DIV2W here? */
+ 
+@@ -135,7 +141,7 @@
+ #define CONFIG_HEADER_RC4_LOCL_H
+ /* if this is defined data[i] is used instead of *data, this is a %20
+  * speedup on x86 */
+-#undef RC4_INDEX
++#define RC4_INDEX
+ #endif
+ 
+ #if defined(HEADER_BF_LOCL_H) && !defined(CONFIG_HEADER_BF_LOCL_H)
+@@ -149,14 +155,14 @@
+ /* the following is tweaked from a config script, that is why it is a
+  * protected undef/define */
+ #ifndef DES_PTR
+-#undef DES_PTR
++#define DES_PTR
+ #endif
+ 
+ /* This helps C compiler generate the correct code for multiple functional
+  * units.  It reduces register dependancies at the expense of 2 more
+  * registers */
+ #ifndef DES_RISC1
+-#undef DES_RISC1
++#define DES_RISC1
+ #endif
+ 
+ #ifndef DES_RISC2
+@@ -170,7 +176,7 @@
+ /* Unroll the inner loop, this sometimes helps, sometimes hinders.
+  * Very mucy CPU dependant */
+ #ifndef DES_UNROLL
+-#undef DES_UNROLL
++#define DES_UNROLL
+ #endif
+ 
+ /* These default values were supplied by
+diff -Naur openssl-1.0.0d/Makefile openssl-1.0.0d-tee-sdk/Makefile
+--- openssl-1.0.0d/Makefile	2011-02-08 12:13:20.000000000 -0500
++++ openssl-1.0.0d-tee-sdk/Makefile	2013-10-21 16:16:49.000000000 -0400
+@@ -11,11 +11,11 @@
+ SHLIB_VERSION_HISTORY=
+ SHLIB_MAJOR=1
+ SHLIB_MINOR=0.0
+-SHLIB_EXT=
+-PLATFORM=dist
+-OPTIONS= no-gmp no-jpake no-krb5 no-md2 no-rc5 no-rfc3779 no-shared no-store no-zlib no-zlib-dynamic static-engine
+-CONFIGURE_ARGS=dist
+-SHLIB_TARGET=
++SHLIB_EXT=.so.$(SHLIB_MAJOR).$(SHLIB_MINOR)
++PLATFORM=tsvc-elf
++OPTIONS=--prefix=/user/local/i586-tsvc/usr -DOPENSSL_NO_DGRAM -DOPENSSL_NO_SOCK -UWINDOWS -UWIN32 -U_WIN32 -DOPENSSL_SYS_LINUX no-asm no-dso no-gmp no-hw no-jpake no-krb5 no-md2 no-rc5 no-rfc3779 no-shared no-sse2 no-store no-threads no-zlib no-zlib-dynamic static-engine
++CONFIGURE_ARGS=tsvc-elf --prefix=/user/local/i586-tsvc/usr no-threads no-zlib no-shared no-sse2 no-dso no-hw no-asm -DOPENSSL_NO_DGRAM -DOPENSSL_NO_SOCK -UWINDOWS -UWIN32 -U_WIN32 -DOPENSSL_SYS_LINUX
++SHLIB_TARGET=linux-shared
+ 
+ # HERE indicates where this Makefile lives.  This can be used to indicate
+ # where sub-Makefiles are expected to be.  Currently has very limited usage,
+@@ -26,10 +26,10 @@
+ # for, say, /usr/ and yet have everything installed to /tmp/somedir/usr/.
+ # Normally it is left empty.
+ INSTALL_PREFIX=
+-INSTALLTOP=/usr/local/ssl
++INSTALLTOP=/user/local/i586-tsvc/usr
+ 
+ # Do not edit this manually. Use Configure --openssldir=DIR do change this!
+-OPENSSLDIR=/usr/local/ssl
++OPENSSLDIR=/user/local/i586-tsvc/usr/ssl
+ 
+ # NO_IDEA - Define to build without the IDEA algorithm
+ # NO_RC4  - Define to build without the RC4 algorithm
+@@ -59,15 +59,15 @@
+ # equal 4.
+ # PKCS1_CHECK - pkcs1 tests.
+ 
+-CC= cc
+-CFLAG= -O
++CC= i586-tsvc-cc
++CFLAG= -DOPENSSL_NO_DGRAM -DOPENSSL_NO_SOCK -UWINDOWS -UWIN32 -U_WIN32 -DOPENSSL_SYS_LINUX -DL_ENDIAN -DTERMIO -O3 -fomit-frame-pointer -Wall
+ DEPFLAG= -DOPENSSL_NO_GMP -DOPENSSL_NO_JPAKE -DOPENSSL_NO_MD2 -DOPENSSL_NO_RC5 -DOPENSSL_NO_RFC3779 -DOPENSSL_NO_STORE
+ PEX_LIBS= 
+ EX_LIBS= 
+ EXE_EXT= 
+ ARFLAGS= 
+-AR= ar $(ARFLAGS) r
+-RANLIB= /usr/bin/ranlib
++AR= i586-tsvc-ar $(ARFLAGS) r
++RANLIB= i586-tsvc-ranlib
+ NM= nm
+ PERL= /usr/bin/perl
+ TAR= tar
+@@ -101,7 +101,7 @@
+ RMD160_ASM_OBJ= 
+ WP_ASM_OBJ= wp_block.o
+ CMLL_ENC= camellia.o cmll_misc.o cmll_cbc.o
+-PERLASM_SCHEME= 
++PERLASM_SCHEME= elf
+ 
+ # KRB5 stuff
+ KRB5_INCLUDES=
+@@ -111,7 +111,7 @@
+ ZLIB_INCLUDE=
+ LIBZLIB=
+ 
+-DIRS=   crypto ssl engines apps test tools
++DIRS=   crypto ssl engines
+ ENGDIRS= ccgost
+ SHLIBDIRS= crypto ssl
+ 
+@@ -149,7 +149,7 @@
+ SHARED_CRYPTO=libcrypto$(SHLIB_EXT)
+ SHARED_SSL=libssl$(SHLIB_EXT)
+ SHARED_LIBS=
+-SHARED_LIBS_LINK_EXTS=
++SHARED_LIBS_LINK_EXTS=.so.$(SHLIB_MAJOR) .so
+ SHARED_LDFLAGS=
+ 
+ GENERAL=        Makefile
+@@ -239,7 +239,7 @@
+ 	@[ -n "$(THIS)" ] && $(CLEARENV) && $(MAKE) $(THIS) -e $(BUILDENV)
+ 
+ sub_all: build_all
+-build_all: build_libs build_apps build_tests build_tools
++build_all: build_libs
+ 
+ build_libs: build_crypto build_ssl build_engines
+ 
+diff -Naur openssl-1.0.0d/Makefile.org openssl-1.0.0d-tee-sdk/Makefile.org
+--- openssl-1.0.0d/Makefile.org	2010-01-27 11:06:58.000000000 -0500
++++ openssl-1.0.0d-tee-sdk/Makefile.org	2013-10-21 16:16:49.000000000 -0400
+@@ -109,7 +109,7 @@
+ ZLIB_INCLUDE=
+ LIBZLIB=
+ 
+-DIRS=   crypto ssl engines apps test tools
++DIRS=   crypto ssl engines
+ ENGDIRS= ccgost
+ SHLIBDIRS= crypto ssl
+ 
+@@ -237,7 +237,7 @@
+ 	@[ -n "$(THIS)" ] && $(CLEARENV) && $(MAKE) $(THIS) -e $(BUILDENV)
+ 
+ sub_all: build_all
+-build_all: build_libs build_apps build_tests build_tools
++build_all: build_libs
+ 
+ build_libs: build_crypto build_ssl build_engines
+ 
+diff -Naur openssl-1.0.0d/tools/c_rehash openssl-1.0.0d-tee-sdk/tools/c_rehash
+--- openssl-1.0.0d/tools/c_rehash	2011-02-08 12:13:22.000000000 -0500
++++ openssl-1.0.0d-tee-sdk/tools/c_rehash	2013-10-21 16:16:49.000000000 -0400
+@@ -6,8 +6,8 @@
+ 
+ my $openssl;
+ 
+-my $dir = "/usr/local/ssl";
+-my $prefix = "/usr/local/ssl";
++my $dir = "/user/local/i586-tsvc/usr/ssl";
++my $prefix = "/user/local/i586-tsvc/usr";
+ 
+ if(defined $ENV{OPENSSL}) {
+ 	$openssl = $ENV{OPENSSL};

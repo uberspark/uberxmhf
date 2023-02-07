@@ -1,0 +1,9 @@
+*.*~
+*~
+*.cache
+*.log
+*.status
+confdefs.h
+Makefile
+configure
+rpi3-config.txt
