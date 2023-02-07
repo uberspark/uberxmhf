@@ -596,16 +596,20 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
 #else /* !__XMHF_AMD64__ */
     cmd = (u32)r->eax;
 #endif /* __XMHF_AMD64__ */
+#ifdef __NESTED_VIRTUALIZATION__
     if (VCPU_nested(vcpu)) {
       cmd -= __VMX_HYPAPP_L2_VMCALL_MIN__;
     }
+#endif /* __NESTED_VIRTUALIZATION__ */
     linux_vmcb = 0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     linux_vmcb = (struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr);
     cmd = (u32)linux_vmcb->rax;
+#ifdef __NESTED_VIRTUALIZATION__
     if (VCPU_nested(vcpu)) {
       HALT_ON_ERRORCOND(0 && "Not implemented");
     }
+#endif /* __NESTED_VIRTUALIZATION__ */
   } else {
     printf("unknown cpu vendor type!\n");
     HALT();
@@ -752,9 +756,11 @@ u32 tv_app_handlecpuid(VCPU *vcpu, struct regs *r)
 {
   if (r->eax == 0x7a567254U) {
     u32 expected_ecx = 0;
+#ifdef __NESTED_VIRTUALIZATION__
     if (VCPU_nested(vcpu)) {
       expected_ecx = __VMX_HYPAPP_L2_VMCALL_MIN__;
     }
+#endif /* __NESTED_VIRTUALIZATION__ */
     if (r->ecx == expected_ecx) {
       r->eax = 0x7a767274U;
       r->ebx = (u32)hpt_scode_get_scode_id(vcpu);
