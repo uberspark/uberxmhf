@@ -176,6 +176,53 @@ static inline u32 test_page_scode_bitmap_2M(u32 pfn)
   return scode_pfn_bitmap_2M[index];
 }
 
+/*
+ * Destroy all registered scode, used during shutdown.
+ * After this function is called, all scode's must not be resumed.
+ */
+void hpt_scode_destroy_all(void)
+{
+  size_t i, j;
+  static u32 destroy_lock = 1;
+  spin_lock(&destroy_lock);
+
+  for (i = 0; i < whitelist_max; i ++) {
+    if (whitelist[i].gcr3 != 0) {
+      eu_warn("whitelist[%d] is still registered when shutdown", i);
+
+      /* restore permissions for remapped sections */
+      for (j = 0; j < whitelist[i].sections_num; j++) {
+        /*
+         * zero the contents of any sections that are writable by the PAL, and
+         * not readable by the reg guest
+         */
+        if ((whitelist[i].sections[j].pal_prot & HPT_PROTS_W)
+            && !(whitelist[i].sections[j].reg_prot & HPT_PROTS_R)) {
+          int err;
+          eu_trace("zeroing section %d", j);
+          err = hptw_checked_memset_va( &whitelist[i].hptw_pal_checked_guest_ctx.super,
+                                        HPTW_CPL3,
+                                        whitelist[i].sections[j].pal_gva, 0,
+                                        whitelist[i].sections[j].size);
+          /* should only fail if insufficient permissions in the guest
+             page tables, which TV constructed and the PAL should not have
+             been able to modify */
+          HALT_ON_ERRORCOND(!err);
+        }
+        /*
+         * In scode_unregister(), scode_return_section() is called. However we
+         * skip it here since we are shutting down.
+         */
+      }
+
+      whitelist[i].gcr3 = 0;
+      whitelist_size --;
+    }
+  }
+
+  spin_unlock(&destroy_lock);
+}
+
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry);
 
 /* search scode in whitelist */
