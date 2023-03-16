@@ -631,9 +631,7 @@ void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
     count++;
     spin_unlock(&lock);
 
-    while (count < g_midtable_numentries) {
-      xmhf_cpu_relax();
-    }
+    while(count < g_midtable_numentries);
   }
 
   hpt_scode_destroy_all();
