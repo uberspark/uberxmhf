@@ -254,7 +254,7 @@ void scode_lend_section( hptw_ctx_t *reg_npm_ctx,
       effective_prots = hptw_get_effective_prots(reg_npm_ctx,
                                                       page_reg_gpa,
                                                       &user_accessible);
-      CHK((effective_prots & section->reg_prot) == section->reg_prot);
+      CHK((effective_prots & section->pal_prot) == section->pal_prot);
       CHK(user_accessible);
     }
 
