@@ -622,6 +622,20 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
 void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
   eu_trace("CPU(0x%02x): Shutdown intercept!", vcpu->id);
+  //Synchronize all CPUs
+  {
+    static u32 lock = 1;
+    static u32 count = 0;
+
+    spin_lock(&lock);
+    count++;
+    spin_unlock(&lock);
+
+    while (count < g_midtable_numentries) {
+      xmhf_cpu_relax();
+    }
+  }
+
   hpt_scode_destroy_all();
   //g_libemhf->xmhf_reboot(vcpu);
   xmhf_baseplatform_reboot(vcpu);
