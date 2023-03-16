@@ -2,6 +2,15 @@
 
 ## Changelog
 
+* Version 6.1.1
+
+	* Security Fixes
+		* xmhf: prevent INIT signal attack during XMHF reboot
+		* xmhf: fix incorrect EPT permission check in TrustVisor
+		* xmhf: fix race condition when changing EPTP in TrustVisor
+		* xmhf: fix memory secrecy problem in Intel TXT configuration
+		* xmhf: fix memory secrecy problem during TrustVisor shutdown
+
 * Version 6.1.0
 
 	* Features
