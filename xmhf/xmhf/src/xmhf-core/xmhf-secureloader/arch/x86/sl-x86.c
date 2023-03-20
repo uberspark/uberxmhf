@@ -178,11 +178,6 @@ void xmhf_sl_arch_sanitize_post_launch(void){
         printf("\nSL: Restoring mtrrs...");
         
         restore_mtrrs(&(os_mle_data->saved_mtrr_state));
-        
-        /* always set the TXT.CMD.SECRETS flag */
-        write_priv_config_reg(TXTCR_CMD_SECRETS, 0x01);
-        read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
-        printf("SL: set TXT.CMD.SECRETS flag\n");
     }
 	
 	#endif

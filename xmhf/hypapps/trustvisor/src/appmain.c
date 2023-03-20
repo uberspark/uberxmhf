@@ -147,6 +147,18 @@ u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     parse_boot_cmdline(apb->cmdline);
 
     init_scode(vcpu);
+
+#ifdef __DRT__
+    /*
+     * If DRT is enabled on Intel CPU, set TXT.CMD.SECRETS flag to make sure
+     * secerts are removed after TXT shutdown.
+     */
+    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+      write_priv_config_reg(TXTCR_CMD_SECRETS, 0x01);
+      read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
+      printf("SL: set TXT.CMD.SECRETS flag\n");
+    }
+#endif /* __DRT__ */
   }
 
   /* force these to be linked in */
