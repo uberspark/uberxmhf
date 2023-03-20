@@ -146,6 +146,21 @@ u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     eu_trace("CPU(0x%02x) apb->cmdline: \"%s\"", vcpu->id, apb->cmdline);
     parse_boot_cmdline(apb->cmdline);
 
+#ifdef __DRT__
+    /*
+     * If DRT is enabled on Intel CPU, set TXT.CMD.SECRETS flag to make sure
+     * secerts are removed after TXT shutdown.
+     *
+     * Set TXT.CMD.SECRETS must happen before init_scode(). The latter may load
+     * secret from TPM non-volatile storage.
+     */
+    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+      write_priv_config_reg(TXTCR_CMD_SECRETS, 0x01);
+      read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
+      eu_trace("Set TXT.CMD.SECRETS flag\n");
+    }
+#endif /* __DRT__ */
+
     init_scode(vcpu);
   }
 
@@ -622,6 +637,21 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
 void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
   eu_trace("CPU(0x%02x): Shutdown intercept!", vcpu->id);
+  //Synchronize all CPUs
+  {
+    static u32 lock = 1;
+    static u32 count = 0;
+
+    spin_lock(&lock);
+    count++;
+    spin_unlock(&lock);
+
+    while(count < g_midtable_numentries);
+  }
+
+  if (vcpu->isbsp) {
+    hpt_scode_destroy_all();
+  }
   //g_libemhf->xmhf_reboot(vcpu);
   xmhf_baseplatform_reboot(vcpu);
 }

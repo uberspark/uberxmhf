@@ -176,6 +176,53 @@ static inline u32 test_page_scode_bitmap_2M(u32 pfn)
   return scode_pfn_bitmap_2M[index];
 }
 
+/*
+ * Destroy all registered scode, used during shutdown.
+ * After this function is called, all scode's must not be resumed.
+ */
+void hpt_scode_destroy_all(void)
+{
+  size_t i, j;
+  static u32 destroy_lock = 1;
+  spin_lock(&destroy_lock);
+
+  for (i = 0; i < whitelist_max; i ++) {
+    if (whitelist[i].gcr3 != 0) {
+      eu_warn("whitelist[%d] is still registered when shutdown", i);
+
+      /* restore permissions for remapped sections */
+      for (j = 0; j < whitelist[i].sections_num; j++) {
+        /*
+         * zero the contents of any sections that are writable by the PAL, and
+         * not readable by the reg guest
+         */
+        if ((whitelist[i].sections[j].pal_prot & HPT_PROTS_W)
+            && !(whitelist[i].sections[j].reg_prot & HPT_PROTS_R)) {
+          int err;
+          eu_trace("zeroing section %d", j);
+          err = hptw_checked_memset_va( &whitelist[i].hptw_pal_checked_guest_ctx.super,
+                                        HPTW_CPL3,
+                                        whitelist[i].sections[j].pal_gva, 0,
+                                        whitelist[i].sections[j].size);
+          /* should only fail if insufficient permissions in the guest
+             page tables, which TV constructed and the PAL should not have
+             been able to modify */
+          HALT_ON_ERRORCOND(!err);
+        }
+        /*
+         * In scode_unregister(), scode_return_section() is called. However we
+         * skip it here since we are shutting down.
+         */
+      }
+
+      whitelist[i].gcr3 = 0;
+      whitelist_size --;
+    }
+  }
+
+  spin_unlock(&destroy_lock);
+}
+
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry);
 
 /* search scode in whitelist */
@@ -493,16 +540,50 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     if (!did_change_root_mappings) {
       hpt_emhf_get_root_pmo(vcpu, &g_reg_npmo_root);
       hptw_emhf_host_ctx_init_of_vcpu( &g_hptw_reg_host_ctx, vcpu);
+      /*
+       * 20221127: before, TrustVisor will for all VCPU change
+       * vcpu->vmcs.control_EPT_pointer to current CPU's EPTP. However, this
+       * causes severe race condition for Intel. For example, at the start of
+       * an intercept, EPTP is stored in VMCS and will overwrite
+       * vcpu->vmcs.control_EPT_pointer when
+       * xmhf_baseplatform_arch_x86vmx_getVMCS() is called. As a result, the
+       * race condition will cause some CPUs' EPTP to be not changed, leading
+       * to security vulnerabilities.
+       *
+       * The mistake here is that hpt_emhf_set_root_pm() should not be called
+       * on another CPU, which is effectively in interrupt handler.
+       *
+       * Possible fixes are:
+       * 1. Add a flag to indicate change of EPTP. Whenever
+       *    vcpu->vmcs.control_EPT_pointer is accessed (read / write), check
+       *    this flag. (con: vcpu->vmcs.control_EPT_pointer is accessed in a
+       *    lot of ways)
+       * 2. Do not make EPTs the same. Instead in scode_lend_section() etc,
+       *    modify entries for all EPTs. (pro: may become useful when shadow
+       *    EPT is implemented; con: a lot of changes in TrustVisor)
+       * 3. As a workaround, change PML4Es instead of EPTPs. This will make
+       *    sure PTEs of all CPUs are still the same, but not a lot of changes
+       *    need to be made.
+       *
+       * For now, 3 is implemented. However in the long term 2 may be better.
+       */
 #ifdef __MP_VERSION__
       {
         size_t i;
+        hpt_pmo_t pmo;
+        hptw_get_pmo(&pmo, &g_hptw_reg_host_ctx.super, 4, 0);
         for( i=0 ; i<g_midtable_numentries ; i++ )  {
-          eu_trace("cpu %d setting root pm from %p to %p",
-                  i,
-                  hpt_emhf_get_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr)),
-                  g_reg_npmo_root.pm);
-          hpt_emhf_set_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr),
-                               g_reg_npmo_root.pm);
+          VCPU *vcpu_other = (VCPU *)(g_midtable[i].vcpu_vaddr_ptr);
+          hptw_emhf_host_ctx_t ctx_other;
+          hpt_pmo_t pmo_other;
+          if (i == vcpu->idx) {
+            continue;
+          }
+          hptw_emhf_host_ctx_init_of_vcpu(&ctx_other, vcpu_other);
+          hptw_get_pmo(&pmo_other, &ctx_other.super, 4, 0);
+          eu_trace("cpu %d copying PML4E 0x%016lx from 0x%016lx", i,
+                   (uintptr_t)pmo_other.pm, (uintptr_t)pmo.pm);
+          memcpy(pmo_other.pm, pmo.pm, PAGE_SIZE_4K);
         }
       }
 #endif
