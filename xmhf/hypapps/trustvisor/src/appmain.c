@@ -646,7 +646,21 @@ void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
     while(count < g_midtable_numentries);
   }
 
-  hpt_scode_destroy_all();
+  if (vcpu->isbsp) {
+    hpt_scode_destroy_all();
+
+#ifdef __DRT__
+    /*
+     * If DRT is enabled on Intel CPU, clear TXT.CMD.SECRETS flag to indicate
+     * secerts no longer exist.
+     */
+    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+      write_priv_config_reg(TXTCR_CMD_NO_SECRETS, 0x01);
+      read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
+      printf("SL: clear TXT.CMD.SECRETS flag\n");
+    }
+#endif /* __DRT__ */
+  }
   //g_libemhf->xmhf_reboot(vcpu);
   xmhf_baseplatform_reboot(vcpu);
 }
