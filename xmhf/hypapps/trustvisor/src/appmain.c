@@ -146,12 +146,13 @@ u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     eu_trace("CPU(0x%02x) apb->cmdline: \"%s\"", vcpu->id, apb->cmdline);
     parse_boot_cmdline(apb->cmdline);
 
-    init_scode(vcpu);
-
 #ifdef __DRT__
     /*
      * If DRT is enabled on Intel CPU, set TXT.CMD.SECRETS flag to make sure
      * secerts are removed after TXT shutdown.
+     *
+     * Set TXT.CMD.SECRETS must happen before init_scode(). The latter may load
+     * secret from TPM non-volatile storage.
      */
     if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
       write_priv_config_reg(TXTCR_CMD_SECRETS, 0x01);
@@ -159,6 +160,8 @@ u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
       printf("SL: set TXT.CMD.SECRETS flag\n");
     }
 #endif /* __DRT__ */
+
+    init_scode(vcpu);
   }
 
   /* force these to be linked in */
@@ -648,18 +651,6 @@ void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 
   if (vcpu->isbsp) {
     hpt_scode_destroy_all();
-
-#ifdef __DRT__
-    /*
-     * If DRT is enabled on Intel CPU, clear TXT.CMD.SECRETS flag to indicate
-     * secerts no longer exist.
-     */
-    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-      write_priv_config_reg(TXTCR_CMD_NO_SECRETS, 0x01);
-      read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
-      printf("SL: clear TXT.CMD.SECRETS flag\n");
-    }
-#endif /* __DRT__ */
   }
   //g_libemhf->xmhf_reboot(vcpu);
   xmhf_baseplatform_reboot(vcpu);
