@@ -1034,7 +1034,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
   /* restore CR0.EM, check that CR0.EM is set during PAL */
   {
-    ulong_t cr0 = VCPU_gcr0(vcpu);
+    u32 cr0 = VCPU_gcr0(vcpu);
     EU_CHK((cr0 & CR0_EM) == CR0_EM);
     if (!whitelist[curr].saved_cr0_em) {
       cr0 &= ~CR0_EM;
@@ -1233,7 +1233,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu, struct regs *r)
 
   /* save and set CR0.EM, which disables FPU (not supported by TrustVisor) */
   {
-    ulong_t cr0 = VCPU_gcr0(vcpu);
+    u32 cr0 = VCPU_gcr0(vcpu);
     whitelist[curr].saved_cr0_em = !!(cr0 & CR0_EM);
     cr0 |= CR0_EM;
     VCPU_gcr0_set(vcpu, cr0);
