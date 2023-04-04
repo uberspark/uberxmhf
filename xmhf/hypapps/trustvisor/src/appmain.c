@@ -584,7 +584,7 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 /* EPT violation handler */
 u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
-                                            struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
+                                            struct regs *r, u64 gpa, u64 gva, u64 violationcode)
 {
   u32 ret;
 #if defined(__LDN_TV_INTEGRATION__)  
@@ -598,12 +598,12 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 #if !defined(__LDN_TV_INTEGRATION__)  
   eu_trace("CPU(0x%02x): gva=%#llx, gpa=%#llx, code=%#llx", (int)vcpu->id,
           gva, gpa, violationcode);
-  if ((ret = hpt_scode_npf(vcpu, gpa, violationcode)) != 0) {
+  if ((ret = hpt_scode_npf(vcpu, gpa, violationcode, r)) != 0) {
     eu_trace("FATAL ERROR: Unexpected return value from page fault handling");
     HALT();
   }
 #else
-	ret = hpt_scode_npf(vcpu, gpa, violationcode);
+	ret = hpt_scode_npf(vcpu, gpa, violationcode, r);
 #endif //__LDN_TV_INTEGRATION__
 
 //#ifdef __MP_VERSION__

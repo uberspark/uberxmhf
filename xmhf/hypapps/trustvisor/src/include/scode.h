@@ -163,8 +163,8 @@ int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len);
 
 /* PAL operations (HPT) */
 u32 hpt_scode_switch_scode(VCPU * vcpu);
-u32 hpt_scode_switch_regular(VCPU * vcpu);
-u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
+u32 hpt_scode_switch_regular(VCPU * vcpu, struct regs *r);
+u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode, struct regs *r);
 void hpt_scode_destroy_all(void);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count);

@@ -1072,7 +1072,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   return err;
 }
 
-u32 scode_unmarshall(VCPU * vcpu)
+u32 scode_unmarshall(VCPU * vcpu, struct regs *r)
 {
   u32 pm_addr_base, pm_addr;
   size_t i;
@@ -1165,13 +1165,17 @@ u32 scode_unmarshall(VCPU * vcpu)
 
     } //end for loop 
 
+  /* clear caller saved registers to prevent leaking PAL's secret */
+  r->ecx = 0;
+  r->edx = 0;
+
   err=0;
  out:
   return err;
 }
 
 //switch from sensitive code to regular code
-u32 hpt_scode_switch_regular(VCPU * vcpu)
+u32 hpt_scode_switch_regular(VCPU * vcpu, struct regs *r)
 {
   int curr=scode_curr[vcpu->id];
   u32 rv=1;
@@ -1183,7 +1187,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   eu_trace("************************************");
 
   /* marshalling parameters back to regular code */
-  EU_CHKN( scode_unmarshall(vcpu));
+  EU_CHKN( scode_unmarshall(vcpu, r));
 
   /* whether or not marshalling succeeded, we switch back to reg world.
    * nothing below can fail.
@@ -1244,7 +1248,7 @@ static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
 #endif //__LDN_TV_INTEGRATION__
 
 /*  EPT violation handler */
-u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
+u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode, struct regs *r)
 {
   int index = -1;
 
@@ -1287,7 +1291,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
     /* valid return point, switch from sensitive code to regular code */
 
     /* XXX FIXME: now return ponit is extracted from regular code stack, only support one scode function call */
-    EU_CHKN( hpt_scode_switch_regular(vcpu));
+    EU_CHKN( hpt_scode_switch_regular(vcpu, r));
     *curr = -1;
   } else if ((*curr >=0) && (index >= 0)) {
     /* sensitive code to sensitive code */
