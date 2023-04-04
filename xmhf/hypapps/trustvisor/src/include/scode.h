@@ -116,6 +116,7 @@ typedef struct whitelist_entry{
   u32 gpm_num;  /* guest parameter number */
 
   u32 saved_exception_intercepts;
+  int saved_cr0_em; /* save whether CR0.EM bit is set */
 
   tv_pal_section_int_t sections[TV_MAX_SECTIONS];
   size_t sections_num;

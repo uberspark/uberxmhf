@@ -436,6 +436,29 @@ static inline void VCPU_grsp_set(VCPU *vcpu, u64 val)
   }
 }
 
+static inline u64 VCPU_gcr0(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    return vcpu->vmcs.guest_CR0;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr0;
+  } else {
+    HALT_ON_ERRORCOND(false);
+    return 0;
+  }
+}
+
+static inline void VCPU_gcr0_set(VCPU *vcpu, u64 cr0)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    vcpu->vmcs.guest_CR0 = cr0;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr0 = cr0;
+  } else {
+    HALT_ON_ERRORCOND(false);
+  }
+}
+
 static inline u64 VCPU_gcr3(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
