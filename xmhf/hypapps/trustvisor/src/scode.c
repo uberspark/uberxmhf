@@ -1032,13 +1032,11 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   /* disable interrupts */
   VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) & ~EFLAGS_IF);
 
-  /* restore CR0.EM, check that CR0.EM is set during PAL */
+  /* save and set CR0.EM, which disables FPU (not supported by TrustVisor) */
   {
     u32 cr0 = VCPU_gcr0(vcpu);
-    EU_CHK((cr0 & CR0_EM) == CR0_EM);
-    if (!whitelist[curr].saved_cr0_em) {
-      cr0 &= ~CR0_EM;
-    }
+    whitelist[curr].saved_cr0_em = !!(cr0 & CR0_EM);
+    cr0 |= CR0_EM;
     VCPU_gcr0_set(vcpu, cr0);
   }
 
@@ -1231,11 +1229,13 @@ u32 hpt_scode_switch_regular(VCPU * vcpu, struct regs *r)
   /* enable interrupts */
   VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) | EFLAGS_IF);
 
-  /* save and set CR0.EM, which disables FPU (not supported by TrustVisor) */
+  /* restore CR0.EM, check that CR0.EM is set during PAL */
   {
     u32 cr0 = VCPU_gcr0(vcpu);
-    whitelist[curr].saved_cr0_em = !!(cr0 & CR0_EM);
-    cr0 |= CR0_EM;
+    EU_CHK((cr0 & CR0_EM) == CR0_EM);
+    if (!whitelist[curr].saved_cr0_em) {
+      cr0 &= ~CR0_EM;
+    }
     VCPU_gcr0_set(vcpu, cr0);
   }
 
