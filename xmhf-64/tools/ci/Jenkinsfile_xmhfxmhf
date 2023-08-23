@@ -1,0 +1,119 @@
+/*
+ * CI for KVM XMHF XMHF Debian
+ */
+
+properties([
+    parameters([
+        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64'),
+        string(name: 'BUILD_OPTS', defaultValue:
+               '--no-x2apic fast circleci O3 --ept-num 4 --ept-pool 128'),
+        string(name: 'NESTED_BUILD_OPTS', defaultValue:
+               '--no-x2apic fast circleci O3 --sl-base 0x20000000 ' + \
+               '--no-init-smp --ept-num 4 --ept-pool 128')
+    ])
+])
+
+void qemu_test(String subarch, String qemu_image, String qemu_image_back) {
+    PWD = sh(returnStdout: true, script: 'pwd').trim()
+    sh "./tools/ci/download.sh cache ${qemu_image_back}"
+    sh "rm -rf qemu"
+    sh "mkdir qemu"
+    sh "ln -s ${PWD}/cache/${qemu_image_back} qemu"
+    sh """
+        qemu-img create -f qcow2 -b ${PWD}/qemu/${qemu_image_back} \
+                        -F qcow2 ${PWD}/qemu/${qemu_image}
+    """
+    sh "cp ${PWD}/nested/grub/c.img ${PWD}/nested/xmhf.img"
+    sh "cp ${PWD}/tmp/grub/c.img ${PWD}/tmp/xmhf.img"
+    retry (3) {
+        sh """
+            python3 -u ./tools/ci/test3.py \
+                --subarch ${subarch} \
+                --xmhf-img ${PWD}/tmp/xmhf.img \
+                --nested-xmhf ${PWD}/nested/xmhf.img \
+                --debian-img ${PWD}/qemu/${qemu_image} \
+                --work-dir ${PWD}/tmp/ \
+                --no-display \
+                --sshpass jkl \
+                --verbose \
+                --watch-serial \
+                --memory 1G \
+                --boot-timeout 180
+        """
+    }
+}
+
+def helper
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Logistics') {
+            steps {
+                sh "git fetch origin ${params.XMHF_BRANCH}"
+                sh "git checkout ${params.XMHF_BRANCH}"
+                sh "git pull origin ${params.XMHF_BRANCH}"
+                script {
+                    cmt = sh(
+                        returnStdout: true,
+                        script: 'git rev-parse HEAD | head -c 9').trim()
+                    currentBuild.displayName += " ${params.XMHF_BRANCH}"
+                    currentBuild.displayName += " ${cmt}"
+                    helper = load "tools/ci/jenkins.groovy"
+                }
+            }
+        }
+        stage('Build i386 XMHF') {
+            steps {
+                script {
+                    helper.build_xmhf("i386", "tmp", "${params.BUILD_OPTS}")
+                }
+            }
+        }
+        stage('Build i386 nested XMHF') {
+            steps {
+                script {
+                    helper.build_xmhf("i386", "nested",
+                                      "${params.NESTED_BUILD_OPTS}")
+                }
+            }
+        }
+        stage('Test i386 Debian in i386 XMHF in i386 XMHF') {
+            steps {
+                qemu_test "i386", "debian11x86-j.qcow2", "debian11x86.qcow2"
+            }
+        }
+        stage('Build amd64 XMHF') {
+            steps {
+                script {
+                    helper.build_xmhf("amd64", "tmp", "${params.BUILD_OPTS}")
+                }
+            }
+        }
+        stage('Test i386 Debian in i386 XMHF in amd64 XMHF') {
+            steps {
+                qemu_test "i386", "debian11x86-j.qcow2", "debian11x86.qcow2"
+            }
+        }
+        stage('Build amd64 nested XMHF') {
+            steps {
+                script {
+                    helper.build_xmhf("amd64", "nested",
+                                      "${params.NESTED_BUILD_OPTS}")
+                }
+            }
+        }
+        stage('Test i386 Debian in amd64 XMHF in amd64 XMHF') {
+            steps {
+                qemu_test "i386", "debian11x86-j.qcow2", "debian11x86.qcow2"
+            }
+        }
+        stage('Test amd64 Debian in amd64 XMHF in amd64 XMHF') {
+            steps {
+                qemu_test "amd64", "debian11x64-j.qcow2", "debian11x64.qcow2"
+            }
+        }
+    }
+}
+

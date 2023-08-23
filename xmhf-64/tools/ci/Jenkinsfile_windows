@@ -1,0 +1,147 @@
+/*
+ * Extra installations: sudo apt-get install gcc-mingw-w64 zip mtools
+ */
+
+properties([
+    parameters([
+        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64'),
+        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic fast'),
+        booleanParam(name: 'TEST_I386_WIN7_I386_XMHF', defaultValue: true),
+        booleanParam(name: 'TEST_I386_WIN10_I386_XMHF', defaultValue: true),
+        booleanParam(name: 'TEST_I386_WIN7_AMD64_XMHF', defaultValue: true),
+        booleanParam(name: 'TEST_AMD64_WIN7_AMD64_XMHF', defaultValue: true),
+        booleanParam(name: 'TEST_I386_WIN81_AMD64_XMHF', defaultValue: true),
+        booleanParam(name: 'TEST_I386_WIN10_AMD64_XMHF', defaultValue: true),
+        booleanParam(name: 'TEST_AMD64_WIN10_AMD64_XMHF', defaultValue: true)
+    ])
+])
+
+void pal_demo() {
+    sh "rm -rf pal_demo_tmp"
+    sh "mkdir pal_demo_tmp"
+    sh "./tools/ci/build_pal_demo.sh all"
+    sh "tools/ci/pal_demo_img.sh pal_demo_tmp/pal_demo.img"
+}
+
+void qemu_test(String subarch, String guest_subarch, String qemu_image,
+                String timeout, String memory) {
+    PWD = sh(returnStdout: true, script: 'pwd').trim()
+    // sh "./tools/ci/download.sh cache ${qemu_image}"
+    sh "cp ${PWD}/tmp/xmhf.img ${PWD}/tmp/grub/c.img"
+    sh "cp pal_demo_tmp/pal_demo.img tmp/pal_demo.img"
+    sh """
+        qemu-img create -f qcow2 -b ${PWD}/cache/${qemu_image} \
+            -F qcow2 tmp/windows.qcow2
+    """
+    retry (3) {
+        sh """
+            python3 -u ./tools/ci/test4.py \
+                --guest-subarch ${guest_subarch} \
+                --qemu-image tmp/windows.qcow2 \
+                --work-dir ${PWD}/tmp/ \
+                --qemu-timeout ${timeout} \
+                --memory ${memory} \
+                --no-display \
+                --verbose \
+                --watch-serial
+        """
+    }
+}
+
+def helper
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Logistics') {
+            steps {
+                sh "git fetch origin ${params.XMHF_BRANCH}"
+                sh "git checkout ${params.XMHF_BRANCH}"
+                sh "git pull origin ${params.XMHF_BRANCH}"
+                script {
+                    cmt = sh(
+                        returnStdout: true,
+                        script: 'git rev-parse HEAD | head -c 9').trim()
+                    currentBuild.displayName += " ${params.XMHF_BRANCH}"
+                    currentBuild.displayName += " ${cmt}"
+                    helper = load "tools/ci/jenkins.groovy"
+                }
+            }
+        }
+        stage('Build i386 XMHF') {
+            steps {
+                script {
+                    helper.build_xmhf("i386", "tmp", "${params.BUILD_OPTS}")
+                }
+                sh "cp ${PWD}/tmp/grub/c.img ${PWD}/tmp/xmhf.img"
+                pal_demo()
+            }
+        }
+        stage('Test i386 Windows 7 on i386 XMHF') {
+            when {
+                expression { params.TEST_I386_WIN7_I386_XMHF }
+            }
+            steps {
+                qemu_test "i386", "i386", "win7x86-j.qcow2", "60", "1024M"
+            }
+        }
+        stage('Test i386 Windows 10 on i386 XMHF') {
+            when {
+                expression { params.TEST_I386_WIN10_I386_XMHF }
+            }
+            steps {
+                qemu_test "i386", "i386", "win10x86-j.qcow2", "120", "1024M"
+            }
+        }
+        stage('Build amd64 XMHF') {
+            steps {
+                script {
+                    helper.build_xmhf("amd64", "tmp", "${params.BUILD_OPTS}")
+                }
+                sh "cp ${PWD}/tmp/grub/c.img ${PWD}/tmp/xmhf.img"
+            }
+        }
+        stage('Test i386 Windows 7 on amd64 XMHF') {
+            when {
+                expression { params.TEST_I386_WIN7_AMD64_XMHF }
+            }
+            steps {
+                qemu_test "amd64", "i386", "win7x86-j.qcow2", "60", "1024M"
+            }
+        }
+        stage('Test amd64 Windows 7 on amd64 XMHF') {
+            when {
+                expression { params.TEST_AMD64_WIN7_AMD64_XMHF }
+            }
+            steps {
+                qemu_test "amd64", "amd64", "win7x64-j.qcow2", "120", "1024M"
+            }
+        }
+        stage('Test amd64 Windows 8.1 on amd64 XMHF') {
+            when {
+                expression { params.TEST_I386_WIN81_AMD64_XMHF }
+            }
+            steps {
+                qemu_test "amd64", "amd64", "win81x64-j.qcow2", "200", "1024M"
+            }
+        }
+        stage('Test i386 Windows 10 on amd64 XMHF') {
+            when {
+                expression { params.TEST_I386_WIN10_AMD64_XMHF }
+            }
+            steps {
+                qemu_test "amd64", "i386", "win10x86-j.qcow2", "120", "1024M"
+            }
+        }
+        stage('Test amd64 Windows 10 on amd64 XMHF') {
+            when {
+                expression { params.TEST_AMD64_WIN10_AMD64_XMHF }
+            }
+            steps {
+                qemu_test "amd64", "amd64", "win10x64-j.qcow2", "600", "1024M"
+            }
+        }
+    }
+}
+

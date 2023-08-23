@@ -1,0 +1,51 @@
+name: Build XMHF with TrustVisor
+
+on: ["push", "pull_request"]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target_arch:
+          - 'i386'
+          - 'amd64'
+        compile_mode:
+          - 'debug'
+          - 'release'
+        optimize_mode:
+          - 'O0'
+          - 'O3'
+        nested_virt:
+          - 'nv'
+          - 'no_nv'
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: apt-get
+      run: |
+        sudo apt-get update && \
+        sudo apt-get install \
+                      pbuilder texinfo ruby build-essential autoconf libtool \
+                      crossbuild-essential-i386 \
+                      -y
+    - name: Build
+      run: |
+        ./tools/ci/build.sh \
+          ${{ matrix.target_arch }} \
+          ${{ matrix.compile_mode }} \
+          ${{ matrix.optimize_mode }} \
+          ${{ matrix.nested_virt }}
+    - name: Release
+      uses: actions/upload-artifact@v3
+      with:
+        name: boot-${{ matrix.target_arch }}-${{ matrix.compile_mode }}-${{ matrix.optimize_mode }}-${{ matrix.nested_virt }}
+        path: |
+          xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe
+          xmhf/src/xmhf-core/xmhf-bootloader/init_syms.exe
+          xmhf/src/xmhf-core/xmhf-runtime/runtime.exe
+          hypervisor-x86-${{ matrix.target_arch }}.bin.gz
+          init-x86-${{ matrix.target_arch }}.bin
+

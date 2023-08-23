@@ -1,0 +1,89 @@
+version: 2.1
+
+jobs:
+  test-xmhf:
+    machine:
+      # Need nested virtualization
+      # https://discuss.circleci.com/t/new-android-machine-image-now-/39467
+      image: android:2022.03.1
+    resource_class: medium
+    parameters:
+      subarch:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Apt-get"
+          command: |
+            sudo apt-get update
+            sudo apt-get -y -q install \
+                git crossbuild-essential-i386 \
+                pbuilder texinfo ruby build-essential autoconf libtool \
+                qemu-system-x86 sshpass
+      - run:
+          name: "Build"
+          command: |
+            ./tools/ci/build.sh << parameters.subarch >> circleci --no-x2apic
+      - run:
+          name: "Versions"
+          command: |
+            lscpu
+            ssh -V
+            qemu-system-x86_64 -version
+            gcc -v
+      - store_artifacts:
+          path: xmhf/src/xmhf-core/xmhf-runtime/runtime.exe
+      - store_artifacts:
+          path: xmhf/src/xmhf-core/xmhf-bootloader/init_syms.exe
+      - store_artifacts:
+          path: xmhf/src/xmhf-core/xmhf-secureloader/sl_syms.exe
+      - store_artifacts:
+          path: init-x86-amd64.bin
+      - store_artifacts:
+          path: hypervisor-x86-amd64.bin.gz
+      - restore_cache:
+          keys:
+            - debian11x86x64-20220407-<< parameters.subarch >>
+      - run:
+          name: "Download Debian"
+          command: |
+            source ./tools/ci/circleci_env.sh << parameters.subarch >>
+            ./tools/ci/download.sh cache ${qemu_image_back}
+      - save_cache:
+          key: debian11x86x64-20220407-<< parameters.subarch >>
+          paths:
+            - cache/
+      - run:
+          name: "Test"
+          command: |
+            source ./tools/ci/circleci_env.sh << parameters.subarch >>
+            rm -rf tmp qemu
+            mkdir tmp qemu
+            ln -s ${PWD}/cache/${qemu_image_back} qemu
+            qemu-img create -f qcow2 -b ${PWD}/qemu/${qemu_image_back} \
+                            -F qcow2 ${PWD}/qemu/${qemu_image}
+            # sha512sum ${PWD}/qemu/${qemu_image_back}
+            python3 -m pip install jinja2
+            python3 -u ./tools/ci/grub.py \
+                --subarch ${SUBARCH} \
+                --xmhf-bin ${PWD}/ \
+                --work-dir ${PWD}/tmp/ \
+                --verbose \
+                --boot-dir ${PWD}/tools/ci/boot
+            python3 -u ./tools/ci/test3.py \
+                --subarch ${SUBARCH} \
+                --xmhf-img ${PWD}/tmp/grub/c.img \
+                --debian-img ${PWD}/qemu/${qemu_image} \
+                --work-dir ${PWD}/tmp/ \
+                --no-display \
+                --sshpass jkl \
+                --verbose \
+                --watch-serial
+
+workflows:
+  test-xmhf-workflow:
+    jobs:
+      - test-xmhf:
+          matrix:
+            parameters:
+              subarch: ["i386", "amd64"]

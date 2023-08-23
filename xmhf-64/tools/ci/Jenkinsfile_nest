@@ -1,0 +1,105 @@
+/*
+ * CI for nested virtualization
+ */
+
+properties([
+    parameters([
+        string(name: 'XMHF_BRANCH', defaultValue: 'xmhf64'),
+        string(name: 'LHV_BRANCH', defaultValue: 'lhv'),
+        string(name: 'BUILD_OPTS', defaultValue: '--no-x2apic fast'),
+        string(name: 'LHV_BUILD_OPTS', defaultValue: '--lhv-opt 0xdfd')
+    ])
+])
+
+void qemu_test(String subarch, String lhv_subarch) {
+    PWD = sh(returnStdout: true, script: 'pwd').trim()
+    sh "cp ${PWD}/tmp/grub/c.img ${PWD}/tmp/xmhf.img"
+    sh "cp ${PWD}/lhv/tmp/grub/c.img ${PWD}/lhv/tmp/xmhf.img"
+    sh """
+        python3 -u ./tools/ci/test5.py \
+            --xmhf-img ${PWD}/tmp/grub/c.img \
+            --lhv-img ${PWD}/lhv/tmp/grub/c.img \
+            --work-dir ${PWD}/tmp/ \
+            --no-display \
+            --verbose \
+            --watch-serial
+    """
+}
+
+def helper
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Logistics') {
+            steps {
+                sh "git fetch origin ${params.XMHF_BRANCH}"
+                sh "git checkout ${params.XMHF_BRANCH}"
+                sh "git pull origin ${params.XMHF_BRANCH}"
+                dir ("lhv") {
+                    git url: "https://github.com/lxylxy123456/uberxmhf.git",
+                        branch: "${params.LHV_BRANCH}"
+                }
+                script {
+                    cmt = sh(
+                        returnStdout: true,
+                        script: 'git rev-parse HEAD | head -c 9').trim()
+                    currentBuild.displayName += " ${params.XMHF_BRANCH}"
+                    currentBuild.displayName += " ${cmt}"
+                    helper = load "tools/ci/jenkins.groovy"
+                }
+            }
+        }
+        stage('Build i386') {
+            steps {
+                script {
+                    helper.build_xmhf("i386", "tmp", "${params.BUILD_OPTS}")
+                }
+            }
+        }
+        stage('Build i386 lhv') {
+            steps {
+                dir ("lhv") {
+		            script {
+		                helper.build_xmhf("i386", "tmp",
+		                                  "${params.LHV_BUILD_OPTS}")
+		            }
+                }
+            }
+        }
+        stage('Test i386 LHV on i386 XMHF') {
+            steps {
+                qemu_test "i386", "i386"
+            }
+        }
+        stage('Build amd64') {
+            steps {
+                script {
+                    helper.build_xmhf("amd64", "tmp", "${params.BUILD_OPTS}")
+                }
+            }
+        }
+        stage('Test i386 LHV on amd64 XMHF') {
+            steps {
+                qemu_test "amd64", "i386"
+            }
+        }
+        stage('Build amd64 LHV') {
+            steps {
+                dir ("lhv") {
+		            script {
+		                helper.build_xmhf("amd64", "tmp",
+		                                  "${params.LHV_BUILD_OPTS}")
+		            }
+                }
+            }
+        }
+        stage('Test amd64 LHV on amd64 XMHF') {
+            steps {
+                qemu_test "amd64", "amd64"
+            }
+        }
+    }
+}
+

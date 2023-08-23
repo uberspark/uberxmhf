@@ -1,0 +1,31 @@
+name: Build PAL demo
+
+on: ["push", "pull_request"]
+
+jobs:
+  pal_demo:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: apt-get
+      run: |
+        sudo apt-get update && \
+        sudo apt-get install \
+                      build-essential crossbuild-essential-i386 gcc-mingw-w64 \
+                      -y
+    - name: Build
+      run: |
+        ./tools/ci/build_pal_demo.sh all
+    - name: Release zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: pal_demo.zip
+        path: hypapps/trustvisor/pal_demo/pal_demo.zip
+    - name: Release tar.xz
+      uses: actions/upload-artifact@v3
+      with:
+        name: pal_demo.tar.xz
+        path: hypapps/trustvisor/pal_demo/pal_demo.tar.xz
+

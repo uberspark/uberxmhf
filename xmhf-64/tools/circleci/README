@@ -1,0 +1,5 @@
+This folder contains configuration for Circle CI. The CI workflow builds XMHF
+and tests it in QEMU.
+
+This folder is currently under development.
+

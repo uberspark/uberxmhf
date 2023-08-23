@@ -1,0 +1,6 @@
+This folder contains configuration for GitHub actions. This CI workflow builds
+XMHF in many configurations (e.g. i386 / amd64, drt / no drt, dmap / no dmap,
+no compiler optimize / optimize).
+
+This folder is currently under development.
+
