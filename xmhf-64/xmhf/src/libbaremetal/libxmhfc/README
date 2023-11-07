@@ -1,0 +1,12 @@
+This directory contains an extremely stripped down libc.
+Primarily, it contains the mem*() and str*() functions
+that are part of string.h.
+
+The intention is to provide basic libc computational support
+for hypervisor internals, extremely minimized PALs, and
+other environments where TCB / code size is a priority, and
+using 'newlib' constitues too much TCB / code size.
+
+A lot of headers were taken from FreeBSD 9.  Logic from FreeBSD to
+support a multitude of different architectures was removed.  Hence
+files include/sys/i386_*.  These were originally machine/* in FreeBSD.

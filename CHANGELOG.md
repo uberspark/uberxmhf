@@ -2,6 +2,61 @@
 
 ## Changelog
 
+* Version 6.2.0
+
+	* Features
+		* xmhf-64: initial commit, copied from xmhf
+		* xmhf-64: fix compile errors found in high GCC version
+		* xmhf-64: support running XMHF in 64-bit mode
+		* xmhf-64: support continuous integration testing
+		* xmhf-64: support running XMHF in QEMU
+		* xmhf-64: support running XMHF with modern guest operating systems
+		* xmhf-64: support running guests that use PAE paging
+		* xmhf-64: provide ``pal_demo``, which compiles TrustVisor PALs in
+		  Windows and Linux, without using linker scripts
+		* xmhf-64: decrease compilation artifact size (e.g. object files)
+		* xmhf-64: support optimized compile (e.g. ``-O3``)
+		* xmhf-64: support DMAP in Intel
+		* xmhf-64: allow the guest OS to change MTRR
+		* xmhf-64: support x2APIC
+		* xmhf-64: support Intel microcode update
+
+	* Logic Fixes
+		* xmhf-64: check `grube820list_numentries` in `dealwithE820()` to
+		  prevent possible buffer overflow
+		* xmhf-64: fix Makefile dependencies problems
+		* xmhf-64: fix unsigned overflow in `udelay()`. This bug causes sleep
+		  to be shorter than expected
+		* xmhf-64: fix the CR0 intercept handler
+		* xmhf-64: fix WRMSR intercept handler when MSR comes from
+		  `vmx_msr_area_msrs`. This bug leads to unexpected values read by the
+		  guest
+		* xmhf-64: block guests' access to x2APIC. This bug may allow guests to
+		  to send INIT to a CPU
+		* xmhf-64: fix incorrect assert in hpt.c for long mode paging. This bug
+		  is on a code path that is likely unused by 32-bit guests
+		* xmhf-64: fix logic in NMI quiesce handling. This bug can cause
+		  deadlock and lose of guest NMIs
+		* xmhf-64: fix the problem that `HALT()` does not halt forever. This
+		  bug can cause troubles during debugging
+		* xmhf-64: fix the problem that the last entry of E820 is dropped
+		* xmhf-64: unset CR4.VMXE, which is incorrectly set
+		* xmhf-64: fix logic in booting, which causes problems for single CPU
+		  machines
+		* xmhf-64: fix guest initial state (e.g. DX, CR0, ...)
+		* xmhf-64: truncate RSP in `_vmx_int15_handleintercept()`
+		* xmhf-64: fix incorrect assumption about default MTRR type. This bug
+		  causes strange cache errors in Windows 10
+		* xmhf-64: block guests' change to MTRRs. This bug allows guests to
+		  change host's memory cache settings
+		* xmhf-64: block guest microcode update. This bug allows guests to
+		  update microcode arbitrarily
+		* xmhf-64: fix NULL pointer reference in the VGA driver. This bug is on
+		  a code path that only happens when debugging
+		* xmhf-64: fix incorrect use of .fill in `xmhf_xcphandler_idt_start()`.
+		  This bug leads to less area allocated for IDT than expected
+		* xmhf-64: remove two unused nmm functions that may contain bugs
+
 * Version 6.1.0
 
 	* Features

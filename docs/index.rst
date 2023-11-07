@@ -59,6 +59,19 @@ framework and associated components.
 
 .. toctree::
    :maxdepth: 2
+   :caption: PC Intel x86 64-bit:
+
+   pc-intel-x86_64/introduction
+   pc-intel-x86_64/hw-requirements
+   pc-intel-x86_64/supported-os
+   pc-intel-x86_64/build
+   pc-intel-x86_64/installing   
+   pc-intel-x86_64/debugging
+   pc-intel-x86_64/uberapp-trustvisor
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: Legacy PC AMD/Intel x86 32-bit:
 
    pc-legacy-x86_32/hw-requirements

@@ -1,0 +1,115 @@
+/*
+ * @XMHF_LICENSE_HEADER_START@
+ *
+ * eXtensible, Modular Hypervisor Framework (XMHF)
+ * Copyright (c) 2009-2012 Carnegie Mellon University
+ * Copyright (c) 2010-2012 VDG Inc.
+ * All Rights Reserved.
+ *
+ * Developed by: XMHF Team
+ *               Carnegie Mellon University / CyLab
+ *               VDG Inc.
+ *               http://xmhf.org
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * Neither the names of Carnegie Mellon or VDG Inc, nor the names of
+ * its contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * @XMHF_LICENSE_HEADER_END@
+ */
+
+//peh-x86vmx-entry.S
+//entry point for EMHF partition event-hub component for Intel x86 vmx
+//author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+
+//----------------------------------------------------------------------
+//globals referenced
+    .extern xmhf_parteventhub_arch_x86vmx_intercept_handler
+
+//----------------------------------------------------------------------
+// xmhf_parteventhub_entry_x86vmx
+// we get control here right after any event within a partition
+// note: the h/w is the "caller" so we never actually "return"
+.section .text
+.global xmhf_parteventhub_arch_x86vmx_entry
+xmhf_parteventhub_arch_x86vmx_entry:
+    // Currently rsp points to VCPU
+
+    //step-1: save all CPU GPRs
+    pushq   %r15
+    pushq   %r14
+    pushq   %r13
+    pushq   %r12
+    pushq   %r11
+    pushq   %r10
+    pushq   %r9
+    pushq   %r8
+    pushq   %rax
+    pushq   %rcx
+    pushq   %rdx
+    pushq   %rbx
+    pushq   %rsp
+    pushq   %rbp
+    pushq   %rsi
+    pushq   %rdi
+
+    //step-2: grab VCPU *, put to 1st argument
+    movq 128(%rsp), %rdi
+
+    //step-4: get hold of pointer to saved GPR on stack, put to 2nd argument
+    movq %rsp, %rsi
+
+    //step-5: invoke "C" event handler
+    call xmhf_parteventhub_arch_x86vmx_intercept_handler
+
+    //step-6; restore all CPU GPRs
+    popq    %rdi
+    popq    %rsi
+    popq    %rbp
+    popq    %rsp
+    popq    %rbx
+    popq    %rdx
+    popq    %rcx
+    popq    %rax
+    popq    %r8
+    popq    %r9
+    popq    %r10
+    popq    %r11
+    popq    %r12
+    popq    %r13
+    popq    %r14
+    popq    %r15
+
+    //resume partition
+    vmresume
+
+    //if we get here then vm resume failed, just bail out with a BP exception
+    int $0x03
+    hlt
